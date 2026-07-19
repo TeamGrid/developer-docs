@@ -6,9 +6,9 @@ description: Review the exact read-only TeamGrid MCP tool surface, pagination be
 ## Available tools
 
 The default `core` profile exposes 15 operational tools. `collaboration` adds seven contact,
-call-note, and user tools. `governance` adds seven audit, custom-field-definition, service, and
-webhook tools. `all` exposes those 29 tools plus the separately curated `teamgrid_search` tool, for a
-total of 30. Select a broader profile only when the host
+call-note, and user tools. `governance` adds six custom-field-definition, service, and webhook tools.
+`all` exposes those 28 tools plus the separately curated `teamgrid_search` tool, for a total of 29.
+Select a broader profile only when the host
 and workflow require it. Service reads are not in `core` because service objects can include
 commercially sensitive billing rates.
 
@@ -42,14 +42,13 @@ commercially sensitive billing rates.
 | `teamgrid_service_get` | Governance | Read one service, including its billing rate |
 | `teamgrid_webhooks_list` | Governance | List configured webhooks without changing them |
 | `teamgrid_webhook_get` | Governance | Read one webhook without its signing secret |
-| `teamgrid_audit_events_list` | Governance | List Developer Platform audit events |
 | `teamgrid_search` | All · curated | Search explicitly requested contacts, projects, or tasks with all matching domain scopes enforced |
 
 List tools return API v1 cursor metadata. Pass the returned opaque cursor to continue; do not construct or decode cursors.
 
 Every tool is declared read-only and idempotent. A serialized tool result is limited to 256 KiB;
-request a smaller page if the server returns `result_too_large`. Call-note, contact, service, audit,
-and webhook tools can expose personal, commercial, or security-sensitive information and should use
+request a smaller page if the server returns `result_too_large`. Call-note, contact, service, and
+webhook tools can expose personal, commercial, or security-sensitive information and should use
 dedicated least-privilege credentials.
 
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
@@ -70,6 +69,10 @@ activity, documents, files, workspace administration, exports, automation metada
 integration-installation status, capability and entitlement negotiation, the event catalog,
 workspace settings, and webhook-secret rotation remain forbidden even in `all`. Reveal-once secrets
 must never enter a model transcript.
+
+Developer and workspace audit events are also forbidden in every MCP profile. Their administrative
+metadata can reveal credential usage, denied operations, resource identifiers, and security posture;
+use the API, SDK, or CLI only within an explicitly governed audit workflow.
 
 ## Security model
 

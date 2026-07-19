@@ -6,10 +6,10 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
 The current controlled-beta API v1 contract contains 112 paths and 182 operations. The TypeScript SDK
-and CLI map all 182 operations. MCP has an explicit decision for every operation: 30 bounded reads
+and CLI map all 182 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, the high-volume change feed, webhook delivery
-history, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
+history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
 
 The cross-interface contract currently governs workspace, projects and asynchronous project
 lifecycle operations, tasks and timers, time entries, calendar appointments, absences, availability,

@@ -20,12 +20,12 @@
   },
   "canonical": {
     "contractVersion": "1.0.0",
-    "sha256": "02577e032f26bacb42c9cf61e5becc9ab2b8ddcd25e898a727a887fa938cc986"
+    "sha256": "1736395943a16b3b5e9a3c66776050628ef5a4373a81e85236bd1410b17510a5"
   },
   "capabilities": {
     "operations": 182,
     "productCapabilities": 73,
-    "sha256": "4a40798eafee4ac0d8927fa8b30e5ab2ed51070ac6101a88aa41a3ebb639f243"
+    "sha256": "a1f91460803bd862021224e8c87e239b6464aa1ee190ff7e0d2bbaa100fcd7a7"
   },
-  "sourceCommit": "829872f3c3cabaede39aa2672b1d0e9db0a75680"
+  "sourceCommit": "5f8f1de058862033177380db50341cfc2e0b9df1"
 }

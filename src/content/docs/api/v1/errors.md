@@ -30,6 +30,9 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
 | `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
+| `410` | A change-feed cursor can no longer prove continuity | Create a new checkpoint and perform a full resynchronization |
+| `412` | A strong resource revision is stale | Re-read and make an explicit merge or overwrite decision |
+| `428` | A required `If-Match` precondition is missing | Read the latest resource, then send its strong revision |
 | `429` | Rate limit exceeded | Back off and honor `Retry-After` |
 | `502–504` | Temporary dependency or availability failure | Retry only safe methods with bounded backoff |
 
@@ -43,4 +46,6 @@ Rate-limit headers describe the current bucket. Limits can differ by endpoint an
 | `X-RateLimit-Reset` | Window reset as Unix time in milliseconds |
 | `X-Request-Id` | Correlation ID shared with `meta.requestId` |
 
-The 429 response uses the normal v1 error envelope with code `rate_limit_exceeded`. The official SDK honors `Retry-After` for safe reads and idempotent creates; it does not automatically retry PATCH or DELETE requests.
+The 429 response uses the normal v1 error envelope with code `rate_limit_exceeded`. The official SDK
+honors `Retry-After` for safe reads, idempotent POST operations, and fully guarded planned-work
+replacements; it does not automatically retry other PUT, PATCH, or DELETE requests.

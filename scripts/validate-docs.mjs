@@ -34,7 +34,9 @@ if (manifest.canonical?.sha256 !== canonicalManifestSha256) {
 }
 const canonicalArtifactFiles = {
   'contracts/developer-capabilities.json': 'developer-capabilities.json',
+  'contracts/developer-scopes.json': 'developer-scopes.json',
   'contracts/v0-routes.json': 'v0-routes.json',
+  'contracts/v0-to-v1-migration.json': 'v0-to-v1-migration.json',
   'openapi/v0.json': 'v0.json',
   'openapi/v1.json': 'v1.json',
 }
@@ -121,6 +123,17 @@ const authenticationDocumentation = await readFile(
   path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'authentication.md'),
   'utf8',
 )
+const scopeFile = path.join(root, 'public', 'openapi', 'developer-scopes.json')
+const scopeContent = await readFile(scopeFile)
+const scopeContract = JSON.parse(scopeContent.toString('utf8'))
+const scopeSha256 = createHash('sha256').update(scopeContent).digest('hex')
+if (
+  manifest.scopes?.sha256 !== scopeSha256 ||
+  manifest.scopes?.count !== scopeContract.scopes?.length ||
+  canonicalManifest.summary?.canonicalScopes !== scopeContract.scopes?.length
+) {
+  fail('Developer scope contract does not match sources/contracts.json and the canonical manifest.')
+}
 const documentedScopes = new Set()
 for (const pathItem of Object.values(v1.paths || {})) {
   for (const [method, operation] of Object.entries(pathItem)) {
@@ -137,6 +150,23 @@ for (const scope of documentedScopes) {
   if (!authenticationDocumentation.includes(`\`${scope}\``)) {
     fail(`Credential documentation is missing ${scope}.`)
   }
+}
+for (const scope of scopeContract.scopes || []) {
+  if (!authenticationDocumentation.includes(`\`${scope.name}\``)) {
+    fail(`Credential documentation is missing canonical scope ${scope.name}.`)
+  }
+}
+
+const migrationFile = path.join(root, 'public', 'openapi', 'v0-to-v1-migration.json')
+const migrationContent = await readFile(migrationFile)
+const migrationContract = JSON.parse(migrationContent.toString('utf8'))
+const migrationSha256 = createHash('sha256').update(migrationContent).digest('hex')
+if (
+  manifest.migration?.sha256 !== migrationSha256 ||
+  manifest.migration?.routes !== migrationContract.routes?.length ||
+  canonicalManifest.summary?.v0MigrationRoutes !== migrationContract.routes?.length
+) {
+  fail('v0-to-v1 migration contract does not match sources/contracts.json and the manifest.')
 }
 
 const cliDocumentation = await readFile(
@@ -181,7 +211,7 @@ const capabilityStatusCounts = capabilities.productCapabilities.reduce((counts, 
   return counts
 }, {})
 for (const [label, status] of [
-  ['Implemented in the controlled-beta contract', 'released'],
+  ['Released in the controlled-beta contract', 'released'],
   ['Partial', 'partial'],
   ['Planned', 'planned'],
   ['Intentionally private', 'private'],

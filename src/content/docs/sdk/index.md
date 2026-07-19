@@ -22,6 +22,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `system`, `workspace` | API discovery and authenticated workspace metadata |
 | `projects` | List, get, create, update, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
+| `changes` | Create checkpoints, list metadata changes, and run snapshot-then-catch-up |
 | `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
 | `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
@@ -30,6 +31,11 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `users` | List workspace users |
 | `lists`, `services`, `tags` | List, get, create, update, archive, restore |
 | `customFieldDefinitions` | List, get, create, update, archive, restore |
+| `customFieldValues` | Get, compare-and-set, and compare-and-clear a resource value |
+| `projectTemplates` | List, get, create, update, archive, restore, instantiate |
+| `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
+| `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |
+| `plannedWorkOperations` | Get and wait for credential-owned replacement status |
 | `products` | List, get, create, update, archive |
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
@@ -51,7 +57,8 @@ headers, secrets, and tenant-routing internals.
 
 - GET requests can be retried after bounded transient failures.
 - POST requests are retried only when they include an idempotency key.
-- PATCH and DELETE requests are not retried automatically.
+- Planned-work PUT requests are retried only with their idempotency key and strong compare-and-set
+  precondition. Other PUT, PATCH, and DELETE requests are not retried automatically.
 - Redirects are not followed.
 - Responses larger than the configured safety limit are rejected.
 - API and local client failures use separate error classes.
@@ -59,6 +66,13 @@ headers, secrets, and tenant-routing internals.
   attempts, status, response headers, rate limits, retry timing, and idempotency replays.
 - Project lifecycle helpers poll the operation resource; they do not hide an unbounded background
   job behind a synchronous project response.
+- Change-feed helpers do not download resource payloads. They establish a race-free checkpoint
+  boundary, stop catch-up only on `meta.page.caughtUp`, and leave durable application and polling
+  cadence to the caller.
+- Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
+  either that unquoted revision or the corresponding strong ETag and never sends wildcards.
+- Template instantiation and planned-work replacement expose the accepted operation; bounded
+  `wait()` helpers poll credential-owned status without changing operation semantics.
 
 Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
 pipelines therefore stay stable while application code can inspect `response.transport`.

@@ -14,6 +14,13 @@ teamgrid tasks list --project-id "$PROJECT_ID" --all --output jsonl \
 
 `--all` follows opaque cursors and stops at 10,000 pages by default. Lower the guard with `--max-pages` when a job should have a tighter upper bound.
 
+For `changes list`, one page is the default and there is no implicit wait loop. In JSONL mode each
+change is wrapped as `{"kind":"change","data":...}` and every page ends with a separate
+`{"kind":"checkpoint","cursor":"...","caughtUp":true|false}` record. Commit the checkpoint only
+after the earlier change records are durable and continue until `caughtUp` is true. Use `changes
+checkpoint` before the initial full snapshot; see the
+[race-free synchronization recipe](/api/v1/change-feed/).
+
 ## Make retried writes idempotent
 
 Supply a stable, operation-specific idempotency key for creates:
@@ -25,7 +32,13 @@ teamgrid tasks create \
   --output json
 ```
 
-GET requests and POST requests carrying an idempotency key can be retried after bounded transient failures. PATCH and DELETE are not retried automatically.
+GET requests, POST requests carrying an idempotency key, and compare-and-set planned-work PUTs with
+an idempotency key can be retried after bounded transient failures. Other PUT, PATCH, and DELETE
+requests are not retried automatically.
+
+Custom-field-value and planned-work writes also require the revision returned by the latest GET.
+Treat `412` as a concurrent-edit decision, not a generic retry. Planned-work replacement overwrites
+the complete schedule and requires `--yes` in non-interactive execution.
 
 ## Exit codes
 
@@ -49,4 +62,4 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 - Use JSON or JSONL output.
 - Use stable idempotency keys for creates.
 - Set explicit timeout, retries, and pagination bounds for long-running jobs.
-- Add `--yes` only to reviewed archive or remove steps.
+- Add `--yes` only to reviewed archive, remove, clear, or full-replacement steps.

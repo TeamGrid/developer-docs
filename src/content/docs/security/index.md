@@ -24,6 +24,16 @@ project-statement scope. Do not grant them to an MCP credential: MCP product too
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
 
+Change-feed cursors are not bearer credentials, but they are signed for one credential, workspace,
+cell, epoch, and filter set. Keep them in the integration's state store rather than logs or URLs.
+Change events contain metadata only; fetch current resource state through its independently scoped
+endpoint. The change feed is intentionally unavailable to MCP.
+
+Custom-field values and planned-work schedules can contain customer, personnel, or workload data.
+Their write operations require strong compare-and-set revisions so integrations cannot silently
+overwrite concurrent edits. Project templates can encode an organization's workflow structure.
+All three families and their operation status resources are unavailable in every MCP profile.
+
 ## Webhooks
 
 For signed v2 webhooks, verify the HMAC over the exact raw request body before parsing it, reject stale timestamps, compare signatures in constant time, and deduplicate the delivery ID. Store the reveal-once webhook signing secret separately from API credentials.

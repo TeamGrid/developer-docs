@@ -36,11 +36,15 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `services:read`, `services:write` | Services and their billing configuration |
 | `tags:read`, `tags:write` | Tags |
 | `custom-field-definitions:read`, `custom-field-definitions:write` | Custom-field schemas, configuration, and lifecycle; not values on resources |
+| `custom-field-values:read`, `custom-field-values:write` | Values on supported resources; also requires the corresponding target-resource read/write scope |
+| `project-templates:read`, `project-templates:write` | Template metadata and lifecycle; instantiation additionally requires `projects:write` |
+| `planned-work:read`, `planned-work:write` | Sensitive workload windows and atomic task-schedule replacement |
 | `products:read`, `products:write` | Product catalog excluding acquisition cost |
 | `products:finance:read`, `products:finance:write` | Reveal or mutate product `purchasePrice`; grant only in addition to the matching product scope |
 | `product-groups:read`, `product-groups:write` | Hierarchical product groups |
 | `project-statements:read`, `project-statements:write` | Non-budget project statements excluding acquisition cost |
 | `project-statements:finance:read`, `project-statements:finance:write` | Read budget statements or reveal/mutate statement `purchasePrice`; grant only in addition to the matching statement scope |
+| `changes:read` | Cell-local, metadata-only change events for resumable synchronization |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
 

@@ -14,7 +14,7 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-19
 
-- Expanded the controlled-beta API v1 contract to 52 paths and 90 operations, with matching SDK
+- Expanded the controlled-beta API v1 contract to 62 paths and 106 operations, with matching SDK
   methods, CLI commands, and an explicit MCP exposure decision for every operation.
 - Added a machine-checked 73-entry product capability ledger plus a canonical SHA-256 manifest for
   the v0 inventory, both OpenAPI contracts, and the cross-interface policy.
@@ -25,10 +25,15 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Added product, product-group, and project-statement resources. Product acquisition cost and
   project-statement budget data use separate finance read and write overlays.
 - Added scoped custom-field-definition lifecycle operations with canonical type/configuration
-  validation and explicit legacy compatibility states. Custom-field values remain outside the
-  current contract.
+  validation and explicit legacy compatibility states. Dedicated custom-field-value operations use
+  target-resource scopes and strong compare-and-set revisions.
+- Added metadata-only project templates with asynchronous, credential-owned instantiation and
+  added bounded planned-work reads plus idempotent compare-and-set schedule replacement operations.
 - Added credential-owned webhook delivery history with pagination and sanitized attempt metadata.
   URLs, payloads, headers, bodies, signing secrets, and tenant-routing fields are not exposed.
+- Added a 90-day, cell-local metadata change feed with credential- and filter-bound checkpoints,
+  explicit `410` resynchronization semantics, an authoritative `caughtUp` watermark, typed SDK bootstrap helpers, and script-safe CLI
+  checkpoint output. The high-volume feed remains unavailable through MCP.
 - Expanded the read-only MCP profiles to 15 `core` tools and 29 `all` tools. Product tools always
   omit `purchasePrice`; project statements and webhook delivery history remain forbidden.
 - Added API discovery, runtime response conformance checks, v1 rate-limit and retry documentation,

@@ -19,7 +19,10 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
-| Custom-field definitions | List, get, create, update, archive, restore | Definition management only; custom-field values on projects, tasks, and contacts remain planned |
+| Custom-field definitions | List, get, create, update, archive, restore | Only canonical public schema metadata is writable |
+| Custom-field values | Get, compare-and-set, compare-and-clear | Requires a strong revision and the matching target-resource scope |
+| Project templates | List, get, create, update, archive, restore, instantiate | Snapshot content stays private; instantiation is asynchronous and credential-owned |
+| Planned work | List bounded windows, get task schedule, replace task schedule | Sensitive workload data; replacement is asynchronous, idempotent, and compare-and-set |
 | Products | List, get, create, update, archive | `purchasePrice` requires finance scopes; no restore operation is currently public |
 | Product groups | List, get, create, update, archive | Parent changes are hierarchy-validated; no restore operation is currently public |
 | Project statements | List, get, create, update, archive, restore | Budget data and `purchasePrice` are finance-gated; internal order and rollup fields stay private |
@@ -82,5 +85,6 @@ read-only legacy shapes. Unfiltered reads can surface legacy definitions for inv
 Create and update operations accept only the canonical field and target types described by OpenAPI,
 and the configuration discriminator must match `fieldType`.
 
-Custom-field values attached to projects, tasks, contacts, or journal entries are not part of the
-current v1 contract. Do not infer a value API from the definition endpoints.
+Value operations are separate from definition operations. They expose canonical values only for
+contacts, projects, project journal entries, and tasks, and require strong compare-and-set revisions.
+See [custom fields](/api/v1/custom-fields/) before writing values.

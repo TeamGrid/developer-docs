@@ -5,6 +5,11 @@ description: Map TeamGrid API v0 authentication, pagination, writes, errors, end
 
 Migrate one bounded integration at a time. Keep its v0 token active until the equivalent v1 reads and writes have been verified, then revoke the old token.
 
+The machine-readable [v0-to-v1 migration map](/openapi/v0-to-v1-migration.json) classifies every one
+of the 87 frozen v0 runtime routes as equivalent, adaptation-required, or retained-v0 and records
+request, response, and semantic changes. Use it as an inventory gate; the guidance below explains
+the platform-wide changes.
+
 | Concern | API v0 | API v1 |
 | --- | --- | --- |
 | Authentication | Broad team token | Reveal-once scoped service credential |
@@ -36,18 +41,19 @@ cursor-paginated reads. Grant their dedicated `lists:read/write`, `services:read
 existing personal lists remain readable but cannot be created through API v1. Service responses can
 contain billing rates and should be treated accordingly.
 
-API v1 also covers call-note lifecycle, contact-group lifecycle, custom-field definitions, product
-and product-group catalog management, project statements, and credential-owned webhook delivery
-history. Product acquisition cost and project-statement budget data require explicit finance scope
-overlays. Custom-field definition endpoints do not provide custom-field values on projects, tasks,
-contacts, or journal entries.
+API v1 also covers call-note lifecycle, contact-group lifecycle, custom-field definitions and
+values, project templates, planned work, product and product-group catalog management, project
+statements, and credential-owned webhook delivery history. Product acquisition cost and
+project-statement budget data require explicit finance scope overlays. Value writes and planned-work
+replacement use strong compare-and-set revisions; do not translate v0 writes mechanically.
 
 The current v1 contract does not yet cover every legacy or TeamGrid product workflow. Examples still
-classified as partial or planned include project templates and sharing, planned work and scheduling,
-custom-field values, comments, documents and files, activity, calendar and absence workflows,
-integrations, reporting, imports and exports, and a general change feed. Keep only those bounded parts
-on v0 until an explicit v1 domain operation exists; do not emulate them through unrelated resources
-or generic database mutations.
+classified as partial or planned include project sharing, scheduling availability, comments,
+documents and files, activity, calendar and absence workflows,
+integrations, reporting, imports and exports. API v1 now provides a cell-local, metadata-only change
+feed for race-free synchronization; it is not compatible with v0 pagination or webhook cursors.
+Keep only those bounded parts on v0 until an explicit v1 domain operation exists; do not emulate
+them through unrelated resources or generic database mutations.
 
 ## Legacy reference differences
 

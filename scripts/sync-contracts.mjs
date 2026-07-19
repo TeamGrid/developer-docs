@@ -63,6 +63,34 @@ await copyFile(
   path.join(sourceRoot, 'contracts', 'v0-routes.json'),
   path.join(destination, 'v0-routes.json'),
 )
+const scopeContent = await readFile(path.join(sourceRoot, 'contracts', 'developer-scopes.json'))
+const scopeDocument = JSON.parse(scopeContent.toString('utf8'))
+if (scopeDocument.schemaVersion !== 1 || !Array.isArray(scopeDocument.scopes)) {
+  throw new Error('Canonical developer scope contract has an unsupported shape.')
+}
+await copyFile(
+  path.join(sourceRoot, 'contracts', 'developer-scopes.json'),
+  path.join(destination, 'developer-scopes.json'),
+)
+manifest.scopes = {
+  count: scopeDocument.scopes.length,
+  sha256: createHash('sha256').update(scopeContent).digest('hex'),
+}
+const migrationContent = await readFile(
+  path.join(sourceRoot, 'contracts', 'v0-to-v1-migration.json'),
+)
+const migrationDocument = JSON.parse(migrationContent.toString('utf8'))
+if (migrationDocument.schemaVersion !== 1 || !Array.isArray(migrationDocument.routes)) {
+  throw new Error('Canonical v0-to-v1 migration contract has an unsupported shape.')
+}
+await copyFile(
+  path.join(sourceRoot, 'contracts', 'v0-to-v1-migration.json'),
+  path.join(destination, 'v0-to-v1-migration.json'),
+)
+manifest.migration = {
+  routes: migrationDocument.routes.length,
+  sha256: createHash('sha256').update(migrationContent).digest('hex'),
+}
 manifest.canonical = {
   contractVersion: canonicalManifest.contractVersion,
   sha256: createHash('sha256').update(canonicalManifestContent).digest('hex'),

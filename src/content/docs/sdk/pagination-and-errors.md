@@ -15,6 +15,43 @@ for await (const page of client.tasks.pages({ projectId: 'project-id' })) {
 
 The iterator stops when `nextCursor` is `null` and detects a repeated cursor instead of looping forever.
 
+## Change-feed bootstrap and catch-up
+
+The change feed has a distinct cursor contract: it always returns a checkpoint. Use the helper to
+take that checkpoint before the full snapshot and receive a bounded catch-up iterator afterward:
+
+```ts
+const bootstrap = await client.changes.snapshotThenCatchUp(
+  async () => {
+    const projects = []
+    for await (const page of client.projects.pages()) projects.push(...page.data)
+    return projects
+  },
+  {
+    operations: ['created', 'updated', 'deleted'],
+    resourceTypes: ['project'],
+  },
+  { maxPages: 1_000 },
+)
+
+await replaceProjectSnapshot(bootstrap.snapshot)
+
+for await (const page of bootstrap.pages) {
+  await applyChangeMetadata(page.data)
+  await saveCheckpoint(page.meta.page.nextCursor)
+}
+```
+
+`changes.list()` performs one poll. `changes.checkpoint()` is the typed convenience for
+`startAtLatest=true`; its checkpoint is `meta.page.nextCursor`. `changes.pages()` performs a
+bounded catch-up traversal and stops only when `meta.page.caughtUp` is true, with repeated-cursor
+and maximum-page guards. A full page can already be caught up, and an empty event set is not a
+substitute for the flag. Keep the same resource and operation filters for the life of a checkpoint.
+
+`410 change_feed_reset_required` and `503 change_feed_unavailable` remain ordinary
+`TeamGridApiError` responses. For `410`, create a new checkpoint and repeat the full snapshot. For
+`503`, retain the last durable cursor and retry later; safe GET retry policy still applies.
+
 ## Error classes
 
 ```ts

@@ -20,6 +20,7 @@ teamgrid --version
 - Cursor pagination with bounded `--all` traversal
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
+- Explicit, finite change-feed checkpoint and polling commands for synchronization scripts
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 

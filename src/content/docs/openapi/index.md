@@ -8,6 +8,8 @@ The API reference is generated from checked-in OpenAPI 3.1 contracts. The same f
 - [Download API v1 OpenAPI JSON](/openapi/v1.json)
 - [Download API v0 OpenAPI JSON](/openapi/v0.json)
 - [Download the Developer Platform capability ledger](/openapi/developer-capabilities.json)
+- [Download the canonical scope contract](/openapi/developer-scopes.json)
+- [Download the complete v0-to-v1 migration map](/openapi/v0-to-v1-migration.json)
 - [Download the canonical contract manifest](/openapi/developer-platform-manifest.json)
 - [Download the frozen v0 route inventory](/openapi/v0-routes.json)
 
@@ -19,8 +21,9 @@ The canonical manifest publishes byte counts and SHA-256 digests for both OpenAP
 runtime inventory, and the cross-interface capability ledger. The documentation repository also
 records its source commit in `sources/contracts.json`. CI fails if any published artifact drifts.
 
-The current manifest records 52 v1 paths, 90 governed v1 operations, 87 frozen v0 operations, and
-73 classified TeamGrid product capabilities. These counts describe the synchronized contract; they
-do not promote planned capabilities into the controlled beta.
+The current manifest records 62 v1 paths, 106 governed v1 operations, 87 frozen v0 operations, 87
+v0 migration decisions, 43 canonical scopes, and 73 classified TeamGrid product capabilities.
+These counts describe the synchronized contract; they do not promote planned capabilities into the
+controlled beta.
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.

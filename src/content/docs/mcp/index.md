@@ -16,6 +16,7 @@ teamgrid auth login
 
 - No remote TeamGrid MCP endpoint
 - No MCP-specific credential or database
+- No high-volume change-feed tool, including in the `all` profile
 - No write, archive, or remove tools
 - No session affinity or bypass around API authorization
 - No replacement for deterministic service integrations

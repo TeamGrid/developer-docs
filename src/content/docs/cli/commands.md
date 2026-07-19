@@ -185,7 +185,51 @@ teamgrid custom-field-definitions list|get|create|update|archive|restore
 List filters include `--archived`, `--default-enabled`, `--field-type`, and `--target-type`.
 Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `switcher`, `tag`,
 `text`, `textarea`, and `user`. Target types are `contact`, `project`, `projectJournalEntry`, and
-`task`. These commands manage definitions, not custom-field values on resources.
+`task`.
+
+## Custom-field values
+
+```text
+teamgrid custom-field-values get TARGET_TYPE RESOURCE_ID FIELD_ID
+teamgrid custom-field-values set TARGET_TYPE RESOURCE_ID FIELD_ID
+  --data <json|@file|-> --if-match REVISION
+teamgrid custom-field-values clear TARGET_TYPE RESOURCE_ID FIELD_ID
+  --if-match REVISION --yes
+```
+
+Read first, then pass the latest `data.attributes.revision` to `--if-match`. A `412` means another
+writer changed the value; re-read and decide explicitly instead of blindly retrying. Clear is a
+destructive compare-and-set operation and therefore requires confirmation.
+
+## Project templates
+
+```text
+teamgrid project-templates list|get|create|update|archive|restore
+teamgrid project-templates instantiate TEMPLATE_ID --data <json|@file|->
+  [--idempotency-key KEY] [--wait]
+teamgrid project-template-instantiations get OPERATION_ID
+```
+
+Template list filters include `--archived`, `--created-at-from`, `--created-at-to`, and
+`--origin-project-id`. Create and instantiate should use stable idempotency keys. `--wait` polls the
+credential-owned instantiation until it succeeds or fails, bounded by `--max-wait` and
+`--poll-interval`.
+
+## Planned work
+
+```text
+teamgrid planned-work list --start DATE --end DATE
+  [--project-id ID] [--task-id ID] [--user-id ID]
+teamgrid planned-work get TASK_ID
+teamgrid planned-work replace TASK_ID --data <json|@file|->
+  --if-match REVISION [--idempotency-key KEY] --yes [--wait]
+teamgrid planned-work-operations get OPERATION_ID
+```
+
+Replacement overwrites the complete task schedule. Read the latest task schedule, pass its revision
+to `--if-match`, use a stable idempotency key, and use `--yes` for non-interactive execution. A
+successful `202` only accepts the operation; use `--wait` or poll the operation group before relying
+on the replacement.
 
 ## Audit events
 
@@ -196,6 +240,37 @@ teamgrid audit-events [--credential-id ID] [--event-type TYPE]
 
 Audit output can contain security-sensitive operational metadata. Limit access and retention in
 downstream systems.
+
+## Change feed
+
+```text
+teamgrid changes checkpoint [--operation VALUE] [--resource-type VALUE]
+teamgrid changes list [--cursor CHECKPOINT] [--limit N] [--all] [--max-pages N]
+```
+
+Take a checkpoint before the full resource snapshot, then pass it to `changes list`. Both filter
+options can be repeated or comma-separated; for example,
+`--operation created,updated --operation deleted --resource-type project,task`. The effective
+filters must remain unchanged when reusing the returned cursor.
+
+Without `--all`, `changes list` makes exactly one request and exits; it is safe to invoke from an
+external scheduler or bounded polling loop. `--all` requests catch-up pages only when explicitly
+selected and stops at `--max-pages` (10,000 by default). JSON preserves the complete response
+envelope. JSONL emits `kind: "change"` records and then a `kind: "checkpoint"` record after every
+successfully received page. Each checkpoint includes `caughtUp`. Persist it only after applying the
+preceding events, and continue catch-up until `caughtUp` is `true`; an empty event list alone is not
+the completion contract.
+
+```bash
+teamgrid changes checkpoint --resource-type project,task --output json
+teamgrid changes list \
+  --cursor "$CHECKPOINT" \
+  --resource-type project,task \
+  --output jsonl
+```
+
+The CLI does not hide `410` reset-required or `503` temporarily-unavailable responses. Follow the
+[change-feed recovery contract](/api/v1/change-feed/).
 
 ## Webhooks and delivery history
 

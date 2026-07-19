@@ -53,7 +53,13 @@ dedicated least-privilege credentials.
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
 financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
-sensitive operational metadata. Neither resource can be enabled through `--tool-profile all`.
+sensitive operational metadata. The change feed is forbidden because a high-volume durable
+synchronization stream is not a bounded interactive model task. Custom-field values, project
+templates and their instantiation status, and planned-work schedules and operation status are
+forbidden because they expose sensitive per-resource workflow or workload data. These resources
+cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.
+Custom-field **definition** reads are the only custom-field exception and remain confined to the
+`governance` profile.
 
 ## Security model
 

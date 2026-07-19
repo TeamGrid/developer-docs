@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: production
-      url: https://teamgrid-developer-docs.pages.dev
+      url: https://developer.teamgridapp.com
     permissions:
       contents: read
     steps:

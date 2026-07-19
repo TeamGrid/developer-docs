@@ -31,6 +31,8 @@ npm run verify
 
 The site is a static Astro/Starlight build deployed to the `teamgrid-developer-docs` Cloudflare Pages project. Pull requests build and validate the complete site. A protected `main` push deploys that exact commit after the verification job succeeds, using the least-privilege credentials stored in the GitHub `production` environment.
 
-The `*.pages.dev` deployment URLs carry `X-Robots-Tag: noindex`. Attaching and switching `developer.teamgridapp.com` remains a separate, explicitly verified production cutover.
+The production domain is [developer.teamgridapp.com](https://developer.teamgridapp.com). It was cut over to Cloudflare Pages on 2026-07-19. The `*.pages.dev` deployment URLs remain available for diagnostics and carry `X-Robots-Tag: noindex` so the custom domain is the only indexable origin.
+
+See [Production operations](docs/production-operations.md) for deployment, smoke-test, and rollback procedures.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [LICENSE.md](LICENSE.md).

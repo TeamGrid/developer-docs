@@ -60,13 +60,18 @@ Examples:
 ```bash
 teamgrid projects list --completed false
 teamgrid projects create --data @project.json --idempotency-key project-import-42
-teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
-teamgrid projects complete PROJECT_ID --idempotency-key close-42 --wait
+teamgrid projects get PROJECT_ID --output json
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' \
+  --if-match PROJECT_REVISION
+teamgrid projects complete PROJECT_ID --if-match PROJECT_REVISION \
+  --idempotency-key close-42 --wait
 ```
 
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
+Update and all four lifecycle commands require `--if-match` with the latest `developerRevision` or
+the exact quoted `prj1` ETag. Lifecycle starts also bind the idempotency key to that source revision.
 
 ## Commerce and project statements
 
@@ -150,16 +155,20 @@ service credentials and machine-readable output should be handled as commerciall
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
-teamgrid tasks archive TASK_ID
-teamgrid tasks restore TASK_ID
-teamgrid tasks complete TASK_ID
-teamgrid tasks reopen TASK_ID
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}' --if-match TASK_REVISION
+teamgrid tasks archive TASK_ID --if-match TASK_REVISION
+teamgrid tasks restore TASK_ID --if-match TASK_REVISION
+teamgrid tasks complete TASK_ID --if-match TASK_REVISION
+teamgrid tasks reopen TASK_ID --if-match TASK_REVISION
 teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
 
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
+
+The five protected task mutations require the latest raw `developerRevision` or exact quoted `tsk1`
+ETag. Each successful resource-returning command prints the new revision in JSON output; archive
+prints the post-archive ETag because the API response itself is empty.
 
 ## Time entries
 
@@ -223,16 +232,19 @@ destructive compare-and-set operation and therefore requires confirmation.
 ## Project templates
 
 ```text
-teamgrid project-templates list|get|create|update|archive|restore
+teamgrid project-templates list|get|create
+teamgrid project-templates update|archive|restore PROJECT_TEMPLATE_ID --if-match REVISION
 teamgrid project-templates instantiate TEMPLATE_ID --data <json|@file|->
-  [--idempotency-key KEY] [--wait]
+  --if-match REVISION [--idempotency-key KEY] [--wait]
 teamgrid project-template-instantiations get OPERATION_ID
 ```
 
 Template list filters include `--archived`, `--created-at-from`, `--created-at-to`, and
 `--origin-project-id`. Create and instantiate should use stable idempotency keys. `--wait` polls the
 credential-owned instantiation until it succeeds or fails, bounded by `--max-wait` and
-`--poll-interval`.
+`--poll-interval`. Update, archive, restore, and instantiate require the latest raw
+`developerRevision` or exact quoted `tpl1` ETag. Instantiation binds that source revision and its
+payload to the idempotency key.
 
 ## Planned work
 

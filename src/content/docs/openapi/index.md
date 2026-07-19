@@ -21,9 +21,18 @@ The canonical manifest publishes byte counts and SHA-256 digests for both OpenAP
 runtime inventory, and the cross-interface capability ledger. The documentation repository also
 records its source commit in `sources/contracts.json`. CI fails if any published artifact drifts.
 
-The current manifest records 107 v1 paths, 176 governed v1 operations, 87 frozen v0 operations, 87
-v0 migration decisions, 76 canonical scopes, and 73 classified TeamGrid product capabilities.
+The current `1.0.0-beta.1` manifest records 112 v1 paths, 182 governed v1 operations, 87 frozen v0
+operations, 87 v0 migration decisions, 79 canonical scopes, and 73 classified TeamGrid product
+capabilities. It also records exactly 14 `resource-cas-v1` mutation operations and two associated
+asynchronous operation reads.
 These counts describe the synchronized contract; they do not promote planned capabilities into the
 controlled beta.
+
+During the controlled beta, consumers should pin the manifest's `contractVersion` together with the
+OpenAPI digest and the package prerelease they tested. A beta contract checkpoint can add migration
+requirements before the stable `1.0.0` contract exists; the `1.0.0-beta.1` checkpoint makes current
+resource preconditions mandatory on the protected project, task, and project-template writers. Its
+synchronized SDK, CLI, and MCP package checkpoint is `1.0.0-alpha.3`. See
+[resource revisions and concurrent writes](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.

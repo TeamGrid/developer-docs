@@ -26,3 +26,7 @@ https://api.teamgridapp.com
 - Use a base URL override only for a controlled staging or loopback environment.
 
 Business data, credential hashes, audit records, and write delivery stay in the owning cell. The global edge does not persist bearer credentials or request payloads.
+
+Resource revisions and strong ETags are also cell-local. Return them only to the same credential's
+regional endpoint. A tag is not proof of authorization, is not portable to another workspace or
+cell, and must never be used to justify following a bearer redirect.

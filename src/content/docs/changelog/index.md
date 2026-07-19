@@ -12,6 +12,28 @@ API v1 and the npm packages are in a controlled beta. Until stable releases begi
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
 
+## 2026-07-20
+
+- Published the internal `1.0.0-beta.1` contract checkpoint without changing the controlled-beta
+  claim: the contract still contains 112 paths and 182 operations and does not claim complete
+  TeamGrid product coverage.
+- Added opaque `developerRevision` and `developerUpdatedAt` fields to public project, task, and
+  project-template representations, with body-to-header validation for type-specific `prj1`,
+  `tsk1`, and `tpl1` strong ETags.
+- Made `If-Match` mandatory on exactly 14 project, task, and project-template mutations. Missing,
+  malformed, stale, legacy-operation, and temporarily unverifiable revision states use explicit
+  `428`, `400`, `412`, `410`, and `503` responses.
+- Bound asynchronous project lifecycle and project-template instantiation requests to both their
+  idempotency key and source revision. Operation resources now distinguish `sourceRevision` from a
+  successful `resultRevision`.
+- Added SDK revision and ETag types, required mutation options, CLI `--if-match` handling, and
+  read–mutate–reconcile guidance in the synchronized `1.0.0-alpha.3` package checkpoint. Typed
+  transport ETags preserve their resource brand, and wait helpers bind polling to the accepted
+  operation identity and source revision. MCP remains a curated read-only surface and exposes no
+  resource-CAS mutation tools.
+- Kept revisions cell-local: clients must return a revision to the same credential-derived regional
+  endpoint and must not use a global or cross-region bearer redirect.
+
 ## 2026-07-19
 
 - Expanded the controlled-beta API v1 contract to 112 paths and 182 operations, with matching SDK

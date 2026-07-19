@@ -6,7 +6,7 @@
     },
     "v1": {
       "operations": 182,
-      "sha256": "39758e56965fb16061401a7f5ff889c66e77d8fb3a9ffc0a2450e834f9d3cf64"
+      "sha256": "74416af71ad0addd8b93592c075151dde83b36ecbaa70f594f75602f8291bbba"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
@@ -19,13 +19,13 @@
     "sha256": "313ab009498a200421a87ac3bd5b46b4453f8c81addea69be58699525b2a0567"
   },
   "canonical": {
-    "contractVersion": "1.0.0",
-    "sha256": "1736395943a16b3b5e9a3c66776050628ef5a4373a81e85236bd1410b17510a5"
+    "contractVersion": "1.0.0-beta.1",
+    "sha256": "be16a1a4087978366f502426d090519f0f3c86849e084cb0c1bafe29edc1ba89"
   },
   "capabilities": {
     "operations": 182,
     "productCapabilities": 73,
     "sha256": "a1f91460803bd862021224e8c87e239b6464aa1ee190ff7e0d2bbaa100fcd7a7"
   },
-  "sourceCommit": "5f8f1de058862033177380db50341cfc2e0b9df1"
+  "sourceCommit": "2130069c56487e930513b7b275b82b17ccde5bcb"
 }

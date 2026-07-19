@@ -40,21 +40,35 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
+Project, task, and project-template responses contain `developerRevision` and
+`developerUpdatedAt`. Those fields and the matching `prj1`, `tsk1`, or `tpl1` strong ETag form a
+cell-local concurrency contract; they are not internal MongoDB revision fields. The protected
+mutations atomically compare that revision in the owning tenant before applying domain behavior.
+See [resource revisions and concurrent writes](/api/v1/resource-concurrency/) for the exact 14
+operations and conflict-reconciliation flow.
+
 ## Project lifecycle operations
 
 Project completion, reopen, archive, and restore can cascade across related TeamGrid state. The API
 therefore returns a project-lifecycle operation instead of pretending that the work completed during
 the initiating request.
 
-1. Send the lifecycle command with an idempotency key.
-2. Persist the returned operation ID.
-3. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
+1. Read the project and retain its latest `prj1` strong ETag.
+2. Send the lifecycle command with that ETag in `If-Match` and a stable idempotency key.
+3. Persist the returned operation ID and its `sourceRevision`.
+4. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
    or CLI wait helper.
-4. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
+5. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
    unrelated replacement operation.
 
+On success, `resultRevision` identifies the resulting project revision. A legacy operation without
+revision provenance returns `410 resource_operation_revision_unavailable`; reconcile against a fresh
+project read instead of assuming success or failure.
+
 The CLI project commands accept `--wait`, `--max-wait`, and `--poll-interval`. The SDK exposes the
-operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`.
+operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`. Pass
+the mutation result as `acceptedOperation` when waiting so every poll remains bound to the accepted
+operation ID, action, project, and source revision. CLI `--wait` does this automatically.
 
 ## Finance overlays
 

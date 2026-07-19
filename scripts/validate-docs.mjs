@@ -78,6 +78,9 @@ if (manifest.capabilities?.sha256 !== capabilitySha256) {
   fail('Developer capabilities do not match sources/contracts.json.')
 }
 const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.json'), 'utf8'))
+if (v1.info?.version !== canonicalManifest.contractVersion) {
+  fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
+}
 const contractOperations = []
 for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
   for (const [method, operation] of Object.entries(pathItem)) {
@@ -107,16 +110,77 @@ if (
   fail('OpenAPI and Developer Platform operation policies differ.')
 }
 
+const resourceCasOperations = []
+for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
+  for (const [method, operation] of Object.entries(pathItem)) {
+    if (!methods.has(method) || operation['x-teamgrid-resource-cas'] !== 'resource-cas-v1') continue
+    resourceCasOperations.push({ method: method.toUpperCase(), path: operationPath })
+    for (const status of ['400', '412', '428', '503']) {
+      if (!operation.responses?.[status]) {
+        fail(`${operation.operationId} is missing the resource-CAS ${status} response.`)
+      }
+    }
+  }
+}
+if (
+  resourceCasOperations.length !== 14 ||
+  canonicalManifest.summary?.resourceCasMutationOperations !== resourceCasOperations.length
+) {
+  fail(
+    `Expected the manifest and OpenAPI to expose exactly 14 resource-CAS mutations; found ${resourceCasOperations.length}.`,
+  )
+}
+const resourceConcurrencyDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'resource-concurrency.md'),
+  'utf8',
+)
+for (const operation of resourceCasOperations) {
+  const marker = `\`${operation.method} /v1${operation.path}\``
+  if (!resourceConcurrencyDocumentation.includes(marker)) {
+    fail(`Resource concurrency documentation is missing ${marker}.`)
+  }
+}
+for (const marker of [
+  '`developerRevision`',
+  '`developerUpdatedAt`',
+  '`400 invalid_precondition`',
+  '`410 resource_operation_revision_unavailable`',
+  '`412 precondition_failed`',
+  '`428 precondition_required`',
+  '`503 service_unavailable`',
+  '`"prj1-<developerRevision>"`',
+  '`"tpl1-<developerRevision>"`',
+  '`"tsk1-<developerRevision>"`',
+]) {
+  if (!resourceConcurrencyDocumentation.includes(marker)) {
+    fail(`Resource concurrency documentation is missing required marker: ${marker}.`)
+  }
+}
+for (const operationId of ['getProjectLifecycleOperation', 'getProjectTemplateInstantiation']) {
+  const operation = contractOperations.find((item) => item.operationId === operationId)
+  const pathItem = operation && v1.paths?.[operation.path]
+  const operationContract = pathItem && pathItem[operation.method.toLowerCase()]
+  if (!operationContract?.responses?.['410']) {
+    fail(`${operationId} is missing its legacy-operation 410 response.`)
+  }
+}
+
 const mcpDocumentation = await readFile(
   path.join(root, 'src', 'content', 'docs', 'mcp', 'tools-and-security.md'),
   'utf8',
 )
-for (const operation of capabilities.operationPolicy.filter(
-  (item) => item.mcp.exposure === 'read',
-)) {
+const mcpOperations = capabilities.operationPolicy.filter((item) => item.mcp.exposure === 'read')
+for (const operation of mcpOperations) {
   if (!mcpDocumentation.includes(`\`${operation.mcp.tool}\``)) {
     fail(`MCP documentation is missing ${operation.mcp.tool}.`)
   }
+}
+const mcpOverview = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'mcp', 'index.md'),
+  'utf8',
+)
+if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
+  fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
 }
 
 const authenticationDocumentation = await readFile(
@@ -204,6 +268,22 @@ for (const marker of [
 ]) {
   if (!coverageDocumentation.includes(marker)) {
     fail(`Capability coverage documentation is missing current marker: ${marker}.`)
+  }
+}
+
+const openApiDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'openapi', 'index.md'),
+  'utf8',
+)
+for (const marker of [
+  `\`${canonicalManifest.contractVersion}\` manifest`,
+  `${currentV1PathCount} v1 paths`,
+  `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
+  `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
+  `exactly ${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutation operations`,
+]) {
+  if (!openApiDocumentation.includes(marker)) {
+    fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)
   }
 }
 const capabilityStatusCounts = capabilities.productCapabilities.reduce((counts, capability) => {

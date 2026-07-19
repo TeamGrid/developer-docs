@@ -16,6 +16,7 @@ the platform-wide changes.
 | Endpoint | Global v0 host | Credential-derived regional `/v1` host |
 | Pagination | Page and limit | Opaque cursor and limit |
 | Create retries | Generally unsafe | Required idempotency key |
+| Concurrent project/task/template writes | No uniform public precondition | Latest type-specific strong ETag in `If-Match` |
 | Errors | Historical response formats | Versioned error envelope with request id |
 | Webhooks | Legacy unsigned delivery | HMAC-signed delivery v2 |
 | Audit | General operational logging | Credential and mutation audit events |
@@ -25,7 +26,7 @@ the platform-wide changes.
 1. Inventory the v0 resources, filters, writes, and webhook events used by the integration.
 2. Create a separate v1 credential with only the required read scopes.
 3. Compare read results without changing production data.
-4. Add write scopes and idempotency keys only when the read comparison passes.
+4. Add write scopes, idempotency keys, and read-before-write ETag handling only when the read comparison passes.
 5. Create a v2 webhook and verify its exact raw-body signature.
 6. Switch the integration to the regional endpoint.
 7. Observe errors, latency, and audit events.
@@ -47,13 +48,20 @@ statements, and credential-owned webhook delivery history. Product acquisition c
 project-statement budget data require explicit finance scope overlays. Value writes and planned-work
 replacement use strong compare-and-set revisions; do not translate v0 writes mechanically.
 
-The current v1 contract does not yet cover every legacy or TeamGrid product workflow. Examples still
-classified as partial or planned include project sharing, scheduling availability, comments,
-documents and files, activity, calendar and absence workflows,
-integrations, reporting, imports and exports. API v1 now provides a cell-local, metadata-only change
-feed for race-free synchronization; it is not compatible with v0 pagination or webhook cursors.
-Keep only those bounded parts on v0 until an explicit v1 domain operation exists; do not emulate
-them through unrelated resources or generic database mutations.
+Project, task, and project-template writers must also be adapted rather than translated
+mechanically. Their representations now include `developerRevision` and `developerUpdatedAt`, and
+the 14 protected mutations require the latest `prj1`, `tsk1`, or `tpl1` ETag. A stale write returns
+`412`; re-read and reconcile it. Project lifecycle and template-instantiation idempotency also binds
+the initiating revision. See [resource revisions and concurrent writes](/api/v1/resource-concurrency/).
+
+The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
+capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
+task ordering, subtasks and bulk changes, time-entry billing, file sharing, commerce orders, report
+jobs, imports, and audit export as planned. Several released domains also remain explicitly partial.
+API v1 provides a cell-local, metadata-only change feed for race-free synchronization; it is not
+compatible with v0 pagination or webhook cursors. Keep only those bounded parts on v0 until an
+explicit v1 domain operation exists; do not emulate them through unrelated resources or generic
+database mutations.
 
 ## Legacy reference differences
 

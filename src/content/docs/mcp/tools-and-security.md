@@ -51,6 +51,11 @@ request a smaller page if the server returns `result_too_large`. Call-note, cont
 webhook tools can expose personal, commercial, or security-sensitive information and should use
 dedicated least-privilege credentials.
 
+Project and task results include the same public `developerRevision` and `developerUpdatedAt`
+fields as API v1. The local server does not register mutation tools, does not accept `If-Match`, and
+does not expose resource-CAS actions even in the `all` profile. Use the SDK or CLI when a controlled
+workflow must reconcile a revision and perform a write.
+
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
 financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains

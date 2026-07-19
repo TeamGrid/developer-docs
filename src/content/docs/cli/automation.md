@@ -37,8 +37,22 @@ an idempotency key can be retried after bounded transient failures. Other PUT, P
 requests are not retried automatically.
 
 Custom-field-value and planned-work writes also require the revision returned by the latest GET.
-Treat `412` as a concurrent-edit decision, not a generic retry. Planned-work replacement overwrites
-the complete schedule and requires `--yes` in non-interactive execution.
+The same read-before-write rule applies to the five project, five task, and four project-template
+resource-CAS mutations:
+
+```bash
+revision=$(teamgrid tasks get "$TASK_ID" --output json | jq -er '.attributes.developerRevision')
+
+if ! teamgrid tasks update "$TASK_ID" --data @patch.json \
+  --if-match "$revision" --output json; then
+  # Re-read and reconcile here. Do not substitute the old revision.
+  exit 1
+fi
+```
+
+Treat `412` and exit code `6` as a concurrent-edit decision, not a generic retry. Missing
+`--if-match` is rejected locally; an API `428` maps to usage exit code `2`. Planned-work replacement
+overwrites the complete schedule and requires `--yes` in non-interactive execution.
 
 ## Exit codes
 
@@ -46,11 +60,11 @@ the complete schedule and requires `--yes` in non-interactive execution.
 | --- | --- |
 | `0` | Success or an interactively cancelled action |
 | `1` | Unexpected, server, or network failure |
-| `2` | Invalid local input or configuration |
+| `2` | Invalid local input or configuration, including a missing required precondition |
 | `3` | Authentication failed (`401`) |
 | `4` | Permission denied (`403`) |
 | `5` | Resource not found (`404`) |
-| `6` | Conflict (`409`) |
+| `6` | Conflict (`409`) or stale precondition (`412`) |
 | `7` | Rate limited (`429`) |
 
 Do not parse human-readable error messages to decide control flow. Use the exit code and, when needed, call API v1 through the SDK for typed error details.

@@ -33,6 +33,11 @@ and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
+Projects, tasks, and project templates expose opaque `developerRevision` and
+`developerUpdatedAt` fields. Their 14 protected mutations require the latest type-specific strong
+ETag in `If-Match`; review [resource revisions and concurrent writes](/api/v1/resource-concurrency/)
+before building a writer.
+
 For durable mirrors, take a change-feed checkpoint before the initial resource snapshot and then
 catch up from that checkpoint. See [change feed and synchronization](/api/v1/change-feed/) for the
 retention, recovery, and multi-region contract.
@@ -45,4 +50,4 @@ retention, recovery, and multi-region contract.
 2. [Run the quickstart](/api/v1/quickstart/).
 3. Negotiate [capabilities, entitlements, events, and safe settings](/api/v1/platform-control-plane/).
 4. Choose the [SDK](/sdk/) or [CLI](/cli/) if it fits your runtime.
-5. Review [resources and semantics](/api/v1/resources-and-semantics/) and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.
+5. Review [resources and semantics](/api/v1/resources-and-semantics/), [resource concurrency](/api/v1/resource-concurrency/), and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.

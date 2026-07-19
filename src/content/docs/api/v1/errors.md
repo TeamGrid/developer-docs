@@ -25,16 +25,16 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 
 | Status | Meaning | Recommended action |
 | --- | --- | --- |
-| `400` | Invalid request or idempotency key | Correct the request; do not retry unchanged |
+| `400` | Invalid request, idempotency key, or malformed precondition | Correct the request; do not retry unchanged |
 | `401` | Missing, invalid, expired, or revoked credential | Stop and rotate or replace the credential |
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
 | `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
-| `410` | A change-feed cursor can no longer prove continuity | Create a new checkpoint and perform a full resynchronization |
+| `410` | A change-feed cursor lost continuity, or a legacy asynchronous operation has no revision provenance | Follow the error code: resynchronize the feed, or re-read and reconcile the affected resource |
 | `412` | A strong resource revision is stale | Re-read and make an explicit merge or overwrite decision |
 | `428` | A required `If-Match` precondition is missing | Read the latest resource, then send its strong revision |
 | `429` | Rate limit exceeded | Back off and honor `Retry-After` |
-| `502–504` | Temporary dependency or availability failure | Retry only safe methods with bounded backoff |
+| `502–504` | Temporary dependency or availability failure | Retry only safe methods with bounded backoff; never remove a required precondition |
 
 Rate-limit headers describe the current bucket. Limits can differ by endpoint and rollout policy, so integrations should react to the response rather than hard-code a request rate.
 
@@ -49,3 +49,9 @@ Rate-limit headers describe the current bucket. Limits can differ by endpoint an
 The 429 response uses the normal v1 error envelope with code `rate_limit_exceeded`. The official SDK
 honors `Retry-After` for safe reads, idempotent POST operations, and fully guarded planned-work
 replacements; it does not automatically retry other PUT, PATCH, or DELETE requests.
+
+For project, task, and project-template writers, distinguish `400 invalid_precondition`,
+`412 precondition_failed`, `428 precondition_required`,
+`410 resource_operation_revision_unavailable`, and `503 service_unavailable`. The complete
+reconciliation procedure is documented under [resource revisions and concurrent
+writes](/api/v1/resource-concurrency/).

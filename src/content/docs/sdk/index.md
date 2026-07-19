@@ -65,6 +65,17 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
+The compatible package checkpoint for this contract is `1.0.0-alpha.3`; pin it explicitly after it
+is available on the configured npm channel. The SDK brands task, project, and project-template
+revisions and strong ETags as different TypeScript types. `TaskMutationOptions`, `ProjectMutationOptions`,
+`ProjectLifecycleMutationOptions`, `ProjectTemplateMutationOptions`, and
+`ProjectTemplateInstantiateOptions` require `ifMatch`; omitting it from any of the 14 resource-CAS
+mutations is a compile-time error. The canonical ETag helpers accept a server-issued raw revision
+and return the matching quoted `tsk1`, `prj1`, or `tpl1` type. Successful reads, creates, updates,
+restores, and state changes expose the verified, resource-branded response header through immutable
+`transport.headers.etag`; archive helpers return the typed ETag even though their HTTP response has
+no body.
+
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
 `project-statements:finance:read`. Supplying acquisition cost on writes requires the corresponding
@@ -97,8 +108,14 @@ headers, secrets, and tenant-routing internals.
   cadence to the caller.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
+- Project, task, and project-template reads validate `developerRevision`, `developerUpdatedAt`, and
+  the body-to-ETag binding. Their 14 protected mutations require a correctly typed `ifMatch`; the
+  SDK does not automatically retry a `412` with a new business decision.
 - Template instantiation and planned-work replacement expose the accepted operation; bounded
   `wait()` helpers poll credential-owned status without changing operation semantics.
+- Project lifecycle and template-instantiation wait helpers accept the validated
+  `acceptedOperation`. When supplied, every poll must preserve its operation identity, target,
+  action where applicable, and `sourceRevision`; CLI `--wait` always supplies this binding.
 
 Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
 pipelines therefore stay stable while application code can inspect `response.transport`.

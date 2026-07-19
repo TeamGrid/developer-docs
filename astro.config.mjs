@@ -126,6 +126,10 @@ export default defineConfig({
             { label: 'Credentials and scopes', link: '/api/v1/authentication/' },
             { label: 'Platform discovery and settings', link: '/api/v1/platform-control-plane/' },
             { label: 'Resources and semantics', link: '/api/v1/resources-and-semantics/' },
+            {
+              label: 'Resource revisions and concurrent writes',
+              link: '/api/v1/resource-concurrency/',
+            },
             { label: 'Regional endpoints', link: '/api/v1/regions/' },
             { label: 'Pagination and idempotency', link: '/api/v1/pagination/' },
             { label: 'Change feed', link: '/api/v1/change-feed/' },

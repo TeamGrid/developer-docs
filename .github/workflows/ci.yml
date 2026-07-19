@@ -23,3 +23,33 @@ jobs:
       - run: npm run verify
       - name: Verify generated files are committed
         run: git diff --exit-code
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://teamgrid-developer-docs.pages.dev
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy the verified commit to Cloudflare Pages
+        run: >-
+          npx wrangler pages deploy dist
+          --project-name teamgrid-developer-docs
+          --branch main
+          --commit-hash "$GITHUB_SHA"
+          --commit-message "GitHub Actions deployment"
+          --commit-dirty=false
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

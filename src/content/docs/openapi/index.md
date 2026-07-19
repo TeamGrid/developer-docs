@@ -21,8 +21,8 @@ The canonical manifest publishes byte counts and SHA-256 digests for both OpenAP
 runtime inventory, and the cross-interface capability ledger. The documentation repository also
 records its source commit in `sources/contracts.json`. CI fails if any published artifact drifts.
 
-The current manifest records 62 v1 paths, 106 governed v1 operations, 87 frozen v0 operations, 87
-v0 migration decisions, 43 canonical scopes, and 73 classified TeamGrid product capabilities.
+The current manifest records 107 v1 paths, 176 governed v1 operations, 87 frozen v0 operations, 87
+v0 migration decisions, 76 canonical scopes, and 73 classified TeamGrid product capabilities.
 These counts describe the synchronized contract; they do not promote planned capabilities into the
 controlled beta.
 

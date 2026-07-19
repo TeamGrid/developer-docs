@@ -39,11 +39,32 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `custom-field-values:read`, `custom-field-values:write` | Values on supported resources; also requires the corresponding target-resource read/write scope |
 | `project-templates:read`, `project-templates:write` | Template metadata and lifecycle; instantiation additionally requires `projects:write` |
 | `planned-work:read`, `planned-work:write` | Sensitive workload windows and atomic task-schedule replacement |
+| `appointments:read`, `appointments:write` | Appointments inside the credential's normal acting-user boundary |
+| `appointments:delegated:read`, `appointments:delegated:write` | Read or write another member's appointments; sensitive overlay with sharing and product-permission checks |
+| `absences:read`, `absences:write` | Absences inside the credential's normal acting-user boundary |
+| `absences:delegated:read` | Read another member's absences; sensitive delegated overlay |
+| `absences:admin:write` | Create or change another member's absences; sensitive administrative overlay |
+| `availability:read` | Derived availability inside the normal acting-user boundary |
+| `availability:delegated:read` | Derived availability for another member; sensitive overlay with sharing and product-permission checks |
+| `activity:read` | Target activity; also requires the matching contact, project, or task read scope |
+| `comments:read`, `comments:write` | Target comments; also requires the matching contact, project, or task read scope |
+| `documents:read`, `documents:write` | Bounded document content and lifecycle |
+| `files:read`, `files:write` | File metadata, lifecycle, and short-lived private transfer intents |
 | `products:read`, `products:write` | Product catalog excluding acquisition cost |
 | `products:finance:read`, `products:finance:write` | Reveal or mutate product `purchasePrice`; grant only in addition to the matching product scope |
 | `product-groups:read`, `product-groups:write` | Hierarchical product groups |
 | `project-statements:read`, `project-statements:write` | Non-budget project statements excluding acquisition cost |
 | `project-statements:finance:read`, `project-statements:finance:write` | Read budget statements or reveal/mutate statement `purchasePrice`; grant only in addition to the matching statement scope |
+| `members:read`, `members:write` | Workspace membership and role assignment; sensitive administration scopes |
+| `members:pii:read` | Reveal member or invitation PII when paired with the relevant base read scope |
+| `invitations:read`, `invitations:write` | Pending invitation lifecycle; sensitive administration scopes |
+| `roles:read`, `roles:write` | Workspace role and permission configuration; sensitive administration scopes |
+| `groups:read`, `groups:write` | Workspace groups and membership; sensitive administration scopes |
+| `search:read` | Federated search; also requires every requested resource-domain read scope |
+| `exports:read`, `exports:write` | Bounded export jobs and header-capability downloads; sensitive scopes with resource-domain checks |
+| `automations:read`, `automations:write` | Automation action metadata, definitions, versions, and runs; writes also require scopes implied by the flow |
+| `automations:run` | Abort a running automation; sensitive execution-control scope |
+| `integrations:read` | Installation status without provider secrets; sensitive scope |
 | `changes:read` | Cell-local, metadata-only change events for resumable synchronization |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
@@ -54,6 +75,8 @@ from product responses. Without `project-statements:finance:read`, budget statem
 `purchasePrice` is omitted. Writes that supply `purchasePrice` require the corresponding finance write
 scope.
 
-A `services:read` credential can read service billing rates. Call notes, contacts, users, audit
-events, finance resources, and webhook delivery metadata can also contain sensitive information. Use
-separate credentials for unrelated systems so each can be rotated and revoked independently.
+A `services:read` credential can read service billing rates. Calendar and absence data, comments,
+documents, files, member PII, administration, exports, automation metadata, integration status, call
+notes, contacts, users, audit events, finance resources, and webhook delivery metadata can also
+contain sensitive information. Use separate credentials for unrelated systems so each can be
+rotated and revoked independently.

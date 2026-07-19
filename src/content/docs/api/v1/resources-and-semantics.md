@@ -21,6 +21,13 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
 | Custom-field definitions | List, get, create, update, archive, restore | Only canonical public schema metadata is writable |
 | Custom-field values | Get, compare-and-set, compare-and-clear | Requires a strong revision and the matching target-resource scope |
+| Appointments and absences | Bounded list, get, create, compare-and-set update, archive, restore | Foreign-user access requires a delegated or administrative overlay plus product authorization |
+| Availability | Bounded read | Requires an explicit IANA time zone; foreign users require delegated access |
+| Comments and activity | Target-scoped collaboration | Also requires the matching contact, project, or task read scope |
+| Documents and files | Document lifecycle, file metadata, private transfer intents | Signed transfer capabilities are short-lived and never exposed to MCP |
+| Workspace administration | Members, invitations, roles, groups | PII is an additional overlay; mutations preserve workspace invariants and strong revisions |
+| Search and exports | Bounded federated search and asynchronous CSV exports | Each requested domain is independently authorized; export download capabilities are header-only |
+| Automations and integrations | Public action catalog, versioned definitions, runs, redacted installation status | Internal tasks and provider secrets remain private |
 | Project templates | List, get, create, update, archive, restore, instantiate | Snapshot content stays private; instantiation is asynchronous and credential-owned |
 | Planned work | List bounded windows, get task schedule, replace task schedule | Sensitive workload data; replacement is asynchronous, idempotent, and compare-and-set |
 | Products | List, get, create, update, archive | `purchasePrice` requires finance scopes; no restore operation is currently public |

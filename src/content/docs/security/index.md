@@ -34,6 +34,14 @@ Their write operations require strong compare-and-set revisions so integrations 
 overwrite concurrent edits. Project templates can encode an organization's workflow structure.
 All three families and their operation status resources are unavailable in every MCP profile.
 
+Calendar, absence, availability, comments, documents, and files can contain personal or free-form
+content. Administration PII, export jobs, automation metadata, and integration-installation status
+use sensitive scopes and should have dedicated credentials. Export download capabilities are sent
+only in `X-TeamGrid-Export-Download-Intent`; never place them in URLs, logs, command arguments, or AI
+transcripts. All of these resource families remain unavailable to MCP except bounded federated
+search, which is a separately curated sensitive tool and still enforces every requested domain
+scope.
+
 ## Webhooks
 
 For signed v2 webhooks, verify the HMAC over the exact raw request body before parsing it, reject stale timestamps, compare signatures in constant time, and deduplicate the delivery ID. Store the reveal-once webhook signing secret separately from API credentials.

@@ -231,6 +231,77 @@ to `--if-match`, use a stable idempotency key, and use `--yes` for non-interacti
 successful `202` only accepts the operation; use `--wait` or poll the operation group before relying
 on the replacement.
 
+## Calendar, absence, and availability
+
+```text
+teamgrid appointments list|get|create|update|archive|restore
+teamgrid absences list|get|create|update|archive|restore
+teamgrid availability list
+```
+
+List operations require bounded `--start` and `--end` values; availability also requires an IANA
+time zone. Acting for another member requires the delegated or administrative overlay scope and the
+underlying TeamGrid sharing and product permission. Updates use `--if-match`; creates accept an
+idempotency key.
+
+## Comments, activity, documents, and files
+
+```text
+teamgrid comments list|get|create|archive|restore
+teamgrid activity list
+teamgrid documents list|get|create|update|archive|restore
+teamgrid files list|get|rename|archive|restore|download-intent
+teamgrid file-upload-intents create|finalize|cancel
+```
+
+Comments and activity require a contact, project, or task target plus its matching domain scope.
+Document updates are compare-and-set operations. File upload and download intents are short-lived
+private capabilities; do not log them or pass them in URLs.
+
+## Workspace administration
+
+```text
+teamgrid members list|get|update-role|remove
+teamgrid invitations list|get|create|resend|cancel
+teamgrid roles list|get|create|update|remove
+teamgrid groups list|get|create|update|remove
+```
+
+Use dedicated administration credentials. Member and invitation PII requires the separate
+`members:pii:read` overlay. Mutations that change existing authorization state require the latest
+strong revision through `--if-match`; destructive commands require confirmation.
+
+## Search and exports
+
+```text
+teamgrid search query --data <json|@file|->
+teamgrid exports create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid exports get EXPORT_ID
+teamgrid exports download-intent EXPORT_ID
+teamgrid exports download EXPORT_ID (--file PATH | --stdout)
+  [--intent-token-stdin] [--max-bytes NUMBER]
+```
+
+By default, `exports download` creates the short-lived intent internally. To separate the two steps,
+pipe the token through standard input with `--intent-token-stdin`; it is never accepted on the
+command line or in a URL. `--file` creates a mode-`0600` file exclusively and never overwrites an
+existing path. `--stdout` refuses to write binary data to a terminal. Both paths enforce a maximum
+of 50 MiB.
+
+## Automations and integrations
+
+```text
+teamgrid automation-actions list
+teamgrid automation-definitions list|get|create|update|archive|restore
+teamgrid automation-definition-versions list DEFINITION_ID
+teamgrid automation-runs list|get|abort
+teamgrid integration-installations list
+```
+
+Automation definition updates use their latest `aut1` revision; aborting a run uses its latest
+`aur1` revision. The integration command returns redacted installation status, not provider tokens
+or configuration secrets.
+
 ## Audit events
 
 ```text

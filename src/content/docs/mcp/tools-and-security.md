@@ -7,7 +7,8 @@ description: Review the exact read-only TeamGrid MCP tool surface, pagination be
 
 The default `core` profile exposes 15 operational tools. `collaboration` adds seven contact,
 call-note, and user tools. `governance` adds seven audit, custom-field-definition, service, and
-webhook tools. `all` exposes the union of 29 read tools. Select a broader profile only when the host
+webhook tools. `all` exposes those 29 tools plus the separately curated `teamgrid_search` tool, for a
+total of 30. Select a broader profile only when the host
 and workflow require it. Service reads are not in `core` because service objects can include
 commercially sensitive billing rates.
 
@@ -42,6 +43,7 @@ commercially sensitive billing rates.
 | `teamgrid_webhooks_list` | Governance | List configured webhooks without changing them |
 | `teamgrid_webhook_get` | Governance | Read one webhook without its signing secret |
 | `teamgrid_audit_events_list` | Governance | List Developer Platform audit events |
+| `teamgrid_search` | All · curated | Search explicitly requested contacts, projects, or tasks with all matching domain scopes enforced |
 
 List tools return API v1 cursor metadata. Pass the returned opaque cursor to continue; do not construct or decode cursors.
 
@@ -60,6 +62,12 @@ forbidden because they expose sensitive per-resource workflow or workload data. 
 cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.
 Custom-field **definition** reads are the only custom-field exception and remain confined to the
 `governance` profile.
+
+Federated search is the only additional curated tool. It requires `search:read` plus every matching
+domain read scope, accepts at most three resource types and 50 results, and is marked sensitive
+because one query can cross several authorized domains. Calendar, absence, availability, comments,
+activity, documents, files, workspace administration, exports, automation metadata and execution,
+and integration-installation status remain forbidden even in `all`.
 
 ## Security model
 

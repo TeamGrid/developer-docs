@@ -14,7 +14,7 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-19
 
-- Expanded the controlled-beta API v1 contract to 62 paths and 106 operations, with matching SDK
+- Expanded the controlled-beta API v1 contract to 107 paths and 176 operations, with matching SDK
   methods, CLI commands, and an explicit MCP exposure decision for every operation.
 - Added a machine-checked 73-entry product capability ledger plus a canonical SHA-256 manifest for
   the v0 inventory, both OpenAPI contracts, and the cross-interface policy.
@@ -34,8 +34,13 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Added a 90-day, cell-local metadata change feed with credential- and filter-bound checkpoints,
   explicit `410` resynchronization semantics, an authoritative `caughtUp` watermark, typed SDK bootstrap helpers, and script-safe CLI
   checkpoint output. The high-volume feed remains unavailable through MCP.
-- Expanded the read-only MCP profiles to 15 `core` tools and 29 `all` tools. Product tools always
-  omit `purchasePrice`; project statements and webhook delivery history remain forbidden.
+- Added bounded calendar, absence, availability, comments, activity, document, private-file,
+  workspace-administration, federated-search, export, automation, and integration-status contracts.
+  Export capabilities are header-only and private storage is streamed through TeamGrid.
+- Expanded the read-only MCP profiles to 15 `core` tools and 30 `all` tools. Federated search is the
+  only newly curated tool; product tools always omit `purchasePrice`, while personal schedules,
+  files, exports, administration, automations, project statements, and webhook delivery history
+  remain forbidden.
 - Added API discovery, runtime response conformance checks, v1 rate-limit and retry documentation,
   immutable SDK transport metadata, and a Web Crypto webhook verifier with replay protection.
 - Added explicit task and time-entry restore operations, task timer start/stop, task

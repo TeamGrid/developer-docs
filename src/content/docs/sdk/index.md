@@ -36,12 +36,28 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
 | `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |
 | `plannedWorkOperations` | Get and wait for credential-owned replacement status |
+| `appointments`, `absences` | Bounded list, get, create, compare-and-set update, archive, restore |
+| `availability` | Read derived user availability in an explicit time zone and bounded interval |
+| `activity` | List activity for an authorized contact, project, or task |
+| `comments` | List, get, create, archive, and restore plain-text target comments |
+| `documents` | List, get, create, compare-and-set update, archive, and restore documents |
+| `files` | List, get, rename, archive, restore, and create private download intents |
+| `fileUploadIntents` | Create, finalize, and cancel private upload intents |
 | `products` | List, get, create, update, archive |
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
 | `auditEvents` | List credential and mutation audit events |
 | `webhooks` | List, get, create, remove |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
+| `members` | List, get, change role, and remove workspace members |
+| `invitations` | List, get, create, resend, and cancel invitations |
+| `roles`, `groups` | List, get, create, compare-and-set update, and remove administration resources |
+| `search` | Federated search across explicitly authorized resource types |
+| `exports` | Create and inspect bounded jobs, create download intents, and download through the header-only capability |
+| `automationActions` | Read the public automation action catalog |
+| `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
+| `automationRuns` | List and get runs, or abort one with a strong revision |
+| `integrationInstallations` | Read redacted provider-installation status |
 
 Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
@@ -61,6 +77,9 @@ headers, secrets, and tenant-routing internals.
   precondition. Other PUT, PATCH, and DELETE requests are not retried automatically.
 - Redirects are not followed.
 - Responses larger than the configured safety limit are rejected.
+- `exports.download(id, { intentToken, maxBytes })` carries the opaque intent only in
+  `X-TeamGrid-Export-Download-Intent`, never in a URL, and returns bounded binary data without
+  exposing a private-storage URL.
 - API and local client failures use separate error classes.
 - Every success envelope and error exposes immutable transport metadata for request IDs,
   attempts, status, response headers, rate limits, retry timing, and idempotency replays.

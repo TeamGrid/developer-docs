@@ -1,0 +1,48 @@
+---
+title: TeamGrid Developer
+description: Build reliable TeamGrid integrations with API v1, the TypeScript SDK, the CLI, or the optional read-only MCP server.
+template: splash
+hero:
+  title: Build with TeamGrid
+  tagline: One regional API, several focused interfaces. Start with API v1 for new integrations and use v0 only for existing compatibility workloads.
+  actions:
+    - text: Start with API v1
+      link: /api/v1/quickstart/
+      variant: primary
+    - text: Install the CLI
+      link: /cli/install-and-authenticate/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+## Choose the interface that fits the job
+
+<CardGrid>
+  <Card title="API v1">
+    The stable, cell-aware HTTP contract for service integrations. Use scoped credentials, cursor pagination, idempotent writes, and signed webhooks.
+
+    [Explore API v1](/api/v1/)
+  </Card>
+  <Card title="TypeScript SDK">
+    A typed Node.js client with regional routing, bounded retries, timeouts, pagination iterators, and versioned errors.
+
+    [Use the SDK](/sdk/)
+  </Card>
+  <Card title="CLI">
+    The fastest way to inspect and automate TeamGrid from a terminal or CI job. It supports structured output and stable exit codes.
+
+    [Use the CLI](/cli/)
+  </Card>
+  <Card title="MCP server">
+    An optional local stdio adapter with a deliberately bounded read-only tool surface. It uses the same SDK and credentials as the CLI.
+
+    [Configure MCP](/mcp/)
+  </Card>
+</CardGrid>
+
+## Existing v0 integrations
+
+API v0 remains available for compatibility. Its contract is frozen and documented separately, with migration guidance beside the legacy reference.
+
+[Open the API v0 documentation](/api/v0/)

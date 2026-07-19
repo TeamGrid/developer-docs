@@ -1,0 +1,14 @@
+{
+  "contracts": {
+    "v0": {
+      "operations": 87,
+      "sha256": "c51d55121fb49100a3285a8a929e1a19d0a3255873d6944742187eef8d80ca93"
+    },
+    "v1": {
+      "operations": 25,
+      "sha256": "5787468ff6561b82555c66c4df664ae073098200b6ddbea3c673c52dd8354eb0"
+    }
+  },
+  "sourceRepository": "TeamGrid/teamgrid-api",
+  "sourceCommit": "207a38991725c4a4edbb920a0659c25f6e3cd079"
+}

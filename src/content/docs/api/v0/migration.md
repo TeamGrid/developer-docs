@@ -28,7 +28,26 @@ Migrate one bounded integration at a time. Keep its v0 token active until the eq
 
 ## Resource availability
 
-API v1 currently writes tasks, time entries, and signed webhooks. Some v0 write surfaces do not yet have a v1 equivalent. Keep those bounded parts on v0 until an explicit v1 operation exists rather than emulating them through unrelated resources.
+API v1 currently creates and updates projects, tasks, time entries, and contacts, and manages signed webhook registrations. Projects can be completed, reopened, archived, and restored through durable asynchronous lifecycle operations. Tasks use explicit complete, reopen, archive, restore, and timer commands; time entries can be archived and restored. Task timers require both `tasks:write` and `time-entries:write`.
+
+Lists, services, and tags now have create, get, update, archive, and restore operations in addition to
+cursor-paginated reads. Grant their dedicated `lists:read/write`, `services:read/write`, and
+`tags:read/write` scopes only where needed. Public list creation supports project and task lists;
+existing personal lists remain readable but cannot be created through API v1. Service responses can
+contain billing rates and should be treated accordingly.
+
+API v1 also covers call-note lifecycle, contact-group lifecycle, custom-field definitions, product
+and product-group catalog management, project statements, and credential-owned webhook delivery
+history. Product acquisition cost and project-statement budget data require explicit finance scope
+overlays. Custom-field definition endpoints do not provide custom-field values on projects, tasks,
+contacts, or journal entries.
+
+The current v1 contract does not yet cover every legacy or TeamGrid product workflow. Examples still
+classified as partial or planned include project templates and sharing, planned work and scheduling,
+custom-field values, comments, documents and files, activity, calendar and absence workflows,
+integrations, reporting, imports and exports, and a general change feed. Keep only those bounded parts
+on v0 until an explicit v1 domain operation exists; do not emulate them through unrelated resources
+or generic database mutations.
 
 ## Legacy reference differences
 

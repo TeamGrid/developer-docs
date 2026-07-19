@@ -2,13 +2,22 @@
   "contracts": {
     "v0": {
       "operations": 87,
-      "sha256": "c51d55121fb49100a3285a8a929e1a19d0a3255873d6944742187eef8d80ca93"
+      "sha256": "46da62dba5b8a459362f4edd3c74fed1dac92300c414e606dfa9f433120da947"
     },
     "v1": {
-      "operations": 25,
-      "sha256": "5787468ff6561b82555c66c4df664ae073098200b6ddbea3c673c52dd8354eb0"
+      "operations": 90,
+      "sha256": "590b58f1e9c08fff17975222e83989c39727b6ad31d7ec7ca3b31c5cd272640d"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
+  "canonical": {
+    "contractVersion": "1.0.0",
+    "sha256": "48a4927bb0a2d6dc7bd40cdead43392c68413cd93eee246930efce1bba1ddbe0"
+  },
+  "capabilities": {
+    "operations": 90,
+    "productCapabilities": 73,
+    "sha256": "f4f0f12d2254497331945a54a17545aa8bdc0078c70d5314793c30bc2f225fa2"
+  },
   "sourceCommit": "207a38991725c4a4edbb920a0659c25f6e3cd079"
 }

@@ -29,8 +29,18 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 | `401` | Missing, invalid, expired, or revoked credential | Stop and rotate or replace the credential |
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
-| `409` | Idempotency conflict | Use the original payload or a new operation key |
-| `429` | Rate limit exceeded | Back off and honor `Retry-After` when present |
+| `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
+| `429` | Rate limit exceeded | Back off and honor `Retry-After` |
 | `502–504` | Temporary dependency or availability failure | Retry only safe methods with bounded backoff |
 
 Rate-limit headers describe the current bucket. Limits can differ by endpoint and rollout policy, so integrations should react to the response rather than hard-code a request rate.
+
+| Header | Meaning |
+| --- | --- |
+| `Retry-After` | Minimum number of seconds before retrying after a 429 |
+| `X-RateLimit-Limit` | Maximum requests in the current window |
+| `X-RateLimit-Remaining` | Requests still available in the window |
+| `X-RateLimit-Reset` | Window reset as Unix time in milliseconds |
+| `X-Request-Id` | Correlation ID shared with `meta.requestId` |
+
+The 429 response uses the normal v1 error envelope with code `rate_limit_exceeded`. The official SDK honors `Retry-After` for safe reads and idempotent creates; it does not automatically retry PATCH or DELETE requests.

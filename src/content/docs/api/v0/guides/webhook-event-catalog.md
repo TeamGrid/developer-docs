@@ -78,6 +78,7 @@ Tasks are stored internally as cards. Webhook payloads therefore use
 | `timeentry_created_manually` | `times`           | A completed time entry is created with both start and end time.                                      |
 | `timeentry_updated`          | `times`           | A non-archived time entry is updated without changing archive state or start/end/duration semantics. |
 | `timeentry_removed`          | `times`           | A time entry is archived or removed.                                                                 |
+| `timeentry_restored`         | `times`           | An archived time entry is restored.                                                                  |
 
 Use [Dates and Time Zones](/api/v0/guides/dates-and-time-zones/) when interpreting
 `start`, `end`, and `duration` values.

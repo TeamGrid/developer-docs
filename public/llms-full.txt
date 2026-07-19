@@ -1157,6 +1157,7 @@ Tasks are stored internally as cards. Webhook payloads therefore use
 | `timeentry_created_manually` | `times`           | A completed time entry is created with both start and end time.                                      |
 | `timeentry_updated`          | `times`           | A non-archived time entry is updated without changing archive state or start/end/duration semantics. |
 | `timeentry_removed`          | `times`           | A time entry is archived or removed.                                                                 |
+| `timeentry_restored`         | `times`           | An archived time entry is restored.                                                                  |
 
 Use [Dates and Time Zones](/api/v0/guides/dates-and-time-zones/) when interpreting
 `start`, `end`, and `duration` values.
@@ -1443,7 +1444,26 @@ Migrate one bounded integration at a time. Keep its v0 token active until the eq
 
 ## Resource availability
 
-API v1 currently writes tasks, time entries, and signed webhooks. Some v0 write surfaces do not yet have a v1 equivalent. Keep those bounded parts on v0 until an explicit v1 operation exists rather than emulating them through unrelated resources.
+API v1 currently creates and updates projects, tasks, time entries, and contacts, and manages signed webhook registrations. Projects can be completed, reopened, archived, and restored through durable asynchronous lifecycle operations. Tasks use explicit complete, reopen, archive, restore, and timer commands; time entries can be archived and restored. Task timers require both `tasks:write` and `time-entries:write`.
+
+Lists, services, and tags now have create, get, update, archive, and restore operations in addition to
+cursor-paginated reads. Grant their dedicated `lists:read/write`, `services:read/write`, and
+`tags:read/write` scopes only where needed. Public list creation supports project and task lists;
+existing personal lists remain readable but cannot be created through API v1. Service responses can
+contain billing rates and should be treated accordingly.
+
+API v1 also covers call-note lifecycle, contact-group lifecycle, custom-field definitions, product
+and product-group catalog management, project statements, and credential-owned webhook delivery
+history. Product acquisition cost and project-statement budget data require explicit finance scope
+overlays. Custom-field definition endpoints do not provide custom-field values on projects, tasks,
+contacts, or journal entries.
+
+The current v1 contract does not yet cover every legacy or TeamGrid product workflow. Examples still
+classified as partial or planned include project templates and sharing, planned work and scheduling,
+custom-field values, comments, documents and files, activity, calendar and absence workflows,
+integrations, reporting, imports and exports, and a general change feed. Keep only those bounded parts
+on v0 until an explicit v1 domain operation exists; do not emulate them through unrelated resources
+or generic database mutations.
 
 ## Legacy reference differences
 
@@ -1796,17 +1816,35 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | Scope | Access |
 | --- | --- |
 | `workspace:read` | Workspace metadata |
-| `projects:read` | Projects |
+| `projects:read`, `projects:write` | Project reads and field mutations |
+| `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
 | `time-entries:read`, `time-entries:write` | Time entries |
-| `contacts:read` | Contacts |
+| `contacts:read`, `contacts:write` | Contacts |
+| `call-notes:read`, `call-notes:write` | Plain-text call notes and their archive lifecycle |
+| `contact-groups:read`, `contact-groups:write` | Hierarchical contact groups |
 | `users:read` | Workspace users |
-| `webhooks:read`, `webhooks:write` | Signed webhook registrations |
+| `lists:read`, `lists:write` | Project and task lists |
+| `services:read`, `services:write` | Services and their billing configuration |
+| `tags:read`, `tags:write` | Tags |
+| `custom-field-definitions:read`, `custom-field-definitions:write` | Custom-field schemas, configuration, and lifecycle; not values on resources |
+| `products:read`, `products:write` | Product catalog excluding acquisition cost |
+| `products:finance:read`, `products:finance:write` | Reveal or mutate product `purchasePrice`; grant only in addition to the matching product scope |
+| `product-groups:read`, `product-groups:write` | Hierarchical product groups |
+| `project-statements:read`, `project-statements:write` | Non-budget project statements excluding acquisition cost |
+| `project-statements:finance:read`, `project-statements:finance:write` | Read budget statements or reveal/mutate statement `purchasePrice`; grant only in addition to the matching statement scope |
+| `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
 
-`projects:write` and `contacts:write` are reserved for future API operations and are not issued during the current beta.
+Choose the smallest scope set required by the integration. Finance scopes are overlays: they do not
+grant base resource access by themselves. Without `products:finance:read`, `purchasePrice` is omitted
+from product responses. Without `project-statements:finance:read`, budget statements are excluded and
+`purchasePrice` is omitted. Writes that supply `purchasePrice` require the corresponding finance write
+scope.
 
-Choose the smallest scope set required by the integration. Use separate credentials for unrelated systems so each can be rotated and revoked independently.
+A `services:read` credential can read service billing rates. Call notes, contacts, users, audit
+events, finance resources, and webhook delivery metadata can also contain sensitive information. Use
+separate credentials for unrelated systems so each can be rotated and revoked independently.
 
 <!-- api/v1/errors.md -->
 ---
@@ -1840,11 +1878,21 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 | `401` | Missing, invalid, expired, or revoked credential | Stop and rotate or replace the credential |
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
-| `409` | Idempotency conflict | Use the original payload or a new operation key |
-| `429` | Rate limit exceeded | Back off and honor `Retry-After` when present |
+| `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
+| `429` | Rate limit exceeded | Back off and honor `Retry-After` |
 | `502–504` | Temporary dependency or availability failure | Retry only safe methods with bounded backoff |
 
 Rate-limit headers describe the current bucket. Limits can differ by endpoint and rollout policy, so integrations should react to the response rather than hard-code a request rate.
+
+| Header | Meaning |
+| --- | --- |
+| `Retry-After` | Minimum number of seconds before retrying after a 429 |
+| `X-RateLimit-Limit` | Maximum requests in the current window |
+| `X-RateLimit-Remaining` | Requests still available in the window |
+| `X-RateLimit-Reset` | Window reset as Unix time in milliseconds |
+| `X-Request-Id` | Correlation ID shared with `meta.requestId` |
+
+The 429 response uses the normal v1 error envelope with code `rate_limit_exceeded`. The official SDK honors `Retry-After` for safe reads and idempotent creates; it does not automatically retry PATCH or DELETE requests.
 
 <!-- api/v1/index.md -->
 ---
@@ -1852,7 +1900,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, and signed webhook deliveries.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, and signed webhook deliveries. The current controlled-beta contract contains 52 paths and 90 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
 
 ## Base URL
 
@@ -1872,14 +1920,18 @@ Do not send a bearer credential through a cross-region redirect. The target cell
 
 ## Available resources
 
-API v1 currently provides workspace, project, task, time-entry, contact, user, list, service, tag, audit-event, and webhook resources. Writes are intentionally limited to tasks, time entries, and signed webhooks.
+API v1 currently provides workspace, product, product-group, project, project-statement, task, time-entry, call-note, contact, contact-group, user, list, service, tag, custom-field-definition, audit-event, webhook, and webhook-delivery resources.
+
+Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
+
+[Review resource and security semantics](/api/v1/resources-and-semantics/) before implementing finance, lifecycle, custom-field, or webhook-observability workflows.
 
 ## Next steps
 
 1. [Create and protect a scoped credential](/api/v1/authentication/).
 2. [Run the quickstart](/api/v1/quickstart/).
 3. Choose the [SDK](/sdk/) or [CLI](/cli/) if it fits your runtime.
-4. Review [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.
+4. Review [resources and semantics](/api/v1/resources-and-semantics/) and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.
 
 <!-- api/v1/pagination.md -->
 ---
@@ -1986,6 +2038,94 @@ https://api.teamgridapp.com
 
 Business data, credential hashes, audit records, and write delivery stay in the owning cell. The global edge does not persist bearer credentials or request payloads.
 
+<!-- api/v1/resources-and-semantics.md -->
+---
+title: Resources and semantics
+description: Understand TeamGrid API v1 lifecycle, finance, ownership, hierarchy, and privacy guarantees before building an integration.
+---
+
+API v1 exposes bounded resource DTOs and explicit domain commands. It does not mirror TeamGrid's
+MongoDB documents or offer a generic DDP mutation interface. Fields absent from the OpenAPI schema
+are private even if a similarly named value exists inside the TeamGrid application.
+
+## Current resource surface
+
+| Resource family | Public behavior | Important boundary |
+| --- | --- | --- |
+| Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
+| Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
+| Tasks | List, get, create, update, archive, restore, complete, reopen, timer start and stop | Timer commands require both `tasks:write` and `time-entries:write` |
+| Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
+| Contacts | List, get, create, update | No public archive operation in the current contract |
+| Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
+| Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
+| Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
+| Custom-field definitions | List, get, create, update, archive, restore | Definition management only; custom-field values on projects, tasks, and contacts remain planned |
+| Products | List, get, create, update, archive | `purchasePrice` requires finance scopes; no restore operation is currently public |
+| Product groups | List, get, create, update, archive | Parent changes are hierarchy-validated; no restore operation is currently public |
+| Project statements | List, get, create, update, archive, restore | Budget data and `purchasePrice` are finance-gated; internal order and rollup fields stay private |
+| Audit events | List | Security-sensitive; intended for investigation and governance workflows |
+| Webhooks | List, get, create, remove | Creation returns the signing secret once |
+| Webhook deliveries | List and get | Read-only, credential-owned, privacy-reduced history |
+
+The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
+in the controlled beta, partially covered, planned, or intentionally private.
+
+## Project lifecycle operations
+
+Project completion, reopen, archive, and restore can cascade across related TeamGrid state. The API
+therefore returns a project-lifecycle operation instead of pretending that the work completed during
+the initiating request.
+
+1. Send the lifecycle command with an idempotency key.
+2. Persist the returned operation ID.
+3. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
+   or CLI wait helper.
+4. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
+   unrelated replacement operation.
+
+The CLI project commands accept `--wait`, `--max-wait`, and `--poll-interval`. The SDK exposes the
+operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`.
+
+## Finance overlays
+
+Base and finance scopes are intentionally separate.
+
+- `products:read` returns catalog data without `purchasePrice`.
+- `products:finance:read` reveals `purchasePrice` only when `products:read` is also present.
+- Supplying `purchasePrice` on a product create or update requires both `products:write` and
+  `products:finance:write`.
+- `project-statements:read` returns non-budget statements without `purchasePrice`.
+- `project-statements:finance:read` additionally permits budget statements and reveals
+  `purchasePrice` when the base read scope is present.
+- Supplying `purchasePrice` on a statement create or update requires both
+  `project-statements:write` and `project-statements:finance:write`.
+
+The finance scopes do not reveal internal orders, carts, workflow bookkeeping, budget rollups, or
+provider data. Those fields are not part of the public DTO.
+
+## Credential-owned delivery history
+
+`webhooks:read` permits a credential to list or get only webhook deliveries owned by that same
+credential. Workspace membership alone is not enough, and deleting a webhook does not transfer its
+history to another credential.
+
+Delivery records expose bounded operational metadata: event, resource ID, state, timestamps, HTTP
+status, sanitized transport code, and attempt count. They never expose destination URLs, request or
+response bodies, payloads, headers, signing secrets, tenant routing fields, or retention internals.
+History is operational and retained for a bounded period; consumers must not treat it as an event
+archive or replay source.
+
+## Custom-field compatibility
+
+Definition responses identify canonical writable definitions separately from unsupported or
+read-only legacy shapes. Unfiltered reads can surface legacy definitions for inventory purposes.
+Create and update operations accept only the canonical field and target types described by OpenAPI,
+and the configuration discriminator must match `fieldType`.
+
+Custom-field values attached to projects, tasks, contacts, or journal entries are not part of the
+current v1 contract. Do not infer a value API from the definition endpoints.
+
 <!-- api/v1/webhooks.md -->
 ---
 title: Signed webhooks
@@ -2014,6 +2154,20 @@ Do not parse and re-serialize JSON before verification. Whitespace and byte enco
 
 Legacy UI-created webhook v1 registrations remain unsigned during migration. TeamGrid does not silently downgrade a v2 registration when signing is unavailable.
 
+## Delivery history
+
+API v1 provides cursor-paginated, read-only delivery history through `/v1/webhook-deliveries`. A
+credential can see only deliveries owned by that exact credential, even when another credential
+belongs to the same workspace. The cell reapplies credential ownership and workspace isolation for
+both list and get requests.
+
+History includes the delivery and webhook IDs, event, resource ID, state, timestamps, attempt count,
+HTTP status, and sanitized transport codes. It never includes the destination URL, payload, request
+or response headers, request or response body, signing secret, tenant-routing metadata, or retention
+internals. Delivery history is intentionally unavailable through MCP.
+
+Use delivery history for bounded troubleshooting, not as a durable event store or replay API.
+
 <!-- changelog/index.md -->
 ---
 title: Changelog
@@ -2028,6 +2182,33 @@ API v1 and the npm packages are in a controlled beta. Until stable releases begi
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
+
+## 2026-07-19
+
+- Expanded the controlled-beta API v1 contract to 52 paths and 90 operations, with matching SDK
+  methods, CLI commands, and an explicit MCP exposure decision for every operation.
+- Added a machine-checked 73-entry product capability ledger plus a canonical SHA-256 manifest for
+  the v0 inventory, both OpenAPI contracts, and the cross-interface policy.
+- Added asynchronous project complete, reopen, archive, and restore operations with idempotent start,
+  durable status records, SDK polling helpers, and CLI wait controls.
+- Added scoped call-note and contact-group lifecycle resources. Call notes expose plain text rather
+  than internal rich-text state; contact-group parent changes reject cycles and invalid hierarchies.
+- Added product, product-group, and project-statement resources. Product acquisition cost and
+  project-statement budget data use separate finance read and write overlays.
+- Added scoped custom-field-definition lifecycle operations with canonical type/configuration
+  validation and explicit legacy compatibility states. Custom-field values remain outside the
+  current contract.
+- Added credential-owned webhook delivery history with pagination and sanitized attempt metadata.
+  URLs, payloads, headers, bodies, signing secrets, and tenant-routing fields are not exposed.
+- Expanded the read-only MCP profiles to 15 `core` tools and 29 `all` tools. Product tools always
+  omit `purchasePrice`; project statements and webhook delivery history remain forbidden.
+- Added API discovery, runtime response conformance checks, v1 rate-limit and retry documentation,
+  immutable SDK transport metadata, and a Web Crypto webhook verifier with replay protection.
+- Added explicit task and time-entry restore operations, task timer start/stop, task
+  complete/reopen, and the distinct `timeentry_restored` webhook event.
+- Added dedicated lifecycle scopes for lists, services, tags, products, product groups, project
+  statements, call notes, contact groups, and custom-field definitions instead of coupling them to
+  unrelated task or project access.
 
 ## Legacy API v0 history
 
@@ -2118,19 +2299,16 @@ teamgrid auth login [--token-stdin]
 teamgrid auth logout
 teamgrid auth profiles
 teamgrid auth status [--check]
+teamgrid api-version
 teamgrid workspace
 ```
 
-## Read resources
+## Projects and lifecycle operations
 
 ```text
-teamgrid projects list|get
-teamgrid contacts list|get
-teamgrid users
-teamgrid lists
-teamgrid services
-teamgrid tags
-teamgrid audit-events
+teamgrid projects list|get|create|update
+teamgrid projects complete|reopen|archive|restore PROJECT_ID [--wait]
+teamgrid project-lifecycle-operations get OPERATION_ID
 ```
 
 List commands accept `--limit`, `--cursor`, `--all`, and `--max-pages`. Resource-specific filters are visible through `teamgrid <command> --help`.
@@ -2139,9 +2317,90 @@ Examples:
 
 ```bash
 teamgrid projects list --completed false
-teamgrid contacts list --type company --all --output json
-teamgrid audit-events --outcome denied --output jsonl
+teamgrid projects create --data @project.json --idempotency-key project-import-42
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
+teamgrid projects complete PROJECT_ID --idempotency-key close-42 --wait
 ```
+
+Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
+returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
+`--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
+
+## Commerce and project statements
+
+```text
+teamgrid products list|get|create|update|archive
+teamgrid product-groups list|get|create|update|archive
+teamgrid project-statements list|get|create|update|archive|restore
+```
+
+Product list filters include `--archived`, `--disabled`, and `--product-group-id`. Product-group
+list filters include `--archived` and `--parent-id`. Products and product groups do not expose a
+restore command in the current contract.
+
+Project-statement list filters are:
+
+```text
+--archived BOOLEAN
+--created-at-from DATE
+--created-at-to DATE
+--created-by ID
+--date-from DATE
+--date-to DATE
+--product-id ID
+--project-id ID
+--type budget|bundle|manual|product
+```
+
+Examples:
+
+```bash
+teamgrid products list --disabled false --product-group-id GROUP_ID --all --output json
+teamgrid products create --data @product.json --idempotency-key product-import-42
+teamgrid product-groups update GROUP_ID --data '{"parentId":"PARENT_GROUP_ID"}'
+teamgrid project-statements list --project-id PROJECT_ID --date-from 2026-07-01T00:00:00Z
+teamgrid project-statements restore STATEMENT_ID
+```
+
+Product `purchasePrice` and project-statement budget or acquisition-cost data require the additional
+finance scopes documented under [credentials and scopes](/api/v1/authentication/). CLI JSON output
+omits finance-gated values when the credential lacks the matching finance read scope.
+
+## Lists, services, and tags
+
+Each metadata group supports list, get, create, update, archive, and restore. The bare group remains
+an alias for its `list` command.
+
+```text
+teamgrid lists [list] [--type tasks|projects|personal] [--parent-id ID] [--archived BOOLEAN]
+teamgrid lists get|archive|restore LIST_ID
+teamgrid lists create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid lists update LIST_ID --data <json|@file|->
+
+teamgrid services [list] [--archived BOOLEAN]
+teamgrid services get|archive|restore SERVICE_ID
+teamgrid services create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid services update SERVICE_ID --data <json|@file|->
+
+teamgrid tags [list] [--archived BOOLEAN]
+teamgrid tags get|archive|restore TAG_ID
+teamgrid tags create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid tags update TAG_ID --data <json|@file|->
+```
+
+Examples:
+
+```bash
+teamgrid lists create --data '{"name":"Delivery","type":"tasks","parentId":"PROJECT_ID"}' --idempotency-key list-42
+teamgrid services update SERVICE_ID --data '{"billable":true,"billingRate":145}'
+teamgrid tags create --data '{"name":"Priority","color":"#3772ff"}' --idempotency-key tag-42
+teamgrid tags archive TAG_ID --yes
+teamgrid tags restore TAG_ID
+```
+
+List creation supports `tasks` and `projects`; `personal` is a read filter for existing personal
+lists and is not an accepted public create type. Service responses can contain billing rates, so
+service credentials and machine-readable output should be handled as commercially sensitive data.
 
 ## Tasks
 
@@ -2149,9 +2408,16 @@ teamgrid audit-events --outcome denied --output jsonl
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"completed":true}'
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
 teamgrid tasks archive TASK_ID
+teamgrid tasks restore TASK_ID
+teamgrid tasks complete TASK_ID
+teamgrid tasks reopen TASK_ID
+teamgrid tasks timer start TASK_ID --user-id USER_ID
+teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
+
+Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
 ## Time entries
 
@@ -2163,16 +2429,66 @@ teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
 teamgrid times archive TIME_ENTRY_ID
+teamgrid times restore TIME_ENTRY_ID
 ```
 
-## Webhooks
+## Contacts, call notes, and contact groups
+
+```text
+teamgrid contacts list|get|create|update
+teamgrid call-notes list|get|create|archive|restore
+teamgrid contact-groups list|get|create|update|archive|restore
+teamgrid users
+```
+
+Contact lists accept `--type person|company` and `--archived`. Call-note and contact-group lists
+accept `--archived`. Call-note creation accepts plain-text `content`; the API does not expose
+TeamGrid's internal rich-text representation. Contact-group parent changes are validated against
+cycles and hierarchy limits.
+
+```bash
+teamgrid contacts list --type company --all --output json
+teamgrid contacts create --data @contact.json --idempotency-key contact-import-42
+teamgrid call-notes create --data @call-note.json --idempotency-key call-note-42
+teamgrid contact-groups update GROUP_ID --data '{"parentId":"PARENT_GROUP_ID"}'
+```
+
+## Custom-field definitions
+
+```text
+teamgrid custom-field-definitions list|get|create|update|archive|restore
+```
+
+List filters include `--archived`, `--default-enabled`, `--field-type`, and `--target-type`.
+Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `switcher`, `tag`,
+`text`, `textarea`, and `user`. Target types are `contact`, `project`, `projectJournalEntry`, and
+`task`. These commands manage definitions, not custom-field values on resources.
+
+## Audit events
+
+```text
+teamgrid audit-events [--credential-id ID] [--event-type TYPE]
+                      [--outcome success|denied|failure]
+```
+
+Audit output can contain security-sensitive operational metadata. Limit access and retention in
+downstream systems.
+
+## Webhooks and delivery history
 
 ```bash
 teamgrid webhooks list
 teamgrid webhooks get WEBHOOK_ID
 teamgrid webhooks create --data @webhook.json --idempotency-key webhook-42
 teamgrid webhooks remove WEBHOOK_ID
+teamgrid webhook-deliveries list --webhook-id WEBHOOK_ID --state failed --event task_updated
+teamgrid webhook-deliveries get DELIVERY_ID
 ```
+
+Delivery history requires `webhooks:read` and returns only records owned by the authenticated
+credential. List filters include `--webhook-id`, `--event`, and
+`--state delivering|failed|retrying|skipped|succeeded`. URLs, payloads, headers, bodies, and secrets
+are never returned.
 
 `--data` accepts inline JSON, `@path/to/file.json`, or `-` for standard input. Archive and remove commands ask for confirmation; use `--yes` only in an intentionally non-interactive workflow.
 
@@ -2265,6 +2581,49 @@ TEAMGRID_API_TOKEN="$TEAMGRID_API_TOKEN" teamgrid workspace --output json
 
 Never commit credentials, place them in command-line arguments, or print them for debugging.
 
+<!-- guides/capability-coverage.md -->
+---
+title: Capability coverage
+description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
+---
+
+TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
+
+The current controlled-beta API v1 contract contains 52 paths and 90 operations. The TypeScript SDK
+and CLI map all 90 operations. MCP has an explicit decision for every operation: 29 bounded reads
+are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
+destructive lifecycle operations, project statements, webhook delivery history, API discovery, and
+reveal-once secrets are deliberately not exposed through MCP.
+
+The cross-interface contract currently governs workspace, projects and asynchronous project
+lifecycle operations, tasks and timers, time entries, contacts, call notes, contact groups, users,
+lists, services, tags, custom-field definitions, products, product groups, project statements, audit
+events, webhooks, and credential-owned webhook delivery history. Finance fields are scope-gated, and
+MCP product reads always remove acquisition cost.
+
+## Product capability ledger
+
+Operation parity is not the same as total TeamGrid product coverage. The separate product ledger
+classifies 73 capabilities against the current implementation:
+
+| Status | Count | Meaning |
+| --- | ---: | --- |
+| Implemented in the controlled-beta contract | 15 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 12 | Some useful behavior exists, but the product workflow is not yet complete |
+| Planned | 40 | The workflow remains on the roadmap and is not part of the current contract |
+| Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
+
+Examples of planned work include custom-field values, planned work and scheduling, comments,
+documents and files, activity, integrations, search, reporting, imports and exports, and a change
+feed. Partial classification applies to areas such as read projections, credentials, time entries,
+audit, and webhooks where additional product semantics remain.
+
+Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
+automation tasks, and the file-device synchronization protocol remain private. Customer workflows
+are represented by stable resources and domain commands instead of those internals.
+
+See the [API v1 reference](/api/v1/reference/), [CLI commands](/cli/commands/), and [MCP tool policy](/mcp/tools-and-security/) for the current public surface.
+
 <!-- guides/choose-an-interface.md -->
 ---
 title: Choose an interface
@@ -2275,7 +2634,7 @@ API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that 
 
 | Need | Recommended interface | Why |
 | --- | --- | --- |
-| A production service in any language | API v1 | Stable HTTP contract and explicit scopes |
+| A production service in any language | API v1 | Versioned HTTP contract and explicit scopes |
 | A Node.js or TypeScript service | TypeScript SDK | Typed resources, retries, timeouts, and pagination |
 | Shell scripts, CI, or an operator workflow | CLI | Structured output and stable exit codes |
 | Read-only access from a supported AI host | MCP server | Small, local, read-only tool surface |
@@ -2310,7 +2669,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 
 <CardGrid>
   <Card title="API v1">
-    The stable, cell-aware HTTP contract for service integrations. Use scoped credentials, cursor pagination, idempotent writes, and signed webhooks.
+    The versioned, cell-aware controlled-beta contract for service integrations. Use scoped credentials, cursor pagination, idempotent writes, and signed webhooks.
 
     [Explore API v1](/api/v1/)
   </Card>
@@ -2335,6 +2694,11 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 
 API v0 remains available for compatibility. Its contract is frozen and documented separately, with migration guidance beside the legacy reference.
 
+API v1 currently governs 90 operations across 52 paths. That number measures contract parity across
+the HTTP API, SDK, and CLI—not complete TeamGrid product coverage. The
+[capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
+areas explicitly.
+
 [Open the API v0 documentation](/api/v0/)
 
 <!-- mcp/configuration.md -->
@@ -2356,7 +2720,7 @@ teamgrid auth status --check
 Add the server from a terminal:
 
 ```bash
-codex mcp add teamgrid -- teamgrid-mcp --profile default
+codex mcp add teamgrid -- teamgrid-mcp --profile default --tool-profile core
 ```
 
 Equivalent configuration in `~/.codex/config.toml`:
@@ -2364,7 +2728,7 @@ Equivalent configuration in `~/.codex/config.toml`:
 ```toml
 [mcp_servers.teamgrid]
 command = "teamgrid-mcp"
-args = ["--profile", "default"]
+args = ["--profile", "default", "--tool-profile", "core"]
 startup_timeout_sec = 10
 tool_timeout_sec = 60
 ```
@@ -2380,7 +2744,7 @@ Hosts that use JSON configuration commonly accept this stdio shape:
   "mcpServers": {
     "teamgrid": {
       "command": "teamgrid-mcp",
-      "args": ["--profile", "default"]
+      "args": ["--profile", "default", "--tool-profile", "core"]
     }
   }
 }
@@ -2390,7 +2754,10 @@ The exact settings location and configuration key depend on the host. Consult it
 
 ## Ephemeral environment
 
-The process may receive `TEAMGRID_API_TOKEN` and `TEAMGRID_API_BASE_URL`. Prefer the shared operating-system keychain profile for local desktop use. If a host cannot isolate environment variables or redact logs reliably, do not inject a credential into it.
+The process may receive `TEAMGRID_API_TOKEN`, `TEAMGRID_API_BASE_URL`, and
+`TEAMGRID_MCP_TOOL_PROFILE`. Prefer the shared operating-system keychain profile for local desktop
+use. If a host cannot isolate environment variables or redact logs reliably, do not inject a
+credential into it.
 
 The server communicates over standard input/output. It does not listen on a TCP port.
 
@@ -2400,7 +2767,9 @@ title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
 ---
 
-`@teamgrid/mcp-server` is an optional local stdio adapter. It exposes nine read-only TeamGrid tools and delegates every request to the official API v1 client.
+`@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
+official API v1 client. The default `core` profile exposes 15 operational read tools; the `all`
+profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
 npm install --global @teamgrid/cli@next @teamgrid/mcp-server@next
@@ -2414,6 +2783,10 @@ teamgrid auth login
 - No write, archive, or remove tools
 - No session affinity or bypass around API authorization
 - No replacement for deterministic service integrations
+- No personal-data or governance tools in the default profile
+- No service reads in the default profile because service objects can include billing rates
+- No purchase prices in product tools, even when the credential also has finance scopes
+- No project-statement or webhook-delivery-history tools in any profile
 
 Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
 
@@ -2427,19 +2800,55 @@ description: Review the exact read-only TeamGrid MCP tool surface, pagination be
 
 ## Available tools
 
-| Tool | Purpose |
-| --- | --- |
-| `teamgrid_workspace_get` | Read workspace, region, and cell metadata |
-| `teamgrid_projects_list` | List projects |
-| `teamgrid_tasks_list` | List tasks with project, assignee, and status filters |
-| `teamgrid_task_get` | Read one task by ID |
-| `teamgrid_time_entries_list` | List time entries with date, task, and user filters |
-| `teamgrid_contacts_list` | List people or companies |
-| `teamgrid_users_list` | List workspace users |
-| `teamgrid_webhooks_list` | List configured webhooks without changing them |
-| `teamgrid_audit_events_list` | List Developer Platform audit events |
+The default `core` profile exposes 15 operational tools. `collaboration` adds seven contact,
+call-note, and user tools. `governance` adds seven audit, custom-field-definition, service, and
+webhook tools. `all` exposes the union of 29 read tools. Select a broader profile only when the host
+and workflow require it. Service reads are not in `core` because service objects can include
+commercially sensitive billing rates.
+
+| Tool | Profile | Purpose |
+| --- | --- | --- |
+| `teamgrid_workspace_get` | Core | Read workspace, region, and cell metadata |
+| `teamgrid_products_list` | Core | List products without `purchasePrice` |
+| `teamgrid_product_get` | Core | Read one product without `purchasePrice` |
+| `teamgrid_product_groups_list` | Core | List product groups |
+| `teamgrid_product_group_get` | Core | Read one product group by ID |
+| `teamgrid_projects_list` | Core | List projects |
+| `teamgrid_project_get` | Core | Read one project by ID |
+| `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
+| `teamgrid_task_get` | Core | Read one task by ID |
+| `teamgrid_time_entries_list` | Core | List time entries with date, task, and user filters |
+| `teamgrid_time_entry_get` | Core | Read one time entry by ID |
+| `teamgrid_lists_list` | Core | List task lists |
+| `teamgrid_list_get` | Core | Read one list by ID |
+| `teamgrid_tags_list` | Core | List tags |
+| `teamgrid_tag_get` | Core | Read one tag by ID |
+| `teamgrid_call_notes_list` | Collaboration | List plain-text call notes |
+| `teamgrid_call_note_get` | Collaboration | Read one plain-text call note by ID |
+| `teamgrid_contacts_list` | Collaboration | List people or companies |
+| `teamgrid_contact_get` | Collaboration | Read one person or company by ID |
+| `teamgrid_contact_groups_list` | Collaboration | List contact groups |
+| `teamgrid_contact_group_get` | Collaboration | Read one contact group by ID |
+| `teamgrid_users_list` | Collaboration | List workspace users |
+| `teamgrid_custom_field_definitions_list` | Governance | List custom-field definitions and compatibility metadata |
+| `teamgrid_custom_field_definition_get` | Governance | Read one custom-field definition by ID |
+| `teamgrid_services_list` | Governance | List services, including billing configuration |
+| `teamgrid_service_get` | Governance | Read one service, including its billing rate |
+| `teamgrid_webhooks_list` | Governance | List configured webhooks without changing them |
+| `teamgrid_webhook_get` | Governance | Read one webhook without its signing secret |
+| `teamgrid_audit_events_list` | Governance | List Developer Platform audit events |
 
 List tools return API v1 cursor metadata. Pass the returned opaque cursor to continue; do not construct or decode cursors.
+
+Every tool is declared read-only and idempotent. A serialized tool result is limited to 256 KiB;
+request a smaller page if the server returns `result_too_large`. Call-note, contact, service, audit,
+and webhook tools can expose personal, commercial, or security-sensitive information and should use
+dedicated least-privilege credentials.
+
+Product tools deliberately remove `purchasePrice` even if the selected API credential also has
+`products:finance:read`. Project statements are forbidden in every MCP profile because they contain
+financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
+sensitive operational metadata. Neither resource can be enabled through `--tool-profile all`.
 
 ## Security model
 
@@ -2464,12 +2873,21 @@ The API reference is generated from checked-in OpenAPI 3.1 contracts. The same f
 
 - [Download API v1 OpenAPI JSON](/openapi/v1.json)
 - [Download API v0 OpenAPI JSON](/openapi/v0.json)
+- [Download the Developer Platform capability ledger](/openapi/developer-capabilities.json)
+- [Download the canonical contract manifest](/openapi/developer-platform-manifest.json)
+- [Download the frozen v0 route inventory](/openapi/v0-routes.json)
 
 ## Contract policy
 
 API v1 is the source contract for new integrations. The v0 file describes the frozen compatibility runtime rather than every operation historically advertised by the previous documentation.
 
-The documentation repository records the SHA-256 digest, source repository commit, path count, and operation count for both contracts in `sources/contracts.json`. CI fails if the published files drift from that manifest.
+The canonical manifest publishes byte counts and SHA-256 digests for both OpenAPI files, the v0
+runtime inventory, and the cross-interface capability ledger. The documentation repository also
+records its source commit in `sources/contracts.json`. CI fails if any published artifact drifts.
+
+The current manifest records 52 v1 paths, 90 governed v1 operations, 87 frozen v0 operations, and
+73 classified TeamGrid product capabilities. These counts describe the synchronized contract; they
+do not promote planned capabilities into the controlled beta.
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -2487,11 +2905,41 @@ The current prerelease is distributed through the explicit npm `next` channel:
 npm install @teamgrid/api-client@next
 ```
 
-Pin the exact version in reproducible deployments. Node.js 22.13 through 24 is supported.
+Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
 
 ## Resource clients
 
-The SDK exposes `workspace`, `projects`, `tasks`, `timeEntries`, `contacts`, `users`, `lists`, `services`, `tags`, `auditEvents`, and `webhooks` from one `TeamGridClient` instance.
+One `TeamGridClient` exposes the complete current API v1 surface:
+
+| Client | Operations |
+| --- | --- |
+| `system`, `workspace` | API discovery and authenticated workspace metadata |
+| `projects` | List, get, create, update, complete, reopen, archive, restore |
+| `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
+| `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
+| `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
+| `contacts` | List, get, create, update |
+| `callNotes` | List, get, create, archive, restore |
+| `contactGroups` | List, get, create, update, archive, restore |
+| `users` | List workspace users |
+| `lists`, `services`, `tags` | List, get, create, update, archive, restore |
+| `customFieldDefinitions` | List, get, create, update, archive, restore |
+| `products` | List, get, create, update, archive |
+| `productGroups` | List, get, create, update, archive |
+| `projectStatements` | List, get, create, update, archive, restore |
+| `auditEvents` | List credential and mutation audit events |
+| `webhooks` | List, get, create, remove |
+| `webhookDeliveries` | List and get credential-owned delivery metadata |
+
+Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
+accept an idempotency key through mutation options. Every method uses the scopes documented in the
+API reference; the SDK never adds authority beyond the supplied credential.
+
+Types model finance-gated fields as optional. Product `purchasePrice` is present only with
+`products:finance:read`; project-statement budget entries and `purchasePrice` require
+`project-statements:finance:read`. Supplying acquisition cost on writes requires the corresponding
+finance write overlay. Webhook delivery objects deliberately omit URLs, request and response data,
+headers, secrets, and tenant-routing internals.
 
 ## Runtime behavior
 
@@ -2501,6 +2949,13 @@ The SDK exposes `workspace`, `projects`, `tasks`, `timeEntries`, `contacts`, `us
 - Redirects are not followed.
 - Responses larger than the configured safety limit are rejected.
 - API and local client failures use separate error classes.
+- Every success envelope and error exposes immutable transport metadata for request IDs,
+  attempts, status, response headers, rate limits, retry timing, and idempotency replays.
+- Project lifecycle helpers poll the operation resource; they do not hide an unbounded background
+  job behind a synchronous project response.
+
+Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
+pipelines therefore stay stable while application code can inspect `response.transport`.
 
 [Start with the SDK quickstart](/sdk/quickstart/).
 
@@ -2541,6 +2996,22 @@ try {
 ```
 
 `TeamGridApiError` represents an HTTP response from API v1. `TeamGridClientError` represents local validation, routing, timeout, response-size, malformed-response, or network failures.
+
+## Transport metadata
+
+```ts
+const response = await client.tasks.list({ limit: 25 })
+
+console.log(response.transport.requestId)
+console.log(response.transport.status)
+console.log(response.transport.attempts)
+console.log(response.transport.rateLimit.remaining)
+```
+
+The same immutable `transport` object is available on `TeamGridApiError` and
+`TeamGridClientError` whenever an HTTP response was received. It includes normalized response
+headers, `retryAfterMs`, and `idempotencyReplayed` when the server supplied those values. The
+object never contains the bearer credential or request body.
 
 Neither error class stores the bearer credential. Application logs should still avoid serializing request headers, input payloads, or environment variables.
 
@@ -2603,38 +3074,31 @@ title: Verify webhook signatures
 description: Verify TeamGrid webhook v2 HMAC signatures over the exact raw request body in Node.js.
 ---
 
-Capture the request body as raw bytes before any JSON parser runs. The signed input is `<timestamp>.<exact raw body>`.
+Capture the request body as raw bytes before any JSON parser runs. The SDK helper verifies the
+signature and timestamp before parsing JSON, compares the HMAC in constant time, and can claim
+the delivery ID through an atomic deduplication store.
 
 ```ts
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { verifyTeamGridWebhook } from '@teamgrid/api-client'
 
-export function verifyTeamGridWebhook({
-  rawBody,
-  secret,
-  signatureHeader,
-  timestamp,
-}: {
-  rawBody: Buffer
-  secret: string
-  signatureHeader: string
-  timestamp: string
-}) {
-  const supplied = signatureHeader.replace(/^v1=/, '')
-  const expected = createHmac('sha256', secret)
-    .update(timestamp)
-    .update('.')
-    .update(rawBody)
-    .digest('hex')
+const rawBody = new Uint8Array(await request.arrayBuffer())
+const delivery = await verifyTeamGridWebhook<MyEvent>({
+  body: rawBody,
+  headers: request.headers,
+  signingSecret: process.env.TEAMGRID_WEBHOOK_SECRET!,
+  deduplicationStore: {
+    // This claim must be atomic: true for the first delivery ID, false thereafter.
+    claim: (deliveryId, expiresAt) => deliveryIds.claim(deliveryId, expiresAt),
+  },
+})
 
-  const left = Buffer.from(supplied, 'hex')
-  const right = Buffer.from(expected, 'hex')
-  return left.length === right.length && timingSafeEqual(left, right)
-}
+await processEvent(delivery.payload)
 ```
 
-Before accepting the payload, also reject stale timestamps and duplicate `X-TeamGrid-Webhook-Id` values. Store the signing secret separately from the API credential.
-
-The current SDK prerelease documents this procedure but does not yet export a verification helper. Keep this implementation local and covered by receiver tests until that helper is published.
+The default timestamp window is five minutes and can be bounded with
+`maxTimestampSkewSeconds`. A duplicate claim, invalid metadata, stale timestamp, malformed JSON,
+or invalid signature throws `TeamGridWebhookVerificationError` with a stable `code`. Store the
+reveal-once signing secret separately from API credentials.
 
 <!-- security/index.md -->
 ---
@@ -2655,9 +3119,21 @@ API credentials are bearer secrets. TeamGrid reveals a new API v1 credential onc
 
 The location prefix helps official clients choose the correct regional endpoint. It is not an authorization decision. The destination cell validates the full secret and workspace permissions.
 
+## Sensitive resource scopes
+
+Finance scopes are overlays and must be paired with the corresponding base product or
+project-statement scope. Do not grant them to an MCP credential: MCP product tools remove
+`purchasePrice`, and project statements are unavailable in every tool profile. Call notes, contacts,
+users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
+least-privilege credentials and controlled downstream retention.
+
 ## Webhooks
 
 For signed v2 webhooks, verify the HMAC over the exact raw request body before parsing it, reject stale timestamps, compare signatures in constant time, and deduplicate the delivery ID. Store the reveal-once webhook signing secret separately from API credentials.
+
+Delivery-history reads are credential-owned. Returned records intentionally exclude URLs, payloads,
+headers, bodies, secrets, and routing internals. Do not use delivery metadata as a substitute for a
+receiver-side event log.
 
 ## Report a vulnerability
 

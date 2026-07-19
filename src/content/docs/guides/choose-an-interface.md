@@ -7,7 +7,7 @@ API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that 
 
 | Need | Recommended interface | Why |
 | --- | --- | --- |
-| A production service in any language | API v1 | Stable HTTP contract and explicit scopes |
+| A production service in any language | API v1 | Versioned HTTP contract and explicit scopes |
 | A Node.js or TypeScript service | TypeScript SDK | Typed resources, retries, timeouts, and pagination |
 | Shell scripts, CI, or an operator workflow | CLI | Structured output and stable exit codes |
 | Read-only access from a supported AI host | MCP server | Small, local, read-only tool surface |

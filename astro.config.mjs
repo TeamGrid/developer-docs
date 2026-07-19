@@ -115,6 +115,7 @@ export default defineConfig({
           items: [
             { label: 'Developer Hub', link: '/' },
             { label: 'Choose an interface', link: '/guides/choose-an-interface/' },
+            { label: 'Capability coverage', link: '/guides/capability-coverage/' },
           ],
           label: 'Start here',
         },
@@ -123,6 +124,7 @@ export default defineConfig({
             { label: 'Overview', link: '/api/v1/' },
             { label: 'Quickstart', link: '/api/v1/quickstart/' },
             { label: 'Credentials and scopes', link: '/api/v1/authentication/' },
+            { label: 'Resources and semantics', link: '/api/v1/resources-and-semantics/' },
             { label: 'Regional endpoints', link: '/api/v1/regions/' },
             { label: 'Pagination and idempotency', link: '/api/v1/pagination/' },
             { label: 'Errors and rate limits', link: '/api/v1/errors/' },

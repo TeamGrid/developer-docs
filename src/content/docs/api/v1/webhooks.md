@@ -24,3 +24,17 @@ Webhook registrations created through API v1 use signed delivery version 2. The 
 Do not parse and re-serialize JSON before verification. Whitespace and byte encoding are part of the signed input.
 
 Legacy UI-created webhook v1 registrations remain unsigned during migration. TeamGrid does not silently downgrade a v2 registration when signing is unavailable.
+
+## Delivery history
+
+API v1 provides cursor-paginated, read-only delivery history through `/v1/webhook-deliveries`. A
+credential can see only deliveries owned by that exact credential, even when another credential
+belongs to the same workspace. The cell reapplies credential ownership and workspace isolation for
+both list and get requests.
+
+History includes the delivery and webhook IDs, event, resource ID, state, timestamps, attempt count,
+HTTP status, and sanitized transport codes. It never includes the destination URL, payload, request
+or response headers, request or response body, signing secret, tenant-routing metadata, or retention
+internals. Delivery history is intentionally unavailable through MCP.
+
+Use delivery history for bounded troubleshooting, not as a durable event store or replay API.

@@ -3,35 +3,28 @@ title: Verify webhook signatures
 description: Verify TeamGrid webhook v2 HMAC signatures over the exact raw request body in Node.js.
 ---
 
-Capture the request body as raw bytes before any JSON parser runs. The signed input is `<timestamp>.<exact raw body>`.
+Capture the request body as raw bytes before any JSON parser runs. The SDK helper verifies the
+signature and timestamp before parsing JSON, compares the HMAC in constant time, and can claim
+the delivery ID through an atomic deduplication store.
 
 ```ts
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { verifyTeamGridWebhook } from '@teamgrid/api-client'
 
-export function verifyTeamGridWebhook({
-  rawBody,
-  secret,
-  signatureHeader,
-  timestamp,
-}: {
-  rawBody: Buffer
-  secret: string
-  signatureHeader: string
-  timestamp: string
-}) {
-  const supplied = signatureHeader.replace(/^v1=/, '')
-  const expected = createHmac('sha256', secret)
-    .update(timestamp)
-    .update('.')
-    .update(rawBody)
-    .digest('hex')
+const rawBody = new Uint8Array(await request.arrayBuffer())
+const delivery = await verifyTeamGridWebhook<MyEvent>({
+  body: rawBody,
+  headers: request.headers,
+  signingSecret: process.env.TEAMGRID_WEBHOOK_SECRET!,
+  deduplicationStore: {
+    // This claim must be atomic: true for the first delivery ID, false thereafter.
+    claim: (deliveryId, expiresAt) => deliveryIds.claim(deliveryId, expiresAt),
+  },
+})
 
-  const left = Buffer.from(supplied, 'hex')
-  const right = Buffer.from(expected, 'hex')
-  return left.length === right.length && timingSafeEqual(left, right)
-}
+await processEvent(delivery.payload)
 ```
 
-Before accepting the payload, also reject stale timestamps and duplicate `X-TeamGrid-Webhook-Id` values. Store the signing secret separately from the API credential.
-
-The current SDK prerelease documents this procedure but does not yet export a verification helper. Keep this implementation local and covered by receiver tests until that helper is published.
+The default timestamp window is five minutes and can be bounded with
+`maxTimestampSkewSeconds`. A duplicate claim, invalid metadata, stale timestamp, malformed JSON,
+or invalid signature throws `TeamGridWebhookVerificationError` with a stable `code`. Store the
+reveal-once signing secret separately from API credentials.

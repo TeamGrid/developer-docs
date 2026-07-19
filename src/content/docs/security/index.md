@@ -16,9 +16,21 @@ API credentials are bearer secrets. TeamGrid reveals a new API v1 credential onc
 
 The location prefix helps official clients choose the correct regional endpoint. It is not an authorization decision. The destination cell validates the full secret and workspace permissions.
 
+## Sensitive resource scopes
+
+Finance scopes are overlays and must be paired with the corresponding base product or
+project-statement scope. Do not grant them to an MCP credential: MCP product tools remove
+`purchasePrice`, and project statements are unavailable in every tool profile. Call notes, contacts,
+users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
+least-privilege credentials and controlled downstream retention.
+
 ## Webhooks
 
 For signed v2 webhooks, verify the HMAC over the exact raw request body before parsing it, reject stale timestamps, compare signatures in constant time, and deduplicate the delivery ID. Store the reveal-once webhook signing secret separately from API credentials.
+
+Delivery-history reads are credential-owned. Returned records intentionally exclude URLs, payloads,
+headers, bodies, secrets, and routing internals. Do not use delivery metadata as a substitute for a
+receiver-side event log.
 
 ## Report a vulnerability
 

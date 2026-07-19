@@ -22,19 +22,16 @@ teamgrid auth login [--token-stdin]
 teamgrid auth logout
 teamgrid auth profiles
 teamgrid auth status [--check]
+teamgrid api-version
 teamgrid workspace
 ```
 
-## Read resources
+## Projects and lifecycle operations
 
 ```text
-teamgrid projects list|get
-teamgrid contacts list|get
-teamgrid users
-teamgrid lists
-teamgrid services
-teamgrid tags
-teamgrid audit-events
+teamgrid projects list|get|create|update
+teamgrid projects complete|reopen|archive|restore PROJECT_ID [--wait]
+teamgrid project-lifecycle-operations get OPERATION_ID
 ```
 
 List commands accept `--limit`, `--cursor`, `--all`, and `--max-pages`. Resource-specific filters are visible through `teamgrid <command> --help`.
@@ -43,9 +40,90 @@ Examples:
 
 ```bash
 teamgrid projects list --completed false
-teamgrid contacts list --type company --all --output json
-teamgrid audit-events --outcome denied --output jsonl
+teamgrid projects create --data @project.json --idempotency-key project-import-42
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
+teamgrid projects complete PROJECT_ID --idempotency-key close-42 --wait
 ```
+
+Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
+returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
+`--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
+
+## Commerce and project statements
+
+```text
+teamgrid products list|get|create|update|archive
+teamgrid product-groups list|get|create|update|archive
+teamgrid project-statements list|get|create|update|archive|restore
+```
+
+Product list filters include `--archived`, `--disabled`, and `--product-group-id`. Product-group
+list filters include `--archived` and `--parent-id`. Products and product groups do not expose a
+restore command in the current contract.
+
+Project-statement list filters are:
+
+```text
+--archived BOOLEAN
+--created-at-from DATE
+--created-at-to DATE
+--created-by ID
+--date-from DATE
+--date-to DATE
+--product-id ID
+--project-id ID
+--type budget|bundle|manual|product
+```
+
+Examples:
+
+```bash
+teamgrid products list --disabled false --product-group-id GROUP_ID --all --output json
+teamgrid products create --data @product.json --idempotency-key product-import-42
+teamgrid product-groups update GROUP_ID --data '{"parentId":"PARENT_GROUP_ID"}'
+teamgrid project-statements list --project-id PROJECT_ID --date-from 2026-07-01T00:00:00Z
+teamgrid project-statements restore STATEMENT_ID
+```
+
+Product `purchasePrice` and project-statement budget or acquisition-cost data require the additional
+finance scopes documented under [credentials and scopes](/api/v1/authentication/). CLI JSON output
+omits finance-gated values when the credential lacks the matching finance read scope.
+
+## Lists, services, and tags
+
+Each metadata group supports list, get, create, update, archive, and restore. The bare group remains
+an alias for its `list` command.
+
+```text
+teamgrid lists [list] [--type tasks|projects|personal] [--parent-id ID] [--archived BOOLEAN]
+teamgrid lists get|archive|restore LIST_ID
+teamgrid lists create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid lists update LIST_ID --data <json|@file|->
+
+teamgrid services [list] [--archived BOOLEAN]
+teamgrid services get|archive|restore SERVICE_ID
+teamgrid services create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid services update SERVICE_ID --data <json|@file|->
+
+teamgrid tags [list] [--archived BOOLEAN]
+teamgrid tags get|archive|restore TAG_ID
+teamgrid tags create --data <json|@file|-> [--idempotency-key KEY]
+teamgrid tags update TAG_ID --data <json|@file|->
+```
+
+Examples:
+
+```bash
+teamgrid lists create --data '{"name":"Delivery","type":"tasks","parentId":"PROJECT_ID"}' --idempotency-key list-42
+teamgrid services update SERVICE_ID --data '{"billable":true,"billingRate":145}'
+teamgrid tags create --data '{"name":"Priority","color":"#3772ff"}' --idempotency-key tag-42
+teamgrid tags archive TAG_ID --yes
+teamgrid tags restore TAG_ID
+```
+
+List creation supports `tasks` and `projects`; `personal` is a read filter for existing personal
+lists and is not an accepted public create type. Service responses can contain billing rates, so
+service credentials and machine-readable output should be handled as commercially sensitive data.
 
 ## Tasks
 
@@ -53,9 +131,16 @@ teamgrid audit-events --outcome denied --output jsonl
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"completed":true}'
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
 teamgrid tasks archive TASK_ID
+teamgrid tasks restore TASK_ID
+teamgrid tasks complete TASK_ID
+teamgrid tasks reopen TASK_ID
+teamgrid tasks timer start TASK_ID --user-id USER_ID
+teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
+
+Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
 ## Time entries
 
@@ -67,15 +152,65 @@ teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
 teamgrid times archive TIME_ENTRY_ID
+teamgrid times restore TIME_ENTRY_ID
 ```
 
-## Webhooks
+## Contacts, call notes, and contact groups
+
+```text
+teamgrid contacts list|get|create|update
+teamgrid call-notes list|get|create|archive|restore
+teamgrid contact-groups list|get|create|update|archive|restore
+teamgrid users
+```
+
+Contact lists accept `--type person|company` and `--archived`. Call-note and contact-group lists
+accept `--archived`. Call-note creation accepts plain-text `content`; the API does not expose
+TeamGrid's internal rich-text representation. Contact-group parent changes are validated against
+cycles and hierarchy limits.
+
+```bash
+teamgrid contacts list --type company --all --output json
+teamgrid contacts create --data @contact.json --idempotency-key contact-import-42
+teamgrid call-notes create --data @call-note.json --idempotency-key call-note-42
+teamgrid contact-groups update GROUP_ID --data '{"parentId":"PARENT_GROUP_ID"}'
+```
+
+## Custom-field definitions
+
+```text
+teamgrid custom-field-definitions list|get|create|update|archive|restore
+```
+
+List filters include `--archived`, `--default-enabled`, `--field-type`, and `--target-type`.
+Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `switcher`, `tag`,
+`text`, `textarea`, and `user`. Target types are `contact`, `project`, `projectJournalEntry`, and
+`task`. These commands manage definitions, not custom-field values on resources.
+
+## Audit events
+
+```text
+teamgrid audit-events [--credential-id ID] [--event-type TYPE]
+                      [--outcome success|denied|failure]
+```
+
+Audit output can contain security-sensitive operational metadata. Limit access and retention in
+downstream systems.
+
+## Webhooks and delivery history
 
 ```bash
 teamgrid webhooks list
 teamgrid webhooks get WEBHOOK_ID
 teamgrid webhooks create --data @webhook.json --idempotency-key webhook-42
 teamgrid webhooks remove WEBHOOK_ID
+teamgrid webhook-deliveries list --webhook-id WEBHOOK_ID --state failed --event task_updated
+teamgrid webhook-deliveries get DELIVERY_ID
 ```
+
+Delivery history requires `webhooks:read` and returns only records owned by the authenticated
+credential. List filters include `--webhook-id`, `--event`, and
+`--state delivering|failed|retrying|skipped|succeeded`. URLs, payloads, headers, bodies, and secrets
+are never returned.
 
 `--data` accepts inline JSON, `@path/to/file.json`, or `-` for standard input. Archive and remove commands ask for confirmation; use `--yes` only in an intentionally non-interactive workflow.

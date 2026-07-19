@@ -46,6 +46,13 @@ for (const slug of Object.keys(referenceMap)) {
   if (!redirects.includes(`/reference/${slug} `)) fail(`Missing legacy redirect for ${slug}.`)
 }
 
+const headers = await readFile(path.join(root, 'public', '_headers'), 'utf8')
+for (const pattern of ['https://:project.pages.dev/*', 'https://:version.:project.pages.dev/*']) {
+  if (!headers.includes(`${pattern}\n  X-Robots-Tag: noindex`)) {
+    fail(`Missing Pages noindex rule for ${pattern}.`)
+  }
+}
+
 for (const file of ['llms.txt', 'llms-full.txt']) {
   const content = await readFile(path.join(root, 'public', file), 'utf8')
   if (!content.includes('API v1 is the source of truth')) fail(`${file} is missing platform guidance.`)

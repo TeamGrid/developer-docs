@@ -1,0 +1,21 @@
+# TeamGrid Developer Documentation
+
+> Official documentation for TeamGrid API v1, legacy API v0, the TypeScript SDK, CLI, and optional read-only MCP server.
+
+API v1 is the source of truth for new integrations. The SDK, CLI, and MCP server are clients of API v1. API v0 is retained for compatibility.
+
+## Documentation
+
+- [API v1 overview](https://developer.teamgridapp.com/api/v1/)
+- [API v1 quickstart](https://developer.teamgridapp.com/api/v1/quickstart/)
+- [API v1 reference](https://developer.teamgridapp.com/api/v1/reference/)
+- [API v1 OpenAPI 3.1 JSON](https://developer.teamgridapp.com/openapi/v1.json)
+- [API v0 legacy overview](https://developer.teamgridapp.com/api/v0/)
+- [API v0 reference](https://developer.teamgridapp.com/api/v0/reference/)
+- [API v0 OpenAPI 3.1 JSON](https://developer.teamgridapp.com/openapi/v0.json)
+- [TypeScript SDK](https://developer.teamgridapp.com/sdk/)
+- [CLI](https://developer.teamgridapp.com/cli/)
+- [MCP server](https://developer.teamgridapp.com/mcp/)
+- [Security](https://developer.teamgridapp.com/security/)
+- [Changelog](https://developer.teamgridapp.com/changelog/)
+

@@ -1,0 +1,272 @@
+{
+  "getteam": {
+    "signature": "GET /teams",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_teams/"
+  },
+  "listusers": {
+    "signature": "GET /users",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_users/"
+  },
+  "listcontacts": {
+    "signature": "GET /contacts",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_contacts/"
+  },
+  "createcontact": {
+    "signature": "POST /contacts",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_contacts/"
+  },
+  "getcontact": {
+    "signature": "GET /contacts/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_contacts_id/"
+  },
+  "updatecontact": {
+    "signature": "PUT /contacts/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_contacts_id/"
+  },
+  "deletecontact": {
+    "signature": "DELETE /contacts/{_id}",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "listprojects": {
+    "signature": "GET /projects",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_projects/"
+  },
+  "createproject": {
+    "signature": "POST /projects",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_projects/"
+  },
+  "getproject": {
+    "signature": "GET /projects/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_projects_id/"
+  },
+  "updateproject": {
+    "signature": "PUT /projects/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_projects_id/"
+  },
+  "deleteproject": {
+    "signature": "DELETE /projects/{_id}",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "listtasks": {
+    "signature": "GET /tasks",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_tasks/"
+  },
+  "createtask": {
+    "signature": "POST /tasks",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_tasks/"
+  },
+  "gettask": {
+    "signature": "GET /tasks/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_tasks_id/"
+  },
+  "updatetask": {
+    "signature": "PUT /tasks/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_tasks_id/"
+  },
+  "deletetask": {
+    "signature": "DELETE /tasks/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_delete_tasks_id/"
+  },
+  "starttasktracking": {
+    "signature": "POST /tasks/{_id}/startTracking",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_tasks_id_starttracking/"
+  },
+  "stoptasktracking": {
+    "signature": "POST /tasks/{_id}/stopTracking",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_tasks_id_stoptracking/"
+  },
+  "listtimeentries": {
+    "signature": "GET /times",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_times/"
+  },
+  "createtimeentry": {
+    "signature": "POST /times",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_times/"
+  },
+  "gettimeentry": {
+    "signature": "GET /times/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_times_id/"
+  },
+  "updatetimeentry": {
+    "signature": "PUT /times/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_times_id/"
+  },
+  "deletetimeentry": {
+    "signature": "DELETE /times/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_delete_times_id/"
+  },
+  "listservices": {
+    "signature": "GET /services",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_services/"
+  },
+  "createservice": {
+    "signature": "POST /services",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "updateservice": {
+    "signature": "PUT /services",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "deleteservice": {
+    "signature": "DELETE /services",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "getservice": {
+    "signature": "GET /services/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_services_id/"
+  },
+  "listtags": {
+    "signature": "GET /tags",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_tags/"
+  },
+  "createtag": {
+    "signature": "POST /tags",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "updatetag": {
+    "signature": "PUT /tags",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "deletetag": {
+    "signature": "DELETE /tags",
+    "status": "not-in-frozen-runtime-contract",
+    "target": null
+  },
+  "gettag": {
+    "signature": "GET /tags/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_tags_id/"
+  },
+  "listlists": {
+    "signature": "GET /lists",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_lists/"
+  },
+  "createlist": {
+    "signature": "POST /lists",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_lists/"
+  },
+  "getlist": {
+    "signature": "GET /lists/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_lists_id/"
+  },
+  "updatelist": {
+    "signature": "PUT /lists/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_lists_id/"
+  },
+  "deletelist": {
+    "signature": "DELETE /lists/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_delete_lists_id/"
+  },
+  "listwebhooks": {
+    "signature": "GET /webhooks",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_webhooks/"
+  },
+  "createwebhook": {
+    "signature": "POST /webhooks",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_webhooks/"
+  },
+  "getwebhook": {
+    "signature": "GET /webhooks/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_webhooks_id/"
+  },
+  "deletewebhook": {
+    "signature": "DELETE /webhooks/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_delete_webhooks_id/"
+  },
+  "listscheduledwork": {
+    "signature": "GET /scheduledWork",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_scheduledwork/"
+  },
+  "listjournalentries": {
+    "signature": "GET /journalEntries",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_journalentries/"
+  },
+  "createjournalentry": {
+    "signature": "POST /journalEntries",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_journalentries/"
+  },
+  "getjournalentry": {
+    "signature": "GET /journalEntries/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_journalentries_id/"
+  },
+  "updatejournalentry": {
+    "signature": "PUT /journalEntries/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_journalentries_id/"
+  },
+  "deletejournalentry": {
+    "signature": "DELETE /journalEntries/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_delete_journalentries_id/"
+  },
+  "listprojecttemplates": {
+    "signature": "GET /projectTemplates",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_projecttemplates/"
+  },
+  "createprojecttemplate": {
+    "signature": "POST /projectTemplates",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_post_projecttemplates/"
+  },
+  "getprojecttemplate": {
+    "signature": "GET /projectTemplates/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_get_projecttemplates_id/"
+  },
+  "updateprojecttemplate": {
+    "signature": "PUT /projectTemplates/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_put_projecttemplates_id/"
+  },
+  "deleteprojecttemplate": {
+    "signature": "DELETE /projectTemplates/{_id}",
+    "status": "matched",
+    "target": "/api/v0/reference/operations/v0_delete_projecttemplates_id/"
+  }
+}

@@ -3,7 +3,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, signed webhook deliveries, and a cell-local change feed. The current controlled-beta contract contains 107 paths and 176 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, signed webhook deliveries, and a cell-local change feed. The current controlled-beta contract contains 112 paths and 182 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
 
 ## Base URL
 
@@ -23,11 +23,13 @@ Do not send a bearer credential through a cross-region redirect. The target cell
 
 ## Available resources
 
-API v1 currently provides workspace and administration resources; projects, tasks, time entries,
+API v1 currently provides capability discovery, workspace entitlements and safe workspace settings;
+workspace and administration resources; projects, tasks, time entries,
 planned work, appointments, absences, and availability; contacts, comments, activity, documents,
 files, call notes, and contact groups; product and project-statement resources; federated search and
 bounded export jobs; automation definitions, action metadata, runs, and integration-installation
-status; plus audit, change-feed, webhook, and credential-owned asynchronous-operation resources.
+status; plus audit, an authorization-filtered event catalog, change-feed, webhook, secret-rotation,
+and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
@@ -41,5 +43,6 @@ retention, recovery, and multi-region contract.
 
 1. [Create and protect a scoped credential](/api/v1/authentication/).
 2. [Run the quickstart](/api/v1/quickstart/).
-3. Choose the [SDK](/sdk/) or [CLI](/cli/) if it fits your runtime.
-4. Review [resources and semantics](/api/v1/resources-and-semantics/) and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.
+3. Negotiate [capabilities, entitlements, events, and safe settings](/api/v1/platform-control-plane/).
+4. Choose the [SDK](/sdk/) or [CLI](/cli/) if it fits your runtime.
+5. Review [resources and semantics](/api/v1/resources-and-semantics/) and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.

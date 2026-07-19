@@ -5,8 +5,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The current controlled-beta API v1 contract contains 107 paths and 176 operations. The TypeScript SDK
-and CLI map all 176 operations. MCP has an explicit decision for every operation: 30 bounded reads
+The current controlled-beta API v1 contract contains 112 paths and 182 operations. The TypeScript SDK
+and CLI map all 182 operations. MCP has an explicit decision for every operation: 30 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, the high-volume change feed, webhook delivery
 history, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -27,14 +27,15 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the controlled-beta contract | 34 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the controlled-beta contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 18 | The workflow remains on the roadmap and is not part of the current contract |
+| Planned | 13 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
-Examples of planned work include workspace settings and entitlements, service accounts, delegated
-OAuth, project sharing, task ordering, subtasks and bulk operations, billing, telephony, file sharing,
-orders, reports, imports, audit export, an event catalog, and webhook-secret rotation. Partial
+System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
+and webhook-secret rotation are now released in the controlled-beta contract. Remaining planned
+work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
+operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
 classification applies to discovery, credentials, several core project, task, contact and
 time-entry projections, custom-field values, project templates, planned-work lifecycle, audit,
 webhooks, and the change feed where additional product semantics remain.

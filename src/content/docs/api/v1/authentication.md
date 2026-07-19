@@ -23,7 +23,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 
 | Scope | Access |
 | --- | --- |
-| `workspace:read` | Workspace metadata |
+| `workspace:read` | Workspace metadata, system capabilities, and workspace entitlements |
+| `workspace-settings:read`, `workspace-settings:write` | Read or compare-and-set the six-field safe workspace-settings projection; sensitive administration scopes |
 | `projects:read`, `projects:write` | Project reads and field mutations |
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
@@ -66,6 +67,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `automations:run` | Abort a running automation; sensitive execution-control scope |
 | `integrations:read` | Installation status without provider secrets; sensitive scope |
 | `changes:read` | Cell-local, metadata-only change events for resumable synchronization |
+| `events:read` | Read the authorization-filtered event and channel catalog |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
 
@@ -76,7 +78,7 @@ from product responses. Without `project-statements:finance:read`, budget statem
 scope.
 
 A `services:read` credential can read service billing rates. Calendar and absence data, comments,
-documents, files, member PII, administration, exports, automation metadata, integration status, call
+documents, files, workspace settings, member PII, administration, exports, automation metadata, integration status, call
 notes, contacts, users, audit events, finance resources, and webhook delivery metadata can also
 contain sensitive information. Use separate credentials for unrelated systems so each can be
 rotated and revoked independently.

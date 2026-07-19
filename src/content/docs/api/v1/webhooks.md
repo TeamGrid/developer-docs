@@ -3,7 +3,50 @@ title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
 ---
 
-Webhook registrations created through API v1 use signed delivery version 2. The create response returns a signing secret once; store it in the receiver's secret manager.
+Webhook registrations created through API v1 use signed delivery version 2. The create response
+returns a signing secret once; store it in the receiver's secret manager. The CLI therefore requires
+`--secret-file` or piped `--secret-stdout` for create as well as rotation and never sends the initial
+secret through its normal table or JSON renderer.
+
+List and get responses are credential-owned and secret-free. They carry a strong `whk1` ETag that
+changes when configuration, ownership, signing generation, or enabled state changes; delivery
+counters do not make the configuration ETag flap.
+
+## Rotate a signing secret
+
+Read the webhook first and pass its exact strong ETag to the rotation operation. Rotation requires
+`webhooks:write`, an empty body, `If-Match`, and a stable `Idempotency-Key`:
+
+```bash
+curl --request POST \
+  --url https://api.de.teamgrid.app/v1/webhooks/WEBHOOK_ID/secret-rotation \
+  --header 'Authorization: Bearer <credential>' \
+  --header 'If-Match: "whk1-<64 hex characters>"' \
+  --header 'Idempotency-Key: rotate-webhook-2026-07'
+```
+
+The no-store response reveals the replacement `whsec_v2_...` secret exactly through this operation.
+Persist it immediately and treat it as current. If the response is lost, retry the identical request
+with the same idempotency key and precondition; the replay returns the same completed rotation rather
+than incrementing the generation again. Reusing the key for another request conflicts. A stale ETag
+returns `412`, and a missing precondition returns `428`.
+
+Do not put the secret or idempotency key in a URL, shell history, log field, ticket, or MCP transcript.
+Webhook secret rotation is deliberately unavailable through MCP.
+
+The CLI requires an explicit safe destination:
+
+```bash
+teamgrid webhooks rotate-secret WEBHOOK_ID \
+  --if-match 'whk1-<64 hex characters>' \
+  --idempotency-key rotate-webhook-2026-07 \
+  --secret-file ./webhook-secret.txt \
+  --yes
+```
+
+The file path is created with mode `0600` and is never overwritten. Use `--secret-stdout` only for a
+controlled pipe into a secret manager; it writes the raw secret and no other output, and refuses an
+interactive terminal.
 
 ## Delivery headers
 

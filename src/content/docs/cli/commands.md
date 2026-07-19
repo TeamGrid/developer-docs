@@ -24,7 +24,26 @@ teamgrid auth profiles
 teamgrid auth status [--check]
 teamgrid api-version
 teamgrid workspace
+teamgrid system capabilities
+teamgrid workspace entitlements
 ```
+
+## Platform discovery and settings
+
+```text
+teamgrid system capabilities
+teamgrid workspace entitlements
+teamgrid workspace-settings get
+teamgrid workspace-settings update --data <json|@file|->
+  --if-match REVISION --idempotency-key KEY
+teamgrid events catalog
+```
+
+Read workspace settings first and pass the returned `wst1` revision or strong ETag to update. A
+`412` means another administrator changed the safe settings snapshot; re-read it before deciding
+whether to retry. The settings projection contains only six documented fields and never provider,
+billing, storage, role, or integration configuration. Capability, entitlement, and event responses
+are current negotiation results, not permanent authorization grants.
 
 ## Projects and lifecycle operations
 
@@ -349,14 +368,28 @@ The CLI does not hide `410` reset-required or `503` temporarily-unavailable resp
 teamgrid webhooks list
 teamgrid webhooks get WEBHOOK_ID
 teamgrid webhooks create --data @webhook.json --idempotency-key webhook-42
+  (--secret-file PATH | --secret-stdout)
 teamgrid webhooks remove WEBHOOK_ID
+teamgrid webhooks rotate-secret WEBHOOK_ID --if-match REVISION
+  [--idempotency-key KEY] (--secret-file PATH | --secret-stdout) [--yes]
 teamgrid webhook-deliveries list --webhook-id WEBHOOK_ID --state failed --event task_updated
 teamgrid webhook-deliveries get DELIVERY_ID
 ```
+
+Webhook create and `rotate-secret` require exactly one explicit secret destination. Rotation also
+asks for confirmation. `--secret-file` is recommended: it creates a new mode-`0600` file atomically
+and never overwrites an existing path; normal output contains only a secret-free receipt.
+`--secret-stdout` emits only the raw secret plus a newline and no metadata, for an explicitly
+controlled pipe into a secret manager; it refuses to write to an interactive terminal.
+The secret is never accepted in an argument or URL and is never sent through table, JSON, stderr, or
+debug output. Reuse the same idempotency key and precondition to recover the same rotation after a
+lost response.
 
 Delivery history requires `webhooks:read` and returns only records owned by the authenticated
 credential. List filters include `--webhook-id`, `--event`, and
 `--state delivering|failed|retrying|skipped|succeeded`. URLs, payloads, headers, bodies, and secrets
 are never returned.
 
-`--data` accepts inline JSON, `@path/to/file.json`, or `-` for standard input. Archive and remove commands ask for confirmation; use `--yes` only in an intentionally non-interactive workflow.
+`--data` accepts inline JSON, `@path/to/file.json`, or `-` for standard input. Archive, remove, and
+secret-rotation commands ask for confirmation; use `--yes` only in an intentionally non-interactive
+workflow.

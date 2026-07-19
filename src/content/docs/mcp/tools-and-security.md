@@ -67,7 +67,9 @@ Federated search is the only additional curated tool. It requires `search:read` 
 domain read scope, accepts at most three resource types and 50 results, and is marked sensitive
 because one query can cross several authorized domains. Calendar, absence, availability, comments,
 activity, documents, files, workspace administration, exports, automation metadata and execution,
-and integration-installation status remain forbidden even in `all`.
+integration-installation status, capability and entitlement negotiation, the event catalog,
+workspace settings, and webhook-secret rotation remain forbidden even in `all`. Reveal-once secrets
+must never enter a model transcript.
 
 ## Security model
 

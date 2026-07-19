@@ -19,7 +19,9 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 
 | Client | Operations |
 | --- | --- |
-| `system`, `workspace` | API discovery and authenticated workspace metadata |
+| `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
+| `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
+| `events` | Read the authorization-filtered webhook and change-feed event catalog |
 | `projects` | List, get, create, update, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
 | `changes` | Create checkpoints, list metadata changes, and run snapshot-then-catch-up |
@@ -47,7 +49,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
 | `auditEvents` | List credential and mutation audit events |
-| `webhooks` | List, get, create, remove |
+| `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
 | `members` | List, get, change role, and remove workspace members |
 | `invitations` | List, get, create, resend, and cancel invitations |
@@ -77,6 +79,11 @@ headers, secrets, and tenant-routing internals.
   precondition. Other PUT, PATCH, and DELETE requests are not retried automatically.
 - Redirects are not followed.
 - Responses larger than the configured safety limit are rejected.
+- Workspace-settings updates require a strong `wst1` precondition and idempotency key. The SDK
+  binds the response ETag to its returned revision and rejects extra internal settings fields.
+- Webhook get/create/rotation responses bind their strong `whk1` ETag to the returned configuration
+  or rotation revision. A rotation secret exists only in the no-store result and should be moved
+  directly into a secret manager rather than logged or serialized with unrelated data.
 - `exports.download(id, { intentToken, maxBytes })` carries the opaque intent only in
   `X-TeamGrid-Export-Download-Intent`, never in a URL, and returns bounded binary data without
   exposing a private-storage URL.

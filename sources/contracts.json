@@ -5,14 +5,14 @@
       "sha256": "46da62dba5b8a459362f4edd3c74fed1dac92300c414e606dfa9f433120da947"
     },
     "v1": {
-      "operations": 176,
-      "sha256": "7822ded35718dda3409493851da6cb8050f3a7460853dfd0437405501dfaa22b"
+      "operations": 182,
+      "sha256": "39758e56965fb16061401a7f5ff889c66e77d8fb3a9ffc0a2450e834f9d3cf64"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
   "scopes": {
-    "count": 76,
-    "sha256": "8156cfc99a113f377dc2241b02dd249a0ada7897e6d3ed39bf511a3bb39adc2f"
+    "count": 79,
+    "sha256": "328b3b4f6a4d5fe39745b6a087a2fe207aa12774b6642c42d09dedb5df92194e"
   },
   "migration": {
     "routes": 87,
@@ -20,12 +20,12 @@
   },
   "canonical": {
     "contractVersion": "1.0.0",
-    "sha256": "cc263ef15c877a4ee8d2500733352e5ac08abbd144b4abbdd170a6e7719ddb33"
+    "sha256": "02577e032f26bacb42c9cf61e5becc9ab2b8ddcd25e898a727a887fa938cc986"
   },
   "capabilities": {
-    "operations": 176,
+    "operations": 182,
     "productCapabilities": 73,
-    "sha256": "d19bb0f7834e4caf6b64c762a549c6c8352344549010ddcfe19cad606ee4ea51"
+    "sha256": "4a40798eafee4ac0d8927fa8b30e5ab2ed51070ac6101a88aa41a3ebb639f243"
   },
-  "sourceCommit": "41d50e24ca2f3f2fe95729808c9624f9f516c001"
+  "sourceCommit": "829872f3c3cabaede39aa2672b1d0e9db0a75680"
 }

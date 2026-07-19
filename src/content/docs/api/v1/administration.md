@@ -13,6 +13,12 @@ They do not expose a generic permission bypass.
 | Roles | List, get, create, update, delete | `roles:read`, `roles:write` |
 | Groups | List, get, create, update, delete | `groups:read`, `groups:write` |
 
+Safe workspace defaults are a separate revisioned resource. They expose only workspace name,
+currency, default language, planned-time default, productivity default, and scheduling visibility.
+Read and update them with `workspace-settings:read` and `workspace-settings:write`; provider,
+billing, storage, role, feature-gate, and integration configuration is never part of this resource.
+See [platform discovery and settings](/api/v1/platform-control-plane/).
+
 ## PII is a separate grant
 
 Member and invitation responses omit names, email addresses, positions, and contact identifiers by

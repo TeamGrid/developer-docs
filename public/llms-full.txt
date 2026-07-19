@@ -1811,6 +1811,12 @@ They do not expose a generic permission bypass.
 | Roles | List, get, create, update, delete | `roles:read`, `roles:write` |
 | Groups | List, get, create, update, delete | `groups:read`, `groups:write` |
 
+Safe workspace defaults are a separate revisioned resource. They expose only workspace name,
+currency, default language, planned-time default, productivity default, and scheduling visibility.
+Read and update them with `workspace-settings:read` and `workspace-settings:write`; provider,
+billing, storage, role, feature-gate, and integration configuration is never part of this resource.
+See [platform discovery and settings](/api/v1/platform-control-plane/).
+
 ## PII is a separate grant
 
 Member and invitation responses omit names, email addresses, positions, and contact identifiers by
@@ -1858,7 +1864,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 
 | Scope | Access |
 | --- | --- |
-| `workspace:read` | Workspace metadata |
+| `workspace:read` | Workspace metadata, system capabilities, and workspace entitlements |
+| `workspace-settings:read`, `workspace-settings:write` | Read or compare-and-set the six-field safe workspace-settings projection; sensitive administration scopes |
 | `projects:read`, `projects:write` | Project reads and field mutations |
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
@@ -1901,6 +1908,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `automations:run` | Abort a running automation; sensitive execution-control scope |
 | `integrations:read` | Installation status without provider secrets; sensitive scope |
 | `changes:read` | Cell-local, metadata-only change events for resumable synchronization |
+| `events:read` | Read the authorization-filtered event and channel catalog |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
 
@@ -1911,7 +1919,7 @@ from product responses. Without `project-statements:finance:read`, budget statem
 scope.
 
 A `services:read` credential can read service billing rates. Calendar and absence data, comments,
-documents, files, member PII, administration, exports, automation metadata, integration status, call
+documents, files, workspace settings, member PII, administration, exports, automation metadata, integration status, call
 notes, contacts, users, audit events, finance resources, and webhook delivery metadata can also
 contain sensitive information. Use separate credentials for unrelated systems so each can be
 rotated and revoked independently.
@@ -2283,7 +2291,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, signed webhook deliveries, and a cell-local change feed. The current controlled-beta contract contains 107 paths and 176 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, signed webhook deliveries, and a cell-local change feed. The current controlled-beta contract contains 112 paths and 182 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
 
 ## Base URL
 
@@ -2303,11 +2311,13 @@ Do not send a bearer credential through a cross-region redirect. The target cell
 
 ## Available resources
 
-API v1 currently provides workspace and administration resources; projects, tasks, time entries,
+API v1 currently provides capability discovery, workspace entitlements and safe workspace settings;
+workspace and administration resources; projects, tasks, time entries,
 planned work, appointments, absences, and availability; contacts, comments, activity, documents,
 files, call notes, and contact groups; product and project-statement resources; federated search and
 bounded export jobs; automation definitions, action metadata, runs, and integration-installation
-status; plus audit, change-feed, webhook, and credential-owned asynchronous-operation resources.
+status; plus audit, an authorization-filtered event catalog, change-feed, webhook, secret-rotation,
+and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
@@ -2321,8 +2331,9 @@ retention, recovery, and multi-region contract.
 
 1. [Create and protect a scoped credential](/api/v1/authentication/).
 2. [Run the quickstart](/api/v1/quickstart/).
-3. Choose the [SDK](/sdk/) or [CLI](/cli/) if it fits your runtime.
-4. Review [resources and semantics](/api/v1/resources-and-semantics/) and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.
+3. Negotiate [capabilities, entitlements, events, and safe settings](/api/v1/platform-control-plane/).
+4. Choose the [SDK](/sdk/) or [CLI](/cli/) if it fits your runtime.
+5. Review [resources and semantics](/api/v1/resources-and-semantics/) and [pagination and idempotency](/api/v1/pagination/) before implementing synchronization or writes.
 
 <!-- api/v1/pagination.md -->
 ---
@@ -2425,6 +2436,88 @@ teamgrid planned-work replace TASK_ID --data @schedule.json \
 
 The CLI requires `--yes` for the full replacement in non-interactive automation. Planned-work
 lists, task schedules, writes, and operation polling are forbidden in every MCP profile.
+
+<!-- api/v1/platform-control-plane.md -->
+---
+title: Platform discovery and settings
+description: Negotiate TeamGrid capabilities, workspace entitlements, event channels, and safe revisioned workspace defaults.
+---
+
+The API exposes a small control plane so an integration can discover what its credential can use
+without reading billing internals, raw feature flags, roles, provider configuration, or secrets.
+Every result is calculated in the workspace's owning cell and reflects the current credential,
+scopes, product entitlement, and workspace lock state.
+
+| Resource | Endpoint | Scope | Purpose |
+| --- | --- | --- | --- |
+| System capabilities | `GET /v1/system/capabilities` | `workspace:read` | Compare product entitlement with this credential's accessible domains |
+| Workspace entitlements | `GET /v1/workspace/entitlements` | `workspace:read` | Read stable, secret-free product availability identifiers |
+| Workspace settings | `GET /v1/workspace/settings` | `workspace-settings:read` | Read six safe workspace defaults and their `wst1` revision |
+| Event catalog | `GET /v1/events/catalog` | `events:read` | List only webhook and change-feed events this credential can consume |
+
+## Capabilities and entitlements
+
+A system capability has two independent booleans:
+
+- `entitled` says the workspace's current product configuration permits the capability.
+- `accessible` says the capability is entitled **and** the credential has a relevant domain scope.
+
+Workspace entitlements are a plan-level, secret-free projection. Identifiers are stable public
+contract names, not internal plan names. Do not cache either response as permanent authorization:
+TeamGrid re-evaluates scopes, entitlement, credential state, and workspace state on every domain
+request.
+
+SDK and CLI equivalents are `client.system.getCapabilities()`,
+`client.workspace.getEntitlements()`, `teamgrid system capabilities`, and
+`teamgrid workspace entitlements`.
+
+## Safe workspace settings
+
+The settings resource contains only:
+
+- `name`;
+- `currency`;
+- `defaultLanguage`;
+- `defaultPlannedTime`;
+- `defaultProductivity`; and
+- `defaultShowInScheduling`.
+
+Read the resource and retain its strong `ETag`. Patch a non-empty subset with that ETag and a stable
+idempotency key:
+
+```bash
+curl --request PATCH \
+  --url https://api.de.teamgrid.app/v1/workspace/settings \
+  --header 'Authorization: Bearer <credential>' \
+  --header 'Content-Type: application/json' \
+  --header 'If-Match: "wst1-<64 hex characters>"' \
+  --header 'Idempotency-Key: workspace-defaults-2026-07' \
+  --data '{"defaultLanguage":"en","defaultShowInScheduling":true}'
+```
+
+The owning cell compares the complete safe snapshot atomically. A stale revision returns `412`; a
+missing precondition returns `428`. The operation record is cell-local and makes a retry recoverable
+even when the settings mutation committed before audit persistence completed. Replaying the same
+key and request returns the completed result; reusing the key for different settings conflicts.
+
+The credential issuer must still be an active workspace member with permission to manage general
+settings when the write executes. This extra administrative recheck applies to the settings write,
+not to ordinary workspace-wide service-credential reads.
+
+Use `client.workspaceSettings.get()` and `client.workspaceSettings.update(...)`, or
+`teamgrid workspace-settings get|update`. These operations are forbidden through MCP.
+
+## Authorization-filtered event catalog
+
+The event catalog is not a global list. Webhook definitions appear only when the credential holds
+their required resource scope. Change-feed definitions additionally require `changes:read` and the
+matching resource read scope. Each item reports its channel and required scopes; change-feed items
+also report the resource type and `created`, `updated`, or `deleted` operation.
+
+Use the catalog to configure an integration UI, then follow the [change-feed recovery
+contract](/api/v1/change-feed/) or [signed webhook verification flow](/api/v1/webhooks/). The SDK and
+CLI equivalents are `client.events.getCatalog()` and `teamgrid events catalog`. Event catalog access
+does not grant access to any event or resource by itself.
 
 <!-- api/v1/project-templates.md -->
 ---
@@ -2708,7 +2801,50 @@ title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
 ---
 
-Webhook registrations created through API v1 use signed delivery version 2. The create response returns a signing secret once; store it in the receiver's secret manager.
+Webhook registrations created through API v1 use signed delivery version 2. The create response
+returns a signing secret once; store it in the receiver's secret manager. The CLI therefore requires
+`--secret-file` or piped `--secret-stdout` for create as well as rotation and never sends the initial
+secret through its normal table or JSON renderer.
+
+List and get responses are credential-owned and secret-free. They carry a strong `whk1` ETag that
+changes when configuration, ownership, signing generation, or enabled state changes; delivery
+counters do not make the configuration ETag flap.
+
+## Rotate a signing secret
+
+Read the webhook first and pass its exact strong ETag to the rotation operation. Rotation requires
+`webhooks:write`, an empty body, `If-Match`, and a stable `Idempotency-Key`:
+
+```bash
+curl --request POST \
+  --url https://api.de.teamgrid.app/v1/webhooks/WEBHOOK_ID/secret-rotation \
+  --header 'Authorization: Bearer <credential>' \
+  --header 'If-Match: "whk1-<64 hex characters>"' \
+  --header 'Idempotency-Key: rotate-webhook-2026-07'
+```
+
+The no-store response reveals the replacement `whsec_v2_...` secret exactly through this operation.
+Persist it immediately and treat it as current. If the response is lost, retry the identical request
+with the same idempotency key and precondition; the replay returns the same completed rotation rather
+than incrementing the generation again. Reusing the key for another request conflicts. A stale ETag
+returns `412`, and a missing precondition returns `428`.
+
+Do not put the secret or idempotency key in a URL, shell history, log field, ticket, or MCP transcript.
+Webhook secret rotation is deliberately unavailable through MCP.
+
+The CLI requires an explicit safe destination:
+
+```bash
+teamgrid webhooks rotate-secret WEBHOOK_ID \
+  --if-match 'whk1-<64 hex characters>' \
+  --idempotency-key rotate-webhook-2026-07 \
+  --secret-file ./webhook-secret.txt \
+  --yes
+```
+
+The file path is created with mode `0600` and is never overwritten. Use `--secret-stdout` only for a
+controlled pipe into a secret manager; it writes the raw secret and no other output, and refuses an
+interactive terminal.
 
 ## Delivery headers
 
@@ -2761,8 +2897,13 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-19
 
-- Expanded the controlled-beta API v1 contract to 107 paths and 176 operations, with matching SDK
+- Expanded the controlled-beta API v1 contract to 112 paths and 182 operations, with matching SDK
   methods, CLI commands, and an explicit MCP exposure decision for every operation.
+- Added scope- and entitlement-aware system capabilities, secret-free workspace entitlements, a
+  six-field revisioned workspace-settings resource, and an authorization-filtered event catalog.
+- Added credential-owned webhook configuration revisions and replay-safe reveal-once signing-secret
+  rotation. Workspace administration, capability negotiation, event discovery, and secret rotation
+  remain unavailable through MCP.
 - Added a machine-checked 73-entry product capability ledger plus a canonical SHA-256 manifest for
   the v0 inventory, both OpenAPI contracts, and the cross-interface policy.
 - Added asynchronous project complete, reopen, archive, and restore operations with idempotent start,
@@ -2900,7 +3041,26 @@ teamgrid auth profiles
 teamgrid auth status [--check]
 teamgrid api-version
 teamgrid workspace
+teamgrid system capabilities
+teamgrid workspace entitlements
 ```
+
+## Platform discovery and settings
+
+```text
+teamgrid system capabilities
+teamgrid workspace entitlements
+teamgrid workspace-settings get
+teamgrid workspace-settings update --data <json|@file|->
+  --if-match REVISION --idempotency-key KEY
+teamgrid events catalog
+```
+
+Read workspace settings first and pass the returned `wst1` revision or strong ETag to update. A
+`412` means another administrator changed the safe settings snapshot; re-read it before deciding
+whether to retry. The settings projection contains only six documented fields and never provider,
+billing, storage, role, or integration configuration. Capability, entitlement, and event responses
+are current negotiation results, not permanent authorization grants.
 
 ## Projects and lifecycle operations
 
@@ -3225,17 +3385,31 @@ The CLI does not hide `410` reset-required or `503` temporarily-unavailable resp
 teamgrid webhooks list
 teamgrid webhooks get WEBHOOK_ID
 teamgrid webhooks create --data @webhook.json --idempotency-key webhook-42
+  (--secret-file PATH | --secret-stdout)
 teamgrid webhooks remove WEBHOOK_ID
+teamgrid webhooks rotate-secret WEBHOOK_ID --if-match REVISION
+  [--idempotency-key KEY] (--secret-file PATH | --secret-stdout) [--yes]
 teamgrid webhook-deliveries list --webhook-id WEBHOOK_ID --state failed --event task_updated
 teamgrid webhook-deliveries get DELIVERY_ID
 ```
+
+Webhook create and `rotate-secret` require exactly one explicit secret destination. Rotation also
+asks for confirmation. `--secret-file` is recommended: it creates a new mode-`0600` file atomically
+and never overwrites an existing path; normal output contains only a secret-free receipt.
+`--secret-stdout` emits only the raw secret plus a newline and no metadata, for an explicitly
+controlled pipe into a secret manager; it refuses to write to an interactive terminal.
+The secret is never accepted in an argument or URL and is never sent through table, JSON, stderr, or
+debug output. Reuse the same idempotency key and precondition to recover the same rotation after a
+lost response.
 
 Delivery history requires `webhooks:read` and returns only records owned by the authenticated
 credential. List filters include `--webhook-id`, `--event`, and
 `--state delivering|failed|retrying|skipped|succeeded`. URLs, payloads, headers, bodies, and secrets
 are never returned.
 
-`--data` accepts inline JSON, `@path/to/file.json`, or `-` for standard input. Archive and remove commands ask for confirmation; use `--yes` only in an intentionally non-interactive workflow.
+`--data` accepts inline JSON, `@path/to/file.json`, or `-` for standard input. Archive, remove, and
+secret-rotation commands ask for confirmation; use `--yes` only in an intentionally non-interactive
+workflow.
 
 <!-- cli/index.md -->
 ---
@@ -3335,8 +3509,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The current controlled-beta API v1 contract contains 107 paths and 176 operations. The TypeScript SDK
-and CLI map all 176 operations. MCP has an explicit decision for every operation: 30 bounded reads
+The current controlled-beta API v1 contract contains 112 paths and 182 operations. The TypeScript SDK
+and CLI map all 182 operations. MCP has an explicit decision for every operation: 30 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, the high-volume change feed, webhook delivery
 history, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -3357,14 +3531,15 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the controlled-beta contract | 34 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the controlled-beta contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 18 | The workflow remains on the roadmap and is not part of the current contract |
+| Planned | 13 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
-Examples of planned work include workspace settings and entitlements, service accounts, delegated
-OAuth, project sharing, task ordering, subtasks and bulk operations, billing, telephony, file sharing,
-orders, reports, imports, audit export, an event catalog, and webhook-secret rotation. Partial
+System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
+and webhook-secret rotation are now released in the controlled-beta contract. Remaining planned
+work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
+operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
 classification applies to discovery, credentials, several core project, task, contact and
 time-entry projections, custom-field values, project templates, planned-work lifecycle, audit,
 webhooks, and the change feed where additional product semantics remain.
@@ -3449,7 +3624,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 
 API v0 remains available for compatibility. Its contract is frozen and documented separately, with migration guidance beside the legacy reference.
 
-API v1 currently governs 176 operations across 107 paths. That number measures contract parity across
+API v1 currently governs 182 operations across 112 paths. That number measures contract parity across
 the HTTP API, SDK, and CLI—not complete TeamGrid product coverage. The
 [capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
 areas explicitly.
@@ -3620,7 +3795,9 @@ Federated search is the only additional curated tool. It requires `search:read` 
 domain read scope, accepts at most three resource types and 50 results, and is marked sensitive
 because one query can cross several authorized domains. Calendar, absence, availability, comments,
 activity, documents, files, workspace administration, exports, automation metadata and execution,
-and integration-installation status remain forbidden even in `all`.
+integration-installation status, capability and entitlement negotiation, the event catalog,
+workspace settings, and webhook-secret rotation remain forbidden even in `all`. Reveal-once secrets
+must never enter a model transcript.
 
 ## Security model
 
@@ -3688,7 +3865,9 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 
 | Client | Operations |
 | --- | --- |
-| `system`, `workspace` | API discovery and authenticated workspace metadata |
+| `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
+| `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
+| `events` | Read the authorization-filtered webhook and change-feed event catalog |
 | `projects` | List, get, create, update, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
 | `changes` | Create checkpoints, list metadata changes, and run snapshot-then-catch-up |
@@ -3716,7 +3895,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
 | `auditEvents` | List credential and mutation audit events |
-| `webhooks` | List, get, create, remove |
+| `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
 | `members` | List, get, change role, and remove workspace members |
 | `invitations` | List, get, create, resend, and cancel invitations |
@@ -3746,6 +3925,11 @@ headers, secrets, and tenant-routing internals.
   precondition. Other PUT, PATCH, and DELETE requests are not retried automatically.
 - Redirects are not followed.
 - Responses larger than the configured safety limit are rejected.
+- Workspace-settings updates require a strong `wst1` precondition and idempotency key. The SDK
+  binds the response ETag to its returned revision and rejects extra internal settings fields.
+- Webhook get/create/rotation responses bind their strong `whk1` ETag to the returned configuration
+  or rotation revision. A rotation secret exists only in the no-store result and should be moved
+  directly into a secret manager rather than logged or serialized with unrelated data.
 - `exports.download(id, { intentToken, maxBytes })` carries the opaque intent only in
   `X-TeamGrid-Export-Download-Intent`, never in a URL, and returns bounded binary data without
   exposing a private-storage URL.

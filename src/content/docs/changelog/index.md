@@ -14,8 +14,13 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-19
 
-- Expanded the controlled-beta API v1 contract to 107 paths and 176 operations, with matching SDK
+- Expanded the controlled-beta API v1 contract to 112 paths and 182 operations, with matching SDK
   methods, CLI commands, and an explicit MCP exposure decision for every operation.
+- Added scope- and entitlement-aware system capabilities, secret-free workspace entitlements, a
+  six-field revisioned workspace-settings resource, and an authorization-filtered event catalog.
+- Added credential-owned webhook configuration revisions and replay-safe reveal-once signing-secret
+  rotation. Workspace administration, capability negotiation, event discovery, and secret rotation
+  remain unavailable through MCP.
 - Added a machine-checked 73-entry product capability ledger plus a canonical SHA-256 manifest for
   the v0 inventory, both OpenAPI contracts, and the cross-interface policy.
 - Added asynchronous project complete, reopen, archive, and restore operations with idempotent start,

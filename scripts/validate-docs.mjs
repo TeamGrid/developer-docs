@@ -43,6 +43,7 @@ if (manifest.canonical?.bytes !== canonicalManifestContent.length) {
   fail('Canonical contract manifest byte count does not match sources/contracts.json.')
 }
 const canonicalArtifactFiles = {
+  'contracts/developer-action-policy-registry.json': 'developer-action-policy-registry.json',
   'contracts/developer-capabilities.json': 'developer-capabilities.json',
   'contracts/developer-operation-bindings.json': 'developer-operation-bindings.json',
   'contracts/developer-scopes.json': 'developer-scopes.json',
@@ -50,6 +51,27 @@ const canonicalArtifactFiles = {
   'contracts/v0-to-v1-migration.json': 'v0-to-v1-migration.json',
   'openapi/v0.json': 'v0.json',
   'openapi/v1.json': 'v1.json',
+}
+
+const actionPolicyContent = await readFile(path.join(
+  root,
+  'public',
+  'openapi',
+  'developer-action-policy-registry.json',
+))
+const actionPolicy = JSON.parse(actionPolicyContent.toString('utf8'))
+const actionPolicySha256 = createHash('sha256').update(actionPolicyContent).digest('hex')
+if (
+  manifest.actionPolicyRegistry?.sha256 !== actionPolicySha256
+  || manifest.actionPolicyRegistry?.registrySha256 !== actionPolicy.registrySha256
+  || manifest.actionPolicyRegistry?.registryVersion !== actionPolicy.registryVersion
+  || manifest.actionPolicyRegistry?.actionPolicies !== actionPolicy.actionPolicyCount
+  || manifest.actionPolicyRegistry?.authenticatedActionPolicies
+    !== actionPolicy.authenticatedActionPolicyCount
+  || manifest.actionPolicyRegistry?.policyFamilies
+    !== actionPolicy.principalPolicyFamilyIds?.length
+) {
+  fail('Developer action-policy registry does not match sources/contracts.json.')
 }
 for (const artifact of canonicalManifest.artifacts || []) {
   const filename = canonicalArtifactFiles[artifact.path]

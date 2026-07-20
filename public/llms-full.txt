@@ -1858,6 +1858,12 @@ API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a 
 Authorization: Bearer <credential>
 ```
 
+The current `tg_sk_v1_` credential is the controlled-beta credential format and remains bound to
+the existing workspace authorization path. It is not a native autonomous service account. Native
+personal-access credentials, service accounts, and delegated OAuth use separate principal models
+and stay unavailable until their cell-local rollout gates are qualified. Existing credentials are
+not converted automatically.
+
 ## Security model
 
 The credential prefix contains an untrusted routing hint. The target TeamGrid cell still verifies the complete credential, workspace, region, cell, audience, expiry, revocation state, workspace lock state, and required scopes.
@@ -1867,6 +1873,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
+- The API and App cell must negotiate the exact code-owned 182-operation action-policy registry
+  before the service is ready.
 
 ## Scopes
 
@@ -3086,6 +3094,10 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-20
 
+- Added the code-owned `developer-action-policy-v3` registry for all 182 operations, including 12
+  principal-policy rollout families, product-permission and grant resolvers, sensitive overlays,
+  allowed principal kinds, and a pinned SHA-256 identity. API/App readiness now rejects registry
+  drift, and the identity is part of the canonical manifest mirrored by packages and documentation.
 - Published the internal `1.0.0-beta.1` contract checkpoint without changing the controlled-beta
   claim: the contract still contains 112 paths and 182 operations and does not claim complete
   TeamGrid product coverage.
@@ -3764,6 +3776,25 @@ metadata, custom fields, commerce resources, audit events, webhooks, delivery hi
 planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 The change feed supplies a metadata-only, cell-local synchronization boundary rather than resource
 payloads.
+
+## Authorization registry
+
+Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
+registry for all 182 operations. Exactly one discovery operation is anonymous; all 181 remaining
+operations are bound to their credential scopes, App execution methods, product-permission
+resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
+field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
+
+The current registry identity is `developer-action-policy-v3` with SHA-256
+`b953f04a8769377a48514429ba681d6963eb65d1826183f907bc331129ba4ec5`. The API and owning App cell
+exchange this exact identity during startup compatibility negotiation and fail readiness on any
+mismatch. The same identity is included in the [machine-readable contract artifact](/openapi/developer-action-policy-registry.json)
+and canonical deployment manifest.
+
+This registry does not make native service accounts or delegated OAuth generally available. Those
+principal types remain separately feature-gated until cell-local migration, shadow comparison, and
+family qualification have completed. Existing credentials are never silently converted into
+autonomous service accounts.
 
 ## Product capability ledger
 
@@ -4498,6 +4529,23 @@ API credentials are bearer secrets. TeamGrid reveals a new API v1 credential onc
 - Treat a copied credential as compromised, even if it was not used.
 
 The location prefix helps official clients choose the correct regional endpoint. It is not an authorization decision. The destination cell validates the full secret and workspace permissions.
+
+## Authorization boundary
+
+Every authenticated API v1 operation is registered once in a canonical action-policy registry. A
+request is allowed only at the intersection of credential authentication, active principal and
+workspace state, owning region and cell, entitlements, effective scopes, current product
+permissions, resource grants, conditional domain policy, sensitive-field overlays, and the domain
+command's own invariants. If a required evaluator or registry identity is unavailable, the request
+fails closed.
+
+SDK, CLI, and MCP are clients of this same API boundary. They cannot add authority. MCP further
+removes most sensitive and all write operations from its local tool catalog, but its allowed reads
+still pass through the complete API policy.
+
+The current controlled beta still issues `tg_sk_v1_` credentials. Native personal-access tokens,
+autonomous service accounts, and delegated OAuth remain separate rollout gates; no legacy
+credential is automatically promoted to a service account.
 
 ## Sensitive resource scopes
 

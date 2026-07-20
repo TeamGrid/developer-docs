@@ -16,6 +16,23 @@ API credentials are bearer secrets. TeamGrid reveals a new API v1 credential onc
 
 The location prefix helps official clients choose the correct regional endpoint. It is not an authorization decision. The destination cell validates the full secret and workspace permissions.
 
+## Authorization boundary
+
+Every authenticated API v1 operation is registered once in a canonical action-policy registry. A
+request is allowed only at the intersection of credential authentication, active principal and
+workspace state, owning region and cell, entitlements, effective scopes, current product
+permissions, resource grants, conditional domain policy, sensitive-field overlays, and the domain
+command's own invariants. If a required evaluator or registry identity is unavailable, the request
+fails closed.
+
+SDK, CLI, and MCP are clients of this same API boundary. They cannot add authority. MCP further
+removes most sensitive and all write operations from its local tool catalog, but its allowed reads
+still pass through the complete API policy.
+
+The current controlled beta still issues `tg_sk_v1_` credentials. Native personal-access tokens,
+autonomous service accounts, and delegated OAuth remain separate rollout gates; no legacy
+credential is automatically promoted to a service account.
+
 ## Sensitive resource scopes
 
 Finance scopes are overlays and must be paired with the corresponding base product or

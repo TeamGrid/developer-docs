@@ -20,6 +20,25 @@ planned work. Finance fields are scope-gated, and MCP product reads always remov
 The change feed supplies a metadata-only, cell-local synchronization boundary rather than resource
 payloads.
 
+## Authorization registry
+
+Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
+registry for all 182 operations. Exactly one discovery operation is anonymous; all 181 remaining
+operations are bound to their credential scopes, App execution methods, product-permission
+resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
+field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
+
+The current registry identity is `developer-action-policy-v3` with SHA-256
+`b953f04a8769377a48514429ba681d6963eb65d1826183f907bc331129ba4ec5`. The API and owning App cell
+exchange this exact identity during startup compatibility negotiation and fail readiness on any
+mismatch. The same identity is included in the [machine-readable contract artifact](/openapi/developer-action-policy-registry.json)
+and canonical deployment manifest.
+
+This registry does not make native service accounts or delegated OAuth generally available. Those
+principal types remain separately feature-gated until cell-local migration, shadow comparison, and
+family qualification have completed. Existing credentials are never silently converted into
+autonomous service accounts.
+
 ## Product capability ledger
 
 Operation parity is not the same as total TeamGrid product coverage. The separate product ledger

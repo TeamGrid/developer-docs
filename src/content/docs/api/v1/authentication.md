@@ -9,6 +9,12 @@ API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a 
 Authorization: Bearer <credential>
 ```
 
+The current `tg_sk_v1_` credential is the controlled-beta credential format and remains bound to
+the existing workspace authorization path. It is not a native autonomous service account. Native
+personal-access credentials, service accounts, and delegated OAuth use separate principal models
+and stay unavailable until their cell-local rollout gates are qualified. Existing credentials are
+not converted automatically.
+
 ## Security model
 
 The credential prefix contains an untrusted routing hint. The target TeamGrid cell still verifies the complete credential, workspace, region, cell, audience, expiry, revocation state, workspace lock state, and required scopes.
@@ -18,6 +24,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
+- The API and App cell must negotiate the exact code-owned 182-operation action-policy registry
+  before the service is ready.
 
 ## Scopes
 

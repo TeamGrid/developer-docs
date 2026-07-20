@@ -77,6 +77,7 @@ if (canonicalManifest.schemaVersion !== 1 || !Array.isArray(canonicalManifest.ar
   throw new Error('The API source commit has an unsupported developer contract manifest.')
 }
 const artifactDestinations = {
+  'contracts/developer-action-policy-registry.json': 'developer-action-policy-registry.json',
   'contracts/developer-capabilities.json': 'developer-capabilities.json',
   'contracts/developer-operation-bindings.json': 'developer-operation-bindings.json',
   'contracts/developer-scopes.json': 'developer-scopes.json',
@@ -176,6 +177,29 @@ manifest.operationBindings = {
   referencedAppMethods: operationBindingDocument.summary.referencedAppMethodIds.length,
   remainingDirectCellReads: operationBindingDocument.summary.directCellReadOperations.length,
   sha256: createHash('sha256').update(operationBindingContent).digest('hex'),
+}
+
+const actionPolicySource = 'contracts/developer-action-policy-registry.json'
+const actionPolicyContent = await readSourceFile(actionPolicySource)
+const actionPolicyDocument = JSON.parse(actionPolicyContent.toString('utf8'))
+if (
+  actionPolicyDocument.schemaVersion !== 1
+  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v3'
+  || !/^[a-f0-9]{64}$/.test(actionPolicyDocument.registrySha256 || '')
+  || actionPolicyDocument.actionPolicyCount !== operationBindingDocument.operations.length
+  || actionPolicyDocument.authenticatedActionPolicyCount
+    !== operationBindingDocument.summary.authenticatedOperations
+  || !Array.isArray(actionPolicyDocument.principalPolicyFamilyIds)
+) {
+  throw new Error(`${actionPolicySource} is not the expected action-policy contract.`)
+}
+manifest.actionPolicyRegistry = {
+  actionPolicies: actionPolicyDocument.actionPolicyCount,
+  authenticatedActionPolicies: actionPolicyDocument.authenticatedActionPolicyCount,
+  policyFamilies: actionPolicyDocument.principalPolicyFamilyIds.length,
+  registrySha256: actionPolicyDocument.registrySha256,
+  registryVersion: actionPolicyDocument.registryVersion,
+  sha256: createHash('sha256').update(actionPolicyContent).digest('hex'),
 }
 
 await mkdir(path.join(root, 'sources'), { recursive: true })

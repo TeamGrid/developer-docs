@@ -14,6 +14,10 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-20
 
+- Added the code-owned `developer-action-policy-v3` registry for all 182 operations, including 12
+  principal-policy rollout families, product-permission and grant resolvers, sensitive overlays,
+  allowed principal kinds, and a pinned SHA-256 identity. API/App readiness now rejects registry
+  drift, and the identity is part of the canonical manifest mirrored by packages and documentation.
 - Published the internal `1.0.0-beta.1` contract checkpoint without changing the controlled-beta
   claim: the contract still contains 112 paths and 182 operations and does not claim complete
   TeamGrid product coverage.

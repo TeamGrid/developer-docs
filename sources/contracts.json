@@ -7,14 +7,14 @@
     },
     "v1": {
       "operations": 182,
-      "sha256": "8236af43d68e2beb90c40b75f7931de94300beb8ee4e5529ca3e479724b30246"
+      "sha256": "4d390162bdef601d0e217e1e5ebe1ca48ee70e7f43e5d373d3edfd8ce38f85d9"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "6c49d2f798d73164b82ccbba712622b331395b03",
+  "sourceCommit": "176493414891c5bb289c28586080451a6cc68275",
   "scopes": {
     "count": 79,
-    "sha256": "328b3b4f6a4d5fe39745b6a087a2fe207aa12774b6642c42d09dedb5df92194e"
+    "sha256": "930a215e5a2f9852b1b8af036eb67a4946a2a16d3b19405622332fa7ebaf4757"
   },
   "migration": {
     "routes": 87,
@@ -23,7 +23,7 @@
   "canonical": {
     "contractVersion": "1.0.0-beta.1",
     "bytes": 2365,
-    "sha256": "175125e3430dec608c3c70aa3d642375079f0f1a90b553dee6dddbed916039d4"
+    "sha256": "fc6d7162b4529910ccfd08312ab8ac8d2f13af884e85faf9f52e550d41599129"
   },
   "capabilities": {
     "operations": 182,
@@ -34,14 +34,14 @@
     "operations": 182,
     "referencedAppMethods": 181,
     "remainingDirectCellReads": 0,
-    "sha256": "255636c266c48cb18e969382f08b52631919271242c322dc021d26c30d428222"
+    "sha256": "316514512924b0917018576e1d013120c2eb5f37e5d475a7e0b1695911427749"
   },
   "actionPolicyRegistry": {
     "actionPolicies": 182,
     "authenticatedActionPolicies": 181,
     "policyFamilies": 12,
-    "registrySha256": "b953f04a8769377a48514429ba681d6963eb65d1826183f907bc331129ba4ec5",
-    "registryVersion": "developer-action-policy-v3",
-    "sha256": "5dcd82242ee1d6948693789dbda5fa720573e9384dd06d416c2414023c3d4ff3"
+    "registrySha256": "66f732888d35542f29470545d4601c1c5cc653d37a9c55d7d2329896ad779002",
+    "registryVersion": "developer-action-policy-v4",
+    "sha256": "a18a4c36a0c41eda1ee25a1644d834e1e22114e28be2710f6b0951fd5bcf9748"
   }
 }

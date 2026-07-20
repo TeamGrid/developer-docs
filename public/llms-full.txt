@@ -3094,10 +3094,11 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-20
 
-- Added the code-owned `developer-action-policy-v3` registry for all 182 operations, including 12
-  principal-policy rollout families, product-permission and grant resolvers, sensitive overlays,
-  allowed principal kinds, and a pinned SHA-256 identity. API/App readiness now rejects registry
-  drift, and the identity is part of the canonical manifest mirrored by packages and documentation.
+- Published the code-owned `developer-action-policy-v4` registry for all 182 operations and all 12
+  principal-policy families. V4 adds the conditional scopes and dynamic target policies required by
+  collaboration, automation, custom-field content, calendar, work-management, and search/export;
+  it is pinned by SHA-256 across API, App, packages, and documentation. Native personal,
+  service-account, and OAuth issuance remains closed and is not implied by this contract update.
 - Published the internal `1.0.0-beta.1` contract checkpoint without changing the controlled-beta
   claim: the contract still contains 112 paths and 182 operations and does not claim complete
   TeamGrid product coverage.
@@ -3785,11 +3786,17 @@ operations are bound to their credential scopes, App execution methods, product-
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
 
-The current registry identity is `developer-action-policy-v3` with SHA-256
-`b953f04a8769377a48514429ba681d6963eb65d1826183f907bc331129ba4ec5`. The API and owning App cell
+The current registry identity is `developer-action-policy-v4` with SHA-256
+`66f732888d35542f29470545d4601c1c5cc653d37a9c55d7d2329896ad779002`. The API and owning App cell
 exchange this exact identity during startup compatibility negotiation and fail readiness on any
 mismatch. The same identity is included in the [machine-readable contract artifact](/openapi/developer-action-policy-registry.json)
 and canonical deployment manifest.
+
+V4 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+custom-field content, calendar, work-management, and search/export handlers. The owning App cell
+resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
+for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
+alone does not activate principal enforcement.
 
 This registry does not make native service accounts or delegated OAuth generally available. Those
 principal types remain separately feature-gated until cell-local migration, shadow comparison, and

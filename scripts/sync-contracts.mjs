@@ -184,7 +184,7 @@ const actionPolicyContent = await readSourceFile(actionPolicySource)
 const actionPolicyDocument = JSON.parse(actionPolicyContent.toString('utf8'))
 if (
   actionPolicyDocument.schemaVersion !== 1
-  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v3'
+  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v4'
   || !/^[a-f0-9]{64}$/.test(actionPolicyDocument.registrySha256 || '')
   || actionPolicyDocument.actionPolicyCount !== operationBindingDocument.operations.length
   || actionPolicyDocument.authenticatedActionPolicyCount

@@ -28,11 +28,17 @@ operations are bound to their credential scopes, App execution methods, product-
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
 
-The current registry identity is `developer-action-policy-v3` with SHA-256
-`b953f04a8769377a48514429ba681d6963eb65d1826183f907bc331129ba4ec5`. The API and owning App cell
+The current registry identity is `developer-action-policy-v4` with SHA-256
+`66f732888d35542f29470545d4601c1c5cc653d37a9c55d7d2329896ad779002`. The API and owning App cell
 exchange this exact identity during startup compatibility negotiation and fail readiness on any
 mismatch. The same identity is included in the [machine-readable contract artifact](/openapi/developer-action-policy-registry.json)
 and canonical deployment manifest.
+
+V4 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+custom-field content, calendar, work-management, and search/export handlers. The owning App cell
+resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
+for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
+alone does not activate principal enforcement.
 
 This registry does not make native service accounts or delegated OAuth generally available. Those
 principal types remain separately feature-gated until cell-local migration, shadow comparison, and

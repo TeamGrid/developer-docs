@@ -11,19 +11,113 @@ The current prerelease is distributed through the explicit npm `next` channel:
 npm install @teamgrid/api-client@next
 ```
 
-Pin the exact version in reproducible deployments. Node.js 22.13 through 24 is supported.
+Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
 
 ## Resource clients
 
-The SDK exposes `workspace`, `projects`, `tasks`, `timeEntries`, `contacts`, `users`, `lists`, `services`, `tags`, `auditEvents`, and `webhooks` from one `TeamGridClient` instance.
+One `TeamGridClient` exposes the complete current API v1 surface:
+
+| Client | Operations |
+| --- | --- |
+| `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
+| `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
+| `events` | Read the authorization-filtered webhook and change-feed event catalog |
+| `projects` | List, get, create, update, complete, reopen, archive, restore |
+| `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
+| `changes` | Create checkpoints, list metadata changes, and run snapshot-then-catch-up |
+| `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
+| `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
+| `contacts` | List, get, create, update |
+| `callNotes` | List, get, create, archive, restore |
+| `contactGroups` | List, get, create, update, archive, restore |
+| `users` | List workspace users |
+| `lists`, `services`, `tags` | List, get, create, update, archive, restore |
+| `customFieldDefinitions` | List, get, create, update, archive, restore |
+| `customFieldValues` | Get, compare-and-set, and compare-and-clear a resource value |
+| `projectTemplates` | List, get, create, update, archive, restore, instantiate |
+| `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
+| `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |
+| `plannedWorkOperations` | Get and wait for credential-owned replacement status |
+| `appointments`, `absences` | Bounded list, get, create, compare-and-set update, archive, restore |
+| `availability` | Read derived user availability in an explicit time zone and bounded interval |
+| `activity` | List activity for an authorized contact, project, or task |
+| `comments` | List, get, create, archive, and restore plain-text target comments |
+| `documents` | List, get, create, compare-and-set update, archive, and restore documents |
+| `files` | List, get, rename, archive, restore, and create private download intents |
+| `fileUploadIntents` | Create, finalize, and cancel private upload intents |
+| `products` | List, get, create, update, archive |
+| `productGroups` | List, get, create, update, archive |
+| `projectStatements` | List, get, create, update, archive, restore |
+| `auditEvents` | List credential and mutation audit events |
+| `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
+| `webhookDeliveries` | List and get credential-owned delivery metadata |
+| `members` | List, get, change role, and remove workspace members |
+| `invitations` | List, get, create, resend, and cancel invitations |
+| `roles`, `groups` | List, get, create, compare-and-set update, and remove administration resources |
+| `search` | Federated search across explicitly authorized resource types |
+| `exports` | Create and inspect bounded jobs, create download intents, and download through the header-only capability |
+| `automationActions` | Read the public automation action catalog |
+| `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
+| `automationRuns` | List and get runs, or abort one with a strong revision |
+| `integrationInstallations` | Read redacted provider-installation status |
+
+Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
+accept an idempotency key through mutation options. Every method uses the scopes documented in the
+API reference; the SDK never adds authority beyond the supplied credential.
+
+The compatible package checkpoint for this contract is `1.0.0-alpha.3`; pin it explicitly after it
+is available on the configured npm channel. The SDK brands task, project, and project-template
+revisions and strong ETags as different TypeScript types. `TaskMutationOptions`, `ProjectMutationOptions`,
+`ProjectLifecycleMutationOptions`, `ProjectTemplateMutationOptions`, and
+`ProjectTemplateInstantiateOptions` require `ifMatch`; omitting it from any of the 14 resource-CAS
+mutations is a compile-time error. The canonical ETag helpers accept a server-issued raw revision
+and return the matching quoted `tsk1`, `prj1`, or `tpl1` type. Successful reads, creates, updates,
+restores, and state changes expose the verified, resource-branded response header through immutable
+`transport.headers.etag`; archive helpers return the typed ETag even though their HTTP response has
+no body.
+
+Types model finance-gated fields as optional. Product `purchasePrice` is present only with
+`products:finance:read`; project-statement budget entries and `purchasePrice` require
+`project-statements:finance:read`. Supplying acquisition cost on writes requires the corresponding
+finance write overlay. Webhook delivery objects deliberately omit URLs, request and response data,
+headers, secrets, and tenant-routing internals.
 
 ## Runtime behavior
 
 - GET requests can be retried after bounded transient failures.
 - POST requests are retried only when they include an idempotency key.
-- PATCH and DELETE requests are not retried automatically.
+- Planned-work PUT requests are retried only with their idempotency key and strong compare-and-set
+  precondition. Other PUT, PATCH, and DELETE requests are not retried automatically.
 - Redirects are not followed.
 - Responses larger than the configured safety limit are rejected.
+- Workspace-settings updates require a strong `wst1` precondition and idempotency key. The SDK
+  binds the response ETag to its returned revision and rejects extra internal settings fields.
+- Webhook get/create/rotation responses bind their strong `whk1` ETag to the returned configuration
+  or rotation revision. A rotation secret exists only in the no-store result and should be moved
+  directly into a secret manager rather than logged or serialized with unrelated data.
+- `exports.download(id, { intentToken, maxBytes })` carries the opaque intent only in
+  `X-TeamGrid-Export-Download-Intent`, never in a URL, and returns bounded binary data without
+  exposing a private-storage URL.
 - API and local client failures use separate error classes.
+- Every success envelope and error exposes immutable transport metadata for request IDs,
+  attempts, status, response headers, rate limits, retry timing, and idempotency replays.
+- Project lifecycle helpers poll the operation resource; they do not hide an unbounded background
+  job behind a synchronous project response.
+- Change-feed helpers do not download resource payloads. They establish a race-free checkpoint
+  boundary, stop catch-up only on `meta.page.caughtUp`, and leave durable application and polling
+  cadence to the caller.
+- Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
+  either that unquoted revision or the corresponding strong ETag and never sends wildcards.
+- Project, task, and project-template reads validate `developerRevision`, `developerUpdatedAt`, and
+  the body-to-ETag binding. Their 14 protected mutations require a correctly typed `ifMatch`; the
+  SDK does not automatically retry a `412` with a new business decision.
+- Template instantiation and planned-work replacement expose the accepted operation; bounded
+  `wait()` helpers poll credential-owned status without changing operation semantics.
+- Project lifecycle and template-instantiation wait helpers accept the validated
+  `acceptedOperation`. When supplied, every poll must preserve its operation identity, target,
+  action where applicable, and `sourceRevision`; CLI `--wait` always supplies this binding.
+
+Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
+pipelines therefore stay stable while application code can inspect `response.transport`.
 
 [Start with the SDK quickstart](/sdk/quickstart/).

@@ -20,7 +20,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 
 <CardGrid>
   <Card title="API v1">
-    The stable, cell-aware HTTP contract for service integrations. Use scoped credentials, cursor pagination, idempotent writes, and signed webhooks.
+    The versioned, cell-aware controlled-beta contract for service integrations. Use scoped credentials, cursor pagination, idempotent writes, and signed webhooks.
 
     [Explore API v1](/api/v1/)
   </Card>
@@ -44,5 +44,10 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 ## Existing v0 integrations
 
 API v0 remains available for compatibility. Its contract is frozen and documented separately, with migration guidance beside the legacy reference.
+
+API v1 currently governs 182 operations across 112 paths. That number measures contract parity across
+the HTTP API, SDK, and CLI—not complete TeamGrid product coverage. The
+[capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
+areas explicitly.
 
 [Open the API v0 documentation](/api/v0/)

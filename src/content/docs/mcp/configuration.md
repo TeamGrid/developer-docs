@@ -16,7 +16,7 @@ teamgrid auth status --check
 Add the server from a terminal:
 
 ```bash
-codex mcp add teamgrid -- teamgrid-mcp --profile default
+codex mcp add teamgrid -- teamgrid-mcp --profile default --tool-profile core
 ```
 
 Equivalent configuration in `~/.codex/config.toml`:
@@ -24,7 +24,7 @@ Equivalent configuration in `~/.codex/config.toml`:
 ```toml
 [mcp_servers.teamgrid]
 command = "teamgrid-mcp"
-args = ["--profile", "default"]
+args = ["--profile", "default", "--tool-profile", "core"]
 startup_timeout_sec = 10
 tool_timeout_sec = 60
 ```
@@ -40,7 +40,7 @@ Hosts that use JSON configuration commonly accept this stdio shape:
   "mcpServers": {
     "teamgrid": {
       "command": "teamgrid-mcp",
-      "args": ["--profile", "default"]
+      "args": ["--profile", "default", "--tool-profile", "core"]
     }
   }
 }
@@ -50,6 +50,9 @@ The exact settings location and configuration key depend on the host. Consult it
 
 ## Ephemeral environment
 
-The process may receive `TEAMGRID_API_TOKEN` and `TEAMGRID_API_BASE_URL`. Prefer the shared operating-system keychain profile for local desktop use. If a host cannot isolate environment variables or redact logs reliably, do not inject a credential into it.
+The process may receive `TEAMGRID_API_TOKEN`, `TEAMGRID_API_BASE_URL`, and
+`TEAMGRID_MCP_TOOL_PROFILE`. Prefer the shared operating-system keychain profile for local desktop
+use. If a host cannot isolate environment variables or redact logs reliably, do not inject a
+credential into it.
 
 The server communicates over standard input/output. It does not listen on a TCP port.

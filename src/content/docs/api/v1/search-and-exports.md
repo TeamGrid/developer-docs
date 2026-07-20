@@ -27,6 +27,12 @@ matching domain read scope and analytics permission are also enforced. Poll `GET
 the state is `succeeded` or `failed`; a successful job records whether the requested result was
 truncated.
 
+Exports stay in the workspace's owning cell and use a dedicated private bucket that is separate
+from normal file uploads. A completed job record is retained for approximately one hour. Objects
+under the private `developer-exports/` prefix expire after one day, so download a completed export
+promptly. If the job is no longer available, create a new export instead of retaining or replaying
+an old download capability.
+
 ## Header-only download capability
 
 Completed exports use a two-step download flow:

@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 1,
   "contracts": {
     "v0": {
       "operations": 87,
@@ -10,6 +11,7 @@
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
+  "sourceCommit": "fb8f362befc43dd6958e9d087dfcc4e0791cd23f",
   "scopes": {
     "count": 79,
     "sha256": "328b3b4f6a4d5fe39745b6a087a2fe207aa12774b6642c42d09dedb5df92194e"
@@ -20,12 +22,12 @@
   },
   "canonical": {
     "contractVersion": "1.0.0-beta.1",
+    "bytes": 1513,
     "sha256": "be16a1a4087978366f502426d090519f0f3c86849e084cb0c1bafe29edc1ba89"
   },
   "capabilities": {
     "operations": 182,
     "productCapabilities": 73,
     "sha256": "a1f91460803bd862021224e8c87e239b6464aa1ee190ff7e0d2bbaa100fcd7a7"
-  },
-  "sourceCommit": "2130069c56487e930513b7b275b82b17ccde5bcb"
+  }
 }

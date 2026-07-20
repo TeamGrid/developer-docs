@@ -18,6 +18,13 @@ function countOperations(document) {
 }
 
 const manifest = JSON.parse(await readFile(path.join(root, 'sources', 'contracts.json'), 'utf8'))
+if (
+  manifest.schemaVersion !== 1 ||
+  manifest.sourceRepository !== 'TeamGrid/teamgrid-api' ||
+  !/^[0-9a-f]{40}$/.test(manifest.sourceCommit || '')
+) {
+  fail('Contract source provenance is missing or invalid.')
+}
 const canonicalManifestFile = path.join(
   root,
   'public',
@@ -31,6 +38,9 @@ const canonicalManifestSha256 = createHash('sha256')
   .digest('hex')
 if (manifest.canonical?.sha256 !== canonicalManifestSha256) {
   fail('Canonical contract manifest does not match sources/contracts.json.')
+}
+if (manifest.canonical?.bytes !== canonicalManifestContent.length) {
+  fail('Canonical contract manifest byte count does not match sources/contracts.json.')
 }
 const canonicalArtifactFiles = {
   'contracts/developer-capabilities.json': 'developer-capabilities.json',

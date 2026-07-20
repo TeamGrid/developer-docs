@@ -12,7 +12,7 @@ Changes should keep documentation, contracts, and shipped packages aligned.
 
 ## Contract changes
 
-Do not hand-edit an OpenAPI contract here to document behavior that the runtime does not implement. Update and review the canonical API contract, then run the contract synchronization script and commit the resulting contract and provenance manifest together.
+Do not hand-edit an OpenAPI contract here to document behavior that the runtime does not implement. Update and review the canonical API contract, then run `npm run sync:contracts -- /path/to/teamgrid-api <full-api-commit-sha>` and commit the resulting contracts and `sources/contracts.json` together. The synchronizer deliberately reads from that Git object, so uncommitted API changes cannot be attributed to the recorded commit.
 
 ## Writing conventions
 

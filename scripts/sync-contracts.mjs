@@ -78,6 +78,7 @@ if (canonicalManifest.schemaVersion !== 1 || !Array.isArray(canonicalManifest.ar
 }
 const artifactDestinations = {
   'contracts/developer-capabilities.json': 'developer-capabilities.json',
+  'contracts/developer-operation-bindings.json': 'developer-operation-bindings.json',
   'contracts/developer-scopes.json': 'developer-scopes.json',
   'contracts/v0-routes.json': 'v0-routes.json',
   'contracts/v0-to-v1-migration.json': 'v0-to-v1-migration.json',
@@ -158,6 +159,23 @@ manifest.capabilities = {
   operations: capabilityDocument.operationPolicy.length,
   productCapabilities: capabilityDocument.productCapabilities.length,
   sha256: createHash('sha256').update(capabilityContent).digest('hex'),
+}
+
+const operationBindingSource = 'contracts/developer-operation-bindings.json'
+const operationBindingContent = await readSourceFile(operationBindingSource)
+const operationBindingDocument = JSON.parse(operationBindingContent.toString('utf8'))
+if (
+  operationBindingDocument.schemaVersion !== 1 ||
+  !Array.isArray(operationBindingDocument.operations) ||
+  !operationBindingDocument.summary
+) {
+  throw new Error(`${operationBindingSource} is not the expected operation binding contract.`)
+}
+manifest.operationBindings = {
+  operations: operationBindingDocument.operations.length,
+  referencedAppMethods: operationBindingDocument.summary.referencedAppMethodIds.length,
+  remainingDirectCellReads: operationBindingDocument.summary.directCellReadOperations.length,
+  sha256: createHash('sha256').update(operationBindingContent).digest('hex'),
 }
 
 await mkdir(path.join(root, 'sources'), { recursive: true })

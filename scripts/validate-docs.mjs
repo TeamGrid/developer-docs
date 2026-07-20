@@ -44,6 +44,7 @@ if (manifest.canonical?.bytes !== canonicalManifestContent.length) {
 }
 const canonicalArtifactFiles = {
   'contracts/developer-capabilities.json': 'developer-capabilities.json',
+  'contracts/developer-operation-bindings.json': 'developer-operation-bindings.json',
   'contracts/developer-scopes.json': 'developer-scopes.json',
   'contracts/v0-routes.json': 'v0-routes.json',
   'contracts/v0-to-v1-migration.json': 'v0-to-v1-migration.json',
@@ -87,6 +88,32 @@ const capabilitySha256 = createHash('sha256').update(capabilityContent).digest('
 if (manifest.capabilities?.sha256 !== capabilitySha256) {
   fail('Developer capabilities do not match sources/contracts.json.')
 }
+const operationBindingFile = path.join(
+  root,
+  'public',
+  'openapi',
+  'developer-operation-bindings.json',
+)
+const operationBindingContent = await readFile(operationBindingFile)
+const operationBindings = JSON.parse(operationBindingContent.toString('utf8'))
+const operationBindingSha256 = createHash('sha256')
+  .update(operationBindingContent)
+  .digest('hex')
+if (
+  manifest.operationBindings?.sha256 !== operationBindingSha256 ||
+  manifest.operationBindings?.operations !== operationBindings.operations?.length ||
+  manifest.operationBindings?.referencedAppMethods !==
+    operationBindings.summary?.referencedAppMethodIds?.length ||
+  manifest.operationBindings?.remainingDirectCellReads !==
+    operationBindings.summary?.directCellReadOperations?.length ||
+  canonicalManifest.summary?.operationBindings !== operationBindings.operations?.length ||
+  canonicalManifest.summary?.referencedAppMethods !==
+    operationBindings.summary?.referencedAppMethodIds?.length ||
+  canonicalManifest.summary?.remainingDirectCellReads !==
+    operationBindings.summary?.directCellReadOperations?.length
+) {
+  fail('Developer operation bindings do not match sources/contracts.json and the manifest.')
+}
 const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.json'), 'utf8'))
 if (v1.info?.version !== canonicalManifest.contractVersion) {
   fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
@@ -112,12 +139,24 @@ const policyOperations = capabilities.operationPolicy.map((operation) => ({
   path: operation.path,
   scope: operation.scope,
 }))
+const executionOperations = operationBindings.operations.map((operation) => ({
+  method: operation.method,
+  operationId: operation.operationId,
+  path: operation.path,
+  scope: operation.requiredScopes[0] || null,
+}))
 const byOperationId = (left, right) => left.operationId.localeCompare(right.operationId)
 if (
   JSON.stringify(contractOperations.sort(byOperationId)) !==
   JSON.stringify(policyOperations.sort(byOperationId))
 ) {
   fail('OpenAPI and Developer Platform operation policies differ.')
+}
+if (
+  JSON.stringify(contractOperations.sort(byOperationId)) !==
+  JSON.stringify(executionOperations.sort(byOperationId))
+) {
+  fail('OpenAPI and Developer Platform execution bindings differ.')
 }
 
 const resourceCasOperations = []

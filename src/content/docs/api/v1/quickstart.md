@@ -38,3 +38,8 @@ Use `meta.page.nextCursor` to request the next page. Treat cursors as opaque str
 ## 4. Prefer an official client when possible
 
 For Node.js applications, continue with the [TypeScript SDK quickstart](/sdk/quickstart/). For shell scripts or local operation, use the [CLI](/cli/install-and-authenticate/).
+
+Before updating, completing, reopening, archiving, or restoring a task or project, read it and retain
+the returned strong ETag. Project-template changes use the same pattern. These operations reject a
+missing precondition with `428` and a stale revision with `412`; see [resource revisions and
+concurrent writes](/api/v1/resource-concurrency/).

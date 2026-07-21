@@ -83,8 +83,7 @@
         "tags": [
           "discovery"
         ],
-        "x-teamgrid-authenticated": false,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-authenticated": false
       }
     },
     "/calendar/{token}.ics": {
@@ -152,7 +151,7 @@
           "calendar"
         ],
         "x-teamgrid-authenticated": false,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -253,7 +252,18 @@
           "callnotes"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all call notes",
@@ -323,7 +333,7 @@
           "callnotes"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -414,7 +424,7 @@
           "callnotes"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -496,7 +506,7 @@
           "callnotes"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -576,7 +586,7 @@
           "callnotes"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -665,6 +675,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -677,7 +697,18 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "unavailable",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all contact groups",
@@ -747,7 +778,7 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -826,6 +857,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -838,7 +879,7 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "requestBody": {
           "content": {
             "application/json": {
@@ -906,6 +947,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -918,7 +969,8 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -988,6 +1040,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -1000,7 +1062,7 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "parameters": [
           {
             "in": "path",
@@ -1080,7 +1142,7 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -1167,6 +1229,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -1179,7 +1251,7 @@
           "contactgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "parameters": [
           {
             "in": "path",
@@ -1271,7 +1343,7 @@
           "contacts"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -1362,7 +1434,7 @@
           "contacts"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1442,7 +1514,8 @@
           "contacts"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -1524,7 +1597,7 @@
           "contacts"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -1623,7 +1696,7 @@
           "contacts"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -1703,6 +1776,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -1715,7 +1798,18 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "unavailable",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all journal entries",
@@ -1785,7 +1879,7 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -1864,6 +1958,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -1876,7 +1980,7 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1944,6 +2048,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -1956,7 +2070,8 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -2026,6 +2141,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -2038,7 +2163,7 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "parameters": [
           {
             "in": "path",
@@ -2118,7 +2243,7 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -2205,6 +2330,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -2217,7 +2352,7 @@
           "journalEntries"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "parameters": [
           {
             "in": "path",
@@ -2309,7 +2444,18 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all lists",
@@ -2379,7 +2525,7 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -2470,7 +2616,7 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2550,7 +2696,8 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -2632,7 +2779,7 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -2712,7 +2859,7 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -2811,7 +2958,7 @@
           "lists"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -2903,7 +3050,18 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all product groups",
@@ -2973,7 +3131,7 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -3064,7 +3222,7 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3144,7 +3302,8 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -3226,7 +3385,7 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -3306,7 +3465,7 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -3405,7 +3564,7 @@
           "productgroups"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -3497,7 +3656,18 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all products",
@@ -3567,7 +3737,7 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -3658,7 +3828,7 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3738,7 +3908,8 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -3820,7 +3991,7 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -3900,7 +4071,7 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -3999,7 +4170,7 @@
           "products"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -4091,7 +4262,7 @@
           "projects"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -4182,7 +4353,7 @@
           "projects"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -4262,7 +4433,8 @@
           "projects"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -4344,7 +4516,7 @@
           "projects"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -4443,7 +4615,7 @@
           "projects"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -4523,6 +4695,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -4535,7 +4717,18 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "unavailable",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all project templates",
@@ -4605,7 +4798,7 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -4684,6 +4877,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -4696,7 +4899,7 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "requestBody": {
           "content": {
             "application/json": {
@@ -4764,6 +4967,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -4776,7 +4989,8 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -4846,6 +5060,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -4858,7 +5082,7 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "parameters": [
           {
             "in": "path",
@@ -4938,7 +5162,7 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -5025,6 +5249,16 @@
               }
             },
             "description": "Rate limit exceeded."
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyResponse"
+                }
+              }
+            },
+            "description": "The frozen route was historically advertised but has no supported write path."
           }
         },
         "security": [
@@ -5037,7 +5271,7 @@
           "projectTemplates"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "unavailable",
         "parameters": [
           {
             "in": "path",
@@ -5129,7 +5363,7 @@
           "scheduledWork"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -5222,7 +5456,7 @@
           "services"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -5315,7 +5549,7 @@
           "services"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -5416,7 +5650,7 @@
           "tags"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -5509,7 +5743,7 @@
           "tags"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -5610,7 +5844,18 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all tasks",
@@ -5680,7 +5925,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -5771,7 +6016,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -5851,7 +6096,8 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -5933,7 +6179,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6013,7 +6259,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6112,7 +6358,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6204,7 +6450,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6296,7 +6542,7 @@
           "tasks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6388,7 +6634,7 @@
           "teams"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -6481,7 +6727,18 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all time entries",
@@ -6551,7 +6808,7 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -6642,7 +6899,7 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -6722,7 +6979,8 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
         "requestBody": {
           "content": {
             "application/json": {
@@ -6804,7 +7062,7 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6884,7 +7142,7 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -6983,7 +7241,7 @@
           "times"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -7075,7 +7333,7 @@
           "users"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -7168,7 +7426,18 @@
           "webhooks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy"
+        "x-teamgrid-contract-status": "deprecated-alias",
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyWritePayload"
+              }
+            }
+          },
+          "required": true
+        }
       },
       "get": {
         "description": "Get all webhooks",
@@ -7238,7 +7507,7 @@
           "webhooks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "query",
@@ -7329,7 +7598,7 @@
           "webhooks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "requestBody": {
           "content": {
             "application/json": {
@@ -7411,7 +7680,7 @@
           "webhooks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",
@@ -7491,7 +7760,7 @@
           "webhooks"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "frozen-legacy",
+        "x-teamgrid-contract-status": "supported",
         "parameters": [
           {
             "in": "path",

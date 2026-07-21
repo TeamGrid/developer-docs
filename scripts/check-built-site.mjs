@@ -19,6 +19,7 @@ const required = [
   'api/v0/index.html',
   'api/v0/reference/index.html',
   'api/v1/index.html',
+  'api/v1/resource-concurrency/index.html',
   'api/v1/reference/index.html',
   'sdk/index.html',
   'cli/index.html',
@@ -47,7 +48,7 @@ async function htmlFiles(directory) {
 }
 
 const html = await htmlFiles(dist)
-if (html.length < 140) failures.push(`Only ${html.length} HTML pages were generated.`)
+if (html.length < 350) failures.push(`Only ${html.length} HTML pages were generated; expected at least 350.`)
 
 function builtPageForUrl(url) {
   const pathname = url.split(/[?#]/, 1)[0]

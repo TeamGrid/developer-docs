@@ -18,9 +18,76 @@ function countOperations(document) {
 }
 
 const manifest = JSON.parse(await readFile(path.join(root, 'sources', 'contracts.json'), 'utf8'))
+if (
+  manifest.schemaVersion !== 1 ||
+  manifest.sourceRepository !== 'TeamGrid/teamgrid-api' ||
+  !/^[0-9a-f]{40}$/.test(manifest.sourceCommit || '')
+) {
+  fail('Contract source provenance is missing or invalid.')
+}
+const canonicalManifestFile = path.join(
+  root,
+  'public',
+  'openapi',
+  'developer-platform-manifest.json',
+)
+const canonicalManifestContent = await readFile(canonicalManifestFile)
+const canonicalManifest = JSON.parse(canonicalManifestContent.toString('utf8'))
+const canonicalManifestSha256 = createHash('sha256')
+  .update(canonicalManifestContent)
+  .digest('hex')
+if (manifest.canonical?.sha256 !== canonicalManifestSha256) {
+  fail('Canonical contract manifest does not match sources/contracts.json.')
+}
+if (manifest.canonical?.bytes !== canonicalManifestContent.length) {
+  fail('Canonical contract manifest byte count does not match sources/contracts.json.')
+}
+const canonicalArtifactFiles = {
+  'contracts/developer-action-policy-registry.json': 'developer-action-policy-registry.json',
+  'contracts/developer-capabilities.json': 'developer-capabilities.json',
+  'contracts/developer-operation-bindings.json': 'developer-operation-bindings.json',
+  'contracts/developer-scopes.json': 'developer-scopes.json',
+  'contracts/v0-routes.json': 'v0-routes.json',
+  'contracts/v0-to-v1-migration.json': 'v0-to-v1-migration.json',
+  'openapi/v0.json': 'v0.json',
+  'openapi/v1.json': 'v1.json',
+}
+
+const actionPolicyContent = await readFile(path.join(
+  root,
+  'public',
+  'openapi',
+  'developer-action-policy-registry.json',
+))
+const actionPolicy = JSON.parse(actionPolicyContent.toString('utf8'))
+const actionPolicySha256 = createHash('sha256').update(actionPolicyContent).digest('hex')
+if (
+  manifest.actionPolicyRegistry?.sha256 !== actionPolicySha256
+  || manifest.actionPolicyRegistry?.registrySha256 !== actionPolicy.registrySha256
+  || manifest.actionPolicyRegistry?.registryVersion !== actionPolicy.registryVersion
+  || manifest.actionPolicyRegistry?.actionPolicies !== actionPolicy.actionPolicyCount
+  || manifest.actionPolicyRegistry?.authenticatedActionPolicies
+    !== actionPolicy.authenticatedActionPolicyCount
+  || manifest.actionPolicyRegistry?.policyFamilies
+    !== actionPolicy.principalPolicyFamilyIds?.length
+) {
+  fail('Developer action-policy registry does not match sources/contracts.json.')
+}
+for (const artifact of canonicalManifest.artifacts || []) {
+  const filename = canonicalArtifactFiles[artifact.path]
+  if (!filename) {
+    fail(`Canonical contract artifact has no documentation mapping: ${artifact.path}.`)
+    continue
+  }
+  const content = await readFile(path.join(root, 'public', 'openapi', filename))
+  const sha256 = createHash('sha256').update(content).digest('hex')
+  if (content.length !== artifact.bytes || sha256 !== artifact.sha256) {
+    fail(`Canonical contract artifact drift detected: ${artifact.path}.`)
+  }
+}
 for (const [version, expectedOperations] of [
-  ['v0', 87],
-  ['v1', 25],
+  ['v0', canonicalManifest.summary?.v0Operations],
+  ['v1', canonicalManifest.summary?.v1Operations],
 ]) {
   const file = path.join(root, 'public', 'openapi', `${version}.json`)
   const content = await readFile(file)
@@ -33,6 +100,323 @@ for (const [version, expectedOperations] of [
   }
   if (manifest.contracts?.[version]?.sha256 !== sha256) {
     fail(`${version} does not match sources/contracts.json.`)
+  }
+}
+
+const capabilityFile = path.join(root, 'public', 'openapi', 'developer-capabilities.json')
+const capabilityContent = await readFile(capabilityFile)
+const capabilities = JSON.parse(capabilityContent.toString('utf8'))
+const capabilitySha256 = createHash('sha256').update(capabilityContent).digest('hex')
+if (manifest.capabilities?.sha256 !== capabilitySha256) {
+  fail('Developer capabilities do not match sources/contracts.json.')
+}
+const operationBindingFile = path.join(
+  root,
+  'public',
+  'openapi',
+  'developer-operation-bindings.json',
+)
+const operationBindingContent = await readFile(operationBindingFile)
+const operationBindings = JSON.parse(operationBindingContent.toString('utf8'))
+const operationBindingSha256 = createHash('sha256')
+  .update(operationBindingContent)
+  .digest('hex')
+if (
+  manifest.operationBindings?.sha256 !== operationBindingSha256 ||
+  manifest.operationBindings?.operations !== operationBindings.operations?.length ||
+  manifest.operationBindings?.referencedAppMethods !==
+    operationBindings.summary?.referencedAppMethodIds?.length ||
+  manifest.operationBindings?.remainingDirectCellReads !==
+    operationBindings.summary?.directCellReadOperations?.length ||
+  canonicalManifest.summary?.operationBindings !== operationBindings.operations?.length ||
+  canonicalManifest.summary?.referencedAppMethods !==
+    operationBindings.summary?.referencedAppMethodIds?.length ||
+  canonicalManifest.summary?.remainingDirectCellReads !==
+    operationBindings.summary?.directCellReadOperations?.length
+) {
+  fail('Developer operation bindings do not match sources/contracts.json and the manifest.')
+}
+const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.json'), 'utf8'))
+if (v1.info?.version !== canonicalManifest.contractVersion) {
+  fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
+}
+const changeParameters = v1.paths?.['/changes']?.get?.parameters || []
+const changeOperations = changeParameters.find((parameter) => parameter.name === 'operations')
+  ?.schema?.items?.enum
+const changeResourceTypes = changeParameters.find(
+  (parameter) => parameter.name === 'resourceTypes',
+)?.schema?.items?.enum
+const changeEventProperties = v1.components?.schemas?.ChangeEvent?.properties?.attributes?.properties
+const changeEventOperations = changeEventProperties?.operation?.enum
+const changeEventResourceTypes = changeEventProperties?.resourceType?.enum
+if (
+  !Array.isArray(changeOperations) ||
+  JSON.stringify(changeOperations) !== JSON.stringify(changeEventOperations) ||
+  JSON.stringify(changeOperations) !== JSON.stringify(manifest.changeFeed?.operations)
+) {
+  fail('Change-feed operations differ between query, event schema, and contract provenance.')
+}
+if (
+  !Array.isArray(changeResourceTypes) ||
+  changeResourceTypes.length !== 23 ||
+  new Set(changeResourceTypes).size !== changeResourceTypes.length ||
+  JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes) ||
+  JSON.stringify(changeResourceTypes) !== JSON.stringify(manifest.changeFeed?.resourceTypes)
+) {
+  fail('Change-feed resource types differ between query, event schema, and contract provenance.')
+}
+const contractOperations = []
+for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
+  for (const [method, operation] of Object.entries(pathItem)) {
+    if (!methods.has(method) || !operation.operationId) continue
+    if ((operation.security || []).some((item) => item.bearerAuth?.length)) {
+      fail(`${operation.operationId} incorrectly puts TeamGrid scopes on HTTP bearer auth.`)
+    }
+    contractOperations.push({
+      method: method.toUpperCase(),
+      operationId: operation.operationId,
+      path: operationPath,
+      scope: (operation['x-teamgrid-required-scopes'] || [])[0] || null,
+    })
+  }
+}
+const policyOperations = capabilities.operationPolicy.map((operation) => ({
+  method: operation.method,
+  operationId: operation.operationId,
+  path: operation.path,
+  scope: operation.scope,
+}))
+const executionOperations = operationBindings.operations.map((operation) => ({
+  method: operation.method,
+  operationId: operation.operationId,
+  path: operation.path,
+  scope: operation.requiredScopes[0] || null,
+}))
+const byOperationId = (left, right) => left.operationId.localeCompare(right.operationId)
+if (
+  JSON.stringify(contractOperations.sort(byOperationId)) !==
+  JSON.stringify(policyOperations.sort(byOperationId))
+) {
+  fail('OpenAPI and Developer Platform operation policies differ.')
+}
+if (
+  JSON.stringify(contractOperations.sort(byOperationId)) !==
+  JSON.stringify(executionOperations.sort(byOperationId))
+) {
+  fail('OpenAPI and Developer Platform execution bindings differ.')
+}
+
+const resourceCasOperations = []
+for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
+  for (const [method, operation] of Object.entries(pathItem)) {
+    if (!methods.has(method) || operation['x-teamgrid-resource-cas'] !== 'resource-cas-v1') continue
+    resourceCasOperations.push({ method: method.toUpperCase(), path: operationPath })
+    for (const status of ['400', '412', '428', '503']) {
+      if (!operation.responses?.[status]) {
+        fail(`${operation.operationId} is missing the resource-CAS ${status} response.`)
+      }
+    }
+  }
+}
+if (
+  resourceCasOperations.length !== 14 ||
+  canonicalManifest.summary?.resourceCasMutationOperations !== resourceCasOperations.length
+) {
+  fail(
+    `Expected the manifest and OpenAPI to expose exactly 14 resource-CAS mutations; found ${resourceCasOperations.length}.`,
+  )
+}
+const resourceConcurrencyDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'resource-concurrency.md'),
+  'utf8',
+)
+for (const operation of resourceCasOperations) {
+  const marker = `\`${operation.method} /v1${operation.path}\``
+  if (!resourceConcurrencyDocumentation.includes(marker)) {
+    fail(`Resource concurrency documentation is missing ${marker}.`)
+  }
+}
+for (const marker of [
+  '`developerRevision`',
+  '`developerUpdatedAt`',
+  '`400 invalid_precondition`',
+  '`410 resource_operation_revision_unavailable`',
+  '`412 precondition_failed`',
+  '`428 precondition_required`',
+  '`503 service_unavailable`',
+  '`"prj1-<developerRevision>"`',
+  '`"tpl1-<developerRevision>"`',
+  '`"tsk1-<developerRevision>"`',
+]) {
+  if (!resourceConcurrencyDocumentation.includes(marker)) {
+    fail(`Resource concurrency documentation is missing required marker: ${marker}.`)
+  }
+}
+for (const operationId of ['getProjectLifecycleOperation', 'getProjectTemplateInstantiation']) {
+  const operation = contractOperations.find((item) => item.operationId === operationId)
+  const pathItem = operation && v1.paths?.[operation.path]
+  const operationContract = pathItem && pathItem[operation.method.toLowerCase()]
+  if (!operationContract?.responses?.['410']) {
+    fail(`${operationId} is missing its legacy-operation 410 response.`)
+  }
+}
+
+const mcpDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'mcp', 'tools-and-security.md'),
+  'utf8',
+)
+const mcpOperations = capabilities.operationPolicy.filter((item) => item.mcp.exposure === 'read')
+for (const operation of mcpOperations) {
+  if (!mcpDocumentation.includes(`\`${operation.mcp.tool}\``)) {
+    fail(`MCP documentation is missing ${operation.mcp.tool}.`)
+  }
+}
+const mcpOverview = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'mcp', 'index.md'),
+  'utf8',
+)
+if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
+  fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
+}
+const changePolicy = capabilities.operationPolicy.find((item) => item.operationId === 'listChanges')
+if (
+  changePolicy?.sdk !== 'changes.list' ||
+  changePolicy?.cli !== 'changes list' ||
+  changePolicy?.mcp?.exposure !== 'forbidden' ||
+  'tool' in changePolicy.mcp
+) {
+  fail('Change feed must remain available in SDK/CLI and explicitly forbidden in MCP.')
+}
+if (!mcpDocumentation.includes('The change feed is forbidden because a high-volume durable')) {
+  fail('MCP documentation is missing the explicit change-feed prohibition.')
+}
+
+const changeFeedDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'change-feed.md'),
+  'utf8',
+)
+for (const resourceType of changeResourceTypes || []) {
+  if (!changeFeedDocumentation.includes(`| \`${resourceType}\` |`)) {
+    fail(`Change-feed documentation is missing canonical resource type ${resourceType}.`)
+  }
+}
+
+const authenticationDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'authentication.md'),
+  'utf8',
+)
+const scopeFile = path.join(root, 'public', 'openapi', 'developer-scopes.json')
+const scopeContent = await readFile(scopeFile)
+const scopeContract = JSON.parse(scopeContent.toString('utf8'))
+const scopeSha256 = createHash('sha256').update(scopeContent).digest('hex')
+if (
+  manifest.scopes?.sha256 !== scopeSha256 ||
+  manifest.scopes?.count !== scopeContract.scopes?.length ||
+  canonicalManifest.summary?.canonicalScopes !== scopeContract.scopes?.length
+) {
+  fail('Developer scope contract does not match sources/contracts.json and the canonical manifest.')
+}
+const documentedScopes = new Set()
+for (const pathItem of Object.values(v1.paths || {})) {
+  for (const [method, operation] of Object.entries(pathItem)) {
+    if (!methods.has(method)) continue
+    for (const scope of [
+      ...(operation['x-teamgrid-required-scopes'] || []),
+      ...(operation['x-teamgrid-optional-scopes'] || []),
+    ]) {
+      documentedScopes.add(scope)
+    }
+  }
+}
+for (const scope of documentedScopes) {
+  if (!authenticationDocumentation.includes(`\`${scope}\``)) {
+    fail(`Credential documentation is missing ${scope}.`)
+  }
+}
+for (const scope of scopeContract.scopes || []) {
+  if (!authenticationDocumentation.includes(`\`${scope.name}\``)) {
+    fail(`Credential documentation is missing canonical scope ${scope.name}.`)
+  }
+}
+
+const migrationFile = path.join(root, 'public', 'openapi', 'v0-to-v1-migration.json')
+const migrationContent = await readFile(migrationFile)
+const migrationContract = JSON.parse(migrationContent.toString('utf8'))
+const migrationSha256 = createHash('sha256').update(migrationContent).digest('hex')
+if (
+  manifest.migration?.sha256 !== migrationSha256 ||
+  manifest.migration?.routes !== migrationContract.routes?.length ||
+  canonicalManifest.summary?.v0MigrationRoutes !== migrationContract.routes?.length
+) {
+  fail('v0-to-v1 migration contract does not match sources/contracts.json and the manifest.')
+}
+
+const cliDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'cli', 'commands.md'),
+  'utf8',
+)
+for (const group of new Set(
+  capabilities.operationPolicy.map((operation) => operation.cli.split(' ')[0]),
+)) {
+  if (!cliDocumentation.includes(`teamgrid ${group}`)) {
+    fail(`CLI documentation is missing the ${group} command group.`)
+  }
+}
+
+const sdkDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'sdk', 'index.md'),
+  'utf8',
+)
+for (const resource of new Set(
+  capabilities.operationPolicy.map((operation) => operation.sdk.split('.')[0]),
+)) {
+  if (!sdkDocumentation.includes(`\`${resource}\``)) {
+    fail(`SDK documentation is missing the ${resource} client.`)
+  }
+}
+
+const coverageDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'guides', 'capability-coverage.md'),
+  'utf8',
+)
+const currentV1PathCount = Object.keys(v1.paths || {}).length
+for (const marker of [
+  `${currentV1PathCount} paths and ${canonicalManifest.summary?.v1Operations} operations`,
+  `classifies ${canonicalManifest.summary?.classifiedProductCapabilities} capabilities`,
+]) {
+  if (!coverageDocumentation.includes(marker)) {
+    fail(`Capability coverage documentation is missing current marker: ${marker}.`)
+  }
+}
+
+const openApiDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'openapi', 'index.md'),
+  'utf8',
+)
+for (const marker of [
+  `\`${canonicalManifest.contractVersion}\` manifest`,
+  `${currentV1PathCount} v1 paths`,
+  `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
+  `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
+  `exactly ${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutation operations`,
+]) {
+  if (!openApiDocumentation.includes(marker)) {
+    fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)
+  }
+}
+const capabilityStatusCounts = capabilities.productCapabilities.reduce((counts, capability) => {
+  counts[capability.status] = (counts[capability.status] || 0) + 1
+  return counts
+}, {})
+for (const [label, status] of [
+  ['Released in the controlled-beta contract', 'released'],
+  ['Partial', 'partial'],
+  ['Planned', 'planned'],
+  ['Intentionally private', 'private'],
+]) {
+  const marker = `| ${label} | ${capabilityStatusCounts[status]} |`
+  if (!coverageDocumentation.includes(marker)) {
+    fail(`Capability coverage documentation is missing current status count: ${marker}.`)
   }
 }
 

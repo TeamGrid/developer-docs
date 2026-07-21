@@ -12,6 +12,7 @@
     "dev": "astro dev",
     "generate": "node scripts/generate-redirects.mjs && node scripts/generate-llms.mjs",
     "preview": "astro preview",
+    "sync:contracts": "node scripts/sync-contracts.mjs",
     "test:site": "node scripts/check-built-site.mjs",
     "verify": "npm run check && npm run build && npm run test:site"
   },

@@ -25,7 +25,7 @@ npm run verify
 - SDK, CLI, and MCP behavior follows the public `TeamGrid/developer-platform` packages.
 - Historical v0 prose was migrated from ReadMe and retains source attribution in frontmatter.
 
-`scripts/sync-contracts.mjs` and `scripts/import-readme-v0.mjs` are maintainer tools. They require the canonical local source repositories and are not part of a normal CI build.
+`scripts/sync-contracts.mjs` and `scripts/import-readme-v0.mjs` are maintainer tools. They require the canonical local source repositories and are not part of a normal CI build. Synchronize contracts with `npm run sync:contracts -- /path/to/teamgrid-api <full-api-commit-sha>`; the command reads the immutable Git object rather than the API working tree.
 
 ## Deployment model
 

@@ -1,14 +1,79 @@
 {
+  "schemaVersion": 1,
   "contracts": {
     "v0": {
       "operations": 87,
-      "sha256": "c51d55121fb49100a3285a8a929e1a19d0a3255873d6944742187eef8d80ca93"
+      "sha256": "46da62dba5b8a459362f4edd3c74fed1dac92300c414e606dfa9f433120da947"
     },
     "v1": {
-      "operations": 25,
-      "sha256": "5787468ff6561b82555c66c4df664ae073098200b6ddbea3c673c52dd8354eb0"
+      "operations": 182,
+      "sha256": "4d390162bdef601d0e217e1e5ebe1ca48ee70e7f43e5d373d3edfd8ce38f85d9"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "207a38991725c4a4edbb920a0659c25f6e3cd079"
+  "sourceCommit": "176493414891c5bb289c28586080451a6cc68275",
+  "scopes": {
+    "count": 79,
+    "sha256": "930a215e5a2f9852b1b8af036eb67a4946a2a16d3b19405622332fa7ebaf4757"
+  },
+  "migration": {
+    "routes": 87,
+    "sha256": "313ab009498a200421a87ac3bd5b46b4453f8c81addea69be58699525b2a0567"
+  },
+  "canonical": {
+    "contractVersion": "1.0.0-beta.1",
+    "bytes": 2365,
+    "sha256": "fc6d7162b4529910ccfd08312ab8ac8d2f13af884e85faf9f52e550d41599129"
+  },
+  "changeFeed": {
+    "operations": [
+      "created",
+      "deleted",
+      "updated"
+    ],
+    "resourceTypes": [
+      "absence",
+      "appointment",
+      "automationDefinition",
+      "automationRun",
+      "callNote",
+      "comment",
+      "contact",
+      "contactGroup",
+      "customFieldDefinition",
+      "document",
+      "file",
+      "integration",
+      "list",
+      "product",
+      "productGroup",
+      "project",
+      "projectStatement",
+      "projectTemplate",
+      "service",
+      "tag",
+      "task",
+      "timeEntry",
+      "webhook"
+    ]
+  },
+  "capabilities": {
+    "operations": 182,
+    "productCapabilities": 73,
+    "sha256": "a1f91460803bd862021224e8c87e239b6464aa1ee190ff7e0d2bbaa100fcd7a7"
+  },
+  "operationBindings": {
+    "operations": 182,
+    "referencedAppMethods": 181,
+    "remainingDirectCellReads": 0,
+    "sha256": "316514512924b0917018576e1d013120c2eb5f37e5d475a7e0b1695911427749"
+  },
+  "actionPolicyRegistry": {
+    "actionPolicies": 182,
+    "authenticatedActionPolicies": 181,
+    "policyFamilies": 12,
+    "registrySha256": "66f732888d35542f29470545d4601c1c5cc653d37a9c55d7d2329896ad779002",
+    "registryVersion": "developer-action-policy-v4",
+    "sha256": "a18a4c36a0c41eda1ee25a1644d834e1e22114e28be2710f6b0951fd5bcf9748"
+  }
 }

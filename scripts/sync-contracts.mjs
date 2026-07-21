@@ -76,6 +76,25 @@ async function readSourceFile(relativePath) {
   }
 }
 
+async function readRuntimeFile(relativePath) {
+  try {
+    const { stdout } = await execFileAsync(
+      'git',
+      ['show', `${runtimeCommit}:${relativePath}`],
+      {
+        cwd: sourceRoot,
+        encoding: 'buffer',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    )
+    return stdout
+  } catch (error) {
+    throw new Error(`Could not read ${relativePath} from API runtime ${runtimeCommit}.`, {
+      cause: error,
+    })
+  }
+}
+
 const sourceRepository = 'TeamGrid/teamgrid-api'
 const manifest = {
   schemaVersion: 1,
@@ -110,6 +129,12 @@ for (const artifact of canonicalManifest.artifacts) {
   const digest = createHash('sha256').update(content).digest('hex')
   if (content.length !== artifact.bytes || digest !== artifact.sha256) {
     throw new Error(`API source commit has an invalid contract digest for ${artifact.path}.`)
+  }
+  const runtimeContent = await readRuntimeFile(artifact.path)
+  if (!runtimeContent.equals(content)) {
+    throw new Error(
+      `API runtime ${runtimeCommit} does not carry the synchronized ${artifact.path}.`,
+    )
   }
   await writeFile(path.join(destination, artifactDestinations[artifact.path]), content)
 }

@@ -19,6 +19,12 @@ metadata, custom fields, commerce resources, audit events, webhooks, delivery hi
 planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 The durable change feed is deliberately outside the first public beta contract.
 
+The same release boundary keeps 25 project, task, project-template, and associated asynchronous
+operation endpoints on a static non-CAS contract. They do not expose developer revision fields or
+core `If-Match` requirements. This does not remove the 31 independent `If-Match` operations for
+resource families such as planned work, custom-field values, calendar data, documents, workspace
+administration, automations, workspace settings, and webhook-secret rotation.
+
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
@@ -32,7 +38,7 @@ The current registry identity and SHA-256 are published in the
 owning App cell exchange this exact identity during startup compatibility negotiation and fail
 readiness on any mismatch. The same identity is included in the canonical deployment manifest.
 
-V4 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+V5 declares every request-dependent scope and dynamic policy used by collaboration, automation,
 custom-field content, calendar, work-management, and search/export handlers. The owning App cell
 resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness

@@ -25,7 +25,6 @@ teamgrid project-templates create \
 
 teamgrid project-templates instantiate TEMPLATE_ID \
   --data '{"name":"Customer rollout"}' \
-  --if-match 'LATEST_TEMPLATE_REVISION' \
   --idempotency-key customer-rollout-42 --wait --output json
 ```
 
@@ -35,14 +34,11 @@ wait helper. Terminal states are `succeeded` and `failed`; pending/running respo
 that generated resources are complete.
 
 ```ts
-const template = await client.projectTemplates.get(templateId)
-
 const accepted = await client.projectTemplates.instantiate(
   templateId,
   { name: 'Customer rollout', dueAt: '2026-08-31T23:59:59.999Z' },
   {
     idempotencyKey: 'customer-rollout-42',
-    ifMatch: template.data.attributes.developerRevision,
   },
 )
 const completed = await client.projectTemplateInstantiations.wait(accepted.data.id, {
@@ -51,14 +47,12 @@ const completed = await client.projectTemplateInstantiations.wait(accepted.data.
 })
 ```
 
-Passing `acceptedOperation` binds every poll to the accepted operation ID, template and generated
-project IDs, and source revision. The SDK rejects a response if any of those immutable fields
-changes while polling. The CLI applies the same binding automatically when `--wait` is present.
+Passing `acceptedOperation` binds every poll to the accepted operation ID and template and generated
+project IDs. The SDK rejects a response if any of those immutable fields changes while polling. The
+CLI applies the same binding automatically when `--wait` is present.
 
 Only the credential that created an instantiation can read its operation status. A replay with the
 same idempotency key and payload returns the original operation; using the key for different input
-or source revision returns `409`. The accepted operation's `sourceRevision` equals the revision
-supplied in `If-Match`; `resultRevision` is present only after successful completion. A `410` from
-the operation read means it predates revision tracking and must be reconciled against a fresh
-template read. Template metadata and operation status are forbidden in every MCP profile because
+returns `409`. The static Beta 2 template and operation representations do not expose developer,
+source, or result revision fields. Template metadata and operation status are forbidden in every MCP profile because
 captured workflow shape and bulk creation state are not suitable bounded model tools.

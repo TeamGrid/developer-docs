@@ -48,6 +48,19 @@ if (!/^[0-9a-f]{40}$/.test(sourceCommit)) {
   throw new Error(`Git resolved an invalid API source commit: ${sourceCommit}`)
 }
 
+const requestedRuntimeRef = process.argv[4]
+  || process.env.TEAMGRID_API_RUNTIME_REF
+  || requestedRef
+const { stdout: resolvedRuntimeCommit } = await execFileAsync(
+  'git',
+  ['rev-parse', '--verify', `${requestedRuntimeRef}^{commit}`],
+  { cwd: sourceRoot, encoding: 'utf8' },
+)
+const runtimeCommit = resolvedRuntimeCommit.trim()
+if (!/^[0-9a-f]{40}$/.test(runtimeCommit)) {
+  throw new Error(`Git resolved an invalid API runtime commit: ${runtimeCommit}`)
+}
+
 async function readSourceFile(relativePath) {
   try {
     const { stdout } = await execFileAsync('git', ['show', `${sourceCommit}:${relativePath}`], {
@@ -69,6 +82,7 @@ const manifest = {
   contracts: {},
   sourceRepository,
   sourceCommit,
+  runtimeCommit,
 }
 const canonicalManifestPath = 'contracts/developer-platform-manifest.json'
 const canonicalManifestContent = await readSourceFile(canonicalManifestPath)
@@ -221,4 +235,7 @@ await writeFile(
   `${JSON.stringify(manifest, null, 2)}\n`,
 )
 
-console.log(`Synchronized v0 and v1 contracts from ${sourceRepository}@${sourceCommit}.`)
+console.log(
+  `Synchronized v0 and v1 contracts from ${sourceRepository}@${sourceCommit} `
+  + `(runtime ${runtimeCommit}).`,
+)

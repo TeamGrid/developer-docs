@@ -5,7 +5,7 @@ description: Install the TeamGrid CLI prerelease and store an API v1 credential 
 
 ## Requirements
 
-- Node.js 22.13 through 24
+- Node.js 22.14 through 24
 - A TeamGrid API v1 credential created in **Settings → Developer**
 - macOS Keychain or Linux Secret Service for persistent profiles
 

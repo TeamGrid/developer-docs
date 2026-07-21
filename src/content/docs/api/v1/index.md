@@ -33,9 +33,9 @@ and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
-Projects, tasks, and project templates expose opaque `developerRevision` and
-`developerUpdatedAt` fields. Their 14 protected mutations require the latest type-specific strong
-ETag in `If-Match`; review [resource revisions and concurrent writes](/api/v1/resource-concurrency/)
+Projects, tasks, and project templates use the static Beta 2 contract: they do not expose developer
+revision fields or accept a core `If-Match` precondition. Other resource families retain 31
+endpoint-specific protected mutations. Review [resource concurrency in Beta 2](/api/v1/resource-concurrency/)
 before building a writer.
 
 For bounded mirrors, traverse the normal resource endpoints and use signed webhooks as delivery

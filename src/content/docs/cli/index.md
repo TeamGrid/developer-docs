@@ -21,8 +21,8 @@ teamgrid --version
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
 - Bounded resource pagination and structured output for reconciliation scripts
-- Required `--if-match` guards for task, project, and project-template mutations, with actionable
-  stale-revision errors
+- Required `--if-match` guards and actionable stale-revision errors for the 31 independently
+  protected operations; static Beta 2 task, project, and project-template commands omit that option
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 

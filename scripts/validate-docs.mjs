@@ -21,9 +21,10 @@ const manifest = JSON.parse(await readFile(path.join(root, 'sources', 'contracts
 if (
   manifest.schemaVersion !== 1 ||
   manifest.sourceRepository !== 'TeamGrid/teamgrid-api' ||
-  !/^[0-9a-f]{40}$/.test(manifest.sourceCommit || '')
+  !/^[0-9a-f]{40}$/.test(manifest.sourceCommit || '') ||
+  !/^[0-9a-f]{40}$/.test(manifest.runtimeCommit || '')
 ) {
-  fail('Contract source provenance is missing or invalid.')
+  fail('Contract source or runtime provenance is missing or invalid.')
 }
 const packageManifest = JSON.parse(
   await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
@@ -215,58 +216,160 @@ if (
   fail('OpenAPI and Developer Platform execution bindings differ.')
 }
 
-const resourceCasOperations = []
-for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
-  for (const [method, operation] of Object.entries(pathItem)) {
-    if (!methods.has(method) || operation['x-teamgrid-resource-cas'] !== 'resource-cas-v1') continue
-    resourceCasOperations.push({ method: method.toUpperCase(), path: operationPath })
-    for (const status of ['400', '412', '428', '503']) {
-      if (!operation.responses?.[status]) {
-        fail(`${operation.operationId} is missing the resource-CAS ${status} response.`)
-      }
-    }
-  }
+const expectedBeta2NonCasOperationIds = [
+  'archiveProject',
+  'archiveProjectTemplate',
+  'archiveTask',
+  'completeProject',
+  'completeTask',
+  'createProject',
+  'createProjectTemplate',
+  'createTask',
+  'getProject',
+  'getProjectLifecycleOperation',
+  'getProjectTemplate',
+  'getProjectTemplateInstantiation',
+  'getTask',
+  'instantiateProjectTemplate',
+  'listProjects',
+  'listProjectTemplates',
+  'listTasks',
+  'reopenProject',
+  'reopenTask',
+  'restoreProject',
+  'restoreProjectTemplate',
+  'restoreTask',
+  'updateProject',
+  'updateProjectTemplate',
+  'updateTask',
+]
+const expectedIndependentIfMatchOperationIds = [
+  'abortAutomationRun',
+  'archiveAbsence',
+  'archiveAppointment',
+  'archiveAutomationDefinition',
+  'archiveComment',
+  'archiveDocument',
+  'archiveFile',
+  'cancelInvitation',
+  'clearCustomFieldValue',
+  'deleteGroup',
+  'deleteRole',
+  'removeMember',
+  'renameFile',
+  'replaceTaskPlannedWork',
+  'resendInvitation',
+  'restoreAbsence',
+  'restoreAppointment',
+  'restoreAutomationDefinition',
+  'restoreComment',
+  'restoreDocument',
+  'restoreFile',
+  'rotateWebhookSecret',
+  'setCustomFieldValue',
+  'updateAbsence',
+  'updateAppointment',
+  'updateAutomationDefinition',
+  'updateDocument',
+  'updateGroup',
+  'updateMemberRole',
+  'updateRole',
+  'updateWorkspaceSettings',
+]
+const allV1Operations = Object.values(v1.paths || {})
+  .flatMap((pathItem) => Object.values(pathItem))
+  .filter((operation) => operation?.operationId)
+const beta2NonCasOperations = allV1Operations
+  .filter((operation) => expectedBeta2NonCasOperationIds.includes(operation.operationId))
+  .sort((left, right) => left.operationId.localeCompare(right.operationId))
+const independentIfMatchOperations = allV1Operations
+  .filter((operation) =>
+    (operation.parameters || []).some((parameter) =>
+      /IfMatch/.test(parameter.$ref || parameter.name || ''),
+    ),
+  )
+  .sort((left, right) => left.operationId.localeCompare(right.operationId))
+const residualResourceCasOperations = allV1Operations.filter(
+  (operation) => operation['x-teamgrid-resource-cas'] === 'resource-cas-v1',
+)
+const residualResourceCasReads = allV1Operations.filter(
+  (operation) => operation['x-teamgrid-resource-cas-read'] === 'resource-cas-v1',
+)
+if (
+  beta2NonCasOperations.length !== 25
+  || JSON.stringify(beta2NonCasOperations.map((operation) => operation.operationId))
+    !== JSON.stringify(expectedBeta2NonCasOperationIds)
+  || canonicalManifest.summary?.beta2NonCasResourceOperations !== 25
+  || canonicalManifest.summary?.resourceCasMutationOperations !== 0
+  || canonicalManifest.summary?.resourceCasOperationReads !== 0
+  || residualResourceCasOperations.length !== 0
+  || residualResourceCasReads.length !== 0
+) {
+  fail('Beta 2 must expose exactly 25 static core operations and zero resource-CAS operations.')
 }
 if (
-  resourceCasOperations.length !== 14 ||
-  canonicalManifest.summary?.resourceCasMutationOperations !== resourceCasOperations.length
+  JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
+  !== JSON.stringify(expectedIndependentIfMatchOperationIds)
 ) {
-  fail(
-    `Expected the manifest and OpenAPI to expose exactly 14 resource-CAS mutations; found ${resourceCasOperations.length}.`,
+  fail('Beta 2 must preserve exactly the 31 independent If-Match operations.')
+}
+for (const operation of independentIfMatchOperations) {
+  const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
+    /IfMatch/.test(parameter.$ref || parameter.name || ''),
   )
+  if (
+    ifMatchParameters.length !== 1
+    || ['400', '412', '428', '503'].some((status) => operation.responses?.[status] === undefined)
+  ) {
+    fail(`${operation.operationId} has an incomplete independent If-Match contract.`)
+  }
+}
+for (const operation of beta2NonCasOperations) {
+  const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
+    /IfMatch(?:Project|ProjectTemplate|Task)$/.test(parameter.$ref || parameter.name || ''),
+  )
+  if (
+    ifMatchParameters.length !== 0
+    || operation.responses?.['412'] !== undefined
+    || operation.responses?.['428'] !== undefined
+    || operation['x-teamgrid-resource-cas'] !== undefined
+    || operation['x-teamgrid-resource-cas-read'] !== undefined
+  ) {
+    fail(`${operation.operationId} still exposes a retired core resource-CAS contract.`)
+  }
+}
+for (const parameterName of ['IfMatchProject', 'IfMatchProjectTemplate', 'IfMatchTask']) {
+  if (v1.components?.parameters?.[parameterName] !== undefined) {
+    fail(`Retired core parameter ${parameterName} remains in OpenAPI.`)
+  }
+}
+for (const [schemaName, retiredFields] of Object.entries({
+  Project: ['developerRevision', 'developerUpdatedAt'],
+  ProjectLifecycleOperation: ['resultRevision', 'sourceRevision'],
+  ProjectTemplate: ['developerRevision', 'developerUpdatedAt'],
+  ProjectTemplateInstantiation: ['resultRevision', 'sourceRevision'],
+  Task: ['developerRevision', 'developerUpdatedAt'],
+})) {
+  const properties = v1.components?.schemas?.[schemaName]?.properties?.attributes?.properties
+  if (!properties || retiredFields.some((field) => properties[field] !== undefined)) {
+    fail(`${schemaName} still exposes retired core resource-CAS fields.`)
+  }
 }
 const resourceConcurrencyDocumentation = await readFile(
   path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'resource-concurrency.md'),
   'utf8',
 )
-for (const operation of resourceCasOperations) {
-  const marker = `\`${operation.method} /v1${operation.path}\``
-  if (!resourceConcurrencyDocumentation.includes(marker)) {
-    fail(`Resource concurrency documentation is missing ${marker}.`)
-  }
-}
 for (const marker of [
-  '`developerRevision`',
-  '`developerUpdatedAt`',
+  '25 static core operations',
+  '31 independent `If-Match` operations',
+  'do not expose `developerRevision` or `developerUpdatedAt`',
   '`400 invalid_precondition`',
-  '`410 resource_operation_revision_unavailable`',
   '`412 precondition_failed`',
   '`428 precondition_required`',
   '`503 service_unavailable`',
-  '`"prj1-<developerRevision>"`',
-  '`"tpl1-<developerRevision>"`',
-  '`"tsk1-<developerRevision>"`',
 ]) {
   if (!resourceConcurrencyDocumentation.includes(marker)) {
     fail(`Resource concurrency documentation is missing required marker: ${marker}.`)
-  }
-}
-for (const operationId of ['getProjectLifecycleOperation', 'getProjectTemplateInstantiation']) {
-  const operation = contractOperations.find((item) => item.operationId === operationId)
-  const pathItem = operation && v1.paths?.[operation.path]
-  const operationContract = pathItem && pathItem[operation.method.toLowerCase()]
-  if (!operationContract?.responses?.['410']) {
-    fail(`${operationId} is missing its legacy-operation 410 response.`)
   }
 }
 
@@ -407,7 +510,8 @@ for (const marker of [
   `${currentV1PathCount} v1 paths`,
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
-  `exactly ${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutation operations`,
+  `${canonicalManifest.summary?.beta2NonCasResourceOperations} static non-CAS core operations`,
+  '31 independent `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)

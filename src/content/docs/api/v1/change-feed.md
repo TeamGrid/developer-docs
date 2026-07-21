@@ -15,8 +15,8 @@ preimage and recovery qualification, so TeamGrid does not advertise a weaker con
 ## Supported beta alternatives
 
 Use the normal cursor-paginated resource endpoints for bounded imports and reconciliation. Persist
-the resource IDs and revisions returned by those endpoints, and repeat a traversal from the
-beginning when your filter set or reconciliation boundary changes.
+resource IDs and the documented current-state fields returned by each endpoint, and repeat a
+traversal from the beginning when your filter set or reconciliation boundary changes.
 
 Use [signed webhooks](/api/v1/webhooks/) for supported event-driven workflows. A webhook is a
 delivery signal rather than a complete history: verify its signature, process it idempotently, and

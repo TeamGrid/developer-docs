@@ -65,15 +65,11 @@ accept an idempotency key through mutation options. Every method uses the scopes
 API reference; the SDK never adds authority beyond the supplied credential.
 
 The compatible package checkpoint for this contract is `1.0.0-beta.2`; pin that exact version after
-it is available on the configured npm channel. The SDK brands task, project, and project-template
-revisions and strong ETags as different TypeScript types. `TaskMutationOptions`, `ProjectMutationOptions`,
-`ProjectLifecycleMutationOptions`, `ProjectTemplateMutationOptions`, and
-`ProjectTemplateInstantiateOptions` require `ifMatch`; omitting it from any of the 14 resource-CAS
-mutations is a compile-time error. The canonical ETag helpers accept a server-issued raw revision
-and return the matching quoted `tsk1`, `prj1`, or `tpl1` type. Successful reads, creates, updates,
-restores, and state changes expose the verified, resource-branded response header through immutable
-`transport.headers.etag`; archive helpers return the typed ETag even though their HTTP response has
-no body.
+it is available on the configured npm channel. Tasks, projects, and project templates use the
+static Beta 2 resource contract: their representations do not expose developer revisions and their
+mutation options do not accept `ifMatch`. Project lifecycle changes and template instantiation
+remain asynchronous and accept a stable idempotency key. The SDK keeps typed `ifMatch` options for
+the 31 independently protected operations in other resource families.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
@@ -104,14 +100,13 @@ headers, secrets, and tenant-routing internals.
   job behind a synchronous project response.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
-- Project, task, and project-template reads validate `developerRevision`, `developerUpdatedAt`, and
-  the body-to-ETag binding. Their 14 protected mutations require a correctly typed `ifMatch`; the
-  SDK does not automatically retry a `412` with a new business decision.
+- Project, task, and project-template methods use the static Beta 2 contract and reject a legacy
+  `ifMatch` option instead of silently sending an unsupported precondition.
 - Template instantiation and planned-work replacement expose the accepted operation; bounded
   `wait()` helpers poll credential-owned status without changing operation semantics.
 - Project lifecycle and template-instantiation wait helpers accept the validated
-  `acceptedOperation`. When supplied, every poll must preserve its operation identity, target,
-  action where applicable, and `sourceRevision`; CLI `--wait` always supplies this binding.
+  `acceptedOperation`. When supplied, every poll must preserve its operation identity, target, and
+  action where applicable; CLI `--wait` always supplies this binding.
 
 Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
 pipelines therefore stay stable while application code can inspect `response.transport`.

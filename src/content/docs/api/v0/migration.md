@@ -16,7 +16,7 @@ the platform-wide changes.
 | Endpoint | Global v0 host | Credential-derived regional `/v1` host |
 | Pagination | Page and limit | Opaque cursor and limit |
 | Create retries | Generally unsafe | Required idempotency key |
-| Concurrent project/task/template writes | No uniform public precondition | Latest type-specific strong ETag in `If-Match` |
+| Concurrent project/task/template writes | No uniform public precondition | Static Beta 2 writes without a public core CAS precondition |
 | Errors | Historical response formats | Versioned error envelope with request id |
 | Webhooks | Legacy unsigned delivery | HMAC-signed delivery v2 |
 | Audit | General operational logging | Credential and mutation audit events |
@@ -26,7 +26,7 @@ the platform-wide changes.
 1. Inventory the v0 resources, filters, writes, and webhook events used by the integration.
 2. Create a separate v1 credential with only the required read scopes.
 3. Compare read results without changing production data.
-4. Add write scopes, idempotency keys, and read-before-write ETag handling only when the read comparison passes.
+4. Add write scopes and idempotency keys only when the read comparison passes; add read-before-write ETag handling for endpoints whose v1 contract explicitly requires it.
 5. Create a v2 webhook and verify its exact raw-body signature.
 6. Switch the integration to the regional endpoint.
 7. Observe errors, latency, and audit events.
@@ -48,11 +48,11 @@ statements, and credential-owned webhook delivery history. Product acquisition c
 project-statement budget data require explicit finance scope overlays. Value writes and planned-work
 replacement use strong compare-and-set revisions; do not translate v0 writes mechanically.
 
-Project, task, and project-template writers must also be adapted rather than translated
-mechanically. Their representations now include `developerRevision` and `developerUpdatedAt`, and
-the 14 protected mutations require the latest `prj1`, `tsk1`, or `tpl1` ETag. A stale write returns
-`412`; re-read and reconcile it. Project lifecycle and template-instantiation idempotency also binds
-the initiating revision. See [resource revisions and concurrent writes](/api/v1/resource-concurrency/).
+Project, task, and project-template writers use a static Beta 2 contract without developer revision
+fields or a core `If-Match` requirement. Do not synthesize preconditions for those operations.
+Project lifecycle and template instantiation remain asynchronous and should use stable idempotency
+keys. Other domains, including custom-field values and planned work, retain their explicit
+read-before-write preconditions. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
 capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,

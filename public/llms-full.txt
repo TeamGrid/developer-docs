@@ -1432,7 +1432,7 @@ the platform-wide changes.
 | Endpoint | Global v0 host | Credential-derived regional `/v1` host |
 | Pagination | Page and limit | Opaque cursor and limit |
 | Create retries | Generally unsafe | Required idempotency key |
-| Concurrent project/task/template writes | No uniform public precondition | Latest type-specific strong ETag in `If-Match` |
+| Concurrent project/task/template writes | No uniform public precondition | Static Beta 2 writes without a public core CAS precondition |
 | Errors | Historical response formats | Versioned error envelope with request id |
 | Webhooks | Legacy unsigned delivery | HMAC-signed delivery v2 |
 | Audit | General operational logging | Credential and mutation audit events |
@@ -1442,7 +1442,7 @@ the platform-wide changes.
 1. Inventory the v0 resources, filters, writes, and webhook events used by the integration.
 2. Create a separate v1 credential with only the required read scopes.
 3. Compare read results without changing production data.
-4. Add write scopes, idempotency keys, and read-before-write ETag handling only when the read comparison passes.
+4. Add write scopes and idempotency keys only when the read comparison passes; add read-before-write ETag handling for endpoints whose v1 contract explicitly requires it.
 5. Create a v2 webhook and verify its exact raw-body signature.
 6. Switch the integration to the regional endpoint.
 7. Observe errors, latency, and audit events.
@@ -1464,11 +1464,11 @@ statements, and credential-owned webhook delivery history. Product acquisition c
 project-statement budget data require explicit finance scope overlays. Value writes and planned-work
 replacement use strong compare-and-set revisions; do not translate v0 writes mechanically.
 
-Project, task, and project-template writers must also be adapted rather than translated
-mechanically. Their representations now include `developerRevision` and `developerUpdatedAt`, and
-the 14 protected mutations require the latest `prj1`, `tsk1`, or `tpl1` ETag. A stale write returns
-`412`; re-read and reconcile it. Project lifecycle and template-instantiation idempotency also binds
-the initiating revision. See [resource revisions and concurrent writes](/api/v1/resource-concurrency/).
+Project, task, and project-template writers use a static Beta 2 contract without developer revision
+fields or a core `If-Match` requirement. Do not synthesize preconditions for those operations.
+Project lifecycle and template instantiation remain asynchronous and should use stable idempotency
+keys. Other domains, including custom-field values and planned work, retain their explicit
+read-before-write preconditions. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
 capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
@@ -2040,8 +2040,8 @@ preimage and recovery qualification, so TeamGrid does not advertise a weaker con
 ## Supported beta alternatives
 
 Use the normal cursor-paginated resource endpoints for bounded imports and reconciliation. Persist
-the resource IDs and revisions returned by those endpoints, and repeat a traversal from the
-beginning when your filter set or reconciliation boundary changes.
+resource IDs and the documented current-state fields returned by each endpoint, and repeat a
+traversal from the beginning when your filter set or reconciliation boundary changes.
 
 Use [signed webhooks](/api/v1/webhooks/) for supported event-driven workflows. A webhook is a
 delivery signal rather than a complete history: verify its signature, process it idempotently, and
@@ -2206,7 +2206,7 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
 | `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
-| `410` | A legacy asynchronous operation has no revision provenance | Re-read and reconcile the affected resource |
+| `410` | A private-file upload reservation expired | Create a new upload intent and restart the upload flow |
 | `412` | A strong resource revision is stale | Re-read and make an explicit merge or overwrite decision |
 | `428` | A required `If-Match` precondition is missing | Read the latest resource, then send its strong revision |
 | `429` | Rate limit exceeded | Back off and honor `Retry-After` |
@@ -2226,11 +2226,10 @@ The 429 response uses the normal v1 error envelope with code `rate_limit_exceede
 honors `Retry-After` for safe reads, idempotent POST operations, and fully guarded planned-work
 replacements; it does not automatically retry other PUT, PATCH, or DELETE requests.
 
-For project, task, and project-template writers, distinguish `400 invalid_precondition`,
-`412 precondition_failed`, `428 precondition_required`,
-`410 resource_operation_revision_unavailable`, and `503 service_unavailable`. The complete
-reconciliation procedure is documented under [resource revisions and concurrent
-writes](/api/v1/resource-concurrency/).
+The static Beta 2 project, task, and project-template operations do not use the precondition errors
+above. For the 31 independently protected operations, distinguish `400 invalid_precondition`,
+`412 precondition_failed`, `428 precondition_required`, and `503 service_unavailable`. The complete
+boundary is documented under [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 <!-- api/v1/index.md -->
 ---
@@ -2268,9 +2267,9 @@ and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
-Projects, tasks, and project templates expose opaque `developerRevision` and
-`developerUpdatedAt` fields. Their 14 protected mutations require the latest type-specific strong
-ETag in `If-Match`; review [resource revisions and concurrent writes](/api/v1/resource-concurrency/)
+Projects, tasks, and project templates use the static Beta 2 contract: they do not expose developer
+revision fields or accept a core `If-Match` precondition. Other resource families retain 31
+endpoint-specific protected mutations. Review [resource concurrency in Beta 2](/api/v1/resource-concurrency/)
 before building a writer.
 
 For bounded mirrors, traverse the normal resource endpoints and use signed webhooks as delivery
@@ -2317,10 +2316,9 @@ Idempotency-Key: sync-job-2026-07-19-task-42
 
 The key must contain 1–128 printable ASCII characters. Repeating the same operation with the same key and payload returns the original result. Reusing the key with a different payload returns a conflict.
 
-For project lifecycle actions and project-template instantiation, the idempotency fingerprint also
-includes the resource revision supplied through `If-Match`. A retry must therefore use the same key,
-action, payload, and source revision. If the resource changed, reconcile first and start the newly
-decided action under a new operation key.
+For project lifecycle actions and project-template instantiation, a retry must use the same key,
+action, and payload. These static Beta 2 operations do not accept a core `If-Match` precondition or
+bind the key to a developer revision.
 
 Generate keys from a stable operation identity rather than a random value created on every retry. Keep keys free of credentials and personal data.
 
@@ -2329,8 +2327,8 @@ planned-work PUT is retryable only with both its idempotency key and strong comp
 precondition. Other PUT, PATCH, and DELETE requests should not be retried automatically unless the
 caller has separately established their outcome.
 
-See [resource revisions and concurrent writes](/api/v1/resource-concurrency/) for the separate
-read–mutate–reconcile contract used by projects, tasks, and project templates.
+See [resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the distinction between the
+static core operations and independently protected resource families.
 
 <!-- api/v1/planned-work.md -->
 ---
@@ -2498,7 +2496,6 @@ teamgrid project-templates create \
 
 teamgrid project-templates instantiate TEMPLATE_ID \
   --data '{"name":"Customer rollout"}' \
-  --if-match 'LATEST_TEMPLATE_REVISION' \
   --idempotency-key customer-rollout-42 --wait --output json
 ```
 
@@ -2508,14 +2505,11 @@ wait helper. Terminal states are `succeeded` and `failed`; pending/running respo
 that generated resources are complete.
 
 ```ts
-const template = await client.projectTemplates.get(templateId)
-
 const accepted = await client.projectTemplates.instantiate(
   templateId,
   { name: 'Customer rollout', dueAt: '2026-08-31T23:59:59.999Z' },
   {
     idempotencyKey: 'customer-rollout-42',
-    ifMatch: template.data.attributes.developerRevision,
   },
 )
 const completed = await client.projectTemplateInstantiations.wait(accepted.data.id, {
@@ -2524,16 +2518,14 @@ const completed = await client.projectTemplateInstantiations.wait(accepted.data.
 })
 ```
 
-Passing `acceptedOperation` binds every poll to the accepted operation ID, template and generated
-project IDs, and source revision. The SDK rejects a response if any of those immutable fields
-changes while polling. The CLI applies the same binding automatically when `--wait` is present.
+Passing `acceptedOperation` binds every poll to the accepted operation ID and template and generated
+project IDs. The SDK rejects a response if any of those immutable fields changes while polling. The
+CLI applies the same binding automatically when `--wait` is present.
 
 Only the credential that created an instantiation can read its operation status. A replay with the
 same idempotency key and payload returns the original operation; using the key for different input
-or source revision returns `409`. The accepted operation's `sourceRevision` equals the revision
-supplied in `If-Match`; `resultRevision` is present only after successful completion. A `410` from
-the operation read means it predates revision tracking and must be reconciled against a fresh
-template read. Template metadata and operation status are forbidden in every MCP profile because
+returns `409`. The static Beta 2 template and operation representations do not expose developer,
+source, or result revision fields. Template metadata and operation status are forbidden in every MCP profile because
 captured workflow shape and bulk creation state are not suitable bounded model tools.
 
 <!-- api/v1/quickstart.md -->
@@ -2578,10 +2570,9 @@ Use `meta.page.nextCursor` to request the next page. Treat cursors as opaque str
 
 For Node.js applications, continue with the [TypeScript SDK quickstart](/sdk/quickstart/). For shell scripts or local operation, use the [CLI](/cli/install-and-authenticate/).
 
-Before updating, completing, reopening, archiving, or restoring a task or project, read it and retain
-the returned strong ETag. Project-template changes use the same pattern. These operations reject a
-missing precondition with `428` and a stale revision with `412`; see [resource revisions and
-concurrent writes](/api/v1/resource-concurrency/).
+Task, project, and project-template mutations use the static Beta 2 contract and do not accept a
+core `If-Match` precondition. Other resource families retain explicit read-before-write revisions;
+see [resource concurrency in Beta 2](/api/v1/resource-concurrency/) before adding writes.
 
 <!-- api/v1/regions.md -->
 ---
@@ -2613,134 +2604,107 @@ https://api.teamgridapp.com
 
 Business data, credential hashes, audit records, and write delivery stay in the owning cell. The global edge does not persist bearer credentials or request payloads.
 
-Resource revisions and strong ETags are also cell-local. Return them only to the same credential's
-regional endpoint. A tag is not proof of authorization, is not portable to another workspace or
-cell, and must never be used to justify following a bearer redirect.
+For endpoints that expose resource revisions and strong ETags, those validators are also
+cell-local. Return them only to the same credential's regional endpoint. A tag is not proof of
+authorization, is not portable to another workspace or cell, and must never be used to justify
+following a bearer redirect. Static Beta 2 projects, tasks, and project templates do not expose
+such validators.
 
 <!-- api/v1/resource-concurrency.md -->
 ---
-title: Resource revisions and concurrent writes
-description: Use strong ETags and If-Match to update TeamGrid projects, tasks, and project templates without losing concurrent changes.
+title: Resource concurrency in Beta 2
+description: Understand which API v1 writes use If-Match and why projects, tasks, and project templates use a static non-CAS contract in Beta 2.
 ---
 
-Projects, tasks, and project templates use optimistic concurrency control. Every public representation
-of these resources contains two concurrency fields:
+API v1 uses endpoint-specific concurrency rules. Do not assume that every mutable resource accepts
+the same revision format or that every write supports `If-Match`.
 
-- `developerRevision` is an opaque, lowercase 64-character revision. Persist and return it unchanged.
-- `developerUpdatedAt` is the canonical timestamp at which that developer revision was issued. It is
-  not a replacement for the resource's business `updatedAt` field.
+The `1.0.0-beta.2` contract deliberately keeps the 25 static core operations for projects, tasks,
+project templates, project lifecycle operations, and template instantiations outside the new
+resource-CAS rollout. These resources do not expose `developerRevision` or `developerUpdatedAt`,
+their operations do not carry `resource-cas-v1` extensions, and their mutations do not accept
+project-, task-, or template-specific `If-Match` headers.
 
-Single-resource reads and resource-returning writes also carry a quoted, strong `ETag` header. Its
-value is derived from the body revision and is specific to the resource type:
+This is a release boundary, not a general promise that concurrent writes are merged. When two
+clients update the same core resource, callers must not rely on a public optimistic-concurrency
+precondition in Beta 2. Keep writes narrow, avoid parallel writers for the same object, and re-read
+the resource after a mutation when subsequent work depends on its current state.
 
-| Resource | Strong ETag form |
+## Static core operations
+
+The 25 static core operations comprise:
+
+| Resource | Operations |
 | --- | --- |
-| Project | `"prj1-<developerRevision>"` |
-| Project template | `"tpl1-<developerRevision>"` |
-| Task | `"tsk1-<developerRevision>"` |
+| Projects | List, get, create, update, complete, reopen, archive, and restore |
+| Project lifecycle operations | Get operation status |
+| Project templates | List, get, create, update, archive, restore, and instantiate |
+| Template instantiations | Get instantiation status |
+| Tasks | List, get, create, update, archive, restore, complete, and reopen |
 
-Treat revisions and ETags as opaque. Do not generate them from `updatedAt`, remove the quotes, change
-case, or reuse a tag for another resource type. A direct HTTP mutation accepts exactly one current,
-quoted strong ETag in `If-Match`; weak tags, wildcards, unquoted revisions, and comma-separated tag
-lists are invalid.
+Project lifecycle commands and template instantiation remain asynchronous. Their start requests
+use a stable `Idempotency-Key` for safe replay, and clients poll the returned operation ID. The
+operation representations no longer expose the retired core `sourceRevision` or `resultRevision`
+fields. Task timer commands and planned-work endpoints are separate contracts and are not part of
+this 25-operation set.
 
-## Read, decide, mutate
+## Independent preconditions remain
 
-Read the resource immediately before making a state-dependent change and retain its `ETag`:
+Beta 2 retains exactly 31 independent `If-Match` operations. They protect their own resource
+families and were not part of the retired core resource-CAS rollout:
+
+| Resource family | Protected mutations |
+| --- | ---: |
+| Appointments and absences | 6 |
+| Comments | 2 |
+| Documents and files | 6 |
+| Custom-field values | 2 |
+| Planned work | 1 |
+| Members, invitations, roles, and groups | 8 |
+| Automation definitions and runs | 4 |
+| Workspace settings | 1 |
+| Webhook secret rotation | 1 |
+
+For one of these operations, read the corresponding resource first and use exactly the revision or
+strong ETag specified by that endpoint. Revision formats are resource-specific. Never turn a task,
+project, or project-template ID or timestamp into an ETag, and never reuse a revision from another
+resource family.
+
+For example, planned-work replacement keeps its own compare-and-set contract:
 
 ```bash
-curl --fail-with-body \
-  --dump-header task-headers.txt \
-  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
-  --header 'Accept: application/json' \
-  https://api.de.teamgrid.app/v1/tasks/TASK_ID \
-  --output task.json
+current=$(teamgrid planned-work get "$TASK_ID" --output json)
+revision=$(printf '%s' "$current" | jq -er '.attributes.revision')
 
-TASK_ETAG=$(awk 'BEGIN { IGNORECASE=1 } /^etag:/ { sub(/^[^:]+:[[:space:]]*/, ""); sub(/\r$/, ""); print; exit }' task-headers.txt)
-
-curl --fail-with-body \
-  --request PATCH \
-  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --header "If-Match: $TASK_ETAG" \
-  --data '{"name":"Reviewed task name"}' \
-  https://api.de.teamgrid.app/v1/tasks/TASK_ID
+teamgrid planned-work replace "$TASK_ID" \
+  --data @schedule.json \
+  --if-match "$revision" \
+  --idempotency-key "schedule-${TASK_ID}-v1" \
+  --yes
 ```
 
-After a successful mutation, replace the stored revision with the new body `developerRevision` and,
-when present, the new response `ETag`. Archive endpoints return `204 No Content` and therefore carry
-the post-archive revision only in the response `ETag` header.
+## Failure contract for protected operations
 
-If the API returns `412 precondition_failed`, another writer changed the resource after your read.
-Do not retry the same decision blindly:
-
-1. Read the resource again from the same regional endpoint.
-2. Reconcile your intended patch or action with the new representation.
-3. If the action is still valid, send a new request with the newly issued ETag.
-4. Otherwise, preserve the server state and surface the conflict to the caller.
-
-The SDK and CLI perform format validation, but they do not turn a stale business decision into a safe
-automatic retry.
-
-## Mutations covered by resource CAS
-
-The `resource-cas-v1` contract currently covers exactly these 14 mutations:
-
-| Resource | Mutation requiring `If-Match` |
-| --- | --- |
-| Project | `PATCH /v1/projects/{id}` |
-| Project | `POST /v1/projects/{id}/complete` |
-| Project | `POST /v1/projects/{id}/reopen` |
-| Project | `POST /v1/projects/{id}/archive` |
-| Project | `POST /v1/projects/{id}/restore` |
-| Project template | `PATCH /v1/project-templates/{id}` |
-| Project template | `DELETE /v1/project-templates/{id}` |
-| Project template | `POST /v1/project-templates/{id}/restore` |
-| Project template | `POST /v1/project-templates/{id}/instantiate` |
-| Task | `PATCH /v1/tasks/{id}` |
-| Task | `DELETE /v1/tasks/{id}` |
-| Task | `POST /v1/tasks/{id}/restore` |
-| Task | `POST /v1/tasks/{id}/complete` |
-| Task | `POST /v1/tasks/{id}/reopen` |
-
-Other API v1 resources can have their own revision formats and compare-and-set rules. Use the ETag
-and `If-Match` definitions on the relevant endpoint rather than substituting a `tsk1`, `prj1`, or
-`tpl1` value.
-
-## Asynchronous actions and idempotency
-
-Project complete, reopen, archive, and restore operations and project-template instantiation require
-both a current `If-Match` value and a stable `Idempotency-Key`. The accepted operation records the
-exact input revision as `sourceRevision`. Replaying the same key is safe only for the same action,
-payload, and source revision; changing any of them is an idempotency conflict.
-
-A successful asynchronous operation publishes its resulting resource revision as `resultRevision`.
-Pending, running, and failed operations have `resultRevision: null`. A `410
-resource_operation_revision_unavailable` response means that the operation predates revision
-tracking and can no longer provide a trustworthy status. Re-read the current project or template and
-reconcile the intended outcome instead of creating an unguarded replacement operation.
-
-## Failure contract
+The independent `If-Match` operations use the following failure contract:
 
 | Status and code | Meaning | Action |
 | --- | --- | --- |
-| `400 invalid_precondition` | `If-Match` is malformed, weak, unquoted, duplicated, or for the wrong resource type | Correct the request from the latest server response |
-| `410 resource_operation_revision_unavailable` | A legacy asynchronous operation has no trustworthy revision record | Re-read the current resource and reconcile the outcome |
-| `412 precondition_failed` | The resource no longer matches the supplied revision | Re-read, reconcile, and retry only with a new decision |
-| `428 precondition_required` | A protected mutation omitted `If-Match` | Read the resource and send its latest strong ETag |
-| `503 service_unavailable` | The cell cannot currently prove the resource concurrency contract or revision | Keep the precondition and retry later with bounded backoff |
+| `400 invalid_precondition` | The supplied validator is malformed, weak, duplicated, or belongs to the wrong resource contract | Correct the request using the latest endpoint response |
+| `412 precondition_failed` | The protected resource no longer matches the supplied revision | Re-read, reconcile, and retry only after a new decision |
+| `428 precondition_required` | A protected operation omitted `If-Match` | Read the resource and send its latest documented revision or strong ETag |
+| `503 service_unavailable` | The owning cell cannot currently prove that endpoint's concurrency contract | Keep the precondition and retry later with bounded backoff |
 
-Never handle `503` by dropping `If-Match` or falling back to an unguarded API surface.
+Never respond to `412` or `503` by removing `If-Match`. Conversely, do not send `If-Match` to a
+static project, task, or project-template mutation: it is not part of the Beta 2 contract and the
+official SDK and CLI intentionally do not expose such an option for those operations.
 
-## Controlled-beta migration
+## Future core concurrency releases
 
-This behavior is part of the `1.0.0-beta.2` contract checkpoint. Before moving an existing
-beta integration to this checkpoint, deploy support for the new response fields and ETags, then make
-`If-Match` mandatory in all 14 callers. Do not mix older API v1 writers, which omit the negotiated
-resource-CAS contract, with writers targeting this checkpoint during a rollout.
-
-Revisions are issued and checked by the owning cell. Always send the credential and its ETag back to
-the credential's regional endpoint; they are not portable between workspaces, cells, or regions.
+Core CAS can be introduced in a later contract checkpoint after its cell-local revision writes,
+backfill, cutover, enforcement, rollback, and application compatibility have been qualified
+separately. That release will update OpenAPI and the official packages together. Integrations
+should follow the contract they have pinned instead of reserving or synthesizing core revision
+headers in advance.
 
 <!-- api/v1/resources-and-semantics.md -->
 ---
@@ -2785,12 +2749,11 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
-Project, task, and project-template responses contain `developerRevision` and
-`developerUpdatedAt`. Those fields and the matching `prj1`, `tsk1`, or `tpl1` strong ETag form a
-cell-local concurrency contract; they are not internal MongoDB revision fields. The protected
-mutations atomically compare that revision in the owning tenant before applying domain behavior.
-See [resource revisions and concurrent writes](/api/v1/resource-concurrency/) for the exact 14
-operations and conflict-reconciliation flow.
+Project, task, and project-template responses use the static Beta 2 shape and do not contain
+developer revision fields. Their mutations do not accept a core `If-Match` precondition. This
+boundary applies to 25 project, task, template, and associated operation endpoints; independent
+resource families retain their own compare-and-set contracts. See
+[resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the exact boundary.
 
 ## Project lifecycle operations
 
@@ -2798,22 +2761,21 @@ Project completion, reopen, archive, and restore can cascade across related Team
 therefore returns a project-lifecycle operation instead of pretending that the work completed during
 the initiating request.
 
-1. Read the project and retain its latest `prj1` strong ETag.
-2. Send the lifecycle command with that ETag in `If-Match` and a stable idempotency key.
-3. Persist the returned operation ID and its `sourceRevision`.
+1. Send the lifecycle command with a stable idempotency key.
+2. Persist the returned operation ID, action, and target project ID.
+3. Treat the accepted operation as the authoritative handle for subsequent polling.
 4. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
    or CLI wait helper.
 5. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
    unrelated replacement operation.
 
-On success, `resultRevision` identifies the resulting project revision. A legacy operation without
-revision provenance returns `410 resource_operation_revision_unavailable`; reconcile against a fresh
-project read instead of assuming success or failure.
+On success, re-read the project if the next step depends on its resulting state. Beta 2 operation
+resources do not expose the retired core `sourceRevision` or `resultRevision` fields.
 
 The CLI project commands accept `--wait`, `--max-wait`, and `--poll-interval`. The SDK exposes the
 operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`. Pass
 the mutation result as `acceptedOperation` when waiting so every poll remains bound to the accepted
-operation ID, action, project, and source revision. CLI `--wait` does this automatically.
+operation ID, action, and project. CLI `--wait` does this automatically.
 
 ## Finance overlays
 
@@ -3021,6 +2983,15 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Removed the unqualified `/v1/changes` operation, `changes:read` scope, ChangeEvent schema, SDK
   client, and CLI commands from the public beta. The internal implementation remains unavailable
   until preimage, ownership, retention, failover, and recovery semantics are fully qualified.
+- Withdrew the unqualified core resource-CAS experiment from the public Beta 2 checkpoint. The 25
+  project, task, project-template, lifecycle-operation, and template-instantiation operations no
+  longer expose core `If-Match` parameters, developer revision fields, CAS extensions, or legacy
+  revision-status responses. Project lifecycle and template instantiation remain asynchronous and
+  idempotent.
+- Preserved the 31 independent `If-Match` operations for appointments, absences, comments,
+  documents, files, custom-field values, planned work, workspace administration, automations,
+  workspace settings, and webhook-secret rotation. Their endpoint-specific concurrency contracts
+  are unchanged.
 - Aligned the API client, CLI, and MCP package versions at `1.0.0-beta.2`. MCP remains a bounded
   read-only interface.
 - Corrected the earlier documentation mismatch: `1.0.0-alpha.3` was a source checkpoint and was
@@ -3028,6 +2999,9 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   after all three packages have been published and verified.
 
 ## 2026-07-20
+
+The resource-CAS entries below describe the internal beta.1 checkpoint. They were superseded by
+the static core contract recorded on 2026-07-21 and are not part of the public Beta 2 contract.
 
 - Published the code-owned `developer-action-policy-v4` registry for all 182 operations and all 12
   principal-policy families. V4 adds the conditional scopes and dynamic target policies required by
@@ -3146,14 +3120,14 @@ an idempotency key can be retried after bounded transient failures. Other PUT, P
 requests are not retried automatically.
 
 Custom-field-value and planned-work writes also require the revision returned by the latest GET.
-The same read-before-write rule applies to the five project, five task, and four project-template
-resource-CAS mutations:
+For example, read a custom-field value before changing it:
 
 ```bash
-revision=$(teamgrid tasks get "$TASK_ID" --output json | jq -er '.attributes.developerRevision')
+revision=$(teamgrid custom-field-values get project "$PROJECT_ID" "$FIELD_ID" \
+  --output json | jq -er '.attributes.revision')
 
-if ! teamgrid tasks update "$TASK_ID" --data @patch.json \
-  --if-match "$revision" --output json; then
+if ! teamgrid custom-field-values set project "$PROJECT_ID" "$FIELD_ID" \
+  --data @value.json --if-match "$revision" --output json; then
   # Re-read and reconcile here. Do not substitute the old revision.
   exit 1
 fi
@@ -3161,7 +3135,8 @@ fi
 
 Treat `412` and exit code `6` as a concurrent-edit decision, not a generic retry. Missing
 `--if-match` is rejected locally; an API `428` maps to usage exit code `2`. Planned-work replacement
-overwrites the complete schedule and requires `--yes` in non-interactive execution.
+overwrites the complete schedule and requires `--yes` in non-interactive execution. Project, task,
+and project-template commands use the static Beta 2 contract and do not accept `--if-match`.
 
 ## Exit codes
 
@@ -3251,17 +3226,16 @@ Examples:
 teamgrid projects list --completed false
 teamgrid projects create --data @project.json --idempotency-key project-import-42
 teamgrid projects get PROJECT_ID --output json
-teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' \
-  --if-match PROJECT_REVISION
-teamgrid projects complete PROJECT_ID --if-match PROJECT_REVISION \
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
+teamgrid projects complete PROJECT_ID \
   --idempotency-key close-42 --wait
 ```
 
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
-Update and all four lifecycle commands require `--if-match` with the latest `developerRevision` or
-the exact quoted `prj1` ETag. Lifecycle starts also bind the idempotency key to that source revision.
+Project updates and lifecycle commands use the static Beta 2 contract and do not accept
+`--if-match`. Lifecycle starts should use a stable idempotency key.
 
 ## Commerce and project statements
 
@@ -3345,20 +3319,19 @@ service credentials and machine-readable output should be handled as commerciall
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}' --if-match TASK_REVISION
-teamgrid tasks archive TASK_ID --if-match TASK_REVISION
-teamgrid tasks restore TASK_ID --if-match TASK_REVISION
-teamgrid tasks complete TASK_ID --if-match TASK_REVISION
-teamgrid tasks reopen TASK_ID --if-match TASK_REVISION
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
+teamgrid tasks archive TASK_ID
+teamgrid tasks restore TASK_ID
+teamgrid tasks complete TASK_ID
+teamgrid tasks reopen TASK_ID
 teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
 
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
-The five protected task mutations require the latest raw `developerRevision` or exact quoted `tsk1`
-ETag. Each successful resource-returning command prints the new revision in JSON output; archive
-prints the post-archive ETag because the API response itself is empty.
+Task mutations use the static Beta 2 contract and do not accept `--if-match`. Do not synthesize a
+revision from `updatedAt` or another task field.
 
 ## Time entries
 
@@ -3423,18 +3396,17 @@ destructive compare-and-set operation and therefore requires confirmation.
 
 ```text
 teamgrid project-templates list|get|create
-teamgrid project-templates update|archive|restore PROJECT_TEMPLATE_ID --if-match REVISION
+teamgrid project-templates update|archive|restore PROJECT_TEMPLATE_ID
 teamgrid project-templates instantiate TEMPLATE_ID --data <json|@file|->
-  --if-match REVISION [--idempotency-key KEY] [--wait]
+  [--idempotency-key KEY] [--wait]
 teamgrid project-template-instantiations get OPERATION_ID
 ```
 
 Template list filters include `--archived`, `--created-at-from`, `--created-at-to`, and
 `--origin-project-id`. Create and instantiate should use stable idempotency keys. `--wait` polls the
 credential-owned instantiation until it succeeds or fails, bounded by `--max-wait` and
-`--poll-interval`. Update, archive, restore, and instantiate require the latest raw
-`developerRevision` or exact quoted `tpl1` ETag. Instantiation binds that source revision and its
-payload to the idempotency key.
+`--poll-interval`. Project-template commands use the static Beta 2 contract and do not accept
+`--if-match`. Instantiation binds its payload to the idempotency key.
 
 ## Planned work
 
@@ -3589,8 +3561,8 @@ teamgrid --version
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
 - Bounded resource pagination and structured output for reconciliation scripts
-- Required `--if-match` guards for task, project, and project-template mutations, with actionable
-  stale-revision errors
+- Required `--if-match` guards and actionable stale-revision errors for the 31 independently
+  protected operations; static Beta 2 task, project, and project-template commands omit that option
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 
@@ -3604,7 +3576,7 @@ description: Install the TeamGrid CLI prerelease and store an API v1 credential 
 
 ## Requirements
 
-- Node.js 22.13 through 24
+- Node.js 22.14 through 24
 - A TeamGrid API v1 credential created in **Settings → Developer**
 - macOS Keychain or Linux Secret Service for persistent profiles
 
@@ -3679,6 +3651,12 @@ metadata, custom fields, commerce resources, audit events, webhooks, delivery hi
 planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 The durable change feed is deliberately outside the first public beta contract.
 
+The same release boundary keeps 25 project, task, project-template, and associated asynchronous
+operation endpoints on a static non-CAS contract. They do not expose developer revision fields or
+core `If-Match` requirements. This does not remove the 31 independent `If-Match` operations for
+resource families such as planned work, custom-field values, calendar data, documents, workspace
+administration, automations, workspace settings, and webhook-secret rotation.
+
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
@@ -3692,7 +3670,7 @@ The current registry identity and SHA-256 are published in the
 owning App cell exchange this exact identity during startup compatibility negotiation and fail
 readiness on any mismatch. The same identity is included in the canonical deployment manifest.
 
-V4 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+V5 declares every request-dependent scope and dynamic policy used by collaboration, automation,
 custom-field content, calendar, work-management, and search/export handlers. The owning App cell
 resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
@@ -3893,7 +3871,7 @@ teamgrid auth login
 - No MCP-specific credential or database
 - No change-feed tool; that operation is not part of the current public beta contract
 - No write, archive, or remove tools
-- No resource-CAS writes and no mechanism for a model to submit `If-Match`
+- No writes and no mechanism for a model to submit `If-Match`
 - No session affinity or bypass around API authorization
 - No replacement for deterministic service integrations
 - No personal-data or governance tools in the default profile
@@ -3905,10 +3883,9 @@ teamgrid auth login
 
 Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
 
-Task and project reads can include `developerRevision` and `developerUpdatedAt` because those fields
-are part of the public response DTO. They do not turn the MCP server into a writer: no tool accepts
-an ETag, invokes any of the 14 protected mutations, or polls the excluded project-template
-operation resources.
+Task and project reads use the static Beta 2 response DTO and do not contain developer revision
+fields. The MCP server remains read-only: no tool accepts an ETag, invokes a protected mutation, or
+polls the excluded project-template operation resources.
 
 [Configure an MCP host](/mcp/configuration/) or [review the tools and security model](/mcp/tools-and-security/).
 
@@ -3966,10 +3943,9 @@ request a smaller page if the server returns `result_too_large`. Call-note, cont
 webhook tools can expose personal, commercial, or security-sensitive information and should use
 dedicated least-privilege credentials.
 
-Project and task results include the same public `developerRevision` and `developerUpdatedAt`
-fields as API v1. The local server does not register mutation tools, does not accept `If-Match`, and
-does not expose resource-CAS actions even in the `all` profile. Use the SDK or CLI when a controlled
-workflow must reconcile a revision and perform a write.
+Project and task results use the same static Beta 2 response DTO as API v1 and do not contain
+developer revision fields. The local server does not register mutation tools or accept `If-Match`
+even for independently protected resource families. Use the SDK or CLI for controlled writes.
 
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
@@ -4030,21 +4006,22 @@ API v1 is the source contract for new integrations. The v0 file describes the fr
 
 The canonical manifest publishes byte counts and SHA-256 digests for both OpenAPI files, the v0
 runtime inventory, and the cross-interface capability ledger. The documentation repository also
-records its source commit in `sources/contracts.json`. CI fails if any published artifact drifts.
+records the immutable contract source commit and the API runtime commit carrying those artifacts
+in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
 The current `1.0.0-beta.2` manifest records 111 v1 paths, 181 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 78 canonical scopes, and 73 classified TeamGrid product
-capabilities. It also records exactly 14 `resource-cas-v1` mutation operations and two associated
-asynchronous operation reads.
+capabilities. It also records 25 static non-CAS core operations, zero `resource-cas-v1` mutation or
+read operations, and 31 independent `If-Match` operations outside that retired core CAS rollout.
 These counts describe the synchronized contract; they do not promote planned capabilities into the
 controlled beta.
 
 During the controlled beta, consumers should pin the manifest's `contractVersion` together with the
 OpenAPI digest and the package prerelease they tested. A beta contract checkpoint can add migration
-requirements before the stable `1.0.0` contract exists; the `1.0.0-beta.2` checkpoint makes current
-resource preconditions mandatory on the protected project, task, and project-template writers. Its
-synchronized SDK, CLI, and MCP package checkpoint is `1.0.0-beta.2`. See
-[resource revisions and concurrent writes](/api/v1/resource-concurrency/).
+requirements before the stable `1.0.0` contract exists. The `1.0.0-beta.2` checkpoint intentionally
+removes the unqualified core project, task, and project-template CAS surface while preserving all
+independent endpoint-specific preconditions. Its synchronized SDK, CLI, and MCP package checkpoint
+is `1.0.0-beta.2`. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -4116,15 +4093,11 @@ accept an idempotency key through mutation options. Every method uses the scopes
 API reference; the SDK never adds authority beyond the supplied credential.
 
 The compatible package checkpoint for this contract is `1.0.0-beta.2`; pin that exact version after
-it is available on the configured npm channel. The SDK brands task, project, and project-template
-revisions and strong ETags as different TypeScript types. `TaskMutationOptions`, `ProjectMutationOptions`,
-`ProjectLifecycleMutationOptions`, `ProjectTemplateMutationOptions`, and
-`ProjectTemplateInstantiateOptions` require `ifMatch`; omitting it from any of the 14 resource-CAS
-mutations is a compile-time error. The canonical ETag helpers accept a server-issued raw revision
-and return the matching quoted `tsk1`, `prj1`, or `tpl1` type. Successful reads, creates, updates,
-restores, and state changes expose the verified, resource-branded response header through immutable
-`transport.headers.etag`; archive helpers return the typed ETag even though their HTTP response has
-no body.
+it is available on the configured npm channel. Tasks, projects, and project templates use the
+static Beta 2 resource contract: their representations do not expose developer revisions and their
+mutation options do not accept `ifMatch`. Project lifecycle changes and template instantiation
+remain asynchronous and accept a stable idempotency key. The SDK keeps typed `ifMatch` options for
+the 31 independently protected operations in other resource families.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
@@ -4155,14 +4128,13 @@ headers, secrets, and tenant-routing internals.
   job behind a synchronous project response.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
-- Project, task, and project-template reads validate `developerRevision`, `developerUpdatedAt`, and
-  the body-to-ETag binding. Their 14 protected mutations require a correctly typed `ifMatch`; the
-  SDK does not automatically retry a `412` with a new business decision.
+- Project, task, and project-template methods use the static Beta 2 contract and reject a legacy
+  `ifMatch` option instead of silently sending an unsupported precondition.
 - Template instantiation and planned-work replacement expose the accepted operation; bounded
   `wait()` helpers poll credential-owned status without changing operation semantics.
 - Project lifecycle and template-instantiation wait helpers accept the validated
-  `acceptedOperation`. When supplied, every poll must preserve its operation identity, target,
-  action where applicable, and `sourceRevision`; CLI `--wait` always supplies this binding.
+  `acceptedOperation`. When supplied, every poll must preserve its operation identity, target, and
+  action where applicable; CLI `--wait` always supplies this binding.
 
 Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
 pipelines therefore stay stable while application code can inspect `response.transport`.
@@ -4225,40 +4197,49 @@ object never contains the bearer credential or request body.
 
 Neither error class stores the bearer credential. Application logs should still avoid serializing request headers, input payloads, or environment variables.
 
-## Reconcile a concurrent change
+## Reconcile an independently protected change
 
-`TeamGridApiError` with status `412` means the supplied revision is stale. Re-read and make the
-merge decision in application code:
+For an endpoint with an explicit `ifMatch` option, `TeamGridApiError` with status `412` means the
+supplied revision is stale. Re-read and make the merge decision in application code. For example,
+custom-field values retain an independent compare-and-set contract:
 
 ```ts
 try {
-  await client.projects.update(projectId, intendedPatch, {
-    ifMatch: previouslyReadProject.attributes.developerRevision,
-  })
+  await client.customFieldValues.set(
+    'project',
+    projectId,
+    fieldId,
+    { value: intendedValue },
+    { ifMatch: previouslyReadValue.attributes.revision },
+  )
 } catch (error) {
   if (!(error instanceof TeamGridApiError) || error.status !== 412) throw error
 
-  const current = await client.projects.get(projectId)
-  const reconciledPatch = reconcileProjectChange(current.data, intendedPatch)
-  await client.projects.update(projectId, reconciledPatch, {
-    ifMatch: current.data.attributes.developerRevision,
-  })
+  const current = await client.customFieldValues.get('project', projectId, fieldId)
+  const reconciledValue = reconcileValue(current.data, intendedValue)
+  await client.customFieldValues.set(
+    'project',
+    projectId,
+    fieldId,
+    { value: reconciledValue },
+    { ifMatch: current.data.attributes.revision },
+  )
 }
 ```
 
-Only perform the second update when `reconcileProjectChange` can preserve both the server change
+Only perform the second update when `reconcileValue` can preserve both the server change
 and the caller's intent. A `428` is a caller error: read first and supply `ifMatch`.
 `400 invalid_precondition` indicates an invalid or wrong-type ETag. A `503` means the owning cell
 cannot currently prove the revision contract; retain the precondition and retry later.
-`410 resource_operation_revision_unavailable` applies to an old asynchronous operation and
-requires a fresh resource read, not another status poll.
+
+Projects, tasks, and project templates do not return these core concurrency errors in Beta 2 and
+their SDK mutation methods do not accept `ifMatch`.
 
 When an asynchronous mutation is accepted, bind subsequent polls to that response:
 
 ```ts
 const accepted = await client.projects.complete(projectId, {
   idempotencyKey: 'complete-project-42',
-  ifMatch: project.data.attributes.developerRevision,
 })
 
 const terminal = await client.projectLifecycleOperations.wait(accepted.data.id, {
@@ -4267,9 +4248,9 @@ const terminal = await client.projectLifecycleOperations.wait(accepted.data.id, 
 })
 ```
 
-The SDK rejects a poll whose operation ID, action, project, or `sourceRevision` differs from the
-accepted operation. Project-template instantiation similarly binds the operation ID, template,
-generated project, and source revision. CLI `--wait` supplies the acceptance binding automatically.
+The SDK rejects a poll whose operation ID, action, or project differs from the accepted operation.
+Project-template instantiation similarly binds the operation ID, template, and generated project.
+CLI `--wait` supplies the acceptance binding automatically.
 
 <!-- sdk/quickstart.md -->
 ---
@@ -4322,29 +4303,23 @@ const result = await client.tasks.create(
 console.log(result.data.id)
 ```
 
-## Update with a typed precondition
+## Update a task
 
-Task, project, and project-template mutation options require a resource-specific `ifMatch` value.
-Use the branded revision from the latest representation:
+Tasks use the static Beta 2 resource contract. Their representations do not expose developer
+revisions and task mutations do not accept an `ifMatch` option:
 
 ```ts
-const current = await client.tasks.get('task-id')
-
 const updated = await client.tasks.update(
-  current.data.id,
+  'task-id',
   { name: 'Reviewed launch plan' },
-  { ifMatch: current.data.attributes.developerRevision },
 )
 
-console.log(updated.data.attributes.developerRevision)
-console.log(updated.transport.headers.etag)
+console.log(updated.data.attributes.name)
 ```
 
-The client verifies that the strong response ETag matches the returned `developerRevision`. It
-rejects a task revision used for a project or template mutation at compile time, and rejects
-malformed raw values before sending a request. On `412`, fetch the task again and reconcile the
-patch; do not resend the same decision automatically. See [resource revisions and concurrent
-writes](/api/v1/resource-concurrency/).
+Do not synthesize a task ETag or pass a legacy core revision. Other resources retain explicit,
+typed compare-and-set options; read their current revision before calling those methods. See
+[resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 Keep the credential in a secret manager and inject it through the process environment. Never bundle it into browser code.
 

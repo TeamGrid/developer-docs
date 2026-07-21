@@ -53,40 +53,49 @@ object never contains the bearer credential or request body.
 
 Neither error class stores the bearer credential. Application logs should still avoid serializing request headers, input payloads, or environment variables.
 
-## Reconcile a concurrent change
+## Reconcile an independently protected change
 
-`TeamGridApiError` with status `412` means the supplied revision is stale. Re-read and make the
-merge decision in application code:
+For an endpoint with an explicit `ifMatch` option, `TeamGridApiError` with status `412` means the
+supplied revision is stale. Re-read and make the merge decision in application code. For example,
+custom-field values retain an independent compare-and-set contract:
 
 ```ts
 try {
-  await client.projects.update(projectId, intendedPatch, {
-    ifMatch: previouslyReadProject.attributes.developerRevision,
-  })
+  await client.customFieldValues.set(
+    'project',
+    projectId,
+    fieldId,
+    { value: intendedValue },
+    { ifMatch: previouslyReadValue.attributes.revision },
+  )
 } catch (error) {
   if (!(error instanceof TeamGridApiError) || error.status !== 412) throw error
 
-  const current = await client.projects.get(projectId)
-  const reconciledPatch = reconcileProjectChange(current.data, intendedPatch)
-  await client.projects.update(projectId, reconciledPatch, {
-    ifMatch: current.data.attributes.developerRevision,
-  })
+  const current = await client.customFieldValues.get('project', projectId, fieldId)
+  const reconciledValue = reconcileValue(current.data, intendedValue)
+  await client.customFieldValues.set(
+    'project',
+    projectId,
+    fieldId,
+    { value: reconciledValue },
+    { ifMatch: current.data.attributes.revision },
+  )
 }
 ```
 
-Only perform the second update when `reconcileProjectChange` can preserve both the server change
+Only perform the second update when `reconcileValue` can preserve both the server change
 and the caller's intent. A `428` is a caller error: read first and supply `ifMatch`.
 `400 invalid_precondition` indicates an invalid or wrong-type ETag. A `503` means the owning cell
 cannot currently prove the revision contract; retain the precondition and retry later.
-`410 resource_operation_revision_unavailable` applies to an old asynchronous operation and
-requires a fresh resource read, not another status poll.
+
+Projects, tasks, and project templates do not return these core concurrency errors in Beta 2 and
+their SDK mutation methods do not accept `ifMatch`.
 
 When an asynchronous mutation is accepted, bind subsequent polls to that response:
 
 ```ts
 const accepted = await client.projects.complete(projectId, {
   idempotencyKey: 'complete-project-42',
-  ifMatch: project.data.attributes.developerRevision,
 })
 
 const terminal = await client.projectLifecycleOperations.wait(accepted.data.id, {
@@ -95,6 +104,6 @@ const terminal = await client.projectLifecycleOperations.wait(accepted.data.id, 
 })
 ```
 
-The SDK rejects a poll whose operation ID, action, project, or `sourceRevision` differs from the
-accepted operation. Project-template instantiation similarly binds the operation ID, template,
-generated project, and source revision. CLI `--wait` supplies the acceptance binding automatically.
+The SDK rejects a poll whose operation ID, action, or project differs from the accepted operation.
+Project-template instantiation similarly binds the operation ID, template, and generated project.
+CLI `--wait` supplies the acceptance binding automatically.

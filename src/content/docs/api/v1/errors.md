@@ -30,7 +30,7 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
 | `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
-| `410` | A legacy asynchronous operation has no revision provenance | Re-read and reconcile the affected resource |
+| `410` | A private-file upload reservation expired | Create a new upload intent and restart the upload flow |
 | `412` | A strong resource revision is stale | Re-read and make an explicit merge or overwrite decision |
 | `428` | A required `If-Match` precondition is missing | Read the latest resource, then send its strong revision |
 | `429` | Rate limit exceeded | Back off and honor `Retry-After` |
@@ -50,8 +50,7 @@ The 429 response uses the normal v1 error envelope with code `rate_limit_exceede
 honors `Retry-After` for safe reads, idempotent POST operations, and fully guarded planned-work
 replacements; it does not automatically retry other PUT, PATCH, or DELETE requests.
 
-For project, task, and project-template writers, distinguish `400 invalid_precondition`,
-`412 precondition_failed`, `428 precondition_required`,
-`410 resource_operation_revision_unavailable`, and `503 service_unavailable`. The complete
-reconciliation procedure is documented under [resource revisions and concurrent
-writes](/api/v1/resource-concurrency/).
+The static Beta 2 project, task, and project-template operations do not use the precondition errors
+above. For the 31 independently protected operations, distinguish `400 invalid_precondition`,
+`412 precondition_failed`, `428 precondition_required`, and `503 service_unavailable`. The complete
+boundary is documented under [resource concurrency in Beta 2](/api/v1/resource-concurrency/).

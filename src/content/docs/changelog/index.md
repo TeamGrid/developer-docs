@@ -19,6 +19,15 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Removed the unqualified `/v1/changes` operation, `changes:read` scope, ChangeEvent schema, SDK
   client, and CLI commands from the public beta. The internal implementation remains unavailable
   until preimage, ownership, retention, failover, and recovery semantics are fully qualified.
+- Withdrew the unqualified core resource-CAS experiment from the public Beta 2 checkpoint. The 25
+  project, task, project-template, lifecycle-operation, and template-instantiation operations no
+  longer expose core `If-Match` parameters, developer revision fields, CAS extensions, or legacy
+  revision-status responses. Project lifecycle and template instantiation remain asynchronous and
+  idempotent.
+- Preserved the 31 independent `If-Match` operations for appointments, absences, comments,
+  documents, files, custom-field values, planned work, workspace administration, automations,
+  workspace settings, and webhook-secret rotation. Their endpoint-specific concurrency contracts
+  are unchanged.
 - Aligned the API client, CLI, and MCP package versions at `1.0.0-beta.2`. MCP remains a bounded
   read-only interface.
 - Corrected the earlier documentation mismatch: `1.0.0-alpha.3` was a source checkpoint and was
@@ -26,6 +35,9 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   after all three packages have been published and verified.
 
 ## 2026-07-20
+
+The resource-CAS entries below describe the internal beta.1 checkpoint. They were superseded by
+the static core contract recorded on 2026-07-21 and are not part of the public Beta 2 contract.
 
 - Published the code-owned `developer-action-policy-v4` registry for all 182 operations and all 12
   principal-policy families. V4 adds the conditional scopes and dynamic target policies required by

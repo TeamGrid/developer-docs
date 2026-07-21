@@ -5,10 +5,10 @@ description: Use the official typed and region-aware Node.js client for TeamGrid
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
 
-The current prerelease is distributed through the explicit npm `next` channel:
+Install the exact verified controlled-beta package version:
 
 ```bash
-npm install @teamgrid/api-client@next
+npm install @teamgrid/api-client@1.0.0-beta.2
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -21,10 +21,9 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | --- | --- |
 | `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
 | `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
-| `events` | Read the authorization-filtered webhook and change-feed event catalog |
+| `events` | Read the authorization-filtered webhook event catalog |
 | `projects` | List, get, create, update, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
-| `changes` | Create checkpoints, list metadata changes, and run snapshot-then-catch-up |
 | `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
 | `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
@@ -65,8 +64,8 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.0-alpha.3`; pin it explicitly after it
-is available on the configured npm channel. The SDK brands task, project, and project-template
+The compatible package checkpoint for this contract is `1.0.0-beta.2`; pin that exact version after
+it is available on the configured npm channel. The SDK brands task, project, and project-template
 revisions and strong ETags as different TypeScript types. `TaskMutationOptions`, `ProjectMutationOptions`,
 `ProjectLifecycleMutationOptions`, `ProjectTemplateMutationOptions`, and
 `ProjectTemplateInstantiateOptions` require `ifMatch`; omitting it from any of the 14 resource-CAS
@@ -103,9 +102,6 @@ headers, secrets, and tenant-routing internals.
   attempts, status, response headers, rate limits, retry timing, and idempotency replays.
 - Project lifecycle helpers poll the operation resource; they do not hide an unbounded background
   job behind a synchronous project response.
-- Change-feed helpers do not download resource payloads. They establish a race-free checkpoint
-  boundary, stop catch-up only on `meta.page.caughtUp`, and leave durable application and polling
-  cadence to the caller.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
 - Project, task, and project-template reads validate `developerRevision`, `developerUpdatedAt`, and

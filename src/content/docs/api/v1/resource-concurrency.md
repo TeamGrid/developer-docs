@@ -114,7 +114,7 @@ Never handle `503` by dropping `If-Match` or falling back to an unguarded API su
 
 ## Controlled-beta migration
 
-This behavior is part of the internal `1.0.0-beta.1` contract checkpoint. Before moving an existing
+This behavior is part of the `1.0.0-beta.2` contract checkpoint. Before moving an existing
 beta integration to this checkpoint, deploy support for the new response fields and ETags, then make
 `If-Match` mandatory in all 14 callers. Do not mix older API v1 writers, which omit the negotiated
 resource-CAS contract, with writers targeting this checkpoint during a rollout.

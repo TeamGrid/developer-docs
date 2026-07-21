@@ -148,29 +148,15 @@ for (const version of ['v0', 'v1']) {
 
 const v1Content = await readSourceFile('openapi/v1.json')
 const v1Document = JSON.parse(v1Content.toString('utf8'))
-const changeParameters = v1Document.paths?.['/changes']?.get?.parameters || []
-const changeOperations = changeParameters.find((parameter) => parameter.name === 'operations')
-  ?.schema?.items?.enum
-const changeResourceTypes = changeParameters.find(
-  (parameter) => parameter.name === 'resourceTypes',
-)?.schema?.items?.enum
-const changeEventProperties =
-  v1Document.components?.schemas?.ChangeEvent?.properties?.attributes?.properties
-const changeEventOperations = changeEventProperties?.operation?.enum
-const changeEventResourceTypes = changeEventProperties?.resourceType?.enum
 if (
-  !Array.isArray(changeOperations) ||
-  JSON.stringify(changeOperations) !== JSON.stringify(changeEventOperations) ||
-  !Array.isArray(changeResourceTypes) ||
-  changeResourceTypes.length !== 23 ||
-  new Set(changeResourceTypes).size !== changeResourceTypes.length ||
-  JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
+  v1Document.paths?.['/changes']
+  || v1Document.components?.schemas?.ChangeEvent
+  || scopeDocument.scopes.some((scope) => scope.name === 'changes:read')
 ) {
-  throw new Error('OpenAPI v1 has an inconsistent or incomplete change-feed contract.')
+  throw new Error('The beta 2 public contract must exclude the unqualified change feed.')
 }
 manifest.changeFeed = {
-  operations: changeOperations,
-  resourceTypes: changeResourceTypes,
+  availability: 'excluded',
 }
 
 const capabilitySource = 'contracts/developer-capabilities.json'
@@ -211,7 +197,7 @@ const actionPolicyContent = await readSourceFile(actionPolicySource)
 const actionPolicyDocument = JSON.parse(actionPolicyContent.toString('utf8'))
 if (
   actionPolicyDocument.schemaVersion !== 1
-  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v4'
+  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v5'
   || !/^[a-f0-9]{64}$/.test(actionPolicyDocument.registrySha256 || '')
   || actionPolicyDocument.actionPolicyCount !== operationBindingDocument.operations.length
   || actionPolicyDocument.authenticatedActionPolicyCount

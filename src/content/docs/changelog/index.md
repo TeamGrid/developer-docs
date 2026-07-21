@@ -12,6 +12,19 @@ API v1 and the npm packages are in a controlled beta. Until stable releases begi
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
 
+## 2026-07-21
+
+- Prepared the `1.0.0-beta.2` contract checkpoint with 111 paths, 181 operations, and 78 canonical
+  scopes while preserving all 87 frozen API v0 operations.
+- Removed the unqualified `/v1/changes` operation, `changes:read` scope, ChangeEvent schema, SDK
+  client, and CLI commands from the public beta. The internal implementation remains unavailable
+  until preimage, ownership, retention, failover, and recovery semantics are fully qualified.
+- Aligned the API client, CLI, and MCP package versions at `1.0.0-beta.2`. MCP remains a bounded
+  read-only interface.
+- Corrected the earlier documentation mismatch: `1.0.0-alpha.3` was a source checkpoint and was
+  never the version installed by npm `next`. Public installation instructions only move to beta 2
+  after all three packages have been published and verified.
+
 ## 2026-07-20
 
 - Published the code-owned `developer-action-policy-v4` registry for all 182 operations and all 12

@@ -5,10 +5,10 @@ description: Inspect and automate TeamGrid API v1 from a terminal or CI job with
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
 
-The current prerelease is distributed through npm's explicit `next` channel:
+Install the exact verified controlled-beta package version:
 
 ```bash
-npm install --global @teamgrid/cli@next
+npm install --global @teamgrid/cli@1.0.0-beta.2
 teamgrid --version
 ```
 
@@ -20,7 +20,7 @@ teamgrid --version
 - Cursor pagination with bounded `--all` traversal
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
-- Explicit, finite change-feed checkpoint and polling commands for synchronization scripts
+- Bounded resource pagination and structured output for reconciliation scripts
 - Required `--if-match` guards for task, project, and project-template mutations, with actionable
   stale-revision errors
 

@@ -343,37 +343,6 @@ teamgrid audit-events [--credential-id ID] [--event-type TYPE]
 Audit output can contain security-sensitive operational metadata. Limit access and retention in
 downstream systems.
 
-## Change feed
-
-```text
-teamgrid changes checkpoint [--operation VALUE] [--resource-type VALUE]
-teamgrid changes list [--cursor CHECKPOINT] [--limit N] [--all] [--max-pages N]
-```
-
-Take a checkpoint before the full resource snapshot, then pass it to `changes list`. Both filter
-options can be repeated or comma-separated; for example,
-`--operation created,updated --operation deleted --resource-type project,task`. The effective
-filters must remain unchanged when reusing the returned cursor.
-
-Without `--all`, `changes list` makes exactly one request and exits; it is safe to invoke from an
-external scheduler or bounded polling loop. `--all` requests catch-up pages only when explicitly
-selected and stops at `--max-pages` (10,000 by default). JSON preserves the complete response
-envelope. JSONL emits `kind: "change"` records and then a `kind: "checkpoint"` record after every
-successfully received page. Each checkpoint includes `caughtUp`. Persist it only after applying the
-preceding events, and continue catch-up until `caughtUp` is `true`; an empty event list alone is not
-the completion contract.
-
-```bash
-teamgrid changes checkpoint --resource-type project,task --output json
-teamgrid changes list \
-  --cursor "$CHECKPOINT" \
-  --resource-type project,task \
-  --output jsonl
-```
-
-The CLI does not hide `410` reset-required or `503` temporarily-unavailable responses. Follow the
-[change-feed recovery contract](/api/v1/change-feed/).
-
 ## Webhooks and delivery history
 
 ```bash

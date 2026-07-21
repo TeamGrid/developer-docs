@@ -24,7 +24,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
-- The API and App cell must negotiate the exact code-owned 182-operation action-policy registry
+- The API and App cell must negotiate the exact code-owned 181-operation action-policy registry
   before the service is ready.
 
 ## Scopes
@@ -74,7 +74,6 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `automations:read`, `automations:write` | Automation action metadata, definitions, versions, and runs; writes also require scopes implied by the flow |
 | `automations:run` | Abort a running automation; sensitive execution-control scope |
 | `integrations:read` | Installation status without provider secrets; sensitive scope |
-| `changes:read` | Cell-local, metadata-only change events for resumable synchronization |
 | `events:read` | Read the authorization-filtered event and channel catalog |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |

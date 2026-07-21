@@ -14,12 +14,10 @@ teamgrid tasks list --project-id "$PROJECT_ID" --all --output jsonl \
 
 `--all` follows opaque cursors and stops at 10,000 pages by default. Lower the guard with `--max-pages` when a job should have a tighter upper bound.
 
-For `changes list`, one page is the default and there is no implicit wait loop. In JSONL mode each
-change is wrapped as `{"kind":"change","data":...}` and every page ends with a separate
-`{"kind":"checkpoint","cursor":"...","caughtUp":true|false}` record. Commit the checkpoint only
-after the earlier change records are durable and continue until `caughtUp` is true. Use `changes
-checkpoint` before the initial full snapshot; see the
-[race-free synchronization recipe](/api/v1/change-feed/).
+The first public beta has no change-feed commands. For bounded reconciliation, traverse the
+resource list commands with `--all`, preserve resource IDs and revisions, and use signed webhooks as
+delivery signals where supported. Do not substitute audit or webhook-delivery history for a durable
+feed.
 
 ## Make retried writes idempotent
 

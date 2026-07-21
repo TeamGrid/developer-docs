@@ -30,7 +30,7 @@ Include `meta.requestId` when contacting TeamGrid support. Never attach the bear
 | `403` | Scope, workspace, or policy denial | Request the correct access; do not retry unchanged |
 | `404` | Resource not visible in the credential workspace | Verify the identifier and tenant boundary |
 | `409` | Resource-state or idempotency conflict | Inspect the error code; resolve the resource state or use the original idempotent payload |
-| `410` | A change-feed cursor lost continuity, or a legacy asynchronous operation has no revision provenance | Follow the error code: resynchronize the feed, or re-read and reconcile the affected resource |
+| `410` | A legacy asynchronous operation has no revision provenance | Re-read and reconcile the affected resource |
 | `412` | A strong resource revision is stale | Re-read and make an explicit merge or overwrite decision |
 | `428` | A required `If-Match` precondition is missing | Read the latest resource, then send its strong revision |
 | `429` | Rate limit exceeded | Back off and honor `Retry-After` |

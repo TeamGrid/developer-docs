@@ -8,7 +8,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@next @teamgrid/mcp-server@next
+npm install --global @teamgrid/cli@1.0.0-beta.2 @teamgrid/mcp-server@1.0.0-beta.2
 teamgrid auth login
 ```
 
@@ -16,7 +16,7 @@ teamgrid auth login
 
 - No remote TeamGrid MCP endpoint
 - No MCP-specific credential or database
-- No high-volume change-feed tool, including in the `all` profile
+- No change-feed tool; that operation is not part of the current public beta contract
 - No write, archive, or remove tools
 - No resource-CAS writes and no mechanism for a model to submit `If-Match`
 - No session affinity or bypass around API authorization

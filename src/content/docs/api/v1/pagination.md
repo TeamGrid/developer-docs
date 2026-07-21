@@ -16,12 +16,6 @@ Read the next cursor from `meta.page.nextCursor`. A value of `null` means that t
 
 Do not decode, edit, sort, or persist assumptions about the cursor format. Restart a traversal without a cursor when the filter set changes.
 
-`GET /v1/changes` deliberately differs from ordinary lists: its next cursor is always present and
-acts as a durable polling checkpoint, including when `data` is empty. It is also bound to the exact
-credential, cell, and filters. Follow the [change-feed bootstrap and recovery
-protocol](/api/v1/change-feed/) and continue catch-up until `meta.page.caughtUp` is true instead of
-stopping on a `null` cursor or inferring completion from page length.
-
 ## Idempotent creates
 
 Creates and asynchronous domain commands that can be safely replayed require an `Idempotency-Key`

@@ -18,7 +18,8 @@ API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that 
 
 Build automation against API v1 or the SDK. Use the CLI as an operator and scripting interface. Treat MCP as an optional adapter for human-supervised read workflows, not as the foundation of an integration.
 
-Use the [change feed](/api/v1/change-feed/) for a durable mirror. It is available through API v1,
-the typed SDK, and finite CLI polling commands, but not through MCP.
+For bounded mirrors, traverse the resource endpoints and use signed webhooks as delivery signals.
+The [change-feed status page](/api/v1/change-feed/) explains why a durable feed is not part of the
+first public beta.
 
 MCP does not introduce a second TeamGrid API, a remote TeamGrid session, or MCP-specific credentials. Every MCP request still passes through the API v1 authentication, scope, tenant, and region checks.

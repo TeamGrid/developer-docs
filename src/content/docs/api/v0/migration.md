@@ -58,10 +58,10 @@ The current v1 contract does not yet cover every legacy or TeamGrid product work
 capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
 task ordering, subtasks and bulk changes, time-entry billing, file sharing, commerce orders, report
 jobs, imports, and audit export as planned. Several released domains also remain explicitly partial.
-API v1 provides a cell-local, metadata-only change feed for race-free synchronization; it is not
-compatible with v0 pagination or webhook cursors. Keep only those bounded parts on v0 until an
-explicit v1 domain operation exists; do not emulate them through unrelated resources or generic
-database mutations.
+The first public API v1 beta does not include a durable change feed. Use bounded resource
+pagination and signed webhooks where their delivery semantics fit the integration. Keep only those
+bounded parts on v0 until an explicit v1 domain operation exists; do not emulate missing behavior
+through audit data, unrelated resources, or generic database mutations.
 
 ## Legacy reference differences
 

@@ -59,8 +59,9 @@ workflow must reconcile a revision and perform a write.
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
 financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
-sensitive operational metadata. The change feed is forbidden because a high-volume durable
-synchronization stream is not a bounded interactive model task. Custom-field values, project
+sensitive operational metadata. The change feed is not part of the current public beta contract
+and is therefore absent from every MCP profile. A future high-volume durable synchronization stream
+would not be a bounded interactive model task. Custom-field values, project
 templates and their instantiation status, and planned-work schedules and operation status are
 forbidden because they expose sensitive per-resource workflow or workload data. These resources
 cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.

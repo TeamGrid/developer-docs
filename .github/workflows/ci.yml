@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -23,6 +23,14 @@ jobs:
       - run: npm run verify
       - name: Verify generated files are committed
         run: git diff --exit-code
+      - name: Preserve the exact verified site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: developer-docs-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -35,13 +43,25 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - name: Download the verified site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: developer-docs-${{ github.sha }}
+          path: dist
+      - name: Verify the documented packages are public
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./sources/packages.json').version")"
+          for package in @teamgrid/api-client @teamgrid/cli @teamgrid/mcp-server; do
+            published="$(npm view "$package@$version" version)"
+            [[ "$published" == "$version" ]]
+          done
       - name: Deploy the verified commit to Cloudflare Pages
         run: >-
           npx wrangler pages deploy dist

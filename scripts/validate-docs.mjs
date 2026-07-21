@@ -25,6 +25,33 @@ if (
 ) {
   fail('Contract source provenance is missing or invalid.')
 }
+const packageManifest = JSON.parse(
+  await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
+)
+if (
+  packageManifest.schemaVersion !== 1
+  || packageManifest.sourceRepository !== 'TeamGrid/developer-platform'
+  || !/^[0-9a-f]{40}$/.test(packageManifest.sourceCommit || '')
+  || packageManifest.version !== '1.0.0-beta.2'
+  || Object.values(packageManifest.packages || {}).some(
+    (item) => item.version !== packageManifest.version || !/^[a-f0-9]{64}$/.test(item.sha256 || ''),
+  )
+) {
+  fail('Package source provenance is missing or invalid.')
+}
+for (const relativePath of [
+  'src/content/docs/sdk/index.md',
+  'src/content/docs/sdk/quickstart.md',
+  'src/content/docs/cli/index.md',
+  'src/content/docs/cli/install-and-authenticate.md',
+  'src/content/docs/mcp/index.md',
+  'src/content/docs/mcp/configuration.md',
+]) {
+  const content = await readFile(path.join(root, relativePath), 'utf8')
+  if (!content.includes(`@${packageManifest.version}`) || content.includes('@next')) {
+    fail(`${relativePath} must name the exact verified package version.`)
+  }
+}
 const canonicalManifestFile = path.join(
   root,
   'public',
@@ -140,30 +167,12 @@ const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.js
 if (v1.info?.version !== canonicalManifest.contractVersion) {
   fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
 }
-const changeParameters = v1.paths?.['/changes']?.get?.parameters || []
-const changeOperations = changeParameters.find((parameter) => parameter.name === 'operations')
-  ?.schema?.items?.enum
-const changeResourceTypes = changeParameters.find(
-  (parameter) => parameter.name === 'resourceTypes',
-)?.schema?.items?.enum
-const changeEventProperties = v1.components?.schemas?.ChangeEvent?.properties?.attributes?.properties
-const changeEventOperations = changeEventProperties?.operation?.enum
-const changeEventResourceTypes = changeEventProperties?.resourceType?.enum
 if (
-  !Array.isArray(changeOperations) ||
-  JSON.stringify(changeOperations) !== JSON.stringify(changeEventOperations) ||
-  JSON.stringify(changeOperations) !== JSON.stringify(manifest.changeFeed?.operations)
+  v1.paths?.['/changes']
+  || v1.components?.schemas?.ChangeEvent
+  || manifest.changeFeed?.availability !== 'excluded'
 ) {
-  fail('Change-feed operations differ between query, event schema, and contract provenance.')
-}
-if (
-  !Array.isArray(changeResourceTypes) ||
-  changeResourceTypes.length !== 23 ||
-  new Set(changeResourceTypes).size !== changeResourceTypes.length ||
-  JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes) ||
-  JSON.stringify(changeResourceTypes) !== JSON.stringify(manifest.changeFeed?.resourceTypes)
-) {
-  fail('Change-feed resource types differ between query, event schema, and contract provenance.')
+  fail('The beta 2 public contract must record the change feed as excluded.')
 }
 const contractOperations = []
 for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
@@ -279,25 +288,22 @@ if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
   fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
 }
 const changePolicy = capabilities.operationPolicy.find((item) => item.operationId === 'listChanges')
-if (
-  changePolicy?.sdk !== 'changes.list' ||
-  changePolicy?.cli !== 'changes list' ||
-  changePolicy?.mcp?.exposure !== 'forbidden' ||
-  'tool' in changePolicy.mcp
-) {
-  fail('Change feed must remain available in SDK/CLI and explicitly forbidden in MCP.')
-}
-if (!mcpDocumentation.includes('The change feed is forbidden because a high-volume durable')) {
-  fail('MCP documentation is missing the explicit change-feed prohibition.')
+if (changePolicy) fail('The beta 2 capability contract must exclude listChanges.')
+if (!mcpDocumentation.includes('The change feed is not part of the current public beta contract')) {
+  fail('MCP documentation is missing the explicit beta change-feed boundary.')
 }
 
 const changeFeedDocumentation = await readFile(
   path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'change-feed.md'),
   'utf8',
 )
-for (const resourceType of changeResourceTypes || []) {
-  if (!changeFeedDocumentation.includes(`| \`${resourceType}\` |`)) {
-    fail(`Change-feed documentation is missing canonical resource type ${resourceType}.`)
+for (const marker of [
+  'not part of the `1.0.0-beta.2` public contract',
+  '`changes:read` cannot be issued',
+  '`GET /v1/changes` is not a supported beta operation',
+]) {
+  if (!changeFeedDocumentation.includes(marker)) {
+    fail(`Change-feed status documentation is missing: ${marker}.`)
   }
 }
 
@@ -315,6 +321,9 @@ if (
   canonicalManifest.summary?.canonicalScopes !== scopeContract.scopes?.length
 ) {
   fail('Developer scope contract does not match sources/contracts.json and the canonical manifest.')
+}
+if (scopeContract.scopes?.some((scope) => scope.name === 'changes:read')) {
+  fail('The beta 2 scope contract must not issue changes:read.')
 }
 const documentedScopes = new Set()
 for (const pathItem of Object.values(v1.paths || {})) {

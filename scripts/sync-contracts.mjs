@@ -146,6 +146,33 @@ for (const version of ['v0', 'v1']) {
   }
 }
 
+const v1Content = await readSourceFile('openapi/v1.json')
+const v1Document = JSON.parse(v1Content.toString('utf8'))
+const changeParameters = v1Document.paths?.['/changes']?.get?.parameters || []
+const changeOperations = changeParameters.find((parameter) => parameter.name === 'operations')
+  ?.schema?.items?.enum
+const changeResourceTypes = changeParameters.find(
+  (parameter) => parameter.name === 'resourceTypes',
+)?.schema?.items?.enum
+const changeEventProperties =
+  v1Document.components?.schemas?.ChangeEvent?.properties?.attributes?.properties
+const changeEventOperations = changeEventProperties?.operation?.enum
+const changeEventResourceTypes = changeEventProperties?.resourceType?.enum
+if (
+  !Array.isArray(changeOperations) ||
+  JSON.stringify(changeOperations) !== JSON.stringify(changeEventOperations) ||
+  !Array.isArray(changeResourceTypes) ||
+  changeResourceTypes.length !== 23 ||
+  new Set(changeResourceTypes).size !== changeResourceTypes.length ||
+  JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
+) {
+  throw new Error('OpenAPI v1 has an inconsistent or incomplete change-feed contract.')
+}
+manifest.changeFeed = {
+  operations: changeOperations,
+  resourceTypes: changeResourceTypes,
+}
+
 const capabilitySource = 'contracts/developer-capabilities.json'
 const capabilityContent = await readSourceFile(capabilitySource)
 const capabilityDocument = JSON.parse(capabilityContent.toString('utf8'))

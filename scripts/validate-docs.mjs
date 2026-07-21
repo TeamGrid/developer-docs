@@ -140,6 +140,31 @@ const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.js
 if (v1.info?.version !== canonicalManifest.contractVersion) {
   fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
 }
+const changeParameters = v1.paths?.['/changes']?.get?.parameters || []
+const changeOperations = changeParameters.find((parameter) => parameter.name === 'operations')
+  ?.schema?.items?.enum
+const changeResourceTypes = changeParameters.find(
+  (parameter) => parameter.name === 'resourceTypes',
+)?.schema?.items?.enum
+const changeEventProperties = v1.components?.schemas?.ChangeEvent?.properties?.attributes?.properties
+const changeEventOperations = changeEventProperties?.operation?.enum
+const changeEventResourceTypes = changeEventProperties?.resourceType?.enum
+if (
+  !Array.isArray(changeOperations) ||
+  JSON.stringify(changeOperations) !== JSON.stringify(changeEventOperations) ||
+  JSON.stringify(changeOperations) !== JSON.stringify(manifest.changeFeed?.operations)
+) {
+  fail('Change-feed operations differ between query, event schema, and contract provenance.')
+}
+if (
+  !Array.isArray(changeResourceTypes) ||
+  changeResourceTypes.length !== 23 ||
+  new Set(changeResourceTypes).size !== changeResourceTypes.length ||
+  JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes) ||
+  JSON.stringify(changeResourceTypes) !== JSON.stringify(manifest.changeFeed?.resourceTypes)
+) {
+  fail('Change-feed resource types differ between query, event schema, and contract provenance.')
+}
 const contractOperations = []
 for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
   for (const [method, operation] of Object.entries(pathItem)) {
@@ -252,6 +277,28 @@ const mcpOverview = await readFile(
 )
 if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
   fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
+}
+const changePolicy = capabilities.operationPolicy.find((item) => item.operationId === 'listChanges')
+if (
+  changePolicy?.sdk !== 'changes.list' ||
+  changePolicy?.cli !== 'changes list' ||
+  changePolicy?.mcp?.exposure !== 'forbidden' ||
+  'tool' in changePolicy.mcp
+) {
+  fail('Change feed must remain available in SDK/CLI and explicitly forbidden in MCP.')
+}
+if (!mcpDocumentation.includes('The change feed is forbidden because a high-volume durable')) {
+  fail('MCP documentation is missing the explicit change-feed prohibition.')
+}
+
+const changeFeedDocumentation = await readFile(
+  path.join(root, 'src', 'content', 'docs', 'api', 'v1', 'change-feed.md'),
+  'utf8',
+)
+for (const resourceType of changeResourceTypes || []) {
+  if (!changeFeedDocumentation.includes(`| \`${resourceType}\` |`)) {
+    fail(`Change-feed documentation is missing canonical resource type ${resourceType}.`)
+  }
 }
 
 const authenticationDocumentation = await readFile(

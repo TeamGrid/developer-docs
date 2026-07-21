@@ -25,6 +25,38 @@
     "bytes": 2365,
     "sha256": "fc6d7162b4529910ccfd08312ab8ac8d2f13af884e85faf9f52e550d41599129"
   },
+  "changeFeed": {
+    "operations": [
+      "created",
+      "deleted",
+      "updated"
+    ],
+    "resourceTypes": [
+      "absence",
+      "appointment",
+      "automationDefinition",
+      "automationRun",
+      "callNote",
+      "comment",
+      "contact",
+      "contactGroup",
+      "customFieldDefinition",
+      "document",
+      "file",
+      "integration",
+      "list",
+      "product",
+      "productGroup",
+      "project",
+      "projectStatement",
+      "projectTemplate",
+      "service",
+      "tag",
+      "task",
+      "timeEntry",
+      "webhook"
+    ]
+  },
   "capabilities": {
     "operations": 182,
     "productCapabilities": 73,

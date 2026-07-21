@@ -18,8 +18,35 @@ It never includes the changed document, field values, workspace ID, internal col
 credential ID, or change-stream resume token. Fetch the current resource through its API v1
 endpoint after a create or update. Remove or reconcile local state for a tombstone.
 
-The current feed covers call notes, contacts, contact groups, custom-field definitions, lists,
-products, product groups, projects, project statements, services, tags, tasks, and time entries.
+The feed covers all 23 public change-resource types. A credential needs `changes:read` and the
+matching resource read scope; this prevents the feed from disclosing the existence of resources the
+credential cannot otherwise read.
+
+| Resource type | Matching read scope |
+| --- | --- |
+| `absence` | `absences:read` |
+| `appointment` | `appointments:read` |
+| `automationDefinition` | `automations:read` |
+| `automationRun` | `automations:read` |
+| `callNote` | `call-notes:read` |
+| `comment` | `comments:read` |
+| `contact` | `contacts:read` |
+| `contactGroup` | `contact-groups:read` |
+| `customFieldDefinition` | `custom-field-definitions:read` |
+| `document` | `documents:read` |
+| `file` | `files:read` |
+| `integration` | `integrations:read` |
+| `list` | `lists:read` |
+| `product` | `products:read` |
+| `productGroup` | `product-groups:read` |
+| `project` | `projects:read` |
+| `projectStatement` | `project-statements:read` |
+| `projectTemplate` | `project-templates:read` |
+| `service` | `services:read` |
+| `tag` | `tags:read` |
+| `task` | `tasks:read` |
+| `timeEntry` | `time-entries:read` |
+| `webhook` | `webhooks:read` |
 
 ## Race-free initial synchronization
 

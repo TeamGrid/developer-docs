@@ -544,6 +544,9 @@ for (const legacyReferenceHome of ['/reference ', '/reference/team-grid-api-v1 '
     fail(`Missing legacy redirect for ${legacyReferenceHome.trim()}.`)
   }
 }
+if (!redirects.includes('/reference/* /api/v0/reference/ 301')) {
+  fail('Missing fallback legacy redirect for unknown ReadMe reference URLs.')
+}
 for (const slug of Object.keys(referenceMap)) {
   if (!redirects.includes(`/reference/${slug} `)) fail(`Missing legacy redirect for ${slug}.`)
 }

@@ -25,6 +25,7 @@ for (const [slug, mapping] of Object.entries(referenceMap).sort(([left], [right]
   )
 }
 
+lines.push('/reference/* /api/v0/reference/ 301')
 lines.push('/changelog/:slug /api/v0/legacy-changelog/:slug/ 301', '')
 await writeFile(path.join(root, 'public', '_redirects'), `${lines.join('\n')}\n`)
 console.log(`Generated ${lines.filter((line) => line && !line.startsWith('#')).length} redirects.`)

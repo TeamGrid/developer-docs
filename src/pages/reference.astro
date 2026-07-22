@@ -1,0 +1,28 @@
+---
+const target = '/api/v0/reference/'
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content={`0; url=${target}`} http-equiv="refresh" />
+    <link href={`https://developer.teamgridapp.com${target}`} rel="canonical" />
+    <meta content="TeamGrid Developer documentation" property="og:title" />
+    <meta content="Redirecting to the TeamGrid API v0 reference." property="og:description" />
+    <meta content="https://developer.teamgridapp.com/social-card.png" property="og:image" />
+    <title>TeamGrid API reference redirect</title>
+  </head>
+  <body>
+    <main>
+      <h1>TeamGrid API reference</h1>
+      <p>
+        The old ReadMe reference URL has moved. Continue to the
+        <a href={target}>TeamGrid API v0 reference</a>.
+      </p>
+      <script is:inline>
+        window.location.replace('/api/v0/reference/')
+      </script>
+    </main>
+  </body>
+</html>

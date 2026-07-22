@@ -60,5 +60,6 @@
 /reference/updatetag /api/v0/migration/#legacy-reference-differences 301
 /reference/updatetask /api/v0/reference/operations/v0_put_tasks_id/ 301
 /reference/updatetimeentry /api/v0/reference/operations/v0_put_times_id/ 301
+/reference/* /api/v0/reference/ 301
 /changelog/:slug /api/v0/legacy-changelog/:slug/ 301
 

@@ -118,7 +118,7 @@ function builtPageForUrl(url) {
 for (const file of html) {
   const content = await readFile(file, 'utf8')
   const relative = path.relative(dist, file)
-  if (!content.includes('<link rel="canonical"')) failures.push(`${relative} has no canonical URL.`)
+  if (!/<link\b[^>]*\brel="canonical"/.test(content)) failures.push(`${relative} has no canonical URL.`)
   if (!content.includes('property="og:image"')) failures.push(`${relative} has no Open Graph image.`)
   if (!content.includes('TeamGrid')) failures.push(`${relative} has no TeamGrid identity.`)
   if (content.includes('ssl.readmessl.com')) failures.push(`${relative} still references ReadMe hosting.`)

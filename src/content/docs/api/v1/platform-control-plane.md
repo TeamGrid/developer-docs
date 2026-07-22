@@ -13,7 +13,7 @@ scopes, product entitlement, and workspace lock state.
 | System capabilities | `GET /v1/system/capabilities` | `workspace:read` | Compare product entitlement with this credential's accessible domains |
 | Workspace entitlements | `GET /v1/workspace/entitlements` | `workspace:read` | Read stable, secret-free product availability identifiers |
 | Workspace settings | `GET /v1/workspace/settings` | `workspace-settings:read` | Read six safe workspace defaults and their `wst1` revision |
-| Event catalog | `GET /v1/events/catalog` | `events:read` | List only webhook and change-feed events this credential can consume |
+| Event catalog | `GET /v1/events/catalog` | `events:read` | List only webhook events this credential can consume |
 
 ## Capabilities and entitlements
 
@@ -70,11 +70,9 @@ Use `client.workspaceSettings.get()` and `client.workspaceSettings.update(...)`,
 ## Authorization-filtered event catalog
 
 The event catalog is not a global list. Webhook definitions appear only when the credential holds
-their required resource scope. Change-feed definitions additionally require `changes:read` and the
-matching resource read scope. Each item reports its channel and required scopes; change-feed items
-also report the resource type and `created`, `updated`, or `deleted` operation.
+their required resource scope. Each item reports its webhook channel and required scopes.
 
-Use the catalog to configure an integration UI, then follow the [change-feed recovery
-contract](/api/v1/change-feed/) or [signed webhook verification flow](/api/v1/webhooks/). The SDK and
-CLI equivalents are `client.events.getCatalog()` and `teamgrid events catalog`. Event catalog access
-does not grant access to any event or resource by itself.
+Use the catalog to configure an integration UI, then follow the [signed webhook verification
+flow](/api/v1/webhooks/). The SDK and CLI equivalents are `client.events.getCatalog()` and
+`teamgrid events catalog`. Event catalog access does not grant access to any event or resource by
+itself. The first public beta does not return change-feed definitions.

@@ -19,20 +19,21 @@ API v1 is the source contract for new integrations. The v0 file describes the fr
 
 The canonical manifest publishes byte counts and SHA-256 digests for both OpenAPI files, the v0
 runtime inventory, and the cross-interface capability ledger. The documentation repository also
-records its source commit in `sources/contracts.json`. CI fails if any published artifact drifts.
+records the immutable contract source commit and the API runtime commit carrying those artifacts
+in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The current `1.0.0-beta.1` manifest records 112 v1 paths, 182 governed v1 operations, 87 frozen v0
-operations, 87 v0 migration decisions, 79 canonical scopes, and 73 classified TeamGrid product
-capabilities. It also records exactly 14 `resource-cas-v1` mutation operations and two associated
-asynchronous operation reads.
+The current `1.0.0-beta.2` manifest records 111 v1 paths, 181 governed v1 operations, 87 frozen v0
+operations, 87 v0 migration decisions, 78 canonical scopes, and 73 classified TeamGrid product
+capabilities. It also records 25 static non-CAS core operations, zero `resource-cas-v1` mutation or
+read operations, and 31 independent `If-Match` operations outside that retired core CAS rollout.
 These counts describe the synchronized contract; they do not promote planned capabilities into the
 controlled beta.
 
 During the controlled beta, consumers should pin the manifest's `contractVersion` together with the
 OpenAPI digest and the package prerelease they tested. A beta contract checkpoint can add migration
-requirements before the stable `1.0.0` contract exists; the `1.0.0-beta.1` checkpoint makes current
-resource preconditions mandatory on the protected project, task, and project-template writers. Its
-synchronized SDK, CLI, and MCP package checkpoint is `1.0.0-alpha.3`. See
-[resource revisions and concurrent writes](/api/v1/resource-concurrency/).
+requirements before the stable `1.0.0` contract exists. The `1.0.0-beta.2` checkpoint intentionally
+removes the unqualified core project, task, and project-template CAS surface while preserving all
+independent endpoint-specific preconditions. Its synchronized SDK, CLI, and MCP package checkpoint
+is `1.0.0-beta.2`. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.

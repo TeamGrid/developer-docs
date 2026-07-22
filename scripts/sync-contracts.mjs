@@ -48,6 +48,19 @@ if (!/^[0-9a-f]{40}$/.test(sourceCommit)) {
   throw new Error(`Git resolved an invalid API source commit: ${sourceCommit}`)
 }
 
+const requestedRuntimeRef = process.argv[4]
+  || process.env.TEAMGRID_API_RUNTIME_REF
+  || requestedRef
+const { stdout: resolvedRuntimeCommit } = await execFileAsync(
+  'git',
+  ['rev-parse', '--verify', `${requestedRuntimeRef}^{commit}`],
+  { cwd: sourceRoot, encoding: 'utf8' },
+)
+const runtimeCommit = resolvedRuntimeCommit.trim()
+if (!/^[0-9a-f]{40}$/.test(runtimeCommit)) {
+  throw new Error(`Git resolved an invalid API runtime commit: ${runtimeCommit}`)
+}
+
 async function readSourceFile(relativePath) {
   try {
     const { stdout } = await execFileAsync('git', ['show', `${sourceCommit}:${relativePath}`], {
@@ -63,12 +76,32 @@ async function readSourceFile(relativePath) {
   }
 }
 
+async function readRuntimeFile(relativePath) {
+  try {
+    const { stdout } = await execFileAsync(
+      'git',
+      ['show', `${runtimeCommit}:${relativePath}`],
+      {
+        cwd: sourceRoot,
+        encoding: 'buffer',
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    )
+    return stdout
+  } catch (error) {
+    throw new Error(`Could not read ${relativePath} from API runtime ${runtimeCommit}.`, {
+      cause: error,
+    })
+  }
+}
+
 const sourceRepository = 'TeamGrid/teamgrid-api'
 const manifest = {
   schemaVersion: 1,
   contracts: {},
   sourceRepository,
   sourceCommit,
+  runtimeCommit,
 }
 const canonicalManifestPath = 'contracts/developer-platform-manifest.json'
 const canonicalManifestContent = await readSourceFile(canonicalManifestPath)
@@ -96,6 +129,12 @@ for (const artifact of canonicalManifest.artifacts) {
   const digest = createHash('sha256').update(content).digest('hex')
   if (content.length !== artifact.bytes || digest !== artifact.sha256) {
     throw new Error(`API source commit has an invalid contract digest for ${artifact.path}.`)
+  }
+  const runtimeContent = await readRuntimeFile(artifact.path)
+  if (!runtimeContent.equals(content)) {
+    throw new Error(
+      `API runtime ${runtimeCommit} does not carry the synchronized ${artifact.path}.`,
+    )
   }
   await writeFile(path.join(destination, artifactDestinations[artifact.path]), content)
 }
@@ -148,29 +187,15 @@ for (const version of ['v0', 'v1']) {
 
 const v1Content = await readSourceFile('openapi/v1.json')
 const v1Document = JSON.parse(v1Content.toString('utf8'))
-const changeParameters = v1Document.paths?.['/changes']?.get?.parameters || []
-const changeOperations = changeParameters.find((parameter) => parameter.name === 'operations')
-  ?.schema?.items?.enum
-const changeResourceTypes = changeParameters.find(
-  (parameter) => parameter.name === 'resourceTypes',
-)?.schema?.items?.enum
-const changeEventProperties =
-  v1Document.components?.schemas?.ChangeEvent?.properties?.attributes?.properties
-const changeEventOperations = changeEventProperties?.operation?.enum
-const changeEventResourceTypes = changeEventProperties?.resourceType?.enum
 if (
-  !Array.isArray(changeOperations) ||
-  JSON.stringify(changeOperations) !== JSON.stringify(changeEventOperations) ||
-  !Array.isArray(changeResourceTypes) ||
-  changeResourceTypes.length !== 23 ||
-  new Set(changeResourceTypes).size !== changeResourceTypes.length ||
-  JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
+  v1Document.paths?.['/changes']
+  || v1Document.components?.schemas?.ChangeEvent
+  || scopeDocument.scopes.some((scope) => scope.name === 'changes:read')
 ) {
-  throw new Error('OpenAPI v1 has an inconsistent or incomplete change-feed contract.')
+  throw new Error('The beta 2 public contract must exclude the unqualified change feed.')
 }
 manifest.changeFeed = {
-  operations: changeOperations,
-  resourceTypes: changeResourceTypes,
+  availability: 'excluded',
 }
 
 const capabilitySource = 'contracts/developer-capabilities.json'
@@ -211,7 +236,7 @@ const actionPolicyContent = await readSourceFile(actionPolicySource)
 const actionPolicyDocument = JSON.parse(actionPolicyContent.toString('utf8'))
 if (
   actionPolicyDocument.schemaVersion !== 1
-  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v4'
+  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v5'
   || !/^[a-f0-9]{64}$/.test(actionPolicyDocument.registrySha256 || '')
   || actionPolicyDocument.actionPolicyCount !== operationBindingDocument.operations.length
   || actionPolicyDocument.authenticatedActionPolicyCount
@@ -235,4 +260,7 @@ await writeFile(
   `${JSON.stringify(manifest, null, 2)}\n`,
 )
 
-console.log(`Synchronized v0 and v1 contracts from ${sourceRepository}@${sourceCommit}.`)
+console.log(
+  `Synchronized v0 and v1 contracts from ${sourceRepository}@${sourceCommit} `
+  + `(runtime ${runtimeCommit}).`,
+)

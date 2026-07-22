@@ -1,123 +1,94 @@
 ---
-title: Resource revisions and concurrent writes
-description: Use strong ETags and If-Match to update TeamGrid projects, tasks, and project templates without losing concurrent changes.
+title: Resource concurrency in Beta 2
+description: Understand which API v1 writes use If-Match and why projects, tasks, and project templates use a static non-CAS contract in Beta 2.
 ---
 
-Projects, tasks, and project templates use optimistic concurrency control. Every public representation
-of these resources contains two concurrency fields:
+API v1 uses endpoint-specific concurrency rules. Do not assume that every mutable resource accepts
+the same revision format or that every write supports `If-Match`.
 
-- `developerRevision` is an opaque, lowercase 64-character revision. Persist and return it unchanged.
-- `developerUpdatedAt` is the canonical timestamp at which that developer revision was issued. It is
-  not a replacement for the resource's business `updatedAt` field.
+The `1.0.0-beta.2` contract deliberately keeps the 25 static core operations for projects, tasks,
+project templates, project lifecycle operations, and template instantiations outside the new
+resource-CAS rollout. These resources do not expose `developerRevision` or `developerUpdatedAt`,
+their operations do not carry `resource-cas-v1` extensions, and their mutations do not accept
+project-, task-, or template-specific `If-Match` headers.
 
-Single-resource reads and resource-returning writes also carry a quoted, strong `ETag` header. Its
-value is derived from the body revision and is specific to the resource type:
+This is a release boundary, not a general promise that concurrent writes are merged. When two
+clients update the same core resource, callers must not rely on a public optimistic-concurrency
+precondition in Beta 2. Keep writes narrow, avoid parallel writers for the same object, and re-read
+the resource after a mutation when subsequent work depends on its current state.
 
-| Resource | Strong ETag form |
+## Static core operations
+
+The 25 static core operations comprise:
+
+| Resource | Operations |
 | --- | --- |
-| Project | `"prj1-<developerRevision>"` |
-| Project template | `"tpl1-<developerRevision>"` |
-| Task | `"tsk1-<developerRevision>"` |
+| Projects | List, get, create, update, complete, reopen, archive, and restore |
+| Project lifecycle operations | Get operation status |
+| Project templates | List, get, create, update, archive, restore, and instantiate |
+| Template instantiations | Get instantiation status |
+| Tasks | List, get, create, update, archive, restore, complete, and reopen |
 
-Treat revisions and ETags as opaque. Do not generate them from `updatedAt`, remove the quotes, change
-case, or reuse a tag for another resource type. A direct HTTP mutation accepts exactly one current,
-quoted strong ETag in `If-Match`; weak tags, wildcards, unquoted revisions, and comma-separated tag
-lists are invalid.
+Project lifecycle commands and template instantiation remain asynchronous. Their start requests
+use a stable `Idempotency-Key` for safe replay, and clients poll the returned operation ID. The
+operation representations no longer expose the retired core `sourceRevision` or `resultRevision`
+fields. Task timer commands and planned-work endpoints are separate contracts and are not part of
+this 25-operation set.
 
-## Read, decide, mutate
+## Independent preconditions remain
 
-Read the resource immediately before making a state-dependent change and retain its `ETag`:
+Beta 2 retains exactly 31 independent `If-Match` operations. They protect their own resource
+families and were not part of the retired core resource-CAS rollout:
+
+| Resource family | Protected mutations |
+| --- | ---: |
+| Appointments and absences | 6 |
+| Comments | 2 |
+| Documents and files | 6 |
+| Custom-field values | 2 |
+| Planned work | 1 |
+| Members, invitations, roles, and groups | 8 |
+| Automation definitions and runs | 4 |
+| Workspace settings | 1 |
+| Webhook secret rotation | 1 |
+
+For one of these operations, read the corresponding resource first and use exactly the revision or
+strong ETag specified by that endpoint. Revision formats are resource-specific. Never turn a task,
+project, or project-template ID or timestamp into an ETag, and never reuse a revision from another
+resource family.
+
+For example, planned-work replacement keeps its own compare-and-set contract:
 
 ```bash
-curl --fail-with-body \
-  --dump-header task-headers.txt \
-  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
-  --header 'Accept: application/json' \
-  https://api.de.teamgrid.app/v1/tasks/TASK_ID \
-  --output task.json
+current=$(teamgrid planned-work get "$TASK_ID" --output json)
+revision=$(printf '%s' "$current" | jq -er '.attributes.revision')
 
-TASK_ETAG=$(awk 'BEGIN { IGNORECASE=1 } /^etag:/ { sub(/^[^:]+:[[:space:]]*/, ""); sub(/\r$/, ""); print; exit }' task-headers.txt)
-
-curl --fail-with-body \
-  --request PATCH \
-  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --header "If-Match: $TASK_ETAG" \
-  --data '{"name":"Reviewed task name"}' \
-  https://api.de.teamgrid.app/v1/tasks/TASK_ID
+teamgrid planned-work replace "$TASK_ID" \
+  --data @schedule.json \
+  --if-match "$revision" \
+  --idempotency-key "schedule-${TASK_ID}-v1" \
+  --yes
 ```
 
-After a successful mutation, replace the stored revision with the new body `developerRevision` and,
-when present, the new response `ETag`. Archive endpoints return `204 No Content` and therefore carry
-the post-archive revision only in the response `ETag` header.
+## Failure contract for protected operations
 
-If the API returns `412 precondition_failed`, another writer changed the resource after your read.
-Do not retry the same decision blindly:
-
-1. Read the resource again from the same regional endpoint.
-2. Reconcile your intended patch or action with the new representation.
-3. If the action is still valid, send a new request with the newly issued ETag.
-4. Otherwise, preserve the server state and surface the conflict to the caller.
-
-The SDK and CLI perform format validation, but they do not turn a stale business decision into a safe
-automatic retry.
-
-## Mutations covered by resource CAS
-
-The `resource-cas-v1` contract currently covers exactly these 14 mutations:
-
-| Resource | Mutation requiring `If-Match` |
-| --- | --- |
-| Project | `PATCH /v1/projects/{id}` |
-| Project | `POST /v1/projects/{id}/complete` |
-| Project | `POST /v1/projects/{id}/reopen` |
-| Project | `POST /v1/projects/{id}/archive` |
-| Project | `POST /v1/projects/{id}/restore` |
-| Project template | `PATCH /v1/project-templates/{id}` |
-| Project template | `DELETE /v1/project-templates/{id}` |
-| Project template | `POST /v1/project-templates/{id}/restore` |
-| Project template | `POST /v1/project-templates/{id}/instantiate` |
-| Task | `PATCH /v1/tasks/{id}` |
-| Task | `DELETE /v1/tasks/{id}` |
-| Task | `POST /v1/tasks/{id}/restore` |
-| Task | `POST /v1/tasks/{id}/complete` |
-| Task | `POST /v1/tasks/{id}/reopen` |
-
-Other API v1 resources can have their own revision formats and compare-and-set rules. Use the ETag
-and `If-Match` definitions on the relevant endpoint rather than substituting a `tsk1`, `prj1`, or
-`tpl1` value.
-
-## Asynchronous actions and idempotency
-
-Project complete, reopen, archive, and restore operations and project-template instantiation require
-both a current `If-Match` value and a stable `Idempotency-Key`. The accepted operation records the
-exact input revision as `sourceRevision`. Replaying the same key is safe only for the same action,
-payload, and source revision; changing any of them is an idempotency conflict.
-
-A successful asynchronous operation publishes its resulting resource revision as `resultRevision`.
-Pending, running, and failed operations have `resultRevision: null`. A `410
-resource_operation_revision_unavailable` response means that the operation predates revision
-tracking and can no longer provide a trustworthy status. Re-read the current project or template and
-reconcile the intended outcome instead of creating an unguarded replacement operation.
-
-## Failure contract
+The independent `If-Match` operations use the following failure contract:
 
 | Status and code | Meaning | Action |
 | --- | --- | --- |
-| `400 invalid_precondition` | `If-Match` is malformed, weak, unquoted, duplicated, or for the wrong resource type | Correct the request from the latest server response |
-| `410 resource_operation_revision_unavailable` | A legacy asynchronous operation has no trustworthy revision record | Re-read the current resource and reconcile the outcome |
-| `412 precondition_failed` | The resource no longer matches the supplied revision | Re-read, reconcile, and retry only with a new decision |
-| `428 precondition_required` | A protected mutation omitted `If-Match` | Read the resource and send its latest strong ETag |
-| `503 service_unavailable` | The cell cannot currently prove the resource concurrency contract or revision | Keep the precondition and retry later with bounded backoff |
+| `400 invalid_precondition` | The supplied validator is malformed, weak, duplicated, or belongs to the wrong resource contract | Correct the request using the latest endpoint response |
+| `412 precondition_failed` | The protected resource no longer matches the supplied revision | Re-read, reconcile, and retry only after a new decision |
+| `428 precondition_required` | A protected operation omitted `If-Match` | Read the resource and send its latest documented revision or strong ETag |
+| `503 service_unavailable` | The owning cell cannot currently prove that endpoint's concurrency contract | Keep the precondition and retry later with bounded backoff |
 
-Never handle `503` by dropping `If-Match` or falling back to an unguarded API surface.
+Never respond to `412` or `503` by removing `If-Match`. Conversely, do not send `If-Match` to a
+static project, task, or project-template mutation: it is not part of the Beta 2 contract and the
+official SDK and CLI intentionally do not expose such an option for those operations.
 
-## Controlled-beta migration
+## Future core concurrency releases
 
-This behavior is part of the internal `1.0.0-beta.1` contract checkpoint. Before moving an existing
-beta integration to this checkpoint, deploy support for the new response fields and ETags, then make
-`If-Match` mandatory in all 14 callers. Do not mix older API v1 writers, which omit the negotiated
-resource-CAS contract, with writers targeting this checkpoint during a rollout.
-
-Revisions are issued and checked by the owning cell. Always send the credential and its ETag back to
-the credential's regional endpoint; they are not portable between workspaces, cells, or regions.
+Core CAS can be introduced in a later contract checkpoint after its cell-local revision writes,
+backfill, cutover, enforcement, rollback, and application compatibility have been qualified
+separately. That release will update OpenAPI and the official packages together. Integrations
+should follow the contract they have pinned instead of reserving or synthesizing core revision
+headers in advance.

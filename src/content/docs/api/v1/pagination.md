@@ -16,12 +16,6 @@ Read the next cursor from `meta.page.nextCursor`. A value of `null` means that t
 
 Do not decode, edit, sort, or persist assumptions about the cursor format. Restart a traversal without a cursor when the filter set changes.
 
-`GET /v1/changes` deliberately differs from ordinary lists: its next cursor is always present and
-acts as a durable polling checkpoint, including when `data` is empty. It is also bound to the exact
-credential, cell, and filters. Follow the [change-feed bootstrap and recovery
-protocol](/api/v1/change-feed/) and continue catch-up until `meta.page.caughtUp` is true instead of
-stopping on a `null` cursor or inferring completion from page length.
-
 ## Idempotent creates
 
 Creates and asynchronous domain commands that can be safely replayed require an `Idempotency-Key`
@@ -34,10 +28,9 @@ Idempotency-Key: sync-job-2026-07-19-task-42
 
 The key must contain 1–128 printable ASCII characters. Repeating the same operation with the same key and payload returns the original result. Reusing the key with a different payload returns a conflict.
 
-For project lifecycle actions and project-template instantiation, the idempotency fingerprint also
-includes the resource revision supplied through `If-Match`. A retry must therefore use the same key,
-action, payload, and source revision. If the resource changed, reconcile first and start the newly
-decided action under a new operation key.
+For project lifecycle actions and project-template instantiation, a retry must use the same key,
+action, and payload. These static Beta 2 operations do not accept a core `If-Match` precondition or
+bind the key to a developer revision.
 
 Generate keys from a stable operation identity rather than a random value created on every retry. Keep keys free of credentials and personal data.
 
@@ -46,5 +39,5 @@ planned-work PUT is retryable only with both its idempotency key and strong comp
 precondition. Other PUT, PATCH, and DELETE requests should not be retried automatically unless the
 caller has separately established their outcome.
 
-See [resource revisions and concurrent writes](/api/v1/resource-concurrency/) for the separate
-read–mutate–reconcile contract used by projects, tasks, and project templates.
+See [resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the distinction between the
+static core operations and independently protected resource families.

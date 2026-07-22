@@ -14,12 +14,10 @@ teamgrid tasks list --project-id "$PROJECT_ID" --all --output jsonl \
 
 `--all` follows opaque cursors and stops at 10,000 pages by default. Lower the guard with `--max-pages` when a job should have a tighter upper bound.
 
-For `changes list`, one page is the default and there is no implicit wait loop. In JSONL mode each
-change is wrapped as `{"kind":"change","data":...}` and every page ends with a separate
-`{"kind":"checkpoint","cursor":"...","caughtUp":true|false}` record. Commit the checkpoint only
-after the earlier change records are durable and continue until `caughtUp` is true. Use `changes
-checkpoint` before the initial full snapshot; see the
-[race-free synchronization recipe](/api/v1/change-feed/).
+The first public beta has no change-feed commands. For bounded reconciliation, traverse the
+resource list commands with `--all`, preserve resource IDs and revisions, and use signed webhooks as
+delivery signals where supported. Do not substitute audit or webhook-delivery history for a durable
+feed.
 
 ## Make retried writes idempotent
 
@@ -37,14 +35,14 @@ an idempotency key can be retried after bounded transient failures. Other PUT, P
 requests are not retried automatically.
 
 Custom-field-value and planned-work writes also require the revision returned by the latest GET.
-The same read-before-write rule applies to the five project, five task, and four project-template
-resource-CAS mutations:
+For example, read a custom-field value before changing it:
 
 ```bash
-revision=$(teamgrid tasks get "$TASK_ID" --output json | jq -er '.attributes.developerRevision')
+revision=$(teamgrid custom-field-values get project "$PROJECT_ID" "$FIELD_ID" \
+  --output json | jq -er '.attributes.revision')
 
-if ! teamgrid tasks update "$TASK_ID" --data @patch.json \
-  --if-match "$revision" --output json; then
+if ! teamgrid custom-field-values set project "$PROJECT_ID" "$FIELD_ID" \
+  --data @value.json --if-match "$revision" --output json; then
   # Re-read and reconcile here. Do not substitute the old revision.
   exit 1
 fi
@@ -52,7 +50,8 @@ fi
 
 Treat `412` and exit code `6` as a concurrent-edit decision, not a generic retry. Missing
 `--if-match` is rejected locally; an API `428` maps to usage exit code `2`. Planned-work replacement
-overwrites the complete schedule and requires `--yes` in non-interactive execution.
+overwrites the complete schedule and requires `--yes` in non-interactive execution. Project, task,
+and project-template commands use the static Beta 2 contract and do not accept `--if-match`.
 
 ## Exit codes
 

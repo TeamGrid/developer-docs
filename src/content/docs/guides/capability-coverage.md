@@ -5,10 +5,10 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The current controlled-beta API v1 contract contains 112 paths and 182 operations. The TypeScript SDK
-and CLI map all 182 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The `1.0.0-beta.2` controlled-beta API v1 contract contains 111 paths and 181 operations. The TypeScript SDK
+and CLI map all 181 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
-destructive lifecycle operations, project statements, the high-volume change feed, webhook delivery
+destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
 
 The cross-interface contract currently governs workspace, projects and asynchronous project
@@ -17,24 +17,28 @@ contacts, comments, activity, documents, files, workspace administration, search
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
 planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
-The change feed supplies a metadata-only, cell-local synchronization boundary rather than resource
-payloads.
+The durable change feed is deliberately outside the first public beta contract.
+
+The same release boundary keeps 25 project, task, project-template, and associated asynchronous
+operation endpoints on a static non-CAS contract. They do not expose developer revision fields or
+core `If-Match` requirements. This does not remove the 31 independent `If-Match` operations for
+resource families such as planned work, custom-field values, calendar data, documents, workspace
+administration, automations, workspace settings, and webhook-secret rotation.
 
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 182 operations. Exactly one discovery operation is anonymous; all 181 remaining
+registry for all 181 operations. Exactly one discovery operation is anonymous; all 180 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
 
-The current registry identity is `developer-action-policy-v4` with SHA-256
-`66f732888d35542f29470545d4601c1c5cc653d37a9c55d7d2329896ad779002`. The API and owning App cell
-exchange this exact identity during startup compatibility negotiation and fail readiness on any
-mismatch. The same identity is included in the [machine-readable contract artifact](/openapi/developer-action-policy-registry.json)
-and canonical deployment manifest.
+The current registry identity and SHA-256 are published in the
+[machine-readable contract artifact](/openapi/developer-action-policy-registry.json). The API and
+owning App cell exchange this exact identity during startup compatibility negotiation and fail
+readiness on any mismatch. The same identity is included in the canonical deployment manifest.
 
-V4 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+V5 declares every request-dependent scope and dynamic policy used by collaboration, automation,
 custom-field content, calendar, work-management, and search/export handlers. The owning App cell
 resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
@@ -62,8 +66,9 @@ and webhook-secret rotation are now released in the controlled-beta contract. Re
 work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
 classification applies to discovery, credentials, several core project, task, contact and
-time-entry projections, custom-field values, project templates, planned-work lifecycle, audit,
-webhooks, and the change feed where additional product semantics remain.
+time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
+webhooks where additional product semantics remain. The change feed is excluded rather than marked
+as a partially released capability.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows

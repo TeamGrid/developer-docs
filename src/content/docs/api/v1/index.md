@@ -3,7 +3,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, signed webhook deliveries, and a cell-local change feed. The current controlled-beta contract contains 112 paths and 182 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, and signed webhook deliveries. The `1.0.0-beta.2` controlled-beta contract contains 111 paths and 181 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
 
 ## Base URL
 
@@ -28,19 +28,18 @@ workspace and administration resources; projects, tasks, time entries,
 planned work, appointments, absences, and availability; contacts, comments, activity, documents,
 files, call notes, and contact groups; product and project-statement resources; federated search and
 bounded export jobs; automation definitions, action metadata, runs, and integration-installation
-status; plus audit, an authorization-filtered event catalog, change-feed, webhook, secret-rotation,
+status; plus audit, an authorization-filtered webhook event catalog, webhook, secret-rotation,
 and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
-Projects, tasks, and project templates expose opaque `developerRevision` and
-`developerUpdatedAt` fields. Their 14 protected mutations require the latest type-specific strong
-ETag in `If-Match`; review [resource revisions and concurrent writes](/api/v1/resource-concurrency/)
+Projects, tasks, and project templates use the static Beta 2 contract: they do not expose developer
+revision fields or accept a core `If-Match` precondition. Other resource families retain 31
+endpoint-specific protected mutations. Review [resource concurrency in Beta 2](/api/v1/resource-concurrency/)
 before building a writer.
 
-For durable mirrors, take a change-feed checkpoint before the initial resource snapshot and then
-catch up from that checkpoint. See [change feed and synchronization](/api/v1/change-feed/) for the
-retention, recovery, and multi-region contract.
+For bounded mirrors, traverse the normal resource endpoints and use signed webhooks as delivery
+signals. A durable [change feed is deliberately excluded from the first public beta](/api/v1/change-feed/).
 
 [Review resource and security semantics](/api/v1/resources-and-semantics/) before implementing finance, lifecycle, custom-field, administration, export, automation, or webhook-observability workflows.
 

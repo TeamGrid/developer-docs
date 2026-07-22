@@ -3,6 +3,7 @@ import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
 const dist = path.join(root, 'dist')
+const contentRoot = path.join(root, 'src', 'content', 'docs')
 const failures = []
 
 async function exists(file) {
@@ -48,7 +49,65 @@ async function htmlFiles(directory) {
 }
 
 const html = await htmlFiles(dist)
-if (html.length < 350) failures.push(`Only ${html.length} HTML pages were generated; expected at least 350.`)
+async function contentPageFiles(directory) {
+  const result = []
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name)
+    if (entry.isDirectory()) result.push(...(await contentPageFiles(file)))
+    else if (/\.mdx?$/.test(entry.name)) result.push(file)
+  }
+  return result
+}
+
+const contentPages = await contentPageFiles(contentRoot)
+const contracts = JSON.parse(await readFile(path.join(root, 'sources', 'contracts.json'), 'utf8'))
+let documentedOperations = 0
+
+for (const version of ['v0', 'v1']) {
+  const spec = JSON.parse(await readFile(path.join(root, 'public', 'openapi', `${version}.json`), 'utf8'))
+  const operationIds = []
+  for (const pathItem of Object.values(spec.paths ?? {})) {
+    for (const operation of Object.values(pathItem ?? {})) {
+      if (operation && typeof operation === 'object' && operation.operationId) {
+        operationIds.push(operation.operationId)
+      }
+    }
+  }
+
+  const expectedOperations = contracts.contracts?.[version]?.operations
+  if (operationIds.length !== expectedOperations) {
+    failures.push(
+      `${version} contains ${operationIds.length} operations; the synchronized contract records ${expectedOperations}.`,
+    )
+  }
+
+  for (const operationId of operationIds) {
+    const operationPage = path.join(
+      dist,
+      'api',
+      version,
+      'reference',
+      'operations',
+      operationId.toLowerCase(),
+      'index.html',
+    )
+    if (!(await exists(operationPage))) {
+      failures.push(`Missing generated ${version} operation page for ${operationId}.`)
+    }
+  }
+  documentedOperations += operationIds.length
+}
+
+const minimumExpectedPages = contentPages.length + documentedOperations + 3
+if (html.length < minimumExpectedPages) {
+  failures.push(
+    `Only ${html.length} HTML pages were generated; expected at least ${minimumExpectedPages} from source pages, operations, reference indexes, and the not-found page.`,
+  )
+}
+
+if (await exists(path.join(dist, 'api', 'v1', 'reference', 'operations', 'listchanges', 'index.html'))) {
+  failures.push('The excluded listChanges operation page was generated.')
+}
 
 function builtPageForUrl(url) {
   const pathname = url.split(/[?#]/, 1)[0]

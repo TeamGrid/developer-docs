@@ -6,7 +6,7 @@ description: Install the TeamGrid TypeScript SDK and list tasks through a region
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@next
+npm install @teamgrid/api-client@1.0.0-beta.2
 ```
 
 ## Create a client
@@ -48,28 +48,22 @@ const result = await client.tasks.create(
 console.log(result.data.id)
 ```
 
-## Update with a typed precondition
+## Update a task
 
-Task, project, and project-template mutation options require a resource-specific `ifMatch` value.
-Use the branded revision from the latest representation:
+Tasks use the static Beta 2 resource contract. Their representations do not expose developer
+revisions and task mutations do not accept an `ifMatch` option:
 
 ```ts
-const current = await client.tasks.get('task-id')
-
 const updated = await client.tasks.update(
-  current.data.id,
+  'task-id',
   { name: 'Reviewed launch plan' },
-  { ifMatch: current.data.attributes.developerRevision },
 )
 
-console.log(updated.data.attributes.developerRevision)
-console.log(updated.transport.headers.etag)
+console.log(updated.data.attributes.name)
 ```
 
-The client verifies that the strong response ETag matches the returned `developerRevision`. It
-rejects a task revision used for a project or template mutation at compile time, and rejects
-malformed raw values before sending a request. On `412`, fetch the task again and reconcile the
-patch; do not resend the same decision automatically. See [resource revisions and concurrent
-writes](/api/v1/resource-concurrency/).
+Do not synthesize a task ETag or pass a legacy core revision. Other resources retain explicit,
+typed compare-and-set options; read their current revision before calling those methods. See
+[resource concurrency in Beta 2](/api/v1/resource-concurrency/).
 
 Keep the credential in a secret manager and inject it through the process environment. Never bundle it into browser code.

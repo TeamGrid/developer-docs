@@ -539,6 +539,11 @@ const referenceMap = JSON.parse(
 if (Object.keys(referenceMap).length !== 54) fail('Expected 54 legacy ReadMe reference URLs.')
 
 const redirects = await readFile(path.join(root, 'public', '_redirects'), 'utf8')
+for (const legacyReferenceHome of ['/reference ', '/reference/team-grid-api-v1 ']) {
+  if (!redirects.includes(legacyReferenceHome)) {
+    fail(`Missing legacy redirect for ${legacyReferenceHome.trim()}.`)
+  }
+}
 for (const slug of Object.keys(referenceMap)) {
   if (!redirects.includes(`/reference/${slug} `)) fail(`Missing legacy redirect for ${slug}.`)
 }

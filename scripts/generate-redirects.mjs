@@ -12,6 +12,8 @@ const lines = [
   '/docs/recipes /api/v0/recipes/ 301',
   '/docs/:slug /api/v0/guides/:slug/ 301',
   '/recipes/:slug /api/v0/recipes/:slug/ 301',
+  '/reference /api/v0/reference/ 301',
+  '/reference/team-grid-api-v1 /api/v0/reference/ 301',
   '/api/v1 /api/v1/ 301',
 ]
 

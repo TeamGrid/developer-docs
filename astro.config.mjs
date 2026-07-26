@@ -115,6 +115,7 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          collapsed: true,
           items: [
             { label: 'Developer Hub', link: '/' },
             { label: 'Choose an interface', link: '/guides/choose-an-interface/' },
@@ -123,6 +124,7 @@ export default defineConfig({
           label: 'Start here',
         },
         {
+          collapsed: true,
           items: [
             { label: 'Overview', link: '/api/v1/' },
             { label: 'Quickstart', link: '/api/v1/quickstart/' },
@@ -146,10 +148,10 @@ export default defineConfig({
             { label: 'Automations and integrations', link: '/api/v1/automations-and-integrations/' },
             { label: 'Errors and rate limits', link: '/api/v1/errors/' },
             { label: 'Signed webhooks', link: '/api/v1/webhooks/' },
-            v1Reference,
           ],
           label: 'API v1',
         },
+        v1Reference,
         {
           collapsed: true,
           items: [
@@ -162,6 +164,7 @@ export default defineConfig({
           label: 'API v0 · Legacy',
         },
         {
+          collapsed: true,
           items: [
             { label: 'SDK overview', link: '/sdk/' },
             { label: 'Quickstart', link: '/sdk/quickstart/' },
@@ -171,6 +174,7 @@ export default defineConfig({
           label: 'TypeScript SDK',
         },
         {
+          collapsed: true,
           items: [
             { label: 'CLI overview', link: '/cli/' },
             { label: 'Install and authenticate', link: '/cli/install-and-authenticate/' },
@@ -180,6 +184,7 @@ export default defineConfig({
           label: 'CLI',
         },
         {
+          collapsed: true,
           items: [
             { label: 'MCP overview', link: '/mcp/' },
             { label: 'Configure a host', link: '/mcp/configuration/' },
@@ -188,6 +193,7 @@ export default defineConfig({
           label: 'MCP server',
         },
         {
+          collapsed: true,
           items: [
             { label: 'Changelog', link: '/changelog/' },
             { label: 'OpenAPI files', link: '/openapi/' },

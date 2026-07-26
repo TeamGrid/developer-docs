@@ -6,6 +6,38 @@ import starlightOpenAPI, { createOpenAPISidebarGroup } from 'starlight-openapi'
 const v0Reference = createOpenAPISidebarGroup()
 const v1Reference = createOpenAPISidebarGroup()
 
+/**
+ * Turns on Pagefind's filter UI.
+ *
+ * Starlight validates its `pagefind` option with a closed Zod object that only
+ * accepts indexWeight, ranking, and mergeIndex, so UI options cannot be passed
+ * through configuration. Replacing the virtual module its search component
+ * reads is a far smaller seam than forking the ~500-line Search component.
+ *
+ * The facet values come from src/components/PageTitle.astro. If a Starlight
+ * upgrade renames this module, the build fails loudly rather than silently
+ * dropping the filters.
+ */
+const PAGEFIND_CONFIG_ID = 'virtual:starlight/pagefind-config'
+
+function pagefindFilterUI() {
+  return {
+    name: 'teamgrid:pagefind-filter-ui',
+    enforce: 'pre',
+    resolveId(id) {
+      if (id === PAGEFIND_CONFIG_ID) return `\0${id}`
+      return null
+    },
+    load(id) {
+      if (id !== `\0${PAGEFIND_CONFIG_ID}`) return null
+      return `export const pagefindUserConfig = ${JSON.stringify({
+        showFilters: true,
+        openFilters: ['Area'],
+      })}`
+    },
+  }
+}
+
 const organizationSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@graph': [
@@ -28,6 +60,7 @@ export default defineConfig({
     starlight({
       customCss: ['./src/styles/custom.css'],
       components: {
+        PageTitle: './src/components/PageTitle.astro',
         SiteTitle: './src/components/TeamGridSiteTitle.astro',
       },
       description:
@@ -214,4 +247,5 @@ export default defineConfig({
     sitemap(),
   ],
   site: 'https://developer.teamgridapp.com',
+  vite: { plugins: [pagefindFilterUI()] },
 })

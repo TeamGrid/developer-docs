@@ -3743,6 +3743,29 @@ template: splash
 hero:
   title: Build with TeamGrid
   tagline: One regional API, several focused interfaces. Start with API v1 for new integrations and use v0 only for existing compatibility workloads.
+  image:
+    html: |
+      <div class="developer-terminal" role="img" aria-label="TeamGrid CLI showing an authenticated workspace and active projects">
+        <div class="developer-terminal__bar">
+          <span>TeamGrid CLI</span>
+          <span class="developer-terminal__connection">Authenticated · DE</span>
+        </div>
+        <div class="developer-terminal__body">
+          <div class="developer-terminal__command"><span>$</span> teamgrid workspace</div>
+          <div class="developer-terminal__result">
+            <span>Workspace</span>
+            <strong>ACME Inc.</strong>
+            <span>Region</span>
+            <strong>Germany</strong>
+          </div>
+          <div class="developer-terminal__command"><span>$</span> teamgrid projects list --completed false</div>
+          <div class="developer-terminal__table">
+            <span>PROJECT</span><span>STATUS</span>
+            <strong>Website launch</strong><span>Active</span>
+            <strong>Customer onboarding</strong><span>Active</span>
+          </div>
+        </div>
+      </div>
   actions:
     - text: Start with API v1
       link: /api/v1/quickstart/

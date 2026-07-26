@@ -27,6 +27,9 @@ export default defineConfig({
   integrations: [
     starlight({
       customCss: ['./src/styles/custom.css'],
+      components: {
+        SiteTitle: './src/components/TeamGridSiteTitle.astro',
+      },
       description:
         'Official documentation for the TeamGrid API, TypeScript SDK, CLI, and read-only MCP server.',
       editLink: {

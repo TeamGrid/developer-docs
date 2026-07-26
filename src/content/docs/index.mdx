@@ -16,6 +16,21 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components'
 
+<div class="developer-facts" aria-label="Developer platform facts">
+  <div>
+    <strong>v1</strong>
+    <span>Versioned API</span>
+  </div>
+  <div>
+    <strong>181</strong>
+    <span>Documented operations</span>
+  </div>
+  <div>
+    <strong>DE · US</strong>
+    <span>Regional endpoints</span>
+  </div>
+</div>
+
 ## Choose the interface that fits the job
 
 <CardGrid>
@@ -43,6 +58,8 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 
 ## Existing v0 integrations
 
+<div class="legacy-panel">
+
 API v0 remains available for compatibility. Its contract is frozen and documented separately, with migration guidance beside the legacy reference.
 
 API v1 `1.0.0-beta.2` governs 181 operations across 111 paths. That number measures contract parity across
@@ -51,3 +68,5 @@ the HTTP API, SDK, and CLI—not complete TeamGrid product coverage. The
 areas explicitly.
 
 [Open the API v0 documentation](/api/v0/)
+
+</div>

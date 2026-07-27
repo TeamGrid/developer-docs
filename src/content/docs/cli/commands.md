@@ -356,8 +356,9 @@ teamgrid audit-events [--actor-id ID] [--actor-type user|serviceCredential|syste
 ```
 
 Filters are combined and bound into the opaque pagination cursor, so a cursor cannot be reused with
-another credential, cell, region, or filter set. Audit output can contain security-sensitive
-operational metadata. Limit access and retention in downstream systems.
+another credential, cell, region, or filter set. JSON output includes `meta.retentionDays`, the
+configured retention of the serving cell (30–3650 days; 365 by default). Audit output can contain
+security-sensitive operational metadata. Limit access and retention in downstream systems.
 
 ## Webhooks and delivery history
 

@@ -47,7 +47,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `products` | List, get, create, update, archive |
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
-| `auditEvents` | List credential and mutation audit events |
+| `auditEvents` | List credential and mutation audit events with actor, time, credential, event, outcome, request, source, and target filters |
 | `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
 | `members` | List, get, change role, and remove workspace members |

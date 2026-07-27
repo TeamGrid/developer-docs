@@ -7,12 +7,12 @@
     },
     "v1": {
       "operations": 184,
-      "sha256": "711a9ae199a469d92dafc77223a99a14ebd998fff31515b594a1a8f39f4e9842"
+      "sha256": "c25a091829f919721af969d13bf9b31f0256fdb4e023892b6e88d59ad7ceb5a9"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "ebafbe102468672e23c78b709797d13084bdb062",
-  "runtimeCommit": "21c7d0d72eb4ecf6076c07a0631fc1c5de54e184",
+  "sourceCommit": "f503bd64559ac02b1984191c319d85d85a10e39c",
+  "runtimeCommit": "0a699498c76f85c674d3afc70f8e49d5fbd67c47",
   "scopes": {
     "count": 78,
     "sha256": "650df1009270e73c622a966e33cbc3888578ee68da655d6a419eb2f2add6826b"
@@ -24,7 +24,7 @@
   "canonical": {
     "contractVersion": "1.0.0-rc.1",
     "bytes": 2363,
-    "sha256": "6bf8533c313fbe372a99d4eb88971e67d72514c70704c1f04a23210de12f9816"
+    "sha256": "6a703d22c3234ff58437c2babef4fb4de41a36220cca399dad0c1630dd631144"
   },
   "changeFeed": {
     "availability": "excluded"

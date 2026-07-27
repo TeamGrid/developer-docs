@@ -347,12 +347,17 @@ or configuration secrets.
 ## Audit events
 
 ```text
-teamgrid audit-events [--credential-id ID] [--event-type TYPE]
-                      [--outcome success|denied|failure]
+teamgrid audit-events [--actor-id ID] [--actor-type user|serviceCredential|system]
+                      [--created-at-from ISO] [--created-at-to ISO]
+                      [--credential-id ID] [--event-type TYPE]
+                      [--outcome success|denied|failure] [--request-id ID]
+                      [--source teamgrid-app|api-v1|system]
+                      [--target-id ID] [--target-type TYPE]
 ```
 
-Audit output can contain security-sensitive operational metadata. Limit access and retention in
-downstream systems.
+Filters are combined and bound into the opaque pagination cursor, so a cursor cannot be reused with
+another credential, cell, region, or filter set. Audit output can contain security-sensitive
+operational metadata. Limit access and retention in downstream systems.
 
 ## Webhooks and delivery history
 

@@ -3,7 +3,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
+API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
 
 ## Base URL
 

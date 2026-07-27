@@ -5,7 +5,7 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 128 paths and 206 operations. The TypeScript SDK
+The stable `1.0.0` API v1 contract contains 128 paths and 206 operations. The TypeScript SDK
 and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
@@ -56,7 +56,7 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the stable contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 0 | No capability is advertised with an incomplete public workflow |
 | Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
@@ -67,11 +67,33 @@ complete planned-work scheduling, complete non-billing time-entry reads and writ
 complete audit reads and bounded audit exports, complete custom-field-value reads and
 compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
 project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
-and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
+and webhook-secret rotation are released in the stable contract. Remaining planned
 work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
 are represented by stable resources and domain commands instead of those internals.
+
+## Post-1.0 qualification boundary
+
+The six planned domains are additive roadmap candidates, not hidden or partially supported
+endpoints:
+
+- **Delegated OAuth** needs complete consent, acting-user, token rotation, revocation, and
+  cell-local policy lifecycles.
+- **Telephony calls** need provider-independent resources plus explicit side-effect, recording,
+  privacy, and delegated-user semantics.
+- **File sharing** needs a public share-link lifecycle distinct from private transfer intents and
+  the internal device-synchronization protocol.
+- **Commerce orders** need a customer-facing order resource rather than exposure of internal
+  project-automation state.
+- **Report jobs** need immutable definitions, bounded execution, private result storage, and
+  snapshot semantics.
+- **Import jobs** need schema-versioned validation, dry-run results, idempotent commit, per-row
+  outcomes, and safe rollback boundaries.
+
+Future 1.x releases may add qualified resources and commands without weakening stable 1.0
+behavior. Existing operation semantics, scopes, errors, regional routing, and security boundaries
+remain compatible throughout the major version. A breaking change requires a new API major.
 
 See the [API v1 reference](/api/v1/reference/), [CLI commands](/cli/commands/), and [MCP tool policy](/mcp/tools-and-security/) for the current public surface.

@@ -1,6 +1,6 @@
 ---
 title: Install and authenticate
-description: Install the TeamGrid CLI prerelease and store an API v1 credential in the operating-system credential store.
+description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
 ---
 
 ## Requirements
@@ -11,10 +11,10 @@ description: Install the TeamGrid CLI prerelease and store an API v1 credential 
 
 ## Install
 
-The Developer Platform packages are currently prereleases. Install from `next` and pin the resolved version in controlled environments.
+Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-rc.1
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --help
 ```
 

@@ -5,9 +5,8 @@ description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and
 
 ## Current platform
 
-API v1 and the npm packages are at the `1.0.0-rc.1` release-candidate checkpoint. Until the stable
-release is signed off, authoritative changes are recorded in the public source repositories and
-their release history:
+API v1 and the SDK, CLI, and MCP npm packages are synchronized at stable version `1.0.0`.
+Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
@@ -16,7 +15,14 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-27
 
-- Promoted the synchronized API v1, SDK, CLI, and MCP contract to `1.0.0-rc.1`.
+- Promoted the synchronized API v1, TypeScript SDK, CLI, and curated read-only MCP server to stable
+  version `1.0.0`.
+- Froze the stable boundary at 128 API paths, 206 governed operations, 87 scopes, and 73 classified
+  product capabilities. Sixty-one capabilities are released, none are partial, six are planned,
+  and six privileged or implementation-level capabilities remain intentionally private.
+- Added reveal-once personal-access credentials, native service accounts, resource grants, project
+  sharing, conflict-safe task bulk operations, time-entry billing, bounded audit exports, and the
+  qualified 23-resource durable change feed across their required public surfaces.
 - Added revision-safe task duplication, placement/reordering, and atomic checklist replacement
   across the API, TypeScript SDK, and CLI. MCP remains read-only for all three workflows.
 - Completed the stable task read projection with lifecycle, provenance, count, placement, and
@@ -31,9 +37,7 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified
   asynchronous operation resources.
-- Kept the durable change feed outside 1.0 until preimage, failover, retention, and recovery
-  semantics complete their separate qualification.
-- Preserved the curated read-only MCP policy while aligning all 185 public operations across
+- Preserved the curated read-only MCP policy while aligning all 206 public operations across
   OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21

@@ -33,7 +33,7 @@ if (
   packageManifest.schemaVersion !== 1
   || packageManifest.sourceRepository !== 'TeamGrid/developer-platform'
   || !/^[0-9a-f]{40}$/.test(packageManifest.sourceCommit || '')
-  || packageManifest.version !== '1.0.0-rc.1'
+  || packageManifest.version !== '1.0.0'
   || Object.values(packageManifest.packages || {}).some(
     (item) => item.version !== packageManifest.version || !/^[a-f0-9]{64}$/.test(item.sha256 || ''),
   )
@@ -342,7 +342,7 @@ if (
   || JSON.stringify(resourceCasReads.map((operation) => operation.operationId).sort())
     !== JSON.stringify(['getProjectLifecycleOperation', 'getProjectTemplateInstantiation'])
 ) {
-  fail('The release candidate must preserve 30 core operations, 18 CAS mutations, and 2 qualified operation reads.')
+  fail('The stable contract must preserve 30 core operations, 18 CAS mutations, and 2 qualified operation reads.')
 }
 const expectedAllIfMatchOperationIds = [
   ...expectedCoreCasOperationIds,
@@ -352,7 +352,7 @@ if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
   !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('The release candidate must preserve exactly 52 qualified If-Match operations.')
+  fail('The stable contract must preserve exactly 52 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -569,7 +569,7 @@ const capabilityStatusCounts = capabilities.productCapabilities.reduce((counts, 
   return counts
 }, {})
 for (const [label, status] of [
-  ['Released in the release-candidate contract', 'released'],
+  ['Released in the stable contract', 'released'],
   ['Partial', 'partial'],
   ['Planned', 'planned'],
   ['Intentionally private', 'private'],

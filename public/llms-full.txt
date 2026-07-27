@@ -2331,7 +2331,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
+API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
 
 ## Base URL
 
@@ -2577,7 +2577,8 @@ their required resource scope. Each item reports its webhook channel and require
 Use the catalog to configure an integration UI, then follow the [signed webhook verification
 flow](/api/v1/webhooks/). The SDK and CLI equivalents are `client.events.getCatalog()` and
 `teamgrid events catalog`. Event catalog access does not grant access to any event or resource by
-itself. The 1.0 release candidate does not return change-feed definitions.
+itself. Change-feed domains and filters are governed separately by `GET /v1/changes`; they are not
+webhook event definitions.
 
 <!-- api/v1/project-templates.md -->
 ---
@@ -2695,8 +2696,8 @@ TeamGrid API v1 is cell-aware. Official clients derive the regional endpoint fro
 
 | Region | Endpoint | Current availability |
 | --- | --- | --- |
-| Germany | `https://api.de.teamgrid.app/v1` | Controlled beta |
-| United States | `https://api.us.teamgrid.app/v1` | Maintenance until a regional beta is approved |
+| Germany | `https://api.de.teamgrid.app/v1` | Stable |
+| United States | `https://api.us.teamgrid.app/v1` | Stable |
 
 The global v0 hosts are not API v1 endpoints during the controlled rollout:
 
@@ -2718,8 +2719,8 @@ Business data, credential hashes, audit records, and write delivery stay in the 
 For endpoints that expose resource revisions and strong ETags, those validators are also
 cell-local. Return them only to the same credential's regional endpoint. A tag is not proof of
 authorization, is not portable to another workspace or cell, and must never be used to justify
-following a bearer redirect. Static Beta 2 projects, tasks, and project templates do not expose
-such validators.
+following a bearer redirect. Stable projects, project sharing, tasks, and project templates expose
+these validators on their qualified reads and mutations.
 
 <!-- api/v1/resource-concurrency.md -->
 ---
@@ -2733,7 +2734,7 @@ Never derive an ETag from an ID, timestamp, or another resource.
 
 ## Projects, tasks, and project templates
 
-The `1.0.0-rc.1` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
+The `1.0.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
@@ -2861,14 +2862,15 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Webhooks | List, get, create, remove | Creation returns the signing secret once |
 | Webhook deliveries | List and get | Read-only, credential-owned, privacy-reduced history |
 
-The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
-in the controlled beta, partially covered, planned, or intentionally private.
+The [capability coverage ledger](/guides/capability-coverage/) separately records what is released
+in stable 1.0, planned for a later release, or intentionally private.
 
 Project reads include stable list and scheduling order, creation and duplication provenance,
 planning boundaries, last activity, and non-financial task progress counts. The owning App cell
 projects only these safe summary fields from its internal calculation object; costs, revenue,
 profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
-the API boundary. Project sharing grants remain a separate planned capability.
+the API boundary. Project sharing is exposed separately through a full-replacement,
+human-principal-only contract with strong concurrency control.
 
 Time-entry reads expose task, user and service references, creator/updater provenance, duration,
 billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
@@ -3220,9 +3222,8 @@ description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and
 
 ## Current platform
 
-API v1 and the npm packages are at the `1.0.0-rc.1` release-candidate checkpoint. Until the stable
-release is signed off, authoritative changes are recorded in the public source repositories and
-their release history:
+API v1 and the SDK, CLI, and MCP npm packages are synchronized at stable version `1.0.0`.
+Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
@@ -3231,7 +3232,14 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 ## 2026-07-27
 
-- Promoted the synchronized API v1, SDK, CLI, and MCP contract to `1.0.0-rc.1`.
+- Promoted the synchronized API v1, TypeScript SDK, CLI, and curated read-only MCP server to stable
+  version `1.0.0`.
+- Froze the stable boundary at 128 API paths, 206 governed operations, 87 scopes, and 73 classified
+  product capabilities. Sixty-one capabilities are released, none are partial, six are planned,
+  and six privileged or implementation-level capabilities remain intentionally private.
+- Added reveal-once personal-access credentials, native service accounts, resource grants, project
+  sharing, conflict-safe task bulk operations, time-entry billing, bounded audit exports, and the
+  qualified 23-resource durable change feed across their required public surfaces.
 - Added revision-safe task duplication, placement/reordering, and atomic checklist replacement
   across the API, TypeScript SDK, and CLI. MCP remains read-only for all three workflows.
 - Completed the stable task read projection with lifecycle, provenance, count, placement, and
@@ -3246,9 +3254,7 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified
   asynchronous operation resources.
-- Kept the durable change feed outside 1.0 until preimage, failover, retention, and recovery
-  semantics complete their separate qualification.
-- Preserved the curated read-only MCP policy while aligning all 185 public operations across
+- Preserved the curated read-only MCP policy while aligning all 206 public operations across
   OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21
@@ -3374,10 +3380,20 @@ teamgrid tasks list --project-id "$PROJECT_ID" --all --output jsonl \
 
 `--all` follows opaque cursors and stops at 10,000 pages by default. Lower the guard with `--max-pages` when a job should have a tighter upper bound.
 
-The 1.0 release candidate has no change-feed commands. For bounded reconciliation, traverse the
-resource list commands with `--all`, preserve resource IDs and revisions, and use signed webhooks as
-delivery signals where supported. Do not substitute audit or webhook-delivery history for a durable
-feed.
+For a durable mirror, create a checkpoint before the initial resource traversal, then catch up from
+that exact cursor:
+
+```bash
+checkpoint=$(teamgrid changes checkpoint --resource-type task --output json \
+  | jq -er '.meta.page.nextCursor')
+
+teamgrid tasks list --all --output jsonl > tasks.snapshot.jsonl
+teamgrid changes list --cursor "$checkpoint" --resource-type task --all --output jsonl
+```
+
+Persist each new cursor only after applying its page durably. Do not decode a cursor, move it
+between cells, or change its filters. See the [change-feed recovery
+contract](/api/v1/change-feed/) before operating a mirror.
 
 ## Make retried writes idempotent
 
@@ -3874,10 +3890,10 @@ description: Inspect and automate TeamGrid API v1 from a terminal or CI job with
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
 
-Install the exact verified release-candidate package version:
+Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-rc.1
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --version
 ```
 
@@ -3890,7 +3906,7 @@ teamgrid --version
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
 - Bounded resource pagination and structured output for reconciliation scripts
-- Required `--if-match` guards and actionable stale-revision errors for all 45 protected
+- Required `--if-match` guards and actionable stale-revision errors for all 52 protected
   operations, including task, project, and project-template mutations
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
@@ -3900,7 +3916,7 @@ The CLI is a client of API v1. It does not create another API surface or bypass 
 <!-- cli/install-and-authenticate.md -->
 ---
 title: Install and authenticate
-description: Install the TeamGrid CLI prerelease and store an API v1 credential in the operating-system credential store.
+description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
 ---
 
 ## Requirements
@@ -3911,10 +3927,10 @@ description: Install the TeamGrid CLI prerelease and store an API v1 credential 
 
 ## Install
 
-The Developer Platform packages are currently prereleases. Install from `next` and pin the resolved version in controlled environments.
+Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-rc.1
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --help
 ```
 
@@ -3966,7 +3982,7 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 128 paths and 206 operations. The TypeScript SDK
+The stable `1.0.0` API v1 contract contains 128 paths and 206 operations. The TypeScript SDK
 and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
@@ -4017,7 +4033,7 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the stable contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 0 | No capability is advertised with an incomplete public workflow |
 | Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
@@ -4028,12 +4044,34 @@ complete planned-work scheduling, complete non-billing time-entry reads and writ
 complete audit reads and bounded audit exports, complete custom-field-value reads and
 compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
 project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
-and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
+and webhook-secret rotation are released in the stable contract. Remaining planned
 work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
 are represented by stable resources and domain commands instead of those internals.
+
+## Post-1.0 qualification boundary
+
+The six planned domains are additive roadmap candidates, not hidden or partially supported
+endpoints:
+
+- **Delegated OAuth** needs complete consent, acting-user, token rotation, revocation, and
+  cell-local policy lifecycles.
+- **Telephony calls** need provider-independent resources plus explicit side-effect, recording,
+  privacy, and delegated-user semantics.
+- **File sharing** needs a public share-link lifecycle distinct from private transfer intents and
+  the internal device-synchronization protocol.
+- **Commerce orders** need a customer-facing order resource rather than exposure of internal
+  project-automation state.
+- **Report jobs** need immutable definitions, bounded execution, private result storage, and
+  snapshot semantics.
+- **Import jobs** need schema-versioned validation, dry-run results, idempotent commit, per-row
+  outcomes, and safe rollback boundaries.
+
+Future 1.x releases may add qualified resources and commands without weakening stable 1.0
+behavior. Existing operation semantics, scopes, errors, regional routing, and security boundaries
+remain compatible throughout the major version. A breaking change requires a new API major.
 
 See the [API v1 reference](/api/v1/reference/), [CLI commands](/cli/commands/), and [MCP tool policy](/mcp/tools-and-security/) for the current public surface.
 
@@ -4058,9 +4096,9 @@ API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that 
 
 Build automation against API v1 or the SDK. Use the CLI as an operator and scripting interface. Treat MCP as an optional adapter for human-supervised read workflows, not as the foundation of an integration.
 
-For bounded mirrors, traverse the resource endpoints and use signed webhooks as delivery signals.
-The [change-feed status page](/api/v1/change-feed/) explains why a durable feed is not part of the
-1.0 release.
+For durable mirrors, create a cell-local checkpoint before the initial snapshot, then consume the
+[change feed](/api/v1/change-feed/) for ordered catch-up. Signed webhooks remain useful
+low-latency delivery signals, but they are not a replayable history.
 
 MCP does not introduce a second TeamGrid API, a remote TeamGrid session, or MCP-specific credentials. Every MCP request still passes through the API v1 authentication, scope, tenant, and region checks.
 
@@ -4120,7 +4158,7 @@ integration surfaces.
   </a>
 </div>
 
-API v1 `1.0.0-rc.1` governs 206 operations across 128 paths. That number measures contract parity
+API v1 `1.0.0` governs 206 operations across 128 paths. That number measures contract parity
 across the HTTP API, SDK, and CLI, not complete TeamGrid product coverage. The
 [capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
 areas explicitly, and [choose an interface](/guides/choose-an-interface/) maps common integration
@@ -4145,10 +4183,10 @@ title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 ---
 
-Install the current prereleases and authenticate the CLI first:
+Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-rc.1 @teamgrid/mcp-server@1.0.0-rc.1
+npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -4210,7 +4248,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-rc.1 @teamgrid/mcp-server@1.0.0-rc.1
+npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
 teamgrid auth login
 ```
 
@@ -4357,16 +4395,16 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The current `1.0.0-rc.1` manifest records 128 v1 paths, 206 governed v1 operations, 87 frozen v0
+The stable `1.0.0` manifest records 128 v1 paths, 206 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 87 canonical scopes, and 73 classified TeamGrid product
 capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
 reads, and another 34 domain-specific `If-Match` operations. These counts describe the synchronized
-contract; they do not promote planned capabilities into the release candidate.
+contract; they do not promote planned capabilities into the stable release.
 
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
-release they tested. The `1.0.0-rc.1` checkpoint qualifies core project, task, and project-template
+release they tested. The `1.0.0` checkpoint qualifies core project, task, and project-template
 CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
-checkpoint is `1.0.0-rc.1`. See [resource concurrency](/api/v1/resource-concurrency/).
+checkpoint is `1.0.0`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -4378,10 +4416,10 @@ description: Use the official typed and region-aware Node.js client for TeamGrid
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
 
-Install the exact verified release-candidate package version:
+Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-rc.1
+npm install @teamgrid/api-client@1.0.0
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -4440,8 +4478,8 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.0-rc.1`; pin that exact version after
-it is available on the configured npm channel. Tasks, projects, and project templates expose
+The compatible package checkpoint for this contract is `1.0.0`; pin that exact version in
+reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
 idempotency key. Another 34 protected operations retain domain-specific revision types.
@@ -4609,7 +4647,7 @@ description: Install the TeamGrid TypeScript SDK and list tasks through a region
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-rc.1
+npm install @teamgrid/api-client@1.0.0
 ```
 
 ## Create a client
@@ -4769,9 +4807,9 @@ SDK, CLI, and MCP are clients of this same API boundary. They cannot add authori
 removes most sensitive and all write operations from its local tool catalog, but its allowed reads
 still pass through the complete API policy.
 
-The current controlled beta still issues `tg_sk_v1_` credentials. Native personal-access tokens,
-autonomous service accounts, and delegated OAuth remain separate rollout gates; no legacy
-credential is automatically promoted to a service account.
+Stable API v1 issues reveal-once `tg_sk_v1_` personal-access and service-account credentials.
+Their principal, ownership, expiry, rotation, revocation, and resource-grant rules remain distinct.
+Delegated OAuth is not part of 1.0, and no existing credential is automatically converted.
 
 ## Sensitive resource scopes
 
@@ -4781,10 +4819,11 @@ project-statement scope. Do not grant them to an MCP credential: MCP product too
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
 
-The 1.0 release candidate does not expose a change feed. Do not use audit events, delivery history, or
-aggressive polling as an undocumented substitute. For supported webhook workflows, keep signing
-secrets and delivery metadata out of logs and fetch current resource state through its independently
-scoped endpoint.
+The stable change feed contains metadata and identifiers, not private resource snapshots. Its
+opaque cursor is bound to the credential principal, workspace, cell, epoch, and exact filter set.
+Do not log it, decode it, transfer it between cells, or use audit events, delivery history, and
+aggressive polling as substitutes. Fetch current state through the independently scoped resource
+endpoint.
 
 Custom-field values and planned-work schedules can contain customer, personnel, or workload data.
 Their write operations require strong compare-and-set revisions so integrations cannot silently

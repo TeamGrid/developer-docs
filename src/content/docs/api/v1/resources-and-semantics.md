@@ -37,14 +37,15 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Webhooks | List, get, create, remove | Creation returns the signing secret once |
 | Webhook deliveries | List and get | Read-only, credential-owned, privacy-reduced history |
 
-The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
-in the controlled beta, partially covered, planned, or intentionally private.
+The [capability coverage ledger](/guides/capability-coverage/) separately records what is released
+in stable 1.0, planned for a later release, or intentionally private.
 
 Project reads include stable list and scheduling order, creation and duplication provenance,
 planning boundaries, last activity, and non-financial task progress counts. The owning App cell
 projects only these safe summary fields from its internal calculation object; costs, revenue,
 profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
-the API boundary. Project sharing grants remain a separate planned capability.
+the API boundary. Project sharing is exposed separately through a full-replacement,
+human-principal-only contract with strong concurrency control.
 
 Time-entry reads expose task, user and service references, creator/updater provenance, duration,
 billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter

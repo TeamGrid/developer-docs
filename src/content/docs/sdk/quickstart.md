@@ -6,7 +6,7 @@ description: Install the TeamGrid TypeScript SDK and list tasks through a region
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-rc.1
+npm install @teamgrid/api-client@1.0.0
 ```
 
 ## Create a client

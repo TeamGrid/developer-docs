@@ -91,4 +91,5 @@ their required resource scope. Each item reports its webhook channel and require
 Use the catalog to configure an integration UI, then follow the [signed webhook verification
 flow](/api/v1/webhooks/). The SDK and CLI equivalents are `client.events.getCatalog()` and
 `teamgrid events catalog`. Event catalog access does not grant access to any event or resource by
-itself. The 1.0 release candidate does not return change-feed definitions.
+itself. Change-feed domains and filters are governed separately by `GET /v1/changes`; they are not
+webhook event definitions.

@@ -9,7 +9,7 @@ Never derive an ETag from an ID, timestamp, or another resource.
 
 ## Projects, tasks, and project templates
 
-The `1.0.0-rc.1` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
+The `1.0.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 

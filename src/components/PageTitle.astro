@@ -1,0 +1,75 @@
+---
+/**
+ * Overrides Starlight's PageTitle to prefix the heading with a breadcrumb.
+ *
+ * The generated reference contains 181 operation pages whose titles ("List
+ * tasks") do not say which API version or resource family they belong to. The
+ * trail is derived from the sidebar so it always matches the navigation, and it
+ * renders nothing when the page is not represented there.
+ */
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
+
+// SidebarEntry itself is not part of Starlight's public type surface.
+type SidebarEntry = StarlightRouteData['sidebar'][number]
+type SidebarLinkEntry = Extract<SidebarEntry, { type: 'link' }>
+
+const PAGE_TITLE_ID = '_top'
+
+type Crumb = { label: string; href?: string }
+
+function findTrail(entries: SidebarEntry[], trail: Crumb[] = []): Crumb[] | undefined {
+  for (const entry of entries) {
+    if (entry.type === 'link') {
+      if (entry.isCurrent) return trail
+      continue
+    }
+    // A group's own landing page, when it has one, becomes the crumb's target.
+    const overview = entry.entries.find(
+      (child: SidebarEntry): child is SidebarLinkEntry =>
+        child.type === 'link' && /overview/i.test(child.label),
+    )
+    const found = findTrail(entry.entries, [
+      ...trail,
+      { label: entry.label, href: overview?.href },
+    ])
+    if (found) return found
+  }
+  return undefined
+}
+
+const { sidebar, entry } = Astro.locals.starlightRoute
+const trail = findTrail(sidebar) ?? []
+
+/*
+ * Facet for Pagefind's filter UI (enabled in astro.config.mjs). A search for a
+ * common word matches across guides, recipes, and 268 generated endpoint pages;
+ * the top-level sidebar group is what lets a reader narrow that down.
+ */
+const area = trail[0]?.label
+---
+{area && <span hidden data-pagefind-filter={`Area:${area}`} />}
+
+{
+  trail.length > 0 && (
+    <nav aria-label="Breadcrumb" class="breadcrumbs">
+      <ol>
+        {trail.map((crumb) => (
+          <li>{crumb.href ? <a href={crumb.href}>{crumb.label}</a> : <span>{crumb.label}</span>}</li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+<h1 id={PAGE_TITLE_ID}>{entry.data.title}</h1>
+
+<style>
+  @layer starlight.core {
+    h1 {
+      margin-top: 1rem;
+      font-size: var(--sl-text-h1);
+      line-height: var(--sl-line-height-headings);
+      font-weight: 600;
+      color: var(--sl-color-white);
+    }
+  }
+</style>

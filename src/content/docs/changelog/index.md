@@ -33,7 +33,7 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   asynchronous operation resources.
 - Kept the durable change feed outside 1.0 until preimage, failover, retention, and recovery
   semantics complete their separate qualification.
-- Preserved the curated read-only MCP policy while aligning all 184 public operations across
+- Preserved the curated read-only MCP policy while aligning all 185 public operations across
   OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21

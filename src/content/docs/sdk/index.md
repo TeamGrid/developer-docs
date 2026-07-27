@@ -32,7 +32,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `users` | List workspace users |
 | `lists`, `services`, `tags` | List, get, create, update, archive, restore |
 | `customFieldDefinitions` | List, get, create, update, archive, restore |
-| `customFieldValues` | Get, compare-and-set, and compare-and-clear a resource value |
+| `customFieldValues` | Get one or a bounded batch, compare-and-set, and compare-and-clear resource values |
 | `projectTemplates` | List, get, create, update, archive, restore, instantiate |
 | `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
 | `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |

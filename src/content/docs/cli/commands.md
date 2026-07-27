@@ -231,13 +231,16 @@ Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `s
 
 ```text
 teamgrid custom-field-values get TARGET_TYPE RESOURCE_ID FIELD_ID
+teamgrid custom-field-values get-many TARGET_TYPE RESOURCE_ID
+  --field-id FIELD_ID [FIELD_ID...]
 teamgrid custom-field-values set TARGET_TYPE RESOURCE_ID FIELD_ID
   --data <json|@file|-> --if-match REVISION
 teamgrid custom-field-values clear TARGET_TYPE RESOURCE_ID FIELD_ID
   --if-match REVISION --yes
 ```
 
-Read first, then pass the latest `data.attributes.revision` to `--if-match`. A `412` means another
+`get-many` accepts 1–100 unique field IDs and preserves their order. Read first, then pass the
+latest `data.attributes.revision` to `--if-match`. A `412` means another
 writer changed the value; re-read and decide explicitly instead of blindly retrying. Clear is a
 destructive compare-and-set operation and therefore requires confirmation.
 

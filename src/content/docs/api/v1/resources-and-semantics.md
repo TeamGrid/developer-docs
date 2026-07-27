@@ -20,7 +20,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
 | Custom-field definitions | List, get, create, update, archive, restore | Only canonical public schema metadata is writable |
-| Custom-field values | Get, compare-and-set, compare-and-clear | Requires a strong revision and the matching target-resource scope |
+| Custom-field values | Get one or 1–100 in an ordered batch, compare-and-set, compare-and-clear | Requires a strong revision for writes and every target/reference scope used by a read |
 | Appointments and absences | Bounded list, get, create, compare-and-set update, archive, restore | Foreign-user access requires a delegated or administrative overlay plus product authorization |
 | Availability | Bounded read | Requires an explicit IANA time zone; foreign users require delegated access |
 | Comments and activity | Target-scoped collaboration | Also requires the matching contact, project, or task read scope |

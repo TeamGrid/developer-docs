@@ -5,8 +5,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 114 paths and 184 operations. The TypeScript SDK
-and CLI map all 184 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The `1.0.0-rc.1` API v1 release candidate contains 115 paths and 185 operations. The TypeScript SDK
+and CLI map all 185 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -28,7 +28,7 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 184 operations. Exactly one discovery operation is anonymous; all 183 remaining
+registry for all 185 operations. Exactly one discovery operation is anonymous; all 184 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -56,20 +56,20 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 52 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 4 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 53 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 3 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 API version discovery, system capability discovery, workspace entitlements, safe workspace settings, the event catalog,
 project reads, complete project-template capture and instantiation, task reads, writes and lifecycle,
 complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
-complete audit reads, and webhook-secret rotation are now released in the
+complete audit reads, complete custom-field-value reads and compare-and-set writes, and webhook-secret rotation are now released in the
 release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to credentials, custom-field values, and
-webhooks where additional product semantics remain. The change feed is excluded rather than marked
+classification applies to credentials and webhooks where additional product semantics remain.
+The change feed is excluded rather than marked
 as a partially released capability.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal

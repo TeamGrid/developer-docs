@@ -2183,6 +2183,23 @@ are booleans; numbers are finite and non-negative; dates are RFC 3339 timestamps
 fields contain one ID or a bounded unique ID array. The API never returns legacy raw storage,
 workspace fields, internal defaults, or an invalid stored value.
 
+## Bounded batch reads
+
+Read 1–100 unique definitions for one resource with one order-preserving request:
+
+```ts
+const values = await client.customFieldValues.getMany(
+  'task',
+  taskId,
+  ['customerReference', 'priority', 'owner'],
+)
+```
+
+The response contains exactly one value state per requested field ID in the same order. The App
+re-authenticates the credential once, checks every definition and the target resource in its owning
+cell, and requires every target and reference-domain scope needed by the complete batch. Empty,
+duplicate, oversized, reordered, or structurally extended results fail closed.
+
 ## SDK and CLI
 
 ```ts
@@ -2201,6 +2218,8 @@ await client.customFieldValues.clear('task', taskId, fieldId, {
 
 ```bash
 teamgrid custom-field-values get task TASK_ID FIELD_ID --output json
+teamgrid custom-field-values get-many task TASK_ID \
+  --field-id FIELD_ID ANOTHER_FIELD_ID --output json
 teamgrid custom-field-values set task TASK_ID FIELD_ID \
   --data '{"value":"ACME-42"}' --if-match "$REVISION" --output json
 teamgrid custom-field-values clear task TASK_ID FIELD_ID \
@@ -2208,7 +2227,8 @@ teamgrid custom-field-values clear task TASK_ID FIELD_ID \
 ```
 
 Custom-field values are deliberately unavailable through MCP. Definition reads are available only
-in the `governance` profile; definition writes and every value operation remain forbidden.
+in the `governance` profile; definition writes and every value operation, including batch reads,
+remain forbidden.
 
 <!-- api/v1/errors.md -->
 ---
@@ -2275,7 +2295,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 114 paths and 184 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 115 paths and 185 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
 
 ## Base URL
 
@@ -2785,7 +2805,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
 | Custom-field definitions | List, get, create, update, archive, restore | Only canonical public schema metadata is writable |
-| Custom-field values | Get, compare-and-set, compare-and-clear | Requires a strong revision and the matching target-resource scope |
+| Custom-field values | Get one or 1–100 in an ordered batch, compare-and-set, compare-and-clear | Requires a strong revision for writes and every target/reference scope used by a read |
 | Appointments and absences | Bounded list, get, create, compare-and-set update, archive, restore | Foreign-user access requires a delegated or administrative overlay plus product authorization |
 | Availability | Bounded read | Requires an explicit IANA time zone; foreign users require delegated access |
 | Comments and activity | Target-scoped collaboration | Also requires the matching contact, project, or task read scope |
@@ -3183,7 +3203,7 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   asynchronous operation resources.
 - Kept the durable change feed outside 1.0 until preimage, failover, retention, and recovery
   semantics complete their separate qualification.
-- Preserved the curated read-only MCP policy while aligning all 184 public operations across
+- Preserved the curated read-only MCP policy while aligning all 185 public operations across
   OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21
@@ -3606,13 +3626,16 @@ Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `s
 
 ```text
 teamgrid custom-field-values get TARGET_TYPE RESOURCE_ID FIELD_ID
+teamgrid custom-field-values get-many TARGET_TYPE RESOURCE_ID
+  --field-id FIELD_ID [FIELD_ID...]
 teamgrid custom-field-values set TARGET_TYPE RESOURCE_ID FIELD_ID
   --data <json|@file|-> --if-match REVISION
 teamgrid custom-field-values clear TARGET_TYPE RESOURCE_ID FIELD_ID
   --if-match REVISION --yes
 ```
 
-Read first, then pass the latest `data.attributes.revision` to `--if-match`. A `412` means another
+`get-many` accepts 1–100 unique field IDs and preserves their order. Read first, then pass the
+latest `data.attributes.revision` to `--if-match`. A `412` means another
 writer changed the value; re-read and decide explicitly instead of blindly retrying. Clear is a
 destructive compare-and-set operation and therefore requires confirmation.
 
@@ -3867,8 +3890,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 114 paths and 184 operations. The TypeScript SDK
-and CLI map all 184 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The `1.0.0-rc.1` API v1 release candidate contains 115 paths and 185 operations. The TypeScript SDK
+and CLI map all 185 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -3890,7 +3913,7 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 184 operations. Exactly one discovery operation is anonymous; all 183 remaining
+registry for all 185 operations. Exactly one discovery operation is anonymous; all 184 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -3918,20 +3941,20 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 52 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 4 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 53 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 3 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 API version discovery, system capability discovery, workspace entitlements, safe workspace settings, the event catalog,
 project reads, complete project-template capture and instantiation, task reads, writes and lifecycle,
 complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
-complete audit reads, and webhook-secret rotation are now released in the
+complete audit reads, complete custom-field-value reads and compare-and-set writes, and webhook-secret rotation are now released in the
 release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to credentials, custom-field values, and
-webhooks where additional product semantics remain. The change feed is excluded rather than marked
+classification applies to credentials and webhooks where additional product semantics remain.
+The change feed is excluded rather than marked
 as a partially released capability.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
@@ -4023,7 +4046,7 @@ integration surfaces.
   </a>
 </div>
 
-API v1 `1.0.0-rc.1` governs 184 operations across 114 paths. That number measures contract parity
+API v1 `1.0.0-rc.1` governs 185 operations across 115 paths. That number measures contract parity
 across the HTTP API, SDK, and CLI, not complete TeamGrid product coverage. The
 [capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
 areas explicitly, and [choose an interface](/guides/choose-an-interface/) maps common integration
@@ -4261,7 +4284,7 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The current `1.0.0-rc.1` manifest records 114 v1 paths, 184 governed v1 operations, 87 frozen v0
+The current `1.0.0-rc.1` manifest records 115 v1 paths, 185 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 78 canonical scopes, and 73 classified TeamGrid product
 capabilities. It also records 17 `resource-cas-v1` mutations, two qualified asynchronous-operation
 reads, and another 31 domain-specific `If-Match` operations. These counts describe the synchronized
@@ -4309,7 +4332,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `users` | List workspace users |
 | `lists`, `services`, `tags` | List, get, create, update, archive, restore |
 | `customFieldDefinitions` | List, get, create, update, archive, restore |
-| `customFieldValues` | Get, compare-and-set, and compare-and-clear a resource value |
+| `customFieldValues` | Get one or a bounded batch, compare-and-set, and compare-and-clear resource values |
 | `projectTemplates` | List, get, create, update, archive, restore, instantiate |
 | `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
 | `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |

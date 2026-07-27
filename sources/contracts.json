@@ -6,13 +6,13 @@
       "sha256": "46da62dba5b8a459362f4edd3c74fed1dac92300c414e606dfa9f433120da947"
     },
     "v1": {
-      "operations": 184,
-      "sha256": "6f62a0397df7692ac4b75ba0079c4a353273f23db12296ece7287e16ce4ca134"
+      "operations": 185,
+      "sha256": "fb11fef69b443b213c427e211baab5f8937e7513881f0fa4490b6c8ce7c51f0e"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "bb6eecde3e3c829d4359b1c0051feffc8fd607bc",
-  "runtimeCommit": "8271348aab9d514cf9437b7f0b5bc472b1077959",
+  "sourceCommit": "3335b749c910e062320ba5f9b144341281c36c59",
+  "runtimeCommit": "c951aef493f8d7dc11a6e0525068729f1601bb59",
   "scopes": {
     "count": 78,
     "sha256": "650df1009270e73c622a966e33cbc3888578ee68da655d6a419eb2f2add6826b"
@@ -24,28 +24,28 @@
   "canonical": {
     "contractVersion": "1.0.0-rc.1",
     "bytes": 2363,
-    "sha256": "8b0e592860734deda57d725ac31325f89800a3ca09d6a589fcbad1491f3f4c24"
+    "sha256": "40a27d848dab8631f126b8c9cf1d5d6aebe79ea4be402686cf8d8d021b0f91b6"
   },
   "changeFeed": {
     "availability": "excluded"
   },
   "capabilities": {
-    "operations": 184,
+    "operations": 185,
     "productCapabilities": 73,
-    "sha256": "b88aa15d59907db500d6ee16ffcd9bf76963ed5198384f7d8a4bc9a6434bb7fb"
+    "sha256": "0a316ef36a9a170bb8a5aa88ada498f9bd25f4ca623a40694806f54f82426687"
   },
   "operationBindings": {
-    "operations": 184,
-    "referencedAppMethods": 183,
+    "operations": 185,
+    "referencedAppMethods": 184,
     "remainingDirectCellReads": 0,
-    "sha256": "43702948a87f52ade4bfaac30c7a340a94e541420377b1531edda07b66c23521"
+    "sha256": "e0de6a02d041425dcca7018e07995ae8ef6994babb2b56f5894a463b4e0eb959"
   },
   "actionPolicyRegistry": {
-    "actionPolicies": 184,
-    "authenticatedActionPolicies": 183,
+    "actionPolicies": 185,
+    "authenticatedActionPolicies": 184,
     "policyFamilies": 12,
-    "registrySha256": "fe5941c92282b3c1806d35ff1d25a2919543566d3b59c280664a4d72a1c722cf",
+    "registrySha256": "7b3793c8e758b2d2535c76a6684340463bd61fddb04d45ce5a40e943af670f26",
     "registryVersion": "developer-action-policy-v5",
-    "sha256": "872e6e40221c78ef0541edf786927f891c4c16022b652f9d05e70df33fae8e29"
+    "sha256": "678e3de8df7faa13ad1fadd097dc7a2bc69b3bcae48ae506d645925d1d70903d"
   }
 }

@@ -2943,6 +2943,12 @@ curl "$TEAMGRID_API_BASE_URL/v1/tasks?projectId=$PROJECT_ID&tagId=$TAG_ID&comple
   --header "Authorization: Bearer $TEAMGRID_API_TOKEN"
 ```
 
+Task create and update accept the stable editable field set, including an optional direct
+`contactId`. References are checked in the owning workspace. If a project changes and no contact is
+supplied, TeamGrid inherits the project's contact; an explicit task contact intentionally
+overrides that inheritance. Planning dates are validated as one interval even when an update sends
+only one boundary, so a partial patch cannot leave the task with a start after its end.
+
 ## Duplicate a task
 
 `POST /v1/tasks/{id}/duplicate` creates one idempotent copy of exactly the selected source
@@ -3129,6 +3135,8 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Completed the stable task read projection with lifecycle, provenance, count, placement, and
   tracking fields, plus exact contact, group, list, service, subscriber, and tag filters across
   API, SDK, CLI, and the curated read-only MCP response surface.
+- Completed the task write field set with tenant-validated direct contact assignment, explicit
+  project-contact inheritance, and whole-interval validation for partial planning-date updates.
 - Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified
@@ -3858,17 +3866,17 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 43 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 13 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 44 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 12 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-task reads and lifecycle, and webhook-secret rotation are now released in the release-candidate
-contract. Remaining planned
+task reads, writes and lifecycle, and webhook-secret rotation are now released in the
+release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, several core project and task-write, contact and
+classification applies to discovery, credentials, several core project, contact and
 time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
 webhooks where additional product semantics remain. The change feed is excluded rather than marked
 as a partially released capability.

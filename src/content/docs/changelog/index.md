@@ -22,6 +22,8 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Completed the stable task read projection with lifecycle, provenance, count, placement, and
   tracking fields, plus exact contact, group, list, service, subscriber, and tag filters across
   API, SDK, CLI, and the curated read-only MCP response surface.
+- Completed the task write field set with tenant-validated direct contact assignment, explicit
+  project-contact inheritance, and whole-interval validation for partial planning-date updates.
 - Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified

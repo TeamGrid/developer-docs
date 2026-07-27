@@ -25,6 +25,12 @@ curl "$TEAMGRID_API_BASE_URL/v1/tasks?projectId=$PROJECT_ID&tagId=$TAG_ID&comple
   --header "Authorization: Bearer $TEAMGRID_API_TOKEN"
 ```
 
+Task create and update accept the stable editable field set, including an optional direct
+`contactId`. References are checked in the owning workspace. If a project changes and no contact is
+supplied, TeamGrid inherits the project's contact; an explicit task contact intentionally
+overrides that inheritance. Planning dates are validated as one interval even when an update sends
+only one boundary, so a partial patch cannot leave the task with a start after its end.
+
 ## Duplicate a task
 
 `POST /v1/tasks/{id}/duplicate` creates one idempotent copy of exactly the selected source

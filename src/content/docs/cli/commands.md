@@ -45,10 +45,25 @@ whether to retry. The settings projection contains only six documented fields an
 billing, storage, role, or integration configuration. Capability, entitlement, and event responses
 are current negotiation results, not permanent authorization grants.
 
+## Credentials and service accounts
+
+```text
+teamgrid credentials personal list|create|rotate|revoke
+teamgrid service-accounts list|create|get|update|revoke
+teamgrid service-accounts credentials create|rotate|revoke
+teamgrid service-accounts grants get|replace --if-match REVISION
+```
+
+Credential secrets are returned once. Move them directly into a secret manager. Resource-grant
+replacement is a complete compare-and-set operation; read the current grant revision before
+replacing it.
+
 ## Projects and lifecycle operations
 
 ```text
 teamgrid projects list|get|create|update
+teamgrid projects sharing get PROJECT_ID
+teamgrid projects sharing replace PROJECT_ID --data <json|@file|-> --if-match REVISION
 teamgrid projects complete|reopen|archive|restore PROJECT_ID [--wait]
 teamgrid project-lifecycle-operations get OPERATION_ID
 ```
@@ -75,6 +90,9 @@ returns the operation immediately. With `--wait`, it polls until a terminal stat
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
 Project updates and lifecycle commands require `--if-match` from the latest project read.
 Lifecycle starts should also use a stable idempotency key.
+
+Project sharing replacement sends the complete desired entry set. It validates local members and
+accepted workspace connections and never permits an unvalidated cross-region user identifier.
 
 ## Commerce and project statements
 
@@ -190,6 +208,8 @@ teamgrid times list --service-id SERVICE_ID --billable true --billed false
 teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
+teamgrid time-entries billing get TIME_ENTRY_ID
+teamgrid time-entries billing update TIME_ENTRY_ID --data @billing.json --if-match REVISION
 teamgrid times archive TIME_ENTRY_ID
 teamgrid times restore TIME_ENTRY_ID
 ```
@@ -316,6 +336,16 @@ Use dedicated administration credentials. Member and invitation PII requires the
 `members:pii:read` overlay. Mutations that change existing authorization state require the latest
 strong revision through `--if-match`; destructive commands require confirmation.
 
+## Change feed
+
+```text
+teamgrid changes checkpoint [--resource-type TYPE] [--operation OPERATION]
+teamgrid changes list --cursor CURSOR [--resource-type TYPE] [--operation OPERATION] [--all]
+```
+
+Persist each returned cursor only after applying its page durably. Checkpoints are bound to the
+credential, workspace, cell, epoch, and exact filter set.
+
 ## Search and exports
 
 ```text
@@ -331,7 +361,8 @@ By default, `exports download` creates the short-lived intent internally. To sep
 pipe the token through standard input with `--intent-token-stdin`; it is never accepted on the
 command line or in a URL. `--file` creates a mode-`0600` file exclusively and never overwrites an
 existing path. `--stdout` refuses to write binary data to a terminal. Both paths enforce a maximum
-of 50 MiB.
+of 50 MiB. Audit exports use `resourceType: "auditEvents"` and require an immutable
+`createdAtTo` boundary.
 
 ## Automations and integrations
 

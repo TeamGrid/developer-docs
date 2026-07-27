@@ -1507,14 +1507,12 @@ and should also use stable idempotency keys. Other protected domains, including 
 and planned work, retain their resource-specific preconditions. See
 [resource concurrency](/api/v1/resource-concurrency/).
 
-The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
-capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
-bulk task changes, time-entry billing, file sharing, commerce orders, report
-jobs, imports, and audit export as planned. Several released domains also remain explicitly partial.
-The first public API v1 beta does not include a durable change feed. Use bounded resource
-pagination and signed webhooks where their delivery semantics fit the integration. Keep only those
-bounded parts on v0 until an explicit v1 domain operation exists; do not emulate missing behavior
-through audit data, unrelated resources, or generic database mutations.
+The current v1 contract also covers personal-access credentials, native service accounts and
+resource grants, project sharing, conflict-safe task bulk changes, time-entry billing, bounded audit
+exports, and the durable change feed. The remaining planned public workflows are delegated OAuth,
+telephony, file sharing, commerce orders, report jobs, and imports. Keep only those bounded parts on
+v0 until an explicit v1 domain operation exists; do not emulate missing behavior through audit
+data, unrelated resources, or generic database mutations.
 
 ## Legacy reference differences
 
@@ -1895,11 +1893,10 @@ API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a 
 Authorization: Bearer <credential>
 ```
 
-The current `tg_sk_v1_` credential format is bound to
-the existing workspace authorization path. It is not a native autonomous service account. Native
-personal-access credentials, service accounts, and delegated OAuth use separate principal models
-and stay unavailable until their cell-local rollout gates are qualified. Existing credentials are
-not converted automatically.
+The current `tg_sk_v1_` format is used for reveal-once personal-access and service-account
+credentials. Their principal models, ownership, expiry, rotation, revocation, and resource grants
+remain distinct. Delegated OAuth is not part of the current public contract. Existing credentials
+are never converted automatically.
 
 ## Security model
 
@@ -1910,7 +1907,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
-- The API and App cell must negotiate the exact code-owned 181-operation action-policy registry
+- The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
 
 ## Scopes
@@ -1921,8 +1918,10 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `workspace-settings:read`, `workspace-settings:write` | Read or compare-and-set the six-field safe workspace-settings projection; sensitive administration scopes |
 | `projects:read`, `projects:write` | Project reads and field mutations |
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
+| `projects:sharing` | Read and atomically replace project access-control entries; sensitive scope for human principals |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
 | `time-entries:read`, `time-entries:write` | Time entries |
+| `time-entries:billing` | Read and compare-and-set billable state and billing rate; sensitive finance scope |
 | `contacts:read`, `contacts:write` | Contacts |
 | `call-notes:read`, `call-notes:write` | Plain-text call notes and their archive lifecycle |
 | `contact-groups:read`, `contact-groups:write` | Hierarchical contact groups |
@@ -1960,6 +1959,10 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `automations:read`, `automations:write` | Automation action metadata, definitions, versions, and runs; writes also require scopes implied by the flow |
 | `automations:run` | Abort a running automation; sensitive execution-control scope |
 | `integrations:read` | Installation status without provider secrets; sensitive scope |
+| `credentials:read`, `credentials:write` | List, create, rotate, and revoke personal-access credentials |
+| `service-accounts:read`, `service-accounts:write` | Manage native service-account principals and their reveal-once credentials |
+| `resource-grants:read`, `resource-grants:write` | Read or atomically replace a service account's bounded resource grants |
+| `changes:read` | Read the durable, cursor-based change feed for authorized resource types |
 | `events:read` | Read the authorization-filtered event and channel catalog |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
@@ -2061,40 +2064,73 @@ including the `all` profile.
 
 <!-- api/v1/change-feed.md -->
 ---
-title: Change feed status
-description: Understand why the change feed is excluded from the API v1 1.0 contract.
+title: Change feed
+description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
 ---
 
-The change feed is not part of the `1.0.0-rc.1` public contract. `changes:read` cannot be issued,
-and `GET /v1/changes` is not a supported 1.0 operation. It is therefore absent from OpenAPI, the
-TypeScript SDK, the CLI, and the cross-interface capability ledger. MCP does not expose it either.
+`GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
+`changes:read` plus the read scopes and resource grants for every requested domain. The contract
+covers 23 resource types and reports created, updated, archived, restored, or deleted identities
+without embedding a private resource snapshot.
 
-This boundary is deliberate. A durable synchronization feed must preserve an unambiguous
-workspace and resource identity across rapid updates, ownership changes, deletes, restarts,
-retention compaction, and cell failover. The current capture implementation has not completed that
-preimage and recovery qualification, so TeamGrid does not advertise a weaker contract as ready.
+Each page returns an opaque `nextCursor` and a `caughtUp` flag. Persist the cursor only after the
+corresponding page has been applied durably. A cursor is bound to the credential principal,
+workspace, cell, epoch, and exact filter set. Do not decode it, move it between regions, or reuse it
+with different resource or operation filters.
 
-## Supported 1.0 alternatives
+```bash
+checkpoint=$(teamgrid changes checkpoint --resource-type task --output json \
+  | jq -er '.meta.page.nextCursor')
 
-Use the normal cursor-paginated resource endpoints for bounded imports and reconciliation. Persist
-resource IDs and the documented current-state fields returned by each endpoint, and repeat a
-traversal from the beginning when your filter set or reconciliation boundary changes.
+teamgrid changes list \
+  --cursor "$checkpoint" \
+  --resource-type task \
+  --all \
+  --output jsonl
+```
 
-Use [signed webhooks](/api/v1/webhooks/) for supported event-driven workflows. A webhook is a
-delivery signal rather than a complete history: verify its signature, process it idempotently, and
-read the current resource through its independently scoped API endpoint when the workflow needs
-authoritative state.
+## Snapshot-then-catch-up
 
-Do not approximate a change feed through audit events, webhook-delivery history, search results, or
-aggressive polling. Those resources have different authorization, retention, and ordering
-semantics. Keep polling bounded and respect the documented rate-limit headers.
+A new mirror must avoid the gap between its initial traversal and its first incremental read:
 
-## Future qualification
+1. Request a latest checkpoint with the exact intended filters.
+2. Traverse the normal resource endpoints and persist the authoritative current state.
+3. Read changes from the saved checkpoint until `caughtUp` is true.
+4. Continue polling from the last durably applied `nextCursor`.
 
-A later contract checkpoint may add a change feed after TeamGrid has qualified immutable event
-ownership, insert/update/delete semantics, resume and reset behavior, retention, multi-cell
-boundaries, and complete recovery tests. That release will use a new contract and package version;
-clients should not reserve or request `changes:read` in advance.
+The SDK implements this order through `changes.snapshotThenCatchUp()`. It takes the checkpoint
+before invoking the caller's snapshot function and includes the terminal empty page so the newest
+cursor is never lost.
+
+```ts
+const bootstrap = await teamgrid.changes.snapshotThenCatchUp(
+  async () => loadInitialTasks(),
+  { resourceTypes: ['task'] },
+)
+
+await saveSnapshot(bootstrap.snapshot)
+for await (const page of bootstrap.pages) {
+  await applyChangesAndCursor(page.data, page.meta.page.nextCursor)
+}
+```
+
+Change events are invalidation metadata. After an update, read the resource through its normal
+endpoint when the mirror needs the latest authorized fields. A tombstone signals that the
+credential can no longer retrieve the previous state; consumers must remove or re-evaluate their
+local copy.
+
+## Recovery and boundaries
+
+Expired, compacted, wrong-cell, wrong-filter, or otherwise invalid checkpoints fail explicitly.
+Start a new snapshot-then-catch-up cycle instead of guessing a position. The owning cell also
+closes readiness when capture, preimage, epoch, or recovery guarantees cannot be proven.
+
+Signed webhooks remain useful for low-latency notifications, while the change feed provides ordered
+catch-up and reconciliation. Audit events, webhook delivery history, search results, and aggressive
+polling are not substitutes for this contract.
+
+The change feed remains forbidden through MCP because it is a high-volume synchronization
+transport rather than a bounded interactive model tool. Use the API, SDK, or CLI.
 
 <!-- api/v1/collaboration-and-files.md -->
 ---
@@ -2295,7 +2331,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 115 paths and 185 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
 
 ## Base URL
 
@@ -2325,13 +2361,14 @@ and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
-Projects, tasks, and project templates expose developer revisions and require strong `If-Match`
-preconditions for their 17 mutating operations. Another 31 protected operations retain
+Projects, project sharing, tasks, and project templates expose developer revisions and require strong
+`If-Match` preconditions for their 18 mutating operations. Another 34 protected operations retain
 domain-specific revision formats. Review [resource concurrency](/api/v1/resource-concurrency/)
 before building a writer.
 
-For bounded mirrors, traverse the normal resource endpoints and use signed webhooks as delivery
-signals. A durable [change feed is deliberately excluded from 1.0](/api/v1/change-feed/).
+For durable mirrors, create an initial resource snapshot and continue from the matching
+[change-feed checkpoint](/api/v1/change-feed/). Signed webhooks remain useful delivery signals but
+are not a replayable history.
 
 [Review resource and security semantics](/api/v1/resources-and-semantics/) before implementing finance, lifecycle, custom-field, administration, export, automation, or webhook-observability workflows.
 
@@ -2700,11 +2737,11 @@ The `1.0.0-rc.1` contract exposes `developerRevision` and `developerUpdatedAt` o
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
-Exactly 17 core mutations require `If-Match`:
+Exactly 18 core mutations require `If-Match`:
 
 | Resource | Protected mutations |
 | --- | --- |
-| Projects | Update, complete, reopen, archive, and restore |
+| Projects | Update, replace sharing, complete, reopen, archive, and restore |
 | Tasks | Update, duplicate, move, replace checklist, archive, restore, complete, and reopen |
 | Project templates | Update, archive, restore, and instantiate |
 
@@ -2752,7 +2789,7 @@ reuse the pre-mutation validator.
 
 ## Other protected resources
 
-Another 31 operations retain their domain-specific compare-and-set contracts:
+Another 34 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |
@@ -2762,9 +2799,11 @@ Another 31 operations retain their domain-specific compare-and-set contracts:
 | Custom-field values | 2 |
 | Planned work | 1 |
 | Members, invitations, roles, and groups | 8 |
+| Service-account resource grants | 1 |
+| Time-entry billing | 1 |
 | Automation definitions and runs | 4 |
 | Workspace settings | 1 |
-| Webhook secret rotation | 1 |
+| Webhook configuration and secret rotation | 2 |
 
 Revision formats are intentionally resource-specific. Always use the validator returned by the
 corresponding read operation.
@@ -2934,7 +2973,8 @@ tool. Use a dedicated credential and request only the resource types needed for 
 
 ## Bounded asynchronous exports
 
-`POST /exports` creates a CSV export job for `contacts`, `projects`, `tasks`, or `timeEntries`.
+`POST /exports` creates a CSV export job for `contacts`, `projects`, `tasks`, `timeEntries`, or
+`auditEvents`.
 Exports are bounded to 10,000 rows and at most 16 selected fields. The request supports archived and
 updated-at filters and must use a stable `Idempotency-Key` when retried.
 
@@ -2942,6 +2982,11 @@ Creating a job requires `exports:write`; status and download operations require 
 matching domain read scope and analytics permission are also enforced. Poll `GET /exports/{id}` until
 the state is `succeeded` or `failed`; a successful job records whether the requested result was
 truncated.
+
+Audit exports additionally require `audit:read` and an immutable `createdAtTo` snapshot boundary.
+They may use `createdAtFrom`, span at most 366 days, and never accept updated-at or archive filters.
+Only the allowlisted sanitized audit projection can be selected; credentials, raw secrets, request
+bodies, and internal tenant fields are not exportable.
 
 Exports stay in the workspace's owning cell and use a dedicated private bucket that is separate
 from normal file uploads. A completed job record is retained for approximately one hour. Objects
@@ -3440,10 +3485,25 @@ whether to retry. The settings projection contains only six documented fields an
 billing, storage, role, or integration configuration. Capability, entitlement, and event responses
 are current negotiation results, not permanent authorization grants.
 
+## Credentials and service accounts
+
+```text
+teamgrid credentials personal list|create|rotate|revoke
+teamgrid service-accounts list|create|get|update|revoke
+teamgrid service-accounts credentials create|rotate|revoke
+teamgrid service-accounts grants get|replace --if-match REVISION
+```
+
+Credential secrets are returned once. Move them directly into a secret manager. Resource-grant
+replacement is a complete compare-and-set operation; read the current grant revision before
+replacing it.
+
 ## Projects and lifecycle operations
 
 ```text
 teamgrid projects list|get|create|update
+teamgrid projects sharing get PROJECT_ID
+teamgrid projects sharing replace PROJECT_ID --data <json|@file|-> --if-match REVISION
 teamgrid projects complete|reopen|archive|restore PROJECT_ID [--wait]
 teamgrid project-lifecycle-operations get OPERATION_ID
 ```
@@ -3470,6 +3530,9 @@ returns the operation immediately. With `--wait`, it polls until a terminal stat
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
 Project updates and lifecycle commands require `--if-match` from the latest project read.
 Lifecycle starts should also use a stable idempotency key.
+
+Project sharing replacement sends the complete desired entry set. It validates local members and
+accepted workspace connections and never permits an unvalidated cross-region user identifier.
 
 ## Commerce and project statements
 
@@ -3585,6 +3648,8 @@ teamgrid times list --service-id SERVICE_ID --billable true --billed false
 teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
+teamgrid time-entries billing get TIME_ENTRY_ID
+teamgrid time-entries billing update TIME_ENTRY_ID --data @billing.json --if-match REVISION
 teamgrid times archive TIME_ENTRY_ID
 teamgrid times restore TIME_ENTRY_ID
 ```
@@ -3711,6 +3776,16 @@ Use dedicated administration credentials. Member and invitation PII requires the
 `members:pii:read` overlay. Mutations that change existing authorization state require the latest
 strong revision through `--if-match`; destructive commands require confirmation.
 
+## Change feed
+
+```text
+teamgrid changes checkpoint [--resource-type TYPE] [--operation OPERATION]
+teamgrid changes list --cursor CURSOR [--resource-type TYPE] [--operation OPERATION] [--all]
+```
+
+Persist each returned cursor only after applying its page durably. Checkpoints are bound to the
+credential, workspace, cell, epoch, and exact filter set.
+
 ## Search and exports
 
 ```text
@@ -3726,7 +3801,8 @@ By default, `exports download` creates the short-lived intent internally. To sep
 pipe the token through standard input with `--intent-token-stdin`; it is never accepted on the
 command line or in a URL. `--file` creates a mode-`0600` file exclusively and never overwrites an
 existing path. `--stdout` refuses to write binary data to a terminal. Both paths enforce a maximum
-of 50 MiB.
+of 50 MiB. Audit exports use `resourceType: "auditEvents"` and require an immutable
+`createdAtTo` boundary.
 
 ## Automations and integrations
 
@@ -3890,8 +3966,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 115 paths and 185 operations. The TypeScript SDK
-and CLI map all 185 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The `1.0.0-rc.1` API v1 release candidate contains 128 paths and 206 operations. The TypeScript SDK
+and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -3901,11 +3977,12 @@ lifecycle operations, tasks and timers, time entries, calendar appointments, abs
 contacts, comments, activity, documents, files, workspace administration, search, bounded exports,
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
-planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
-The durable change feed is deliberately outside the 1.0 contract.
+planned work, personal access credentials, service accounts, resource grants, and the durable change
+feed. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 
-The same release boundary qualifies 17 project, task, and project-template mutations with strong
-ETags and required `If-Match`, plus two revision-bound asynchronous-operation reads. Another 31
+The same release boundary qualifies 18 project, task, project-sharing, and project-template
+mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
+reads. Another 34
 protected operations retain resource-specific revision formats for planned work, custom-field
 values, calendar data, documents, workspace administration, automations, workspace settings, and
 webhook-secret rotation.
@@ -3913,7 +3990,7 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 185 operations. Exactly one discovery operation is anonymous; all 184 remaining
+registry for all 206 operations. Exactly one discovery operation is anonymous; all 205 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -3929,10 +4006,9 @@ resolves stored targets before evaluating grants, and its V13 runtime provides o
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
 alone does not activate principal enforcement.
 
-This registry does not make native service accounts or delegated OAuth generally available. Those
-principal types remain separately feature-gated until cell-local migration, shadow comparison, and
-family qualification have completed. Existing credentials are never silently converted into
-autonomous service accounts.
+The registry covers personal access credentials and native service accounts without converting
+existing credentials. Delegated OAuth remains separately feature-gated until its cell-local
+migration, consent, revocation, and policy-family qualification are complete.
 
 ## Product capability ledger
 
@@ -3941,21 +4017,19 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 53 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 3 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
+| Released in the release-candidate contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 0 | No capability is advertised with an incomplete public workflow |
+| Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 API version discovery, system capability discovery, workspace entitlements, safe workspace settings, the event catalog,
 project reads, complete project-template capture and instantiation, task reads, writes and lifecycle,
 complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
-complete audit reads, complete custom-field-value reads and compare-and-set writes, and webhook-secret rotation are now released in the
-release-candidate contract. Remaining planned
-work includes service accounts, delegated OAuth, project sharing and bulk task
-operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to credentials and webhooks where additional product semantics remain.
-The change feed is excluded rather than marked
-as a partially released capability.
+complete audit reads and bounded audit exports, complete custom-field-value reads and
+compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
+project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
+and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
+work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
@@ -4046,7 +4120,7 @@ integration surfaces.
   </a>
 </div>
 
-API v1 `1.0.0-rc.1` governs 185 operations across 115 paths. That number measures contract parity
+API v1 `1.0.0-rc.1` governs 206 operations across 128 paths. That number measures contract parity
 across the HTTP API, SDK, and CLI, not complete TeamGrid product coverage. The
 [capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
 areas explicitly, and [choose an interface](/guides/choose-an-interface/) maps common integration
@@ -4144,7 +4218,7 @@ teamgrid auth login
 
 - No remote TeamGrid MCP endpoint
 - No MCP-specific credential or database
-- No change-feed tool; that operation is not part of the current 1.0 release candidate
+- No change-feed tool; the qualified API/SDK/CLI feed is a high-volume synchronization primitive
 - No write, archive, or remove tools
 - No writes and no mechanism for a model to submit `If-Match`
 - No session affinity or bypass around API authorization
@@ -4159,7 +4233,7 @@ teamgrid auth login
 Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
 
 Task and project reads include their developer revision. The MCP server remains read-only: no tool
-accepts an ETag, invokes a protected mutation, or polls the excluded project-template operation
+accepts an ETag, invokes a protected mutation, or polls project-template operation
 resources.
 
 [Configure an MCP host](/mcp/configuration/) or [review the tools and security model](/mcp/tools-and-security/).
@@ -4225,9 +4299,8 @@ CLI for controlled writes.
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
 financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
-sensitive operational metadata. The change feed is not part of the current 1.0 release candidate
-and is therefore absent from every MCP profile. A future high-volume durable synchronization stream
-would not be a bounded interactive model task. Custom-field values, project
+sensitive operational metadata. The qualified change feed remains forbidden through MCP because a
+high-volume durable synchronization stream is not a bounded interactive model task. Custom-field values, project
 templates and their instantiation status, and planned-work schedules and operation status are
 forbidden because they expose sensitive per-resource workflow or workload data. These resources
 cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.
@@ -4284,10 +4357,10 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The current `1.0.0-rc.1` manifest records 115 v1 paths, 185 governed v1 operations, 87 frozen v0
-operations, 87 v0 migration decisions, 78 canonical scopes, and 73 classified TeamGrid product
-capabilities. It also records 17 `resource-cas-v1` mutations, two qualified asynchronous-operation
-reads, and another 31 domain-specific `If-Match` operations. These counts describe the synchronized
+The current `1.0.0-rc.1` manifest records 128 v1 paths, 206 governed v1 operations, 87 frozen v0
+operations, 87 v0 migration decisions, 87 canonical scopes, and 73 classified TeamGrid product
+capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
+reads, and another 34 domain-specific `If-Match` operations. These counts describe the synchronized
 contract; they do not promote planned capabilities into the release candidate.
 
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
@@ -4322,10 +4395,10 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
 | `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
 | `events` | Read the authorization-filtered webhook event catalog |
-| `projects` | List, get, create, update, complete, reopen, archive, restore |
+| `projects` | List, get, create, update, read/replace sharing, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
 | `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
-| `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
+| `timeEntries` | List, get, create, update, read/update billing, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
 | `contactGroups` | List, get, create, update, archive, restore |
@@ -4359,6 +4432,9 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
+| `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
+| `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
+| `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
 
 Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
@@ -4366,9 +4442,9 @@ API reference; the SDK never adds authority beyond the supplied credential.
 
 The compatible package checkpoint for this contract is `1.0.0-rc.1`; pin that exact version after
 it is available on the configured npm channel. Tasks, projects, and project templates expose
-developer revisions and require typed `ifMatch` options for their 17 protected mutations. Project
+developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
-idempotency key. Another 31 protected operations retain domain-specific revision types.
+idempotency key. Another 34 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require

@@ -3,7 +3,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 115 paths and 185 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
 
 ## Base URL
 
@@ -33,13 +33,14 @@ and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
-Projects, tasks, and project templates expose developer revisions and require strong `If-Match`
-preconditions for their 17 mutating operations. Another 31 protected operations retain
+Projects, project sharing, tasks, and project templates expose developer revisions and require strong
+`If-Match` preconditions for their 18 mutating operations. Another 34 protected operations retain
 domain-specific revision formats. Review [resource concurrency](/api/v1/resource-concurrency/)
 before building a writer.
 
-For bounded mirrors, traverse the normal resource endpoints and use signed webhooks as delivery
-signals. A durable [change feed is deliberately excluded from 1.0](/api/v1/change-feed/).
+For durable mirrors, create an initial resource snapshot and continue from the matching
+[change-feed checkpoint](/api/v1/change-feed/). Signed webhooks remain useful delivery signals but
+are not a replayable history.
 
 [Review resource and security semantics](/api/v1/resources-and-semantics/) before implementing finance, lifecycle, custom-field, administration, export, automation, or webhook-observability workflows.
 

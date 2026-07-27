@@ -9,11 +9,10 @@ API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a 
 Authorization: Bearer <credential>
 ```
 
-The current `tg_sk_v1_` credential format is bound to
-the existing workspace authorization path. It is not a native autonomous service account. Native
-personal-access credentials, service accounts, and delegated OAuth use separate principal models
-and stay unavailable until their cell-local rollout gates are qualified. Existing credentials are
-not converted automatically.
+The current `tg_sk_v1_` format is used for reveal-once personal-access and service-account
+credentials. Their principal models, ownership, expiry, rotation, revocation, and resource grants
+remain distinct. Delegated OAuth is not part of the current public contract. Existing credentials
+are never converted automatically.
 
 ## Security model
 
@@ -24,7 +23,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
-- The API and App cell must negotiate the exact code-owned 181-operation action-policy registry
+- The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
 
 ## Scopes
@@ -35,8 +34,10 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `workspace-settings:read`, `workspace-settings:write` | Read or compare-and-set the six-field safe workspace-settings projection; sensitive administration scopes |
 | `projects:read`, `projects:write` | Project reads and field mutations |
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
+| `projects:sharing` | Read and atomically replace project access-control entries; sensitive scope for human principals |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
 | `time-entries:read`, `time-entries:write` | Time entries |
+| `time-entries:billing` | Read and compare-and-set billable state and billing rate; sensitive finance scope |
 | `contacts:read`, `contacts:write` | Contacts |
 | `call-notes:read`, `call-notes:write` | Plain-text call notes and their archive lifecycle |
 | `contact-groups:read`, `contact-groups:write` | Hierarchical contact groups |
@@ -74,6 +75,10 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `automations:read`, `automations:write` | Automation action metadata, definitions, versions, and runs; writes also require scopes implied by the flow |
 | `automations:run` | Abort a running automation; sensitive execution-control scope |
 | `integrations:read` | Installation status without provider secrets; sensitive scope |
+| `credentials:read`, `credentials:write` | List, create, rotate, and revoke personal-access credentials |
+| `service-accounts:read`, `service-accounts:write` | Manage native service-account principals and their reveal-once credentials |
+| `resource-grants:read`, `resource-grants:write` | Read or atomically replace a service account's bounded resource grants |
+| `changes:read` | Read the durable, cursor-based change feed for authorized resource types |
 | `events:read` | Read the authorization-filtered event and channel catalog |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |

@@ -54,14 +54,12 @@ and should also use stable idempotency keys. Other protected domains, including 
 and planned work, retain their resource-specific preconditions. See
 [resource concurrency](/api/v1/resource-concurrency/).
 
-The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
-capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
-bulk task changes, time-entry billing, file sharing, commerce orders, report
-jobs, imports, and audit export as planned. Several released domains also remain explicitly partial.
-The first public API v1 beta does not include a durable change feed. Use bounded resource
-pagination and signed webhooks where their delivery semantics fit the integration. Keep only those
-bounded parts on v0 until an explicit v1 domain operation exists; do not emulate missing behavior
-through audit data, unrelated resources, or generic database mutations.
+The current v1 contract also covers personal-access credentials, native service accounts and
+resource grants, project sharing, conflict-safe task bulk changes, time-entry billing, bounded audit
+exports, and the durable change feed. The remaining planned public workflows are delegated OAuth,
+telephony, file sharing, commerce orders, report jobs, and imports. Keep only those bounded parts on
+v0 until an explicit v1 domain operation exists; do not emulate missing behavior through audit
+data, unrelated resources, or generic database mutations.
 
 ## Legacy reference differences
 

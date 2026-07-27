@@ -22,10 +22,10 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
 | `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
 | `events` | Read the authorization-filtered webhook event catalog |
-| `projects` | List, get, create, update, complete, reopen, archive, restore |
+| `projects` | List, get, create, update, read/replace sharing, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
 | `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
-| `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
+| `timeEntries` | List, get, create, update, read/update billing, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
 | `contactGroups` | List, get, create, update, archive, restore |
@@ -59,6 +59,9 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
+| `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
+| `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
+| `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
 
 Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
@@ -66,9 +69,9 @@ API reference; the SDK never adds authority beyond the supplied credential.
 
 The compatible package checkpoint for this contract is `1.0.0-rc.1`; pin that exact version after
 it is available on the configured npm channel. Tasks, projects, and project templates expose
-developer revisions and require typed `ifMatch` options for their 17 protected mutations. Project
+developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
-idempotency key. Another 31 protected operations retain domain-specific revision types.
+idempotency key. Another 34 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require

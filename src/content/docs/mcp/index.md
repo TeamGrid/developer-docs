@@ -16,7 +16,7 @@ teamgrid auth login
 
 - No remote TeamGrid MCP endpoint
 - No MCP-specific credential or database
-- No change-feed tool; that operation is not part of the current 1.0 release candidate
+- No change-feed tool; the qualified API/SDK/CLI feed is a high-volume synchronization primitive
 - No write, archive, or remove tools
 - No writes and no mechanism for a model to submit `If-Match`
 - No session affinity or bypass around API authorization
@@ -31,7 +31,7 @@ teamgrid auth login
 Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
 
 Task and project reads include their developer revision. The MCP server remains read-only: no tool
-accepts an ETag, invokes a protected mutation, or polls the excluded project-template operation
+accepts an ETag, invokes a protected mutation, or polls project-template operation
 resources.
 
 [Configure an MCP host](/mcp/configuration/) or [review the tools and security model](/mcp/tools-and-security/).

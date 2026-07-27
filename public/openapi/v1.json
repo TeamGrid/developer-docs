@@ -81,6 +81,14 @@
           "type": "string"
         }
       },
+      "TimeEntryBillingETag": {
+        "description": "Strong revision of the time entry billing subresource.",
+        "required": true,
+        "schema": {
+          "pattern": "^\"tib1-[a-f0-9]{64}\"$",
+          "type": "string"
+        }
+      },
       "StrongETagCacheControl": {
         "description": "Prevents shared caching and representation transformations so the strong revision validator remains byte-for-byte usable for conditional requests.",
         "required": true,
@@ -126,6 +134,14 @@
         "required": true,
         "schema": {
           "pattern": "^\"wst1-[a-f0-9]{64}\"$",
+          "type": "string"
+        }
+      },
+      "ResourceGrantSetETag": {
+        "description": "Strong revision for the complete service-account grant policy.",
+        "required": true,
+        "schema": {
+          "pattern": "^\"dgr1-[a-f0-9]{64}\"$",
           "type": "string"
         }
       }
@@ -245,6 +261,16 @@
         "required": true,
         "schema": {
           "pattern": "^\"tsk1-[a-f0-9]{64}\"$",
+          "type": "string"
+        }
+      },
+      "IfMatchTimeEntryBilling": {
+        "description": "Exactly one latest strong time-entry billing ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+        "in": "header",
+        "name": "If-Match",
+        "required": true,
+        "schema": {
+          "pattern": "^\"tib1-[a-f0-9]{64}\"$",
           "type": "string"
         }
       },
@@ -396,6 +422,16 @@
           "maximum": 100,
           "minimum": 1,
           "type": "integer"
+        }
+      },
+      "IfMatchResourceGrantSet": {
+        "description": "Exactly one latest strong service-account grant-policy ETag.",
+        "in": "header",
+        "name": "If-Match",
+        "required": true,
+        "schema": {
+          "pattern": "^\"dgr1-[a-f0-9]{64}\"$",
+          "type": "string"
         }
       }
     },
@@ -2244,6 +2280,138 @@
         ],
         "type": "object"
       },
+      "ProjectSharingEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "permissions": {
+            "items": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "userId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9.:-]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workspaceId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9.:-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "permissions",
+          "userId",
+          "workspaceId"
+        ],
+        "type": "object"
+      },
+      "ProjectSharing": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "availablePermissions": {
+                "items": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "entries": {
+                "items": {
+                  "$ref": "#/components/schemas/ProjectSharingEntry"
+                },
+                "maxItems": 1000,
+                "type": "array"
+              },
+              "revision": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "availablePermissions",
+              "entries",
+              "revision"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "projectSharing"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
+      "ProjectSharingReplace": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "permissions": {
+                  "items": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 100,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "userId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9.:-]+$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "workspaceId": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9.:-]+$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "workspaceId"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1000,
+            "type": "array"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "type": "object"
+      },
       "ProjectTemplate": {
         "additionalProperties": false,
         "description": "Safe project-template metadata. The captured project, list, and task snapshot, tenant fields, actor fields, and other storage internals are never exposed.",
@@ -3257,6 +3425,49 @@
           "attributes"
         ],
         "type": "object"
+      },
+      "TimeEntryBilling": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "billed": {
+                "type": "boolean"
+              },
+              "billedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "revision": {
+                "pattern": "^tib1-[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "billed",
+              "billedAt",
+              "revision"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "timeEntryBilling"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object",
+        "description": "Conflict-safe billing and lock state for a time entry. TeamGrid currently has no separate approval state: billed means locked, and unbilled means editable subject to normal permissions."
       },
       "CallNote": {
         "additionalProperties": false,
@@ -5997,6 +6208,95 @@
         ],
         "type": "object"
       },
+      "ChangeEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "enum": [
+                  "created",
+                  "deleted",
+                  "updated"
+                ],
+                "type": "string"
+              },
+              "occurredAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "region": {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              "resourceId": {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              },
+              "resourceType": {
+                "enum": [
+                  "absence",
+                  "appointment",
+                  "automationDefinition",
+                  "automationRun",
+                  "callNote",
+                  "comment",
+                  "contact",
+                  "contactGroup",
+                  "customFieldDefinition",
+                  "document",
+                  "file",
+                  "integration",
+                  "list",
+                  "product",
+                  "productGroup",
+                  "project",
+                  "projectStatement",
+                  "projectTemplate",
+                  "service",
+                  "tag",
+                  "task",
+                  "timeEntry",
+                  "webhook"
+                ],
+                "type": "string"
+              },
+              "sequence": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "tombstone": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "operation",
+              "occurredAt",
+              "region",
+              "resourceId",
+              "resourceType",
+              "sequence",
+              "tombstone"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "changeEvent"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
       "Webhook": {
         "properties": {
           "attributes": {
@@ -6276,6 +6576,32 @@
           "actions",
           "url"
         ],
+        "type": "object"
+      },
+      "WebhookUpdate": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "actions": {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "url": {
+            "format": "uri",
+            "maxLength": 2048,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ProjectCreate": {
@@ -7809,6 +8135,254 @@
         },
         "type": "object"
       },
+      "TaskBulkUpdateData": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "billable": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "contactId": {
+            "maxLength": 128,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "maxLength": 50000,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dueAt": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "plannedEndAt": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "plannedMinutes": {
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "plannedStartAt": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serviceId": {
+            "maxLength": 128,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subscriberIds": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 500,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "tagIds": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 500,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TaskBulkUpdateItem": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TaskBulkUpdateData"
+          },
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "revision": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "data"
+        ],
+        "type": "object"
+      },
+      "TaskBulkUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBulkUpdateItem"
+            },
+            "maxItems": 35,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "TaskBulkUpdateResult": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "error": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ApiError"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "status": {
+                "enum": [
+                  "updated",
+                  "conflict",
+                  "notFound",
+                  "forbidden",
+                  "invalid",
+                  "unavailable"
+                ],
+                "type": "string"
+              },
+              "task": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Task"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "task",
+              "error"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "taskBulkUpdateResult",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
+      "TaskBulkUpdateEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBulkUpdateResult"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "additionalProperties": false,
+            "properties": {
+              "requestId": {
+                "type": "string"
+              },
+              "summary": {
+                "additionalProperties": false,
+                "properties": {
+                  "conflicts": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "failed": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "requested": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "updated": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "requested",
+                  "updated",
+                  "conflicts",
+                  "failed"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "requestId",
+              "summary"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
       "TaskDuplicate": {
         "additionalProperties": false,
         "properties": {
@@ -8028,6 +8602,19 @@
             ]
           }
         },
+        "type": "object"
+      },
+      "TimeEntryBillingUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "billed": {
+            "description": "true locks the time entry as billed; false unlocks it.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "billed"
+        ],
         "type": "object"
       },
       "TimerAction": {
@@ -8689,6 +9276,7 @@
               },
               "resourceType": {
                 "enum": [
+                  "auditEvents",
                   "contacts",
                   "projects",
                   "tasks",
@@ -8818,7 +9406,69 @@
       },
       "ExportCreate": {
         "additionalProperties": false,
+        "allOf": [
+          {
+            "else": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "createdAtFrom"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "createdAtTo"
+                    ]
+                  }
+                ]
+              }
+            },
+            "if": {
+              "properties": {
+                "resourceType": {
+                  "const": "auditEvents"
+                }
+              },
+              "required": [
+                "resourceType"
+              ]
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "includeArchived"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "updatedFrom"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "updatedUntil"
+                    ]
+                  }
+                ]
+              },
+              "required": [
+                "createdAtTo"
+              ]
+            }
+          }
+        ],
         "properties": {
+          "createdAtFrom": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAtTo": {
+            "format": "date-time",
+            "type": "string"
+          },
           "fields": {
             "items": {
               "maxLength": 80,
@@ -8849,6 +9499,7 @@
           },
           "resourceType": {
             "enum": [
+              "auditEvents",
               "contacts",
               "projects",
               "tasks",
@@ -10080,6 +10731,688 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "PersonalAccessToken": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "maxLength": 500,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "expiresAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "generation": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "graceEndsAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lastFour": {
+                "maxLength": 4,
+                "minLength": 4,
+                "type": "string"
+              },
+              "lastUsedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "notBeforeAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "principalId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": "^(?:pat|sa):[a-f0-9]{24}$",
+                "type": "string"
+              },
+              "scopes": {
+                "items": {
+                  "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "expired",
+                  "retiring",
+                  "revoked"
+                ],
+                "type": "string"
+              },
+              "token": {
+                "description": "Reveal-once token returned only by an idempotent create or rotation response.",
+                "pattern": "^tg_(?:pat|sa)_v2_[a-z0-9-]+_[a-z0-9-]+_[a-f0-9]{24}_[a-f0-9]{64}$",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "createdAt",
+              "description",
+              "expiresAt",
+              "generation",
+              "graceEndsAt",
+              "lastFour",
+              "lastUsedAt",
+              "name",
+              "notBeforeAt",
+              "principalId",
+              "scopes",
+              "status"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "personalAccessToken"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
+      "PersonalAccessTokenCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "scopes": {
+            "items": {
+              "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name",
+          "scopes"
+        ],
+        "type": "object"
+      },
+      "PersonalAccessTokenRotation": {
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "gracePeriodSeconds": {
+            "maximum": 86400,
+            "minimum": 60,
+            "type": "integer"
+          },
+          "scopes": {
+            "items": {
+              "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "type": "object"
+      },
+      "ServiceAccountCredential": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "maxLength": 500,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "expiresAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "generation": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "graceEndsAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lastFour": {
+                "maxLength": 4,
+                "minLength": 4,
+                "type": "string"
+              },
+              "lastUsedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "notBeforeAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "principalId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": "^(?:pat|sa):[a-f0-9]{24}$",
+                "type": "string"
+              },
+              "scopes": {
+                "items": {
+                  "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "expired",
+                  "retiring",
+                  "revoked"
+                ],
+                "type": "string"
+              },
+              "token": {
+                "description": "Reveal-once token returned only by an idempotent create or rotation response.",
+                "pattern": "^tg_(?:pat|sa)_v2_[a-z0-9-]+_[a-z0-9-]+_[a-f0-9]{24}_[a-f0-9]{64}$",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "createdAt",
+              "description",
+              "expiresAt",
+              "generation",
+              "graceEndsAt",
+              "lastFour",
+              "lastUsedAt",
+              "name",
+              "notBeforeAt",
+              "principalId",
+              "scopes",
+              "status"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "serviceAccountCredential"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
+      "ServiceAccount": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "credentials": {
+                "items": {
+                  "$ref": "#/components/schemas/ServiceAccountCredential"
+                },
+                "maxItems": 100,
+                "type": "array"
+              },
+              "description": {
+                "maxLength": 500,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "displayName": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "permissionSet": {
+                "items": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 500,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "revision": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              "scopeCeiling": {
+                "items": {
+                  "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "disabled",
+                  "revoked"
+                ],
+                "type": "string"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "createdAt",
+              "credentials",
+              "description",
+              "displayName",
+              "permissionSet",
+              "revision",
+              "scopeCeiling",
+              "status",
+              "updatedAt"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "serviceAccount"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
+      "ServiceAccountCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "scopes": {
+            "items": {
+              "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name",
+          "scopes"
+        ],
+        "type": "object"
+      },
+      "ServiceAccountCredentialCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "scopes": {
+            "items": {
+              "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "name",
+          "scopes"
+        ],
+        "type": "object"
+      },
+      "ServiceAccountCredentialRotation": {
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "gracePeriodSeconds": {
+            "maximum": 86400,
+            "minimum": 60,
+            "type": "integer"
+          },
+          "scopes": {
+            "items": {
+              "pattern": "^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*){1,2}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "type": "object"
+      },
+      "ServiceAccountUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "ResourceGrant": {
+        "additionalProperties": false,
+        "properties": {
+          "anchorId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "anchorType": {
+            "enum": [
+              "workspace",
+              "project",
+              "memberGroup",
+              "contactGroup",
+              "user",
+              "ownRecords"
+            ],
+            "type": "string"
+          },
+          "capabilities": {
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "inheritance": {
+            "enum": [
+              "domainDescendants",
+              "none"
+            ],
+            "type": "string"
+          },
+          "resourceKey": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchorId",
+          "anchorType",
+          "capabilities",
+          "expiresAt",
+          "id",
+          "inheritance",
+          "resourceKey"
+        ],
+        "type": "object"
+      },
+      "ResourceGrantInput": {
+        "additionalProperties": false,
+        "properties": {
+          "anchorId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "anchorType": {
+            "enum": [
+              "workspace",
+              "project",
+              "memberGroup",
+              "contactGroup",
+              "user",
+              "ownRecords"
+            ],
+            "type": "string"
+          },
+          "capabilities": {
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "inheritance": {
+            "enum": [
+              "domainDescendants",
+              "none"
+            ],
+            "type": "string"
+          },
+          "resourceKey": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchorType",
+          "capabilities",
+          "inheritance",
+          "resourceKey"
+        ],
+        "type": "object"
+      },
+      "ServiceAccountResourceGrantSet": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "grants": {
+                "items": {
+                  "$ref": "#/components/schemas/ResourceGrant"
+                },
+                "maxItems": 1000,
+                "type": "array"
+              },
+              "policyVersion": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "revision": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "grants",
+              "policyVersion",
+              "revision"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "const": "serviceAccountResourceGrantSet"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object"
+      },
+      "ServiceAccountResourceGrantSetReplace": {
+        "additionalProperties": false,
+        "properties": {
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceGrantInput"
+            },
+            "maxItems": 1000,
+            "type": "array"
+          }
+        },
+        "required": [
+          "grants"
+        ],
         "type": "object"
       }
     },
@@ -15065,6 +16398,177 @@
         "x-teamgrid-resource-cas": "resource-cas-v1"
       }
     },
+    "/projects/{id}/sharing": {
+      "get": {
+        "operationId": "getProjectSharing",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProjectSharing"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The requested resource.",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ProjectETag"
+              },
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get project sharing",
+        "tags": [
+          "Projects"
+        ],
+        "x-teamgrid-required-scopes": [
+          "projects:sharing"
+        ]
+      },
+      "put": {
+        "operationId": "replaceProjectSharing",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatchProject"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectSharingReplace"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProjectSharing"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The updated resource.",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ProjectETag"
+              },
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "412": {
+            "$ref": "#/components/responses/PreconditionFailed"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Replace project sharing",
+        "tags": [
+          "Projects"
+        ],
+        "x-teamgrid-required-scopes": [
+          "projects:sharing"
+        ],
+        "description": "Requires exactly one latest strong resource ETag. The cell-local App re-authenticates and atomically compares the tenant-bound revision before mutation.",
+        "x-teamgrid-resource-cas": "resource-cas-v1"
+      }
+    },
     "/projects/{id}/complete": {
       "post": {
         "operationId": "completeProject",
@@ -17687,6 +19191,65 @@
         ]
       }
     },
+    "/tasks/bulk-update": {
+      "post": {
+        "description": "Updates up to 35 tasks in input order. Every item is independently protected by its latest developer revision. The operation is not atomic: successful items remain committed when another item conflicts. Placement, assignment, lifecycle, and ordering changes use their dedicated endpoints.",
+        "operationId": "bulkUpdateTasks",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskBulkUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskBulkUpdateEnvelope"
+                }
+              }
+            },
+            "description": "Ordered per-item results. Reconcile conflicts by reading the task and retrying only the intended item with its new revision."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update multiple tasks safely",
+        "tags": [
+          "Tasks"
+        ],
+        "x-teamgrid-required-scopes": [
+          "tasks:write"
+        ],
+        "x-teamgrid-item-resource-cas": "resource-cas-v1"
+      }
+    },
     "/tasks/{id}": {
       "delete": {
         "operationId": "archiveTask",
@@ -19199,6 +20762,177 @@
         "x-teamgrid-required-scopes": [
           "time-entries:write"
         ]
+      }
+    },
+    "/time-entries/{id}/billing": {
+      "get": {
+        "operationId": "getTimeEntryBilling",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TimeEntryBilling"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The requested resource.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              },
+              "ETag": {
+                "$ref": "#/components/headers/TimeEntryBillingETag"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get time-entry billing state",
+        "tags": [
+          "Time Entries"
+        ],
+        "x-teamgrid-required-scopes": [
+          "time-entries:billing"
+        ],
+        "description": "Returns the dedicated billing and lock subresource with a strong ETag. Access requires the sensitive billing scope and the TeamGrid tasks.times.lock product permission."
+      },
+      "put": {
+        "operationId": "updateTimeEntryBilling",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatchTimeEntryBilling"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimeEntryBillingUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TimeEntryBilling"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The updated resource.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              },
+              "ETag": {
+                "$ref": "#/components/headers/TimeEntryBillingETag"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "412": {
+            "$ref": "#/components/responses/PreconditionFailed"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update time-entry billing state",
+        "tags": [
+          "Time Entries"
+        ],
+        "x-teamgrid-required-scopes": [
+          "time-entries:billing"
+        ],
+        "description": "Atomically marks a time entry billed or unbilled. The supplied strong ETag must match the current billing subresource; stale concurrent requests fail without overwriting a newer decision."
       }
     },
     "/time-entries/{id}/restore": {
@@ -23974,6 +25708,100 @@
         "x-teamgrid-required-scopes": [
           "webhooks:read"
         ]
+      },
+      "patch": {
+        "description": "Updates the destination, subscribed events, or enabled state of a credential-owned webhook using its latest strong revision. Setting disabled to false clears automatic delivery-failure suspension.",
+        "operationId": "updateWebhook",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatchWebhook"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Webhook"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The updated webhook.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              },
+              "ETag": {
+                "$ref": "#/components/headers/WebhookETag"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "412": {
+            "$ref": "#/components/responses/PreconditionFailed"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update or reactivate a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "x-teamgrid-required-scopes": [
+          "webhooks:write"
+        ]
       }
     },
     "/members": {
@@ -27319,6 +29147,186 @@
         "description": "Returns only webhook events whose complete required-scope set is granted to this credential. Change-feed events, internal collections, automation implementation names, and unscoped product events remain private."
       }
     },
+    "/changes": {
+      "get": {
+        "description": "Returns metadata-only, cell-local changes at a fixed page watermark. The opaque cursor is bound to the credential, workspace, cell, epoch, and exact filter set. A 410 response requires a new checkpoint and full resource snapshot.",
+        "operationId": "listChanges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "description": "Filter by one or more change operations. Repeat the query parameter for multiple values.",
+            "in": "query",
+            "name": "operations",
+            "schema": {
+              "items": {
+                "enum": [
+                  "created",
+                  "deleted",
+                  "updated"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "description": "Filter by one or more public resource types. Repeat the query parameter for multiple values.",
+            "in": "query",
+            "name": "resourceTypes",
+            "schema": {
+              "items": {
+                "enum": [
+                  "absence",
+                  "appointment",
+                  "automationDefinition",
+                  "automationRun",
+                  "callNote",
+                  "comment",
+                  "contact",
+                  "contactGroup",
+                  "customFieldDefinition",
+                  "document",
+                  "file",
+                  "integration",
+                  "list",
+                  "product",
+                  "productGroup",
+                  "project",
+                  "projectStatement",
+                  "projectTemplate",
+                  "service",
+                  "tag",
+                  "task",
+                  "timeEntry",
+                  "webhook"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "description": "Create an empty checkpoint at the latest committed cell sequence. Cannot be combined with cursor. Use this before a full resource snapshot, then poll with the returned cursor.",
+            "in": "query",
+            "name": "startAtLatest",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ChangeEvent"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "page": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "limit": {
+                              "maximum": 200,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "nextCursor": {
+                              "description": "Credential-bound checkpoint for the next poll. It is present even when this page is empty.",
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "caughtUp": {
+                              "description": "True when this page reaches its fixed watermark. False pages are always full.",
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "limit",
+                            "nextCursor",
+                            "caughtUp"
+                          ],
+                          "type": "object"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "requestId"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A fixed-watermark change page and the checkpoint for the next poll."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The cursor is outside retained history or cell continuity cannot be proven. A full resynchronization is required."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List cell-local resource changes",
+        "tags": [
+          "Changes"
+        ],
+        "x-teamgrid-required-scopes": [
+          "changes:read"
+        ]
+      }
+    },
     "/system/capabilities": {
       "get": {
         "operationId": "getSystemCapabilities",
@@ -27752,6 +29760,1311 @@
           "webhooks:write"
         ]
       }
+    },
+    "/me/personal-access-tokens": {
+      "get": {
+        "operationId": "listPersonalAccessTokens",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PersonalAccessToken"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "page": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "limit": {
+                              "maximum": 200,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "nextCursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "limit",
+                            "nextCursor"
+                          ],
+                          "type": "object"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "requestId"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A stable cursor page."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List personal access tokens owned by the current user",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:read"
+        ]
+      },
+      "post": {
+        "description": "Creates native v2 key material in the credential home cell. The token is returned only by this private no-store response and exact idempotent replays retained for seven days.",
+        "operationId": "createPersonalAccessToken",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalAccessTokenCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PersonalAccessToken"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "An exact replay of a completed issuance.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PersonalAccessToken"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A newly issued native credential.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "false",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a personal access token",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:write"
+        ]
+      }
+    },
+    "/me/personal-access-tokens/{id}": {
+      "delete": {
+        "operationId": "revokePersonalAccessToken",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The personal access token was permanently revoked."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke a personal access token",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:write"
+        ]
+      }
+    },
+    "/me/personal-access-tokens/{id}/rotation": {
+      "post": {
+        "description": "Issues one successor generation, places the predecessor in a bounded retiring grace period, and reveals the successor only in this no-store response or an exact idempotent replay.",
+        "operationId": "rotatePersonalAccessToken",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalAccessTokenRotation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PersonalAccessToken"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "An exact replay of a completed issuance.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PersonalAccessToken"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A newly issued native credential.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "false",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rotate a personal access token",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:write"
+        ]
+      }
+    },
+    "/service-accounts": {
+      "get": {
+        "operationId": "listServiceAccounts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ServiceAccount"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "page": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "limit": {
+                              "maximum": 200,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "nextCursor": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "limit",
+                            "nextCursor"
+                          ],
+                          "type": "object"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "requestId"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A stable cursor page."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List service accounts",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "service-accounts:read"
+        ]
+      },
+      "post": {
+        "description": "Creates native v2 key material in the credential home cell. The token is returned only by this private no-store response and exact idempotent replays retained for seven days.",
+        "operationId": "createServiceAccount",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceAccountCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountCredential"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "An exact replay of a completed issuance.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountCredential"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A newly issued native credential.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "false",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a service account and its initial credential",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "service-accounts:write"
+        ]
+      }
+    },
+    "/service-accounts/{id}": {
+      "delete": {
+        "operationId": "revokeServiceAccount",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The service account and all of its credentials were revoked."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Permanently revoke a service account",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "service-accounts:write"
+        ]
+      },
+      "get": {
+        "operationId": "getServiceAccount",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccount"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The requested resource."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a service account",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "service-accounts:read"
+        ]
+      },
+      "patch": {
+        "operationId": "updateServiceAccount",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceAccountUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccount"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The updated resource."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enable or disable a service account",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "service-accounts:write"
+        ]
+      }
+    },
+    "/service-accounts/{id}/credentials": {
+      "post": {
+        "description": "Creates native v2 key material in the credential home cell. The token is returned only by this private no-store response and exact idempotent replays retained for seven days.",
+        "operationId": "createServiceAccountCredential",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceAccountCredentialCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountCredential"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "An exact replay of a completed issuance.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountCredential"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A newly issued native credential.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "false",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create an independent service account credential",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:write",
+          "service-accounts:write"
+        ]
+      }
+    },
+    "/service-accounts/{id}/credentials/{credentialId}": {
+      "delete": {
+        "operationId": "revokeServiceAccountCredential",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The service account credential was permanently revoked."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke a service account credential",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:write",
+          "service-accounts:write"
+        ]
+      }
+    },
+    "/service-accounts/{id}/credentials/{credentialId}/rotation": {
+      "post": {
+        "description": "Issues one successor generation, places the predecessor in a bounded retiring grace period, and reveals the successor only in this no-store response or an exact idempotent replay.",
+        "operationId": "rotateServiceAccountCredential",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceAccountCredentialRotation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountCredential"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "An exact replay of a completed issuance.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "true",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountCredential"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A newly issued native credential.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "const": "false",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rotate a service account credential",
+        "tags": [
+          "Credentials"
+        ],
+        "x-teamgrid-required-scopes": [
+          "credentials:write",
+          "service-accounts:write"
+        ]
+      }
+    },
+    "/service-accounts/{id}/resource-grants": {
+      "get": {
+        "operationId": "getServiceAccountResourceGrants",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountResourceGrantSet"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The complete, bounded resource grant policy.",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ResourceGrantSetETag"
+              },
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the complete service account resource grant set",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "resource-grants:read",
+          "service-accounts:read"
+        ]
+      },
+      "put": {
+        "description": "Atomically replaces the complete grant policy. Partial and stale publications fail closed.",
+        "operationId": "replaceServiceAccountResourceGrants",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IfMatchResourceGrantSet"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceAccountResourceGrantSetReplace"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ServiceAccountResourceGrantSet"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The complete replacement policy was published atomically.",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ResourceGrantSetETag"
+              },
+              "Cache-Control": {
+                "$ref": "#/components/headers/StrongETagCacheControl"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "412": {
+            "$ref": "#/components/responses/PreconditionFailed"
+          },
+          "428": {
+            "$ref": "#/components/responses/PreconditionRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Replace the complete service account resource grant set",
+        "tags": [
+          "Service Accounts"
+        ],
+        "x-teamgrid-required-scopes": [
+          "resource-grants:write",
+          "service-accounts:write"
+        ]
+      }
     }
   },
   "servers": [
@@ -27871,6 +31184,14 @@
     {
       "description": "Credential-scoped public webhook and change-feed event discovery without internal implementation metadata.",
       "name": "Events"
+    },
+    {
+      "description": "Reveal-once native personal and service-account credentials with bounded rotation grace and permanent revocation.",
+      "name": "Credentials"
+    },
+    {
+      "description": "Non-human principals with explicit scope ceilings, permission sets, and independently rotatable credentials.",
+      "name": "Service Accounts"
     }
   ]
 }

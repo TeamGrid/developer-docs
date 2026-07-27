@@ -168,12 +168,20 @@ const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.js
 if (v1.info?.version !== canonicalManifest.contractVersion) {
   fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
 }
+const changeResourceTypes = v1.paths?.['/changes']?.get?.parameters
+  ?.find((parameter) => parameter.name === 'resourceTypes')
+  ?.schema?.items?.enum
+const changeEventResourceTypes = v1.components?.schemas?.ChangeEvent
+  ?.properties?.attributes?.properties?.resourceType?.enum
 if (
-  v1.paths?.['/changes']
-  || v1.components?.schemas?.ChangeEvent
-  || manifest.changeFeed?.availability !== 'excluded'
+  !Array.isArray(changeResourceTypes)
+  || changeResourceTypes.length !== 23
+  || new Set(changeResourceTypes).size !== changeResourceTypes.length
+  || JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
+  || manifest.changeFeed?.availability !== 'released'
+  || manifest.changeFeed?.resourceTypes !== changeResourceTypes.length
 ) {
-  fail('The beta 2 public contract must record the change feed as excluded.')
+  fail('The public contract must record the qualified 23-resource change feed.')
 }
 const contractOperations = []
 for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
@@ -228,6 +236,7 @@ const expectedCoreOperationIds = [
   'duplicateTask',
   'getProject',
   'getProjectLifecycleOperation',
+  'getProjectSharing',
   'getProjectTemplate',
   'getProjectTemplateInstantiation',
   'getTask',
@@ -238,6 +247,7 @@ const expectedCoreOperationIds = [
   'moveTask',
   'reopenProject',
   'reopenTask',
+  'replaceProjectSharing',
   'replaceTaskSubtasks',
   'restoreProject',
   'restoreProjectTemplate',
@@ -257,6 +267,7 @@ const expectedCoreCasOperationIds = [
   'moveTask',
   'reopenProject',
   'reopenTask',
+  'replaceProjectSharing',
   'replaceTaskSubtasks',
   'restoreProject',
   'restoreProjectTemplate',
@@ -279,6 +290,7 @@ const expectedIndependentIfMatchOperationIds = [
   'deleteRole',
   'removeMember',
   'renameFile',
+  'replaceServiceAccountResourceGrants',
   'replaceTaskPlannedWork',
   'resendInvitation',
   'restoreAbsence',
@@ -296,6 +308,8 @@ const expectedIndependentIfMatchOperationIds = [
   'updateGroup',
   'updateMemberRole',
   'updateRole',
+  'updateTimeEntryBilling',
+  'updateWebhook',
   'updateWorkspaceSettings',
 ]
 const allV1Operations = Object.values(v1.paths || {})
@@ -318,17 +332,17 @@ const resourceCasReads = allV1Operations.filter(
   (operation) => operation['x-teamgrid-resource-cas-read'] === 'resource-cas-v1',
 )
 if (
-  coreOperations.length !== 28
+  coreOperations.length !== 30
   || JSON.stringify(coreOperations.map((operation) => operation.operationId))
     !== JSON.stringify(expectedCoreOperationIds)
-  || canonicalManifest.summary?.resourceCasMutationOperations !== 17
+  || canonicalManifest.summary?.resourceCasMutationOperations !== 18
   || canonicalManifest.summary?.resourceCasOperationReads !== 2
   || JSON.stringify(resourceCasOperations.map((operation) => operation.operationId).sort())
     !== JSON.stringify(expectedCoreCasOperationIds)
   || JSON.stringify(resourceCasReads.map((operation) => operation.operationId).sort())
     !== JSON.stringify(['getProjectLifecycleOperation', 'getProjectTemplateInstantiation'])
 ) {
-  fail('The release candidate must preserve 28 core operations, 17 CAS mutations, and 2 qualified operation reads.')
+  fail('The release candidate must preserve 30 core operations, 18 CAS mutations, and 2 qualified operation reads.')
 }
 const expectedAllIfMatchOperationIds = [
   ...expectedCoreCasOperationIds,
@@ -338,7 +352,7 @@ if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
   !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('The release candidate must preserve exactly 48 qualified If-Match operations.')
+  fail('The release candidate must preserve exactly 52 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -386,8 +400,8 @@ const resourceConcurrencyDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  'Exactly 17 core mutations require `If-Match`',
-  'Another 31 operations retain their domain-specific compare-and-set contracts',
+  'Exactly 18 core mutations require `If-Match`',
+  'Another 34 operations retain their domain-specific compare-and-set contracts',
   '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',
   '`412 precondition_failed`',
@@ -417,9 +431,15 @@ if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
   fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
 }
 const changePolicy = capabilities.operationPolicy.find((item) => item.operationId === 'listChanges')
-if (changePolicy) fail('The 1.0 release-candidate capability contract must exclude listChanges.')
-if (!mcpDocumentation.includes('The change feed is not part of the current 1.0 release candidate')) {
-  fail('MCP documentation is missing the explicit 1.0 change-feed boundary.')
+if (
+  changePolicy?.sdk !== 'changes.list'
+  || changePolicy?.cli !== 'changes list'
+  || changePolicy?.mcp?.exposure !== 'forbidden'
+) {
+  fail('The qualified change feed must map to SDK/CLI and remain forbidden through MCP.')
+}
+if (!mcpDocumentation.includes('change feed remains forbidden through MCP')) {
+  fail('MCP documentation is missing the explicit change-feed boundary.')
 }
 
 const changeFeedDocumentation = await readFile(
@@ -427,9 +447,10 @@ const changeFeedDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  'not part of the `1.0.0-rc.1` public contract',
-  '`changes:read` cannot be issued',
-  '`GET /v1/changes` is not a supported 1.0 operation',
+  '`GET /v1/changes`',
+  '`changes:read`',
+  '23 resource types',
+  'snapshot-then-catch-up',
 ]) {
   if (!changeFeedDocumentation.includes(marker)) {
     fail(`Change-feed status documentation is missing: ${marker}.`)
@@ -451,8 +472,8 @@ if (
 ) {
   fail('Developer scope contract does not match sources/contracts.json and the canonical manifest.')
 }
-if (scopeContract.scopes?.some((scope) => scope.name === 'changes:read')) {
-  fail('The beta 2 scope contract must not issue changes:read.')
+if (!scopeContract.scopes?.some((scope) => scope.name === 'changes:read')) {
+  fail('The public scope contract must issue changes:read.')
 }
 const documentedScopes = new Set()
 for (const pathItem of Object.values(v1.paths || {})) {
@@ -537,7 +558,7 @@ for (const marker of [
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
   `${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutations`,
-  '31 domain-specific `If-Match` operations',
+  '34 domain-specific `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)
@@ -553,7 +574,7 @@ for (const [label, status] of [
   ['Planned', 'planned'],
   ['Intentionally private', 'private'],
 ]) {
-  const marker = `| ${label} | ${capabilityStatusCounts[status]} |`
+  const marker = `| ${label} | ${capabilityStatusCounts[status] || 0} |`
   if (!coverageDocumentation.includes(marker)) {
     fail(`Capability coverage documentation is missing current status count: ${marker}.`)
   }

@@ -6,25 +6,25 @@
       "bytes": 602,
       "id": "action-policy-registry",
       "path": "contracts/developer-action-policy-registry.json",
-      "sha256": "678e3de8df7faa13ad1fadd097dc7a2bc69b3bcae48ae506d645925d1d70903d"
+      "sha256": "1882a3f8b55cac16a0680207a3ebf1eef0882dd3366849afeed8680aaf45220f"
     },
     {
-      "bytes": 63131,
+      "bytes": 70233,
       "id": "capability-ledger",
       "path": "contracts/developer-capabilities.json",
-      "sha256": "0a316ef36a9a170bb8a5aa88ada498f9bd25f4ca623a40694806f54f82426687"
+      "sha256": "a8d9d4ccf5653c19fe38b803451bcdc6ffe953325342f768ae95e3ac5fa7be9f"
     },
     {
-      "bytes": 133893,
+      "bytes": 149443,
       "id": "operation-bindings",
       "path": "contracts/developer-operation-bindings.json",
-      "sha256": "e0de6a02d041425dcca7018e07995ae8ef6994babb2b56f5894a463b4e0eb959"
+      "sha256": "7e8a646703af99dcfa4cd745abdb0091717f501d8f8747f0894a8bfa6dbeccf7"
     },
     {
-      "bytes": 8793,
+      "bytes": 9688,
       "id": "scope-contract",
       "path": "contracts/developer-scopes.json",
-      "sha256": "650df1009270e73c622a966e33cbc3888578ee68da655d6a419eb2f2add6826b"
+      "sha256": "51e858d20bfc6bd4786faad582b0cb168ed187cfe720a61224089c1467c47039"
     },
     {
       "bytes": 15389,
@@ -45,29 +45,29 @@
       "sha256": "46da62dba5b8a459362f4edd3c74fed1dac92300c414e606dfa9f433120da947"
     },
     {
-      "bytes": 778991,
+      "bytes": 873803,
       "id": "openapi-v1",
       "path": "openapi/v1.json",
-      "sha256": "fb11fef69b443b213c427e211baab5f8937e7513881f0fa4490b6c8ce7c51f0e"
+      "sha256": "dd5d0c5bf439461ef9b38516e5b1b5e63db625e293f6ebaac8ab5bac4c3b36d0"
     }
   ],
   "summary": {
-    "actionPolicyRegistryOperations": 185,
-    "actionPolicyRegistrySha256": "7b3793c8e758b2d2535c76a6684340463bd61fddb04d45ce5a40e943af670f26",
+    "actionPolicyRegistryOperations": 206,
+    "actionPolicyRegistrySha256": "24c42e1ed43ceaff33cf35a04264dbd9a8a1f7361ae61517b8d2d4e42c23c837",
     "actionPolicyRegistryVersion": "developer-action-policy-v5",
-    "authenticatedActionPolicies": 184,
+    "authenticatedActionPolicies": 205,
     "classifiedProductCapabilities": 73,
-    "canonicalScopes": 78,
-    "governedV1Operations": 185,
-    "operationBindings": 185,
+    "canonicalScopes": 87,
+    "governedV1Operations": 206,
+    "operationBindings": 206,
     "principalPolicyFamilies": 12,
-    "referencedAppMethods": 184,
+    "referencedAppMethods": 205,
     "remainingDirectCellReads": 0,
     "unmediatedDirectCellReads": 0,
-    "resourceCasMutationOperations": 17,
+    "resourceCasMutationOperations": 18,
     "resourceCasOperationReads": 2,
     "v0Operations": 87,
     "v0MigrationRoutes": 87,
-    "v1Operations": 185
+    "v1Operations": 206
   }
 }

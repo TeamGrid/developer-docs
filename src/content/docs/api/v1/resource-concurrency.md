@@ -13,11 +13,11 @@ The `1.0.0-rc.1` contract exposes `developerRevision` and `developerUpdatedAt` o
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
-Exactly 17 core mutations require `If-Match`:
+Exactly 18 core mutations require `If-Match`:
 
 | Resource | Protected mutations |
 | --- | --- |
-| Projects | Update, complete, reopen, archive, and restore |
+| Projects | Update, replace sharing, complete, reopen, archive, and restore |
 | Tasks | Update, duplicate, move, replace checklist, archive, restore, complete, and reopen |
 | Project templates | Update, archive, restore, and instantiate |
 
@@ -65,7 +65,7 @@ reuse the pre-mutation validator.
 
 ## Other protected resources
 
-Another 31 operations retain their domain-specific compare-and-set contracts:
+Another 34 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |
@@ -75,9 +75,11 @@ Another 31 operations retain their domain-specific compare-and-set contracts:
 | Custom-field values | 2 |
 | Planned work | 1 |
 | Members, invitations, roles, and groups | 8 |
+| Service-account resource grants | 1 |
+| Time-entry billing | 1 |
 | Automation definitions and runs | 4 |
 | Workspace settings | 1 |
-| Webhook secret rotation | 1 |
+| Webhook configuration and secret rotation | 2 |
 
 Revision formats are intentionally resource-specific. Always use the validator returned by the
 corresponding read operation.

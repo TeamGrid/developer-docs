@@ -5,8 +5,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 115 paths and 185 operations. The TypeScript SDK
-and CLI map all 185 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The `1.0.0-rc.1` API v1 release candidate contains 128 paths and 206 operations. The TypeScript SDK
+and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -16,11 +16,12 @@ lifecycle operations, tasks and timers, time entries, calendar appointments, abs
 contacts, comments, activity, documents, files, workspace administration, search, bounded exports,
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
-planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
-The durable change feed is deliberately outside the 1.0 contract.
+planned work, personal access credentials, service accounts, resource grants, and the durable change
+feed. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 
-The same release boundary qualifies 17 project, task, and project-template mutations with strong
-ETags and required `If-Match`, plus two revision-bound asynchronous-operation reads. Another 31
+The same release boundary qualifies 18 project, task, project-sharing, and project-template
+mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
+reads. Another 34
 protected operations retain resource-specific revision formats for planned work, custom-field
 values, calendar data, documents, workspace administration, automations, workspace settings, and
 webhook-secret rotation.
@@ -28,7 +29,7 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 185 operations. Exactly one discovery operation is anonymous; all 184 remaining
+registry for all 206 operations. Exactly one discovery operation is anonymous; all 205 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -44,10 +45,9 @@ resolves stored targets before evaluating grants, and its V13 runtime provides o
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
 alone does not activate principal enforcement.
 
-This registry does not make native service accounts or delegated OAuth generally available. Those
-principal types remain separately feature-gated until cell-local migration, shadow comparison, and
-family qualification have completed. Existing credentials are never silently converted into
-autonomous service accounts.
+The registry covers personal access credentials and native service accounts without converting
+existing credentials. Delegated OAuth remains separately feature-gated until its cell-local
+migration, consent, revocation, and policy-family qualification are complete.
 
 ## Product capability ledger
 
@@ -56,21 +56,19 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 53 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 3 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
+| Released in the release-candidate contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 0 | No capability is advertised with an incomplete public workflow |
+| Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 API version discovery, system capability discovery, workspace entitlements, safe workspace settings, the event catalog,
 project reads, complete project-template capture and instantiation, task reads, writes and lifecycle,
 complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
-complete audit reads, complete custom-field-value reads and compare-and-set writes, and webhook-secret rotation are now released in the
-release-candidate contract. Remaining planned
-work includes service accounts, delegated OAuth, project sharing and bulk task
-operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to credentials and webhooks where additional product semantics remain.
-The change feed is excluded rather than marked
-as a partially released capability.
+complete audit reads and bounded audit exports, complete custom-field-value reads and
+compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
+project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
+and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
+work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows

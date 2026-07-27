@@ -187,15 +187,23 @@ for (const version of ['v0', 'v1']) {
 
 const v1Content = await readSourceFile('openapi/v1.json')
 const v1Document = JSON.parse(v1Content.toString('utf8'))
+const changeResourceTypes = v1Document.paths?.['/changes']?.get?.parameters
+  ?.find((parameter) => parameter.name === 'resourceTypes')
+  ?.schema?.items?.enum
+const changeEventResourceTypes = v1Document.components?.schemas?.ChangeEvent
+  ?.properties?.attributes?.properties?.resourceType?.enum
 if (
-  v1Document.paths?.['/changes']
-  || v1Document.components?.schemas?.ChangeEvent
-  || scopeDocument.scopes.some((scope) => scope.name === 'changes:read')
+  !Array.isArray(changeResourceTypes)
+  || changeResourceTypes.length !== 23
+  || new Set(changeResourceTypes).size !== changeResourceTypes.length
+  || JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
+  || !scopeDocument.scopes.some((scope) => scope.name === 'changes:read')
 ) {
-  throw new Error('The beta 2 public contract must exclude the unqualified change feed.')
+  throw new Error('The public contract must contain the qualified 23-resource change feed.')
 }
 manifest.changeFeed = {
-  availability: 'excluded',
+  availability: 'released',
+  resourceTypes: changeResourceTypes.length,
 }
 
 const capabilitySource = 'contracts/developer-capabilities.json'

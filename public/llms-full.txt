@@ -2925,6 +2925,24 @@ Task workflow operations model TeamGrid behavior directly instead of exposing st
 operation is workspace-bound, rejects internal task-like records, and uses the latest task
 revision as a compare-and-set precondition.
 
+## Read and filter tasks
+
+Task reads expose the stable workflow fields needed by integrations without leaking TeamGrid's
+storage document. In addition to identity, assignment, project and scheduling fields, responses
+include lifecycle timestamps and actor IDs, contact and creator references, duplicate provenance,
+comment/file/checklist counts, list order, embedded checklist items, and whether time tracking is
+active. Custom-field values remain behind their dedicated scoped endpoint.
+
+`GET /v1/tasks` supports exact filters for archive and completion state plus `assigneeId`,
+`contactId`, `groupId`, `listId`, `personalListId`, `projectId`, `serviceId`, `subscriberId`, and
+`tagId`. Filters are combined and always applied inside the credential's workspace and owning
+region. A client cannot supply or override a workspace selector.
+
+```bash
+curl "$TEAMGRID_API_BASE_URL/v1/tasks?projectId=$PROJECT_ID&tagId=$TAG_ID&completed=false" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN"
+```
+
 ## Duplicate a task
 
 `POST /v1/tasks/{id}/duplicate` creates one idempotent copy of exactly the selected source
@@ -3108,6 +3126,9 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Promoted the synchronized API v1, SDK, CLI, and MCP contract to `1.0.0-rc.1`.
 - Added revision-safe task duplication, placement/reordering, and atomic checklist replacement
   across the API, TypeScript SDK, and CLI. MCP remains read-only for all three workflows.
+- Completed the stable task read projection with lifecycle, provenance, count, placement, and
+  tracking fields, plus exact contact, group, list, service, subscriber, and tag filters across
+  API, SDK, CLI, and the curated read-only MCP response surface.
 - Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified
@@ -3473,6 +3494,10 @@ teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
 
+Task lists accept `--archived`, `--completed`, `--assignee-id`, `--contact-id`, `--group-id`,
+`--list-id`, `--personal-list-id`, `--project-id`, `--service-id`, `--subscriber-id`, and
+`--tag-id`. Multiple filters are combined. Use `--all` for bounded automatic pagination.
+
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
 Task mutations require `--if-match` from the latest task read. Do not synthesize a revision from
@@ -3833,16 +3858,17 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 41 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 43 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 13 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
+task reads and lifecycle, and webhook-secret rotation are now released in the release-candidate
+contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, several core project, task, contact and
+classification applies to discovery, credentials, several core project and task-write, contact and
 time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
 webhooks where additional product semantics remain. The change feed is excluded rather than marked
 as a partially released capability.

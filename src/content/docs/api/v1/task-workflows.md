@@ -7,6 +7,24 @@ Task workflow operations model TeamGrid behavior directly instead of exposing st
 operation is workspace-bound, rejects internal task-like records, and uses the latest task
 revision as a compare-and-set precondition.
 
+## Read and filter tasks
+
+Task reads expose the stable workflow fields needed by integrations without leaking TeamGrid's
+storage document. In addition to identity, assignment, project and scheduling fields, responses
+include lifecycle timestamps and actor IDs, contact and creator references, duplicate provenance,
+comment/file/checklist counts, list order, embedded checklist items, and whether time tracking is
+active. Custom-field values remain behind their dedicated scoped endpoint.
+
+`GET /v1/tasks` supports exact filters for archive and completion state plus `assigneeId`,
+`contactId`, `groupId`, `listId`, `personalListId`, `projectId`, `serviceId`, `subscriberId`, and
+`tagId`. Filters are combined and always applied inside the credential's workspace and owning
+region. A client cannot supply or override a workspace selector.
+
+```bash
+curl "$TEAMGRID_API_BASE_URL/v1/tasks?projectId=$PROJECT_ID&tagId=$TAG_ID&completed=false" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN"
+```
+
 ## Duplicate a task
 
 `POST /v1/tasks/{id}/duplicate` creates one idempotent copy of exactly the selected source

@@ -19,6 +19,9 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 - Promoted the synchronized API v1, SDK, CLI, and MCP contract to `1.0.0-rc.1`.
 - Added revision-safe task duplication, placement/reordering, and atomic checklist replacement
   across the API, TypeScript SDK, and CLI. MCP remains read-only for all three workflows.
+- Completed the stable task read projection with lifecycle, provenance, count, placement, and
+  tracking fields, plus exact contact, group, list, service, subscriber, and tag filters across
+  API, SDK, CLI, and the curated read-only MCP response surface.
 - Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified

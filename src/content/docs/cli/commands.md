@@ -167,6 +167,10 @@ teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
 
+Task lists accept `--archived`, `--completed`, `--assignee-id`, `--contact-id`, `--group-id`,
+`--list-id`, `--personal-list-id`, `--project-id`, `--service-id`, `--subscriber-id`, and
+`--tag-id`. Multiple filters are combined. Use `--all` for bounded automatic pagination.
+
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
 Task mutations require `--if-match` from the latest task read. Do not synthesize a revision from

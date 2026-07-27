@@ -1,38 +1,895 @@
+/*
+ * TeamGrid Developer Portal
+ *
+ * The public status page is the visual reference for this theme: a restrained
+ * product surface, compact navigation, precise type hierarchy, fine borders,
+ * and functional cards with very little decorative noise.
+ */
+
 :root {
-  --sl-color-accent-low: #e8efff;
-  --sl-color-accent: #1558f0;
-  --sl-color-accent-high: #092a75;
-  --sl-color-bg: #ffffff;
-  --sl-color-bg-nav: rgba(255, 255, 255, 0.94);
-  --sl-color-bg-sidebar: #f8f9fb;
-  --sl-color-hairline-light: #e6e8ec;
-  --sl-color-text: #24262b;
-  --sl-color-text-accent: #0c47cf;
-  --sl-font: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --tg-blue-200: #bccdfb;
+  --tg-blue-600: #365ee4;
+  --tg-blue-700: #294bc7;
+  --tg-blue-100: #e9efff;
+  --tg-ink-900: #1d1d1f;
+  --tg-ink-800: #2c2c2e;
+  --tg-ink-600: #515154;
+  --tg-ink-500: #6e6e73;
+  --tg-ink-400: #86868b;
+  --tg-gray-50: #fbfbfd;
+  --tg-gray-100: #f5f5f7;
+  --tg-gray-200: #ebebed;
+  --tg-gray-300: #d8d8dd;
+  --tg-white: #ffffff;
+  --tg-green-600: #167a52;
+  --tg-green-100: #d7f1e4;
+  /*
+   * Accent for text on a page or tinted surface. Kept separate from
+   * --tg-blue-700, which stays the solid brand fill: a foreground has to
+   * lighten in dark mode, a button fill must not.
+   */
+  --tg-accent-text: var(--tg-blue-700);
+  --tg-shadow-card:
+    0 1px 2px rgba(22, 28, 45, 0.04),
+    0 12px 32px -16px rgba(22, 28, 45, 0.08);
+
+  --sl-color-accent-low: var(--tg-blue-100);
+  --sl-color-accent: var(--tg-blue-600);
+  --sl-color-accent-high: #183486;
+  --sl-color-bg: var(--tg-gray-50);
+  --sl-color-bg-nav: rgba(247, 249, 252, 0.88);
+  --sl-color-bg-sidebar: rgba(247, 249, 252, 0.94);
+  --tg-sidebar-sheen: rgba(255, 255, 255, 0.46);
+  --sl-color-hairline: var(--tg-gray-300);
+  --sl-color-hairline-light: var(--tg-gray-300);
+  --sl-color-hairline-shade: var(--tg-gray-300);
+  --sl-color-text: var(--tg-ink-600);
+  --sl-color-text-accent: var(--tg-blue-700);
+  --sl-color-white: var(--tg-ink-800);
+  --sl-color-gray-1: var(--tg-ink-800);
+  --sl-color-gray-2: var(--tg-ink-600);
+  --sl-color-gray-3: var(--tg-ink-500);
+  --sl-color-gray-4: var(--tg-ink-400);
+  --sl-color-gray-5: var(--tg-gray-300);
+  --sl-color-gray-6: var(--tg-gray-100);
+  --sl-color-black: var(--tg-white);
+  --sl-font: -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
   --sl-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --sl-nav-height: 3.75rem;
+  --sl-sidebar-width: 18rem;
+  --sl-content-width: 55rem;
+
+  /*
+   * Interactive control shell. Every picker, toggle, and icon button in the
+   * site — Starlight's and the OpenAPI plugin's — resolves to these, so they
+   * share one radius, one border, and one hover.
+   */
+  --tg-control-h: 34px;
+  --tg-control-h-lg: 40px;
+  --tg-control-radius: 9px;
+  --tg-control-bg: var(--tg-white);
+  --tg-control-border: var(--tg-gray-300);
+  --tg-control-border-hover: var(--tg-ink-400);
+  --tg-control-fg: var(--tg-ink-600);
+  --tg-control-fg-muted: var(--tg-ink-500);
+  --tg-control-shadow: 0 1px 2px rgba(22, 28, 45, 0.04);
+
+  /*
+   * Semantic tones. Blue alone was carrying links, primary actions, current
+   * navigation and every notice, so a deprecation read the same as a tip.
+   */
+  --tg-tone-info: var(--tg-blue-600);
+  --tg-tone-info-bg: var(--tg-blue-100);
+  --tg-tone-success: var(--tg-green-600);
+  --tg-tone-success-bg: var(--tg-green-100);
+  --tg-tone-warning: #a06a12;
+  --tg-tone-warning-bg: #fbecd5;
+  --tg-tone-danger: #a23a46;
+  --tg-tone-danger-bg: #f9e3e6;
+
+  color-scheme: light;
+  font-synthesis: none;
 }
 
 :root[data-theme='dark'] {
-  --sl-color-accent-low: #10275c;
-  --sl-color-accent: #8aa8ff;
+  --tg-ink-900: #f7f7f8;
+  --tg-ink-800: #eeeef0;
+  --tg-ink-600: #c9c9ce;
+  --tg-ink-500: #a6a6ad;
+  --tg-ink-400: #85858d;
+  --tg-gray-50: #111216;
+  --tg-gray-100: #17181d;
+  --tg-gray-200: #22242a;
+  --tg-gray-300: #30333b;
+  --tg-white: #181a20;
+  --tg-blue-100: #17264c;
+  --tg-blue-200: #2e477f;
+  --tg-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --sl-color-accent-low: #17264c;
+  --sl-color-accent: #9bb2ff;
   --sl-color-accent-high: #dce5ff;
-  --sl-color-bg: #111216;
-  --sl-color-bg-nav: rgba(17, 18, 22, 0.94);
-  --sl-color-bg-sidebar: #15171c;
-  --sl-color-hairline-light: #2a2d34;
-  --sl-color-text: #e8e9ec;
+  --sl-color-bg-nav: rgba(17, 18, 22, 0.9);
+  /* Without these the sidebar keeps its light surface and washes out in dark. */
+  --sl-color-bg-sidebar: rgba(20, 21, 26, 0.94);
+  --tg-sidebar-sheen: rgba(255, 255, 255, 0.03);
   --sl-color-text-accent: #a9bdff;
+  --tg-accent-text: #a9bdff;
+  --tg-control-shadow: none;
+  --tg-tone-info: #9bb2ff;
+  --tg-tone-info-bg: #17264c;
+  --tg-tone-success: #7fd1ab;
+  --tg-tone-success-bg: #123528;
+  --tg-tone-warning: #e0b877;
+  --tg-tone-warning-bg: #3a2c12;
+  --tg-tone-danger: #eda2ad;
+  --tg-tone-danger-bg: #3d1e24;
+  color-scheme: dark;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+/*
+ * Focus. Neither Starlight nor the OpenAPI plugin ships a single outline rule,
+ * so every link and control fell back to the browser default ring, which reads
+ * differently in each theme. One accent ring covers the whole surface.
+ */
+
+:where(a, button, summary, select, input, [tabindex]):focus-visible {
+  /* The accent token, not the brand fill: #365ee4 only reaches 2.9:1 on the
+     dark surface, below the 3:1 WCAG asks of a non-text indicator. */
+  outline: 2px solid var(--tg-accent-text);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Controls already carry a radius; the ring should follow it. */
+:where(
+  site-search button[data-open-modal],
+  starlight-menu-button button,
+  starlight-theme-select select,
+  sl-openapi-snippet-picker select,
+  .sl-openapi-content-picker-select select,
+  .sl-openapi-operation-description-button
+):focus-visible {
+  outline-offset: 2px;
+  border-radius: var(--tg-control-radius);
+}
+
+/* Full-bleed rows read better with the ring inset than straddling the border. */
+:where(#starlight__sidebar a, .interface-index > a, .sl-openapi-overview-navigation-link a):focus-visible {
+  outline-offset: -2px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  color: var(--tg-ink-600);
+  background: var(--tg-gray-50);
+  font-family: var(--sl-font);
+}
+
+/* Shared product header */
+
 header.header {
-  backdrop-filter: blur(16px);
-  border-bottom-color: var(--sl-color-hairline-light);
+  border-bottom: 1px solid var(--tg-gray-300);
+  background: var(--sl-color-bg-nav);
+  box-shadow: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+header.header > div.header {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
 }
 
 .site-title {
-  font-size: 1rem;
+  gap: 0.75rem;
+  color: var(--tg-ink-800);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-title img {
+  width: 31px;
+  height: 20px;
+  object-fit: contain;
+}
+
+site-search button[data-open-modal] {
+  min-height: var(--tg-control-h-lg);
+  border: 1px solid var(--tg-control-border);
+  border-radius: var(--tg-control-radius);
+  color: var(--tg-control-fg-muted);
+  background: var(--tg-control-bg);
+  box-shadow: var(--tg-control-shadow);
+  font-size: 13px;
+}
+
+site-search button[data-open-modal]:hover {
+  border-color: var(--tg-control-border-hover);
+  color: var(--tg-ink-800);
+}
+
+site-search kbd {
+  border: 0;
+  border-radius: 5px;
+  color: var(--tg-ink-400);
+  background: var(--tg-gray-100);
+  box-shadow: none;
+}
+
+.social-icons a {
+  color: var(--tg-ink-500);
+}
+
+.social-icons a:hover {
+  color: var(--tg-ink-800);
+}
+
+/*
+ * The theme picker ships as a bare <select> with no shell, so it sat next to
+ * the bordered search field as loose text.
+ *
+ * Its inner layout has to be taken over completely rather than padded from the
+ * outside: Starlight positions the icon and caret absolutely at inset 0, which
+ * resolves against the label's *padding* box, and pulls the select back out
+ * with a negative margin. Padding the label therefore moves nothing, and both
+ * icons end up flush against the border. So the label carries no padding, the
+ * icons are inset explicitly, and the select reserves matching room.
+ */
+
+starlight-theme-select label {
+  height: var(--tg-control-h-lg);
+  padding-inline: 0;
+  border: 1px solid var(--tg-control-border);
+  border-radius: var(--tg-control-radius);
+  color: var(--tg-control-fg-muted);
+  background: var(--tg-control-bg);
+  box-shadow: var(--tg-control-shadow);
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+starlight-theme-select label:hover,
+starlight-theme-select label:focus-within {
+  border-color: var(--tg-control-border-hover);
+  color: var(--tg-ink-800);
+}
+
+starlight-theme-select .label-icon {
+  inset-inline-start: 0.625rem;
+}
+
+starlight-theme-select .caret {
+  inset-inline-end: 0.625rem;
+  color: var(--tg-ink-400);
+}
+
+starlight-theme-select select {
+  /* Starlight's 0.625rem block padding would outgrow the fixed shell height. */
+  padding-block: 0;
+  /* 10px inset + 14px icon + 8px gap, and 10px + 20px caret + 4px. */
+  padding-inline: 2rem 2.125rem;
+  margin-inline: 0;
+  width: calc(var(--sl-select-width) + 2rem);
+  color: var(--tg-control-fg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/*
+ * Starlight's mobile menu button uses --sl-color-white as a *fill*. This theme
+ * maps that token to the primary text colour, which turns the button into a
+ * near-white disc in dark mode.
+ */
+
+starlight-menu-button button {
+  width: var(--tg-control-h-lg);
+  height: var(--tg-control-h-lg);
+  border: 1px solid var(--tg-control-border) !important;
+  border-radius: var(--tg-control-radius) !important;
+  color: var(--tg-control-fg) !important;
+  background: var(--tg-control-bg) !important;
+  box-shadow: var(--tg-control-shadow) !important;
+}
+
+starlight-menu-button button:hover {
+  border-color: var(--tg-control-border-hover) !important;
+  color: var(--tg-ink-800) !important;
+}
+
+starlight-menu-button button[aria-expanded='true'] {
+  border-color: var(--tg-blue-600) !important;
+  color: var(--tg-accent-text) !important;
+  background: var(--tg-blue-100) !important;
+}
+
+/*
+ * Search. Pagefind ships its own visual defaults, which sat outside the control
+ * system entirely (8px radius, 51px tall, 16.8px type). The filter panel is
+ * enabled in astro.config.mjs and faceted from the sidebar's top-level group,
+ * because a common term matches across guides and 268 endpoint pages at once.
+ */
+
+#starlight__search .pagefind-ui__form::before {
+  opacity: 0.5;
+}
+
+#starlight__search .pagefind-ui__search-input {
+  min-height: var(--tg-control-h-lg);
+  padding: 0.55rem 0.85rem 0.55rem 2.25rem;
+  border: 1px solid var(--tg-control-border);
+  border-radius: var(--tg-control-radius);
+  color: var(--tg-ink-800);
+  background: var(--tg-control-bg);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+#starlight__search .pagefind-ui__search-input:focus {
+  border-color: var(--tg-blue-600);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tg-blue-600) 18%, transparent);
+}
+
+#starlight__search .pagefind-ui__search-clear {
+  border-radius: 6px;
+  color: var(--tg-ink-500);
+  background: transparent;
+  font-size: 12px;
+}
+
+#starlight__search .pagefind-ui__message {
+  padding-block: 0.9rem 0.5rem;
+  color: var(--tg-ink-400);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#starlight__search .pagefind-ui__result {
+  padding: 0;
+  border-top: 1px solid var(--tg-gray-300);
+}
+
+#starlight__search .pagefind-ui__result-link {
+  color: var(--tg-ink-800);
+  font-size: 14.5px;
   font-weight: 650;
-  letter-spacing: -0.015em;
+  text-decoration: none;
+}
+
+#starlight__search .pagefind-ui__result-excerpt {
+  color: var(--tg-ink-500);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+#starlight__search .pagefind-ui__result-nested .pagefind-ui__result-link {
+  font-size: 13.5px;
+  font-weight: 550;
+}
+
+#starlight__search mark {
+  color: var(--tg-accent-text);
+  font-weight: 650;
+}
+
+/* Filter panel */
+
+#starlight__search .pagefind-ui__filter-panel {
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--tg-gray-300);
+}
+
+#starlight__search .pagefind-ui__filter-name {
+  color: var(--tg-ink-400);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#starlight__search .pagefind-ui__filter-value {
+  color: var(--tg-ink-600);
+  font-size: 13px;
+}
+
+#starlight__search .pagefind-ui__filter-value:hover {
+  color: var(--tg-ink-800);
+}
+
+#starlight__search .pagefind-ui__button {
+  min-height: var(--tg-control-h);
+  border: 1px solid var(--tg-control-border);
+  border-radius: var(--tg-control-radius);
+  color: var(--tg-control-fg);
+  background: var(--tg-control-bg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#starlight__search .pagefind-ui__button:hover {
+  border-color: var(--tg-control-border-hover);
+  color: var(--tg-ink-800);
+}
+
+/* Documentation frame */
+
+.main-frame {
+  background: transparent;
+}
+
+.content-panel {
+  border-color: var(--tg-gray-300);
+  background: transparent;
+}
+
+.content-panel > .sl-container {
+  width: 100%;
+}
+
+[data-has-sidebar] .content-panel > .sl-container {
+  padding-block: 0.35rem;
+}
+
+.sidebar-pane {
+  border-color: var(--tg-gray-300) !important;
+  background:
+    linear-gradient(180deg, var(--tg-sidebar-sheen), transparent 12rem),
+    var(--sl-color-bg-sidebar) !important;
+}
+
+#starlight__sidebar .sidebar-content {
+  padding: 1.35rem 1rem 2rem;
+  gap: 0;
+}
+
+#starlight__sidebar ul {
+  --sl-sidebar-item-padding-inline: 0.6rem;
+}
+
+#starlight__sidebar a,
+#starlight__sidebar summary {
+  border-radius: 9px;
+  color: var(--tg-ink-600);
+  font-size: 13px;
+  line-height: 1.35;
+  transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+}
+
+#starlight__sidebar a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  min-height: 32px;
+  margin-block: 2px;
+  padding: 0.42rem 0.62rem;
+}
+
+#starlight__sidebar a > span:first-child {
+  min-width: 0;
+}
+
+#starlight__sidebar a:hover {
+  color: var(--tg-ink-800);
+  background: color-mix(in srgb, var(--tg-blue-100) 45%, transparent);
+}
+
+#starlight__sidebar a[aria-current='page'] {
+  color: var(--tg-accent-text) !important;
+  background: color-mix(in srgb, var(--tg-blue-100) 78%, var(--tg-white));
+  box-shadow:
+    inset 3px 0 0 var(--tg-blue-600),
+    0 1px 2px rgba(22, 28, 45, 0.035);
+  font-weight: 650;
+}
+
+#starlight__sidebar .top-level > li > details > summary,
+#starlight__sidebar .top-level > li > a {
+  min-height: 34px;
+  padding: 0.42rem 0.55rem;
+  color: var(--tg-ink-400);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+#starlight__sidebar .top-level > li + li {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid color-mix(in srgb, var(--tg-gray-300) 70%, transparent);
+}
+
+#starlight__sidebar .top-level > li > details > summary:hover {
+  color: var(--tg-ink-600);
+  background: color-mix(in srgb, var(--tg-gray-100) 72%, transparent);
+}
+
+#starlight__sidebar .top-level > li > details[open] > summary {
+  color: var(--tg-ink-800);
+}
+
+#starlight__sidebar .top-level > li > details > ul {
+  margin-top: 0.35rem;
+}
+
+#starlight__sidebar ul ul li {
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+#starlight__sidebar .top-level > li > details > ul > li > details {
+  margin-top: 0.35rem;
+}
+
+#starlight__sidebar .top-level > li > details > ul > li > details > summary {
+  min-height: 34px;
+  padding: 0.43rem 0.6rem;
+  color: var(--tg-ink-600);
+  background: color-mix(in srgb, var(--tg-gray-100) 64%, transparent);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+#starlight__sidebar .top-level > li > details > ul > li > details > summary:hover {
+  color: var(--tg-ink-800);
+  background: var(--tg-gray-100);
+}
+
+#starlight__sidebar .top-level > li > details > ul > li > details[open] > summary {
+  color: var(--tg-accent-text);
+  background: color-mix(in srgb, var(--tg-blue-100) 58%, var(--tg-white));
+}
+
+#starlight__sidebar .top-level > li > details > ul > li > details > ul {
+  position: relative;
+  margin: 0.35rem 0 0.55rem 0.65rem;
+  padding-left: 0.55rem;
+}
+
+#starlight__sidebar .top-level > li > details > ul > li > details > ul::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--tg-gray-300) 76%, transparent);
+}
+
+#starlight__sidebar .caret {
+  width: 14px;
+  height: 14px;
+  color: var(--tg-ink-400);
+}
+
+#starlight__sidebar .sl-badge {
+  min-width: 2.6rem;
+  flex: none;
+  justify-content: center;
+  padding: 0.18rem 0.38rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: 8.5px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+}
+
+/*
+ * One method palette, used by both the sidebar badges and the badges rendered
+ * inside operation content. The plugin ships saturated solid pills for the
+ * latter, which read as a second, competing colour system on the same screen.
+ */
+
+:root {
+  --tg-method-get-fg: #176b93;
+  --tg-method-get-bg: #e3f3fa;
+  --tg-method-post-fg: #167a52;
+  --tg-method-post-bg: #d7f1e4;
+  --tg-method-write-fg: #8a5a12;
+  --tg-method-write-bg: #fbecd5;
+  --tg-method-delete-fg: #a23a46;
+  --tg-method-delete-bg: #f9e3e6;
+}
+
+:root[data-theme='dark'] {
+  --tg-method-get-fg: #8fcbe8;
+  --tg-method-get-bg: #143443;
+  --tg-method-post-fg: #7fd1ab;
+  --tg-method-post-bg: #123528;
+  --tg-method-write-fg: #e0b877;
+  --tg-method-write-bg: #3a2c12;
+  --tg-method-delete-fg: #eda2ad;
+  --tg-method-delete-bg: #3d1e24;
+}
+
+#starlight__sidebar .sl-openapi-method-get,
+.sl-openapi-operation-method-badge.get {
+  color: var(--tg-method-get-fg) !important;
+  background: var(--tg-method-get-bg) !important;
+}
+
+#starlight__sidebar .sl-openapi-method-post,
+.sl-openapi-operation-method-badge.post {
+  color: var(--tg-method-post-fg) !important;
+  background: var(--tg-method-post-bg) !important;
+}
+
+#starlight__sidebar .sl-openapi-method-patch,
+#starlight__sidebar .sl-openapi-method-put,
+.sl-openapi-operation-method-badge.patch,
+.sl-openapi-operation-method-badge.put {
+  color: var(--tg-method-write-fg) !important;
+  background: var(--tg-method-write-bg) !important;
+}
+
+#starlight__sidebar .sl-openapi-method-delete,
+.sl-openapi-operation-method-badge.delete {
+  color: var(--tg-method-delete-fg) !important;
+  background: var(--tg-method-delete-bg) !important;
+}
+
+#starlight__sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+#starlight__sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#starlight__sidebar::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tg-ink-400) 32%, transparent);
+  background-clip: padding-box;
+}
+
+.right-sidebar-panel {
+  border-left-color: var(--tg-gray-300) !important;
+}
+
+.right-sidebar-panel h2 {
+  color: var(--tg-ink-400) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.right-sidebar-panel a {
+  color: var(--tg-ink-500) !important;
+  font-size: 12.5px;
+}
+
+.right-sidebar-panel a:hover,
+.right-sidebar-panel a[aria-current='true'] {
+  color: var(--tg-accent-text) !important;
+}
+
+/* Mobile "On this page" disclosure */
+
+mobile-starlight-toc .toggle {
+  min-height: var(--tg-control-h);
+  border: 1px solid var(--tg-control-border);
+  border-radius: var(--tg-control-radius);
+  color: var(--tg-control-fg);
+  background: var(--tg-control-bg);
+  box-shadow: var(--tg-control-shadow);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+mobile-starlight-toc .toggle:hover {
+  border-color: var(--tg-control-border-hover);
+}
+
+mobile-starlight-toc details[open] .toggle {
+  border-color: var(--tg-blue-600);
+  color: var(--tg-accent-text);
+}
+
+/* The caret ships pointing right; a disclosure should point down and flip. */
+
+mobile-starlight-toc .toggle .caret {
+  color: var(--tg-ink-400);
+  transform: rotate(90deg);
+  transition: transform 140ms ease;
+}
+
+mobile-starlight-toc details[open] .toggle .caret {
+  color: var(--tg-accent-text);
+  transform: rotate(-90deg);
+}
+
+/* Type hierarchy */
+
+.sl-markdown-content {
+  color: var(--tg-ink-600);
+  font-size: 15px;
+  line-height: 1.68;
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6),
+.content-panel h1 {
+  color: var(--tg-ink-800);
+  font-family: var(--sl-font);
+  letter-spacing: -0.025em;
+}
+
+.content-panel h1 {
+  font-size: clamp(2rem, 4vw, 2.65rem);
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 3.2rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.sl-markdown-content h3 {
+  margin-top: 2.35rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.sl-markdown-content a:not(.sl-anchor-link) {
+  color: var(--tg-accent-text);
+  text-decoration-color: color-mix(in srgb, var(--tg-blue-600) 30%, transparent);
+  text-underline-offset: 0.18em;
+}
+
+.sl-markdown-content a:not(.sl-anchor-link):hover {
+  color: var(--tg-blue-600);
+  text-decoration-color: currentColor;
+}
+
+.sl-markdown-content blockquote {
+  border-inline-start: 3px solid var(--tg-blue-600);
+  border-radius: 0 12px 12px 0;
+  color: var(--tg-ink-600);
+  background: color-mix(in srgb, var(--tg-blue-100) 50%, transparent);
+}
+
+.sl-markdown-content :not(pre) > code {
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 6px;
+  color: var(--tg-ink-800);
+  background: var(--tg-gray-100);
+  font-size: 0.88em;
+}
+
+.sl-markdown-content table {
+  overflow: hidden;
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 14px;
+  background: var(--tg-white);
+  box-shadow: var(--tg-shadow-card);
+  /* Counts and versions line up across rows instead of drifting. */
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-markdown-content th {
+  color: var(--tg-ink-500);
+  background: var(--tg-gray-100);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Callouts: a single quiet system, differentiated by accent rather than fill. */
+
+.sl-markdown-content .starlight-aside {
+  gap: 0.35rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--tg-gray-300);
+  border-inline-start: 3px solid var(--tg-ink-400);
+  border-radius: 0 12px 12px 0;
+  background: var(--tg-white);
+}
+
+.sl-markdown-content .starlight-aside__title {
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--tg-ink-800);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sl-markdown-content .starlight-aside__content {
+  color: var(--tg-ink-600);
+  font-size: 14px;
+}
+
+.sl-markdown-content .starlight-aside__content :last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * Each variant carries its tone on the rule, the icon, and the title, so the
+ * kind of notice is legible before the text is read.
+ */
+
+.sl-markdown-content .starlight-aside--note {
+  border-inline-start-color: var(--tg-tone-info);
+}
+
+.sl-markdown-content .starlight-aside--note .starlight-aside__title {
+  color: var(--tg-tone-info);
+}
+
+.sl-markdown-content .starlight-aside--tip {
+  border-inline-start-color: var(--tg-tone-success);
+}
+
+.sl-markdown-content .starlight-aside--tip .starlight-aside__title {
+  color: var(--tg-tone-success);
+}
+
+.sl-markdown-content .starlight-aside--caution {
+  border-inline-start-color: var(--tg-tone-warning);
+}
+
+.sl-markdown-content .starlight-aside--caution .starlight-aside__title {
+  color: var(--tg-tone-warning);
+}
+
+.sl-markdown-content .starlight-aside--danger {
+  border-inline-start-color: var(--tg-tone-danger);
+}
+
+.sl-markdown-content .starlight-aside--danger .starlight-aside__title {
+  color: var(--tg-tone-danger);
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+  border-color: var(--tg-gray-300);
+}
+
+/* Splash page: a documentation index, not a marketing page */
+
+[data-has-hero] .main-frame {
+  padding-top: var(--sl-nav-height);
+}
+
+[data-has-hero] main {
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  padding: 0 2rem 6rem;
+}
+
+[data-has-hero] .content-panel {
+  padding: 0;
+  border: 0;
+}
+
+[data-has-hero] .content-panel > .sl-container {
+  max-width: none;
+  margin: 0;
+}
+
+.hero {
+  display: block !important;
+  padding: clamp(3.5rem, 8vw, 5.5rem) 0 clamp(2.25rem, 4vw, 3rem) !important;
+  margin-bottom: clamp(2.25rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--tg-gray-300);
 }
 
 .hero > img,
@@ -40,25 +897,702 @@ header.header {
   display: none;
 }
 
-.hero .tagline {
-  max-width: 48rem;
+.hero .stack {
+  align-items: flex-start;
+  gap: 1.75rem;
+  text-align: left;
 }
 
-.card {
-  border-radius: 0.75rem;
+.hero .copy {
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.hero h1 {
+  max-width: 22ch;
+  margin: 0;
+  color: var(--tg-ink-800);
+  font-size: clamp(2.15rem, 4.6vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.032em;
+}
+
+.hero .tagline {
+  max-width: 44rem;
+  color: var(--tg-ink-500);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.hero .actions {
+  gap: 0.6rem;
+  justify-content: flex-start;
+}
+
+.hero .sl-link-button {
+  min-height: 38px;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.hero .sl-link-button.primary {
+  border-color: var(--tg-blue-600);
+  color: #ffffff;
+  background: var(--tg-blue-600);
   box-shadow: none;
 }
 
-.card:hover {
-  border-color: color-mix(in srgb, var(--sl-color-accent) 45%, var(--sl-color-hairline-light));
+.hero .sl-link-button.primary:hover {
+  border-color: var(--tg-blue-700);
+  background: var(--tg-blue-700);
+}
+
+.hero .sl-link-button.minimal {
+  border: 1px solid var(--tg-gray-300);
+  color: var(--tg-ink-600);
+  background: var(--tg-white);
+}
+
+.hero .sl-link-button.minimal:hover {
+  border-color: var(--tg-ink-400);
+  color: var(--tg-ink-800);
+  background: var(--tg-white);
+}
+
+[data-has-hero] .sl-markdown-content > .sl-heading-wrapper:first-child {
+  margin-top: 0;
+}
+
+[data-has-hero] .sl-markdown-content h2 {
+  margin-top: 3.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+[data-has-hero] .sl-markdown-content > .sl-heading-wrapper:first-child h2 {
+  margin-top: 0;
+}
+
+/* A landing page needs no edit link, timestamp, or sequential pager. */
+
+[data-has-hero] .content-panel footer .meta,
+[data-has-hero] .content-panel .pagination-links {
+  display: none;
+}
+
+/* Interface index: a flat list of surfaces, one row each */
+
+.interface-index {
+  margin: 1.5rem 0 2rem;
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 10px;
+  background: var(--tg-white);
+}
+
+.interface-index > a {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 0.35rem 1.75rem;
+  padding: 1.05rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+
+.interface-index > a + a {
+  border-top: 1px solid var(--tg-gray-300);
+}
+
+.interface-index > a:hover {
+  background: color-mix(in srgb, var(--tg-gray-100) 65%, transparent);
+}
+
+.interface-index__name {
+  color: var(--tg-ink-800);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.interface-index > a:hover .interface-index__name {
+  color: var(--tg-accent-text);
+}
+
+.interface-index__note {
+  color: var(--tg-ink-500);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* Inline resource links */
+
+.doc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--tg-gray-300);
+  font-size: 13.5px;
+}
+
+.card {
+  padding: 20px !important;
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 10px;
+  background: var(--tg-white);
+}
+
+.card .title {
+  color: var(--tg-ink-800);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.card .body {
+  color: var(--tg-ink-500);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* OpenAPI UI */
+
+.sl-openapi-operation-description {
+  overflow: hidden;
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 18px;
+  background: var(--tg-white);
+  box-shadow: var(--tg-shadow-card);
+}
+
+.sl-openapi-operation-description-header {
+  padding: 0.85rem 0.95rem !important;
+  border-bottom: 1px solid var(--tg-gray-300);
+  background: var(--tg-gray-100);
+}
+
+.sl-openapi-operation-description-button {
+  width: var(--tg-control-h) !important;
+  height: var(--tg-control-h) !important;
+  border: 1px solid var(--tg-control-border) !important;
+  border-radius: var(--tg-control-radius) !important;
+  color: var(--tg-control-fg-muted) !important;
+  background: var(--tg-control-bg) !important;
+  box-shadow: var(--tg-control-shadow) !important;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.sl-openapi-operation-description-button:hover {
+  border-color: var(--tg-control-border-hover) !important;
+  color: var(--tg-ink-800) !important;
+}
+
+.sl-openapi-operation-method {
+  gap: 0.65rem !important;
+}
+
+.sl-openapi-operation-method-badge {
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 0.32rem 0.62rem !important;
+  font-size: 10.5px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.04em;
+}
+
+.sl-openapi-operation-method-path {
+  color: var(--tg-ink-800);
+  font-family: var(--sl-font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+sl-openapi-snippet-picker label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+sl-openapi-snippet-picker select {
+  min-height: var(--tg-control-h);
+  appearance: none;
+  padding: 0 2.1rem 0 0.8rem !important;
+  border: 1px solid var(--tg-control-border) !important;
+  border-radius: var(--tg-control-radius) !important;
+  color: var(--tg-control-fg) !important;
+  background: var(--tg-control-bg) !important;
+  box-shadow: var(--tg-control-shadow);
+  font: 600 12px/1 var(--sl-font) !important;
+  transition: border-color 120ms ease;
+}
+
+sl-openapi-snippet-picker select:hover,
+sl-openapi-snippet-picker select:focus {
+  border-color: var(--tg-control-border-hover) !important;
+}
+
+.sl-openapi-snippet-picker-caret {
+  right: 0.72rem !important;
+  color: var(--tg-ink-400) !important;
+}
+
+.sl-openapi-content-picker-select {
+  display: inline-flex !important;
+  align-items: center;
+  width: auto;
+  margin: 0 0 0.75rem !important;
+}
+
+.sl-openapi-content-picker-select select,
+.sl-openapi-content-picker-select-value {
+  width: auto !important;
+  min-height: var(--tg-control-h);
+  padding: 0.46rem 0.78rem !important;
+  border: 1px solid var(--tg-control-border) !important;
+  border-radius: var(--tg-control-radius) !important;
+  color: var(--tg-control-fg) !important;
+  background: var(--tg-control-bg) !important;
+  box-shadow: var(--tg-control-shadow);
+  font: 600 12px/1 var(--sl-font) !important;
+  transition: border-color 120ms ease;
+}
+
+.sl-openapi-content-picker-select select:hover,
+.sl-openapi-content-picker-select select:focus {
+  border-color: var(--tg-control-border-hover) !important;
+}
+
+.sl-openapi-content-picker-select select {
+  min-width: 12rem;
+  appearance: none;
+  padding-right: 2.2rem !important;
+}
+
+.sl-openapi-content-picker-select-caret {
+  right: 0.7rem !important;
+  color: var(--tg-ink-400) !important;
+  font-size: 1rem !important;
+}
+
+.sl-openapi-section-panel {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.sl-openapi-snippets {
+  padding: 0.95rem;
+}
+
+.expressive-code figure.frame {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--tg-gray-300) 82%, #111827);
+  border-radius: 13px !important;
+  box-shadow: none !important;
+}
+
+.expressive-code figure.frame figcaption.header {
+  min-height: 0.55rem;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+.expressive-code pre {
+  padding-block: 0.75rem !important;
+}
+
+.expressive-code .copy button {
+  border-radius: 8px !important;
+}
+
+[data-openapi-content-type] {
+  margin-top: 0;
+  padding: 1rem;
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 16px;
+  background: var(--tg-white);
+  box-shadow: var(--tg-shadow-card);
+}
+
+.sl-openapi-schema-object-root {
+  padding-inline-start: 0 !important;
+  border-inline-start: 0 !important;
+}
+
+.sl-openapi-schema-object-root details {
+  border-color: var(--tg-gray-200) !important;
+}
+
+/*
+ * Parameters read as a dense table rather than a stack of blocks. The plugin
+ * puts type, constraints, and prose on separate rows, which costs ~140px of
+ * height per parameter; they belong on one line.
+ */
+
+.sl-openapi-key {
+  gap: 0.35rem 1.5rem !important;
+  padding: 0.7rem 0.9rem !important;
+  border-color: var(--tg-gray-200) !important;
+}
+
+.sl-openapi-key-name strong {
+  color: var(--tg-ink-800);
+  font-family: var(--sl-font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.sl-openapi-key-description {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.55rem;
+}
+
+.sl-openapi-key-description > div:has(.sl-openapi-type),
+.sl-openapi-key-description > .sl-openapi-tags {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0 !important;
+}
+
+.sl-openapi-key-description > .sl-openapi-markdown {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.sl-openapi-key-description > .sl-openapi-markdown p {
+  margin: 0;
+  color: var(--tg-ink-500);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sl-openapi-key-required,
+.sl-openapi-key-additional {
+  margin-top: 0.25rem;
+  color: var(--tg-ink-400) !important;
+  font-size: 10.5px !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+/*
+ * Response and request examples. The plugin hard-sets the code background to
+ * --sl-color-gray-5, which this palette maps to a light mid-grey; every other
+ * code block on the site uses the Expressive Code editor background.
+ */
+
+.sl-openapi-example div.expressive-code .frame pre {
+  border: 0 !important;
+  margin-block: 0 !important;
+  background-color: var(--ec-frm-edBg) !important;
+}
+
+.sl-openapi-example div.expressive-code .frame {
+  border-radius: 10px !important;
+}
+
+.sl-openapi-examples-heading + *,
+.sl-openapi-example {
+  margin-top: 0.5rem;
+}
+
+/* The type carries the accent; constraints stay neutral beside it. */
+
+.sl-openapi-type {
+  border: 0 !important;
+  border-radius: 6px !important;
+  color: var(--tg-accent-text) !important;
+  background: var(--tg-blue-100) !important;
+  font-family: var(--sl-font-mono);
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+}
+
+.sl-openapi-tag {
+  border: 1px solid var(--tg-gray-300) !important;
+  border-radius: 6px !important;
+  color: var(--tg-ink-500) !important;
+  background: transparent !important;
+  font-family: var(--sl-font-mono);
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+.sl-openapi-examples {
+  margin-top: 1.25rem;
+}
+
+.sl-openapi-examples-heading {
+  color: var(--tg-ink-800);
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.sl-openapi-examples-generated {
+  margin-left: 0.45rem;
+  color: var(--tg-ink-400);
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .sl-badge {
-  letter-spacing: 0.01em;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
 }
 
-code:not(:where(.expressive-code *)) {
-  border-radius: 0.25rem;
+/*
+ * Reference index: 181 operations shipped as full-width stacked cards, which
+ * made the page ~13,000px tall. A dense two-column table of contents keeps the
+ * whole surface scannable.
+ */
+
+.sl-openapi-overview-navigation-links {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(23rem, 1fr)) !important;
+  gap: 0 !important;
+  overflow: hidden;
+  margin-top: 1rem;
+  border: 1px solid var(--tg-gray-300);
+  border-radius: 10px;
+  background: var(--tg-white);
+}
+
+.sl-openapi-overview-navigation-link {
+  display: flex !important;
+  /* The plugin spans each row across the whole grid; we want real columns. */
+  grid-column: auto !important;
+  align-items: center;
+  gap: 0.7rem !important;
+  min-width: 0;
+  padding: 0.5rem 0.85rem !important;
+  border: 0 !important;
+  border-top: 1px solid var(--tg-gray-200) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.sl-openapi-overview-navigation-links > .sl-openapi-overview-navigation-link:nth-child(-n + 2) {
+  border-top: 0 !important;
+}
+
+.sl-openapi-overview-navigation-link:hover {
+  background: color-mix(in srgb, var(--tg-gray-100) 70%, transparent) !important;
+}
+
+.sl-openapi-overview-navigation-link .sl-openapi-operation-method-badge {
+  min-width: 3.6rem;
+  flex: none;
+  justify-content: center;
+  padding: 0.2rem 0.4rem !important;
+  font-size: 9.5px !important;
+}
+
+.sl-openapi-overview-navigation-link-content {
+  min-width: 0;
+  flex: 1;
+}
+
+/* The per-row chevron adds nothing once every row is obviously a link. */
+
+.sl-openapi-overview-navigation-link-icon {
+  display: none !important;
+}
+
+.sl-openapi-overview-navigation-link-content a {
+  display: block;
+  overflow: hidden;
+  color: var(--tg-ink-800) !important;
+  font-family: var(--sl-font-mono);
+  font-size: 12.5px;
+  text-decoration: none !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sl-openapi-overview-navigation-link:hover .sl-openapi-overview-navigation-link-content a {
+  color: var(--tg-accent-text) !important;
+}
+
+/* The single-column card layout only makes sense once columns cannot fit. */
+
+@media (max-width: 60rem) {
+  .sl-openapi-overview-navigation-links {
+    grid-template-columns: 1fr;
+  }
+
+  .sl-openapi-overview-navigation-links > .sl-openapi-overview-navigation-link:nth-child(2) {
+    border-top: 1px solid var(--tg-gray-200) !important;
+  }
+}
+
+/* Breadcrumbs (see src/components/PageTitle.astro) */
+
+.breadcrumbs {
+  margin-bottom: 0.35rem;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--tg-ink-400);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.breadcrumbs li + li::before {
+  content: "/";
+  color: var(--tg-gray-300);
+}
+
+.breadcrumbs a {
+  color: var(--tg-ink-500);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  color: var(--tg-accent-text);
+}
+
+/*
+ * Operation pages: prose left, request panel right and sticky.
+ *
+ * The plugin emits one flat sequence of blocks, with the request panel always
+ * first; it is lifted into a second column that spans every row, so the call
+ * being documented stays on screen while the parameters and responses scroll.
+ *
+ * Only above 1400px, where giving up the table of contents still leaves both
+ * columns readable. Narrower viewports keep the single-column page unchanged.
+ */
+
+@media (min-width: 87.5rem) {
+  .main-frame:has(.sl-openapi-operation-description) {
+    --sl-content-width: 70rem;
+  }
+
+  .main-frame:has(.sl-openapi-operation-description) .right-sidebar-container {
+    display: none;
+  }
+
+  /*
+   * Starlight sizes .main-pane with min(100% - sidebar, …), which keeps a
+   * table-of-contents column reserved even once it is hidden. Reclaim it.
+   */
+  .main-frame:has(.sl-openapi-operation-description) .main-pane {
+    --sl-content-margin-inline: auto;
+    width: 100%;
+  }
+
+  .sl-markdown-content:has(> .sl-openapi-operation-description) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 27rem);
+    column-gap: 3rem;
+    row-gap: 0;
+    align-items: start;
+  }
+
+  .sl-markdown-content:has(> .sl-openapi-operation-description) > * {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  .sl-markdown-content > .sl-openapi-operation-description {
+    /* Spanning the rows gives the sticky item its full travel distance. */
+    grid-row: 1 / span 100;
+    grid-column: 2 !important;
+    position: sticky;
+    top: calc(var(--sl-nav-height) + 1.25rem);
+    max-height: calc(100vh - var(--sl-nav-height) - 3rem);
+    margin: 0;
+    overflow-y: auto;
+  }
+
+  /* Grid items no longer collapse margins, so the first block would drop. */
+  .sl-markdown-content:has(> .sl-openapi-operation-description) > :nth-child(2) {
+    margin-top: 0;
+  }
+
+  /*
+   * In a 27rem rail a request line would otherwise disappear into a horizontal
+   * scrollbar; wrapping keeps the whole command readable at a glance.
+   */
+  .sl-markdown-content > .sl-openapi-operation-description .expressive-code pre > code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .sl-markdown-content > .sl-openapi-operation-description .expressive-code pre {
+    overflow-x: hidden;
+  }
+}
+
+/* Navigation and utility cards */
+
+.pagination-links a {
+  border: 1px solid var(--tg-gray-300) !important;
+  border-radius: 14px !important;
+  background: var(--tg-white);
+  box-shadow: var(--tg-shadow-card);
+}
+
+.pagination-links a:hover {
+  border-color: var(--tg-blue-200) !important;
+}
+
+footer .meta {
+  color: var(--tg-ink-400);
+  font-size: 12px;
+}
+
+@media (max-width: 49.99rem) {
+  :root {
+    --sl-nav-height: 3.75rem;
+  }
+
+  header.header > div.header {
+    padding-inline: 0.9rem;
+  }
+
+  [data-has-hero] main {
+    padding: 0 1.25rem 4rem;
+  }
+
+  .hero {
+    padding-top: 2.75rem !important;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.9rem, 8vw, 2.4rem);
+  }
+
+  .interface-index > a {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+  }
+
+  .sl-openapi-operation-description-header {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

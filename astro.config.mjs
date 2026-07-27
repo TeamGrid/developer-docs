@@ -168,6 +168,7 @@ export default defineConfig({
               label: 'Resource revisions and concurrent writes',
               link: '/api/v1/resource-concurrency/',
             },
+            { label: 'Task workflows', link: '/api/v1/task-workflows/' },
             { label: 'Regional endpoints', link: '/api/v1/regions/' },
             { label: 'Pagination and idempotency', link: '/api/v1/pagination/' },
             { label: 'Change feed', link: '/api/v1/change-feed/' },

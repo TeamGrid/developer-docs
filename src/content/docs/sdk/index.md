@@ -24,7 +24,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `events` | Read the authorization-filtered webhook event catalog |
 | `projects` | List, get, create, update, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
-| `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
+| `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
 | `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
@@ -66,7 +66,7 @@ API reference; the SDK never adds authority beyond the supplied credential.
 
 The compatible package checkpoint for this contract is `1.0.0-rc.1`; pin that exact version after
 it is available on the configured npm channel. Tasks, projects, and project templates expose
-developer revisions and require typed `ifMatch` options for their 14 protected mutations. Project
+developer revisions and require typed `ifMatch` options for their 17 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
 idempotency key. Another 31 protected operations retain domain-specific revision types.
 

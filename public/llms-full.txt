@@ -1509,7 +1509,7 @@ and planned work, retain their resource-specific preconditions. See
 
 The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
 capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
-task ordering, subtasks and bulk changes, time-entry billing, file sharing, commerce orders, report
+bulk task changes, time-entry billing, file sharing, commerce orders, report
 jobs, imports, and audit export as planned. Several released domains also remain explicitly partial.
 The first public API v1 beta does not include a durable change feed. Use bounded resource
 pagination and signed webhooks where their delivery semantics fit the integration. Keep only those
@@ -2275,7 +2275,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 111 paths and 181 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
+API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. The `1.0.0-rc.1` release candidate contains 114 paths and 184 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public.
 
 ## Base URL
 
@@ -2306,7 +2306,7 @@ and credential-owned asynchronous-operation resources.
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
 Projects, tasks, and project templates expose developer revisions and require strong `If-Match`
-preconditions for their 14 mutating operations. Another 31 protected operations retain
+preconditions for their 17 mutating operations. Another 31 protected operations retain
 domain-specific revision formats. Review [resource concurrency](/api/v1/resource-concurrency/)
 before building a writer.
 
@@ -2365,7 +2365,7 @@ planned-work PUT is retryable only with both its idempotency key and strong comp
 precondition. Other PUT, PATCH, and DELETE requests should not be retried automatically unless the
 caller has separately established their outcome.
 
-See [resource concurrency](/api/v1/resource-concurrency/) for the distinction between the 14 core
+See [resource concurrency](/api/v1/resource-concurrency/) for the distinction between the 17 core
 CAS mutations and the 31 domain-specific protected operations.
 
 <!-- api/v1/planned-work.md -->
@@ -2664,12 +2664,12 @@ The `1.0.0-rc.1` contract exposes `developerRevision` and `developerUpdatedAt` o
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
-Exactly 14 core mutations require `If-Match`:
+Exactly 17 core mutations require `If-Match`:
 
 | Resource | Protected mutations |
 | --- | --- |
 | Projects | Update, complete, reopen, archive, and restore |
-| Tasks | Update, archive, restore, complete, and reopen |
+| Tasks | Update, duplicate, move, replace checklist, archive, restore, complete, and reopen |
 | Project templates | Update, archive, restore, and instantiate |
 
 Project lifecycle commands and template instantiation are asynchronous. Their accepted operation
@@ -2694,6 +2694,20 @@ await teamgrid.tasks.update(
   task.data.id,
   { name: 'Reviewed task' },
   { ifMatch: task.transport.headers.etag },
+)
+```
+
+Duplication also requires an idempotency key because it creates a new resource. Its precondition is
+the exact source revision, so retrying the same request cannot silently copy a newer task:
+
+```ts
+await teamgrid.tasks.duplicate(
+  task.data.id,
+  { copyChecklist: true, name: 'Reviewed task copy' },
+  {
+    idempotencyKey: 'review-copy-2026-07-27',
+    ifMatch: task.transport.headers.etag,
+  },
 )
 ```
 
@@ -2748,7 +2762,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | --- | --- | --- |
 | Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
-| Tasks | List, get, create, update, archive, restore, complete, reopen, timer start and stop | Timer commands require both `tasks:write` and `time-entries:write` |
+| Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
 | Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
 | Contacts | List, get, create, update | No public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
@@ -2775,7 +2789,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
-Project, task, and project-template responses include developer revision fields. Their 14 mutations
+Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
 compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
 boundary.
@@ -2901,6 +2915,92 @@ internally and streams the file through the API with redirects disabled, a 50 Mi
 
 Export jobs, intents, metadata, and bulk content are forbidden in every MCP profile.
 
+<!-- api/v1/task-workflows.md -->
+---
+title: Task workflows
+description: Duplicate, place, reorder, and replace TeamGrid task checklists without lost updates.
+---
+
+Task workflow operations model TeamGrid behavior directly instead of exposing storage fields. Every
+operation is workspace-bound, rejects internal task-like records, and uses the latest task
+revision as a compare-and-set precondition.
+
+## Duplicate a task
+
+`POST /v1/tasks/{id}/duplicate` creates one idempotent copy of exactly the selected source
+revision. It requires `tasks:read`, `tasks:write`, `If-Match`, and `Idempotency-Key`.
+
+```bash
+curl --request POST "$TEAMGRID_API_BASE_URL/v1/tasks/$TASK_ID/duplicate" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
+  --header "Content-Type: application/json" \
+  --header "Idempotency-Key: onboarding-copy-42" \
+  --header "If-Match: $TASK_ETAG" \
+  --data '{"name":"Onboarding copy","copyChecklist":true,"copyCustomFieldValues":true}'
+```
+
+Checklist and custom-field values are copied by default and can be disabled independently. The new
+task is incomplete, receives its own ID and revision, and is appended to the corresponding
+assignment, project-list, and valid personal-list containers. The response is `201` for the first
+creation or `200` for an exact replay.
+
+## Move or reorder a task
+
+`POST /v1/tasks/{id}/move` changes assignment and ordering atomically. Select one axis:
+
+| Axis | Required target | Order field managed by TeamGrid |
+| --- | --- | --- |
+| `assignee` | Optional `assigneeId` or `groupId`; they are mutually exclusive | Assignee/group board order |
+| `personalList` | `assigneeId` and a personal list owned by that user | Personal-list order |
+| `projectList` | `projectId`; optional list must belong to that project | Project-list order |
+
+Omit both neighbors to append. Supply `previousTaskId`, `nextTaskId`, or both for an exact
+insertion point. Neighbor IDs must refer to active tasks in the same workspace, completion state,
+axis, and target container. Stale or contradictory neighbors produce a conflict rather than a
+best-effort move.
+
+```json
+{
+  "axis": "projectList",
+  "projectId": "project-id",
+  "listId": "review-list-id",
+  "previousTaskId": "task-before",
+  "nextTaskId": "task-after"
+}
+```
+
+Moving to another project validates the target project, list relationship, transition state, and
+the credential principal's access to both source and target context.
+
+## Replace a checklist
+
+TeamGrid subtasks are ordered checklist items embedded in a task. They are not independent task
+resources. `PUT /v1/tasks/{id}/subtasks` therefore replaces the complete checklist atomically:
+
+```json
+{
+  "subtasks": [
+    { "id": "existing-item-id", "title": "Review draft", "completed": true },
+    { "title": "Obtain approval", "completed": false }
+  ]
+}
+```
+
+Keep an existing item ID to preserve its identity. Omit the ID for a new item. The request accepts
+at most 500 unique items, preserves array order, trims titles, and rejects empty or oversized
+content. An empty array clears the checklist.
+
+## Concurrency sequence
+
+1. Read the task and retain its strong `ETag`.
+2. Send one workflow operation with that value as `If-Match`.
+3. Retain the new ETag from the successful response.
+4. Use the new value for the next operation.
+5. On `412`, re-read and reconcile; never remove the precondition.
+
+MCP intentionally does not expose these writes. Use the API, SDK, or CLI when a workflow changes
+TeamGrid data.
+
 <!-- api/v1/webhooks.md -->
 ---
 title: Signed webhooks
@@ -3006,13 +3106,15 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 ## 2026-07-27
 
 - Promoted the synchronized API v1, SDK, CLI, and MCP contract to `1.0.0-rc.1`.
-- Qualified strong ETags and mandatory `If-Match` preconditions for 14 project, task, and
+- Added revision-safe task duplication, placement/reordering, and atomic checklist replacement
+  across the API, TypeScript SDK, and CLI. MCP remains read-only for all three workflows.
+- Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified
   asynchronous operation resources.
 - Kept the durable change feed outside 1.0 until preimage, failover, retention, and recovery
   semantics complete their separate qualification.
-- Preserved the curated read-only MCP policy while aligning all 181 public operations across
+- Preserved the curated read-only MCP policy while aligning all 184 public operations across
   OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21
@@ -3358,11 +3460,15 @@ service credentials and machine-readable output should be handled as commerciall
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
-teamgrid tasks archive TASK_ID
-teamgrid tasks restore TASK_ID
-teamgrid tasks complete TASK_ID
-teamgrid tasks reopen TASK_ID
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}' --if-match REVISION
+teamgrid tasks duplicate TASK_ID --data '{"copyChecklist":true}' \
+  --if-match REVISION --idempotency-key task-copy-42
+teamgrid tasks move TASK_ID --data @placement.json --if-match REVISION
+teamgrid tasks subtasks replace TASK_ID --data @checklist.json --if-match REVISION
+teamgrid tasks archive TASK_ID --if-match REVISION
+teamgrid tasks restore TASK_ID --if-match REVISION
+teamgrid tasks complete TASK_ID --if-match REVISION
+teamgrid tasks reopen TASK_ID --if-match REVISION
 teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
@@ -3676,8 +3782,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-rc.1` API v1 release candidate contains 111 paths and 181 operations. The TypeScript SDK
-and CLI map all 181 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The `1.0.0-rc.1` API v1 release candidate contains 114 paths and 184 operations. The TypeScript SDK
+and CLI map all 184 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -3690,7 +3796,7 @@ metadata, custom fields, commerce resources, audit events, webhooks, delivery hi
 planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 The durable change feed is deliberately outside the 1.0 contract.
 
-The same release boundary qualifies 14 project, task, and project-template mutations with strong
+The same release boundary qualifies 17 project, task, and project-template mutations with strong
 ETags and required `If-Match`, plus two revision-bound asynchronous-operation reads. Another 31
 protected operations retain resource-specific revision formats for planned work, custom-field
 values, calendar data, documents, workspace administration, automations, workspace settings, and
@@ -3699,7 +3805,7 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 181 operations. Exactly one discovery operation is anonymous; all 180 remaining
+registry for all 184 operations. Exactly one discovery operation is anonymous; all 183 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -3727,14 +3833,14 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the release-candidate contract | 41 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 13 | The workflow remains on the roadmap and is not part of the current contract |
+| Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
 and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
-work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
+work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
 classification applies to discovery, credentials, several core project, task, contact and
 time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
@@ -3830,7 +3936,7 @@ integration surfaces.
   </a>
 </div>
 
-API v1 `1.0.0-rc.1` governs 181 operations across 111 paths. That number measures contract parity
+API v1 `1.0.0-rc.1` governs 184 operations across 114 paths. That number measures contract parity
 across the HTTP API, SDK, and CLI, not complete TeamGrid product coverage. The
 [capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
 areas explicitly, and [choose an interface](/guides/choose-an-interface/) maps common integration
@@ -4068,9 +4174,9 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The current `1.0.0-rc.1` manifest records 111 v1 paths, 181 governed v1 operations, 87 frozen v0
+The current `1.0.0-rc.1` manifest records 114 v1 paths, 184 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 78 canonical scopes, and 73 classified TeamGrid product
-capabilities. It also records 14 `resource-cas-v1` mutations, two qualified asynchronous-operation
+capabilities. It also records 17 `resource-cas-v1` mutations, two qualified asynchronous-operation
 reads, and another 31 domain-specific `If-Match` operations. These counts describe the synchronized
 contract; they do not promote planned capabilities into the release candidate.
 
@@ -4108,7 +4214,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `events` | Read the authorization-filtered webhook event catalog |
 | `projects` | List, get, create, update, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
-| `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
+| `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
 | `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
@@ -4150,7 +4256,7 @@ API reference; the SDK never adds authority beyond the supplied credential.
 
 The compatible package checkpoint for this contract is `1.0.0-rc.1`; pin that exact version after
 it is available on the configured npm channel. Tasks, projects, and project templates expose
-developer revisions and require typed `ifMatch` options for their 14 protected mutations. Project
+developer revisions and require typed `ifMatch` options for their 17 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
 idempotency key. Another 31 protected operations retain domain-specific revision types.
 
@@ -4374,6 +4480,38 @@ const updated = await client.tasks.update(
 
 console.log(updated.data.attributes.name)
 ```
+
+## Use task workflows
+
+Task placement and checklist replacement are atomic, revision-protected operations:
+
+```ts
+const current = await client.tasks.get('task-id')
+const moved = await client.tasks.move(
+  current.data.id,
+  {
+    axis: 'projectList',
+    listId: 'review-list-id',
+    projectId: 'project-id',
+  },
+  { ifMatch: current.transport.headers.etag },
+)
+
+await client.tasks.replaceSubtasks(
+  moved.data.id,
+  {
+    subtasks: [
+      { completed: true, id: 'existing-check-id', title: 'Draft reviewed' },
+      { title: 'Obtain approval' },
+    ],
+  },
+  { ifMatch: moved.transport.headers.etag },
+)
+```
+
+For an exact insertion position, pass `previousTaskId`, `nextTaskId`, or both to `move()`. Those
+neighbors must still belong to the selected axis and container. Checklist replacement preserves
+supplied item IDs and creates IDs for new items.
 
 Do not synthesize a task ETag. Other protected resources retain explicit, typed compare-and-set
 options; always read their current revision first. See

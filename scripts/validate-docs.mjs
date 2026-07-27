@@ -225,6 +225,7 @@ const expectedCoreOperationIds = [
   'createProject',
   'createProjectTemplate',
   'createTask',
+  'duplicateTask',
   'getProject',
   'getProjectLifecycleOperation',
   'getProjectTemplate',
@@ -234,8 +235,10 @@ const expectedCoreOperationIds = [
   'listProjects',
   'listProjectTemplates',
   'listTasks',
+  'moveTask',
   'reopenProject',
   'reopenTask',
+  'replaceTaskSubtasks',
   'restoreProject',
   'restoreProjectTemplate',
   'restoreTask',
@@ -249,9 +252,12 @@ const expectedCoreCasOperationIds = [
   'archiveTask',
   'completeProject',
   'completeTask',
+  'duplicateTask',
   'instantiateProjectTemplate',
+  'moveTask',
   'reopenProject',
   'reopenTask',
+  'replaceTaskSubtasks',
   'restoreProject',
   'restoreProjectTemplate',
   'restoreTask',
@@ -312,17 +318,17 @@ const resourceCasReads = allV1Operations.filter(
   (operation) => operation['x-teamgrid-resource-cas-read'] === 'resource-cas-v1',
 )
 if (
-  coreOperations.length !== 25
+  coreOperations.length !== 28
   || JSON.stringify(coreOperations.map((operation) => operation.operationId))
     !== JSON.stringify(expectedCoreOperationIds)
-  || canonicalManifest.summary?.resourceCasMutationOperations !== 14
+  || canonicalManifest.summary?.resourceCasMutationOperations !== 17
   || canonicalManifest.summary?.resourceCasOperationReads !== 2
   || JSON.stringify(resourceCasOperations.map((operation) => operation.operationId).sort())
     !== JSON.stringify(expectedCoreCasOperationIds)
   || JSON.stringify(resourceCasReads.map((operation) => operation.operationId).sort())
     !== JSON.stringify(['getProjectLifecycleOperation', 'getProjectTemplateInstantiation'])
 ) {
-  fail('The release candidate must preserve 25 core operations, 14 CAS mutations, and 2 qualified operation reads.')
+  fail('The release candidate must preserve 28 core operations, 17 CAS mutations, and 2 qualified operation reads.')
 }
 const expectedAllIfMatchOperationIds = [
   ...expectedCoreCasOperationIds,
@@ -332,7 +338,7 @@ if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
   !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('The release candidate must preserve exactly 45 qualified If-Match operations.')
+  fail('The release candidate must preserve exactly 48 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -380,7 +386,7 @@ const resourceConcurrencyDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  'Exactly 14 core mutations require `If-Match`',
+  'Exactly 17 core mutations require `If-Match`',
   'Another 31 operations retain their domain-specific compare-and-set contracts',
   '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',

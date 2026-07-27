@@ -39,5 +39,5 @@ planned-work PUT is retryable only with both its idempotency key and strong comp
 precondition. Other PUT, PATCH, and DELETE requests should not be retried automatically unless the
 caller has separately established their outcome.
 
-See [resource concurrency](/api/v1/resource-concurrency/) for the distinction between the 14 core
+See [resource concurrency](/api/v1/resource-concurrency/) for the distinction between the 17 core
 CAS mutations and the 31 domain-specific protected operations.

@@ -13,12 +13,12 @@ The `1.0.0-rc.1` contract exposes `developerRevision` and `developerUpdatedAt` o
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
-Exactly 14 core mutations require `If-Match`:
+Exactly 17 core mutations require `If-Match`:
 
 | Resource | Protected mutations |
 | --- | --- |
 | Projects | Update, complete, reopen, archive, and restore |
-| Tasks | Update, archive, restore, complete, and reopen |
+| Tasks | Update, duplicate, move, replace checklist, archive, restore, complete, and reopen |
 | Project templates | Update, archive, restore, and instantiate |
 
 Project lifecycle commands and template instantiation are asynchronous. Their accepted operation
@@ -43,6 +43,20 @@ await teamgrid.tasks.update(
   task.data.id,
   { name: 'Reviewed task' },
   { ifMatch: task.transport.headers.etag },
+)
+```
+
+Duplication also requires an idempotency key because it creates a new resource. Its precondition is
+the exact source revision, so retrying the same request cannot silently copy a newer task:
+
+```ts
+await teamgrid.tasks.duplicate(
+  task.data.id,
+  { copyChecklist: true, name: 'Reviewed task copy' },
+  {
+    idempotencyKey: 'review-copy-2026-07-27',
+    ifMatch: task.transport.headers.etag,
+  },
 )
 ```
 

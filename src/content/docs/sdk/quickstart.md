@@ -64,6 +64,38 @@ const updated = await client.tasks.update(
 console.log(updated.data.attributes.name)
 ```
 
+## Use task workflows
+
+Task placement and checklist replacement are atomic, revision-protected operations:
+
+```ts
+const current = await client.tasks.get('task-id')
+const moved = await client.tasks.move(
+  current.data.id,
+  {
+    axis: 'projectList',
+    listId: 'review-list-id',
+    projectId: 'project-id',
+  },
+  { ifMatch: current.transport.headers.etag },
+)
+
+await client.tasks.replaceSubtasks(
+  moved.data.id,
+  {
+    subtasks: [
+      { completed: true, id: 'existing-check-id', title: 'Draft reviewed' },
+      { title: 'Obtain approval' },
+    ],
+  },
+  { ifMatch: moved.transport.headers.etag },
+)
+```
+
+For an exact insertion position, pass `previousTaskId`, `nextTaskId`, or both to `move()`. Those
+neighbors must still belong to the selected axis and container. Checklist replacement preserves
+supplied item IDs and creates IDs for new items.
+
 Do not synthesize a task ETag. Other protected resources retain explicit, typed compare-and-set
 options; always read their current revision first. See
 [resource concurrency](/api/v1/resource-concurrency/).

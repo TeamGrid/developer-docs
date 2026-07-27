@@ -154,11 +154,15 @@ service credentials and machine-readable output should be handled as commerciall
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
-teamgrid tasks archive TASK_ID
-teamgrid tasks restore TASK_ID
-teamgrid tasks complete TASK_ID
-teamgrid tasks reopen TASK_ID
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}' --if-match REVISION
+teamgrid tasks duplicate TASK_ID --data '{"copyChecklist":true}' \
+  --if-match REVISION --idempotency-key task-copy-42
+teamgrid tasks move TASK_ID --data @placement.json --if-match REVISION
+teamgrid tasks subtasks replace TASK_ID --data @checklist.json --if-match REVISION
+teamgrid tasks archive TASK_ID --if-match REVISION
+teamgrid tasks restore TASK_ID --if-match REVISION
+teamgrid tasks complete TASK_ID --if-match REVISION
+teamgrid tasks reopen TASK_ID --if-match REVISION
 teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```

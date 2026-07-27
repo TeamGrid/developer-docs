@@ -13,7 +13,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | --- | --- | --- |
 | Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
-| Tasks | List, get, create, update, archive, restore, complete, reopen, timer start and stop | Timer commands require both `tasks:write` and `time-entries:write` |
+| Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
 | Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
 | Contacts | List, get, create, update | No public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
@@ -40,7 +40,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
-Project, task, and project-template responses include developer revision fields. Their 14 mutations
+Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
 compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
 boundary.

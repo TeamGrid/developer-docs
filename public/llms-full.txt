@@ -2763,7 +2763,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
 | Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
-| Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
+| Time entries | List, get, create, update, archive, restore, start and stop task timers | Billed entries are immutable; billing operations and financial rates remain outside the core workflow |
 | Contacts | List, get, create, update | No public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
@@ -2794,6 +2794,14 @@ planning boundaries, last activity, and non-financial task progress counts. The 
 projects only these safe summary fields from its internal calculation object; costs, revenue,
 profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
 the API boundary. Project sharing grants remain a separate planned capability.
+
+Time-entry reads expose task, user and service references, creator/updater provenance, duration,
+billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
+by these safe operational fields and by a start-time window. Internal hourly rates, cost rates,
+financial aggregates, cached billing details, and call records are rejected at the App and API
+boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
+task timers form the released operational workflow. Marking entries billed or unbilled remains the
+separate planned time-entry billing capability.
 
 Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
@@ -3530,6 +3538,7 @@ Task mutations require `--if-match` from the latest task read. Do not synthesize
 
 ```bash
 teamgrid time-entries list --from 2026-07-01 --to 2026-07-31 --all
+teamgrid times list --service-id SERVICE_ID --billable true --billed false
 teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
@@ -3879,18 +3888,19 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 45 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 11 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 47 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 9 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-project reads, task reads, writes and lifecycle, and webhook-secret rotation are now released in the
+project reads, task reads, writes and lifecycle, complete non-billing time-entry reads and writes,
+and webhook-secret rotation are now released in the
 release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, contact and
-time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
+classification applies to discovery, credentials, contact projections,
+custom-field values, project templates, planned-work lifecycle, audit, and
 webhooks where additional product semantics remain. The change feed is excluded rather than marked
 as a partially released capability.
 
@@ -4127,7 +4137,7 @@ commercially sensitive billing rates.
 | `teamgrid_project_get` | Core | Read one project by ID |
 | `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
 | `teamgrid_task_get` | Core | Read one task by ID |
-| `teamgrid_time_entries_list` | Core | List time entries with date, task, and user filters |
+| `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, creator, billable, and billed filters |
 | `teamgrid_time_entry_get` | Core | Read one time entry by ID |
 | `teamgrid_lists_list` | Core | List task lists |
 | `teamgrid_list_get` | Core | Read one list by ID |

@@ -56,18 +56,19 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 45 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 11 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 47 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 9 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-project reads, task reads, writes and lifecycle, and webhook-secret rotation are now released in the
+project reads, task reads, writes and lifecycle, complete non-billing time-entry reads and writes,
+and webhook-secret rotation are now released in the
 release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, contact and
-time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
+classification applies to discovery, credentials, contact projections,
+custom-field values, project templates, planned-work lifecycle, audit, and
 webhooks where additional product semantics remain. The change feed is excluded rather than marked
 as a partially released capability.
 

@@ -14,7 +14,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
 | Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
-| Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
+| Time entries | List, get, create, update, archive, restore, start and stop task timers | Billed entries are immutable; billing operations and financial rates remain outside the core workflow |
 | Contacts | List, get, create, update | No public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
@@ -45,6 +45,14 @@ planning boundaries, last activity, and non-financial task progress counts. The 
 projects only these safe summary fields from its internal calculation object; costs, revenue,
 profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
 the API boundary. Project sharing grants remain a separate planned capability.
+
+Time-entry reads expose task, user and service references, creator/updater provenance, duration,
+billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
+by these safe operational fields and by a start-time window. Internal hourly rates, cost rates,
+financial aggregates, cached billing details, and call records are rejected at the App and API
+boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
+task timers form the released operational workflow. Marking entries billed or unbilled remains the
+separate planned time-entry billing capability.
 
 Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific

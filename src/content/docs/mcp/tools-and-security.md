@@ -23,7 +23,7 @@ commercially sensitive billing rates.
 | `teamgrid_project_get` | Core | Read one project by ID |
 | `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
 | `teamgrid_task_get` | Core | Read one task by ID |
-| `teamgrid_time_entries_list` | Core | List time entries with date, task, and user filters |
+| `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, creator, billable, and billed filters |
 | `teamgrid_time_entry_get` | Core | Read one time entry by ID |
 | `teamgrid_lists_list` | Core | List task lists |
 | `teamgrid_list_get` | Core | Read one list by ID |

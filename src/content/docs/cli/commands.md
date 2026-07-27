@@ -186,6 +186,7 @@ Task mutations require `--if-match` from the latest task read. Do not synthesize
 
 ```bash
 teamgrid time-entries list --from 2026-07-01 --to 2026-07-31 --all
+teamgrid times list --service-id SERVICE_ID --billable true --billed false
 teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json

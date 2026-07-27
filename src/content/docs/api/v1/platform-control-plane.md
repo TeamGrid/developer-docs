@@ -3,17 +3,33 @@ title: Platform discovery and settings
 description: Negotiate TeamGrid capabilities, workspace entitlements, event channels, and safe revisioned workspace defaults.
 ---
 
-The API exposes a small control plane so an integration can discover what its credential can use
-without reading billing internals, raw feature flags, roles, provider configuration, or secrets.
-Every result is calculated in the workspace's owning cell and reflects the current credential,
-scopes, product entitlement, and workspace lock state.
+The API exposes a small control plane so an integration can negotiate the public contract and
+discover what its credential can use without reading billing internals, raw feature flags, roles,
+provider configuration, or secrets. Version discovery is public and contains no workspace data.
+Every authenticated result is calculated in the workspace's owning cell and reflects the current
+credential, scopes, product entitlement, and workspace lock state.
 
 | Resource | Endpoint | Scope | Purpose |
 | --- | --- | --- | --- |
+| API version | `GET /v1/` | None | Negotiate the contract, regional status, deprecations, and supported client versions |
 | System capabilities | `GET /v1/system/capabilities` | `workspace:read` | Compare product entitlement with this credential's accessible domains |
 | Workspace entitlements | `GET /v1/workspace/entitlements` | `workspace:read` | Read stable, secret-free product availability identifiers |
 | Workspace settings | `GET /v1/workspace/settings` | `workspace-settings:read` | Read six safe workspace defaults and their `wst1` revision |
 | Event catalog | `GET /v1/events/catalog` | `events:read` | List only webhook events this credential can consume |
+
+## API version discovery
+
+Call `GET /v1/` before authentication when an integration needs to verify the endpoint and client
+compatibility. The exact response identifies API version `1`, the current contract version and
+manifest SHA-256, the serving region when configured, operational status, active deprecation
+notices, and the minimum supported SDK, CLI, and MCP versions. It never returns workspace,
+credential, or feature-flag data.
+
+The SDK exposes this as `client.system.getApiVersion()` and the CLI as
+`teamgrid api-version`. Clients should reject an unexpected major version, an invalid manifest
+digest, or an unsupported minimum client version. Deprecation entries include an identifier,
+message, optional replacement URL, and optional sunset timestamp so automated tooling can surface
+actionable notices without scraping documentation.
 
 ## Capabilities and entitlements
 

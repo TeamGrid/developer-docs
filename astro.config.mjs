@@ -6,6 +6,38 @@ import starlightOpenAPI, { createOpenAPISidebarGroup } from 'starlight-openapi'
 const v0Reference = createOpenAPISidebarGroup()
 const v1Reference = createOpenAPISidebarGroup()
 
+/**
+ * Turns on Pagefind's filter UI.
+ *
+ * Starlight validates its `pagefind` option with a closed Zod object that only
+ * accepts indexWeight, ranking, and mergeIndex, so UI options cannot be passed
+ * through configuration. Replacing the virtual module its search component
+ * reads is a far smaller seam than forking the ~500-line Search component.
+ *
+ * The facet values come from src/components/PageTitle.astro. If a Starlight
+ * upgrade renames this module, the build fails loudly rather than silently
+ * dropping the filters.
+ */
+const PAGEFIND_CONFIG_ID = 'virtual:starlight/pagefind-config'
+
+function pagefindFilterUI() {
+  return {
+    name: 'teamgrid:pagefind-filter-ui',
+    enforce: 'pre',
+    resolveId(id) {
+      if (id === PAGEFIND_CONFIG_ID) return `\0${id}`
+      return null
+    },
+    load(id) {
+      if (id !== `\0${PAGEFIND_CONFIG_ID}`) return null
+      return `export const pagefindUserConfig = ${JSON.stringify({
+        showFilters: true,
+        openFilters: ['Area'],
+      })}`
+    },
+  }
+}
+
 const organizationSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@graph': [
@@ -27,6 +59,10 @@ export default defineConfig({
   integrations: [
     starlight({
       customCss: ['./src/styles/custom.css'],
+      components: {
+        PageTitle: './src/components/PageTitle.astro',
+        SiteTitle: './src/components/TeamGridSiteTitle.astro',
+      },
       description:
         'Official documentation for the TeamGrid API, TypeScript SDK, CLI, and read-only MCP server.',
       editLink: {
@@ -112,6 +148,7 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          collapsed: true,
           items: [
             { label: 'Developer Hub', link: '/' },
             { label: 'Choose an interface', link: '/guides/choose-an-interface/' },
@@ -120,6 +157,7 @@ export default defineConfig({
           label: 'Start here',
         },
         {
+          collapsed: true,
           items: [
             { label: 'Overview', link: '/api/v1/' },
             { label: 'Quickstart', link: '/api/v1/quickstart/' },
@@ -143,10 +181,10 @@ export default defineConfig({
             { label: 'Automations and integrations', link: '/api/v1/automations-and-integrations/' },
             { label: 'Errors and rate limits', link: '/api/v1/errors/' },
             { label: 'Signed webhooks', link: '/api/v1/webhooks/' },
-            v1Reference,
           ],
           label: 'API v1',
         },
+        v1Reference,
         {
           collapsed: true,
           items: [
@@ -159,6 +197,7 @@ export default defineConfig({
           label: 'API v0 · Legacy',
         },
         {
+          collapsed: true,
           items: [
             { label: 'SDK overview', link: '/sdk/' },
             { label: 'Quickstart', link: '/sdk/quickstart/' },
@@ -168,6 +207,7 @@ export default defineConfig({
           label: 'TypeScript SDK',
         },
         {
+          collapsed: true,
           items: [
             { label: 'CLI overview', link: '/cli/' },
             { label: 'Install and authenticate', link: '/cli/install-and-authenticate/' },
@@ -177,6 +217,7 @@ export default defineConfig({
           label: 'CLI',
         },
         {
+          collapsed: true,
           items: [
             { label: 'MCP overview', link: '/mcp/' },
             { label: 'Configure a host', link: '/mcp/configuration/' },
@@ -185,6 +226,7 @@ export default defineConfig({
           label: 'MCP server',
         },
         {
+          collapsed: true,
           items: [
             { label: 'Changelog', link: '/changelog/' },
             { label: 'OpenAPI files', link: '/openapi/' },
@@ -205,4 +247,5 @@ export default defineConfig({
     sitemap(),
   ],
   site: 'https://developer.teamgridapp.com',
+  vite: { plugins: [pagefindFilterUI()] },
 })

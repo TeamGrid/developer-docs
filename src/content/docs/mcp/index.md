@@ -8,7 +8,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2 @teamgrid/mcp-server@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0-rc.1 @teamgrid/mcp-server@1.0.0-rc.1
 teamgrid auth login
 ```
 
@@ -16,7 +16,7 @@ teamgrid auth login
 
 - No remote TeamGrid MCP endpoint
 - No MCP-specific credential or database
-- No change-feed tool; that operation is not part of the current public beta contract
+- No change-feed tool; that operation is not part of the current 1.0 release candidate
 - No write, archive, or remove tools
 - No writes and no mechanism for a model to submit `If-Match`
 - No session affinity or bypass around API authorization
@@ -30,8 +30,8 @@ teamgrid auth login
 
 Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
 
-Task and project reads use the static Beta 2 response DTO and do not contain developer revision
-fields. The MCP server remains read-only: no tool accepts an ETag, invokes a protected mutation, or
-polls the excluded project-template operation resources.
+Task and project reads include their developer revision. The MCP server remains read-only: no tool
+accepts an ETag, invokes a protected mutation, or polls the excluded project-template operation
+resources.
 
 [Configure an MCP host](/mcp/configuration/) or [review the tools and security model](/mcp/tools-and-security/).

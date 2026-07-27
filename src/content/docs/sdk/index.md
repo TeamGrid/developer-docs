@@ -5,10 +5,10 @@ description: Use the official typed and region-aware Node.js client for TeamGrid
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
 
-Install the exact verified controlled-beta package version:
+Install the exact verified release-candidate package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-beta.2
+npm install @teamgrid/api-client@1.0.0-rc.1
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -64,12 +64,11 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.0-beta.2`; pin that exact version after
-it is available on the configured npm channel. Tasks, projects, and project templates use the
-static Beta 2 resource contract: their representations do not expose developer revisions and their
-mutation options do not accept `ifMatch`. Project lifecycle changes and template instantiation
-remain asynchronous and accept a stable idempotency key. The SDK keeps typed `ifMatch` options for
-the 31 independently protected operations in other resource families.
+The compatible package checkpoint for this contract is `1.0.0-rc.1`; pin that exact version after
+it is available on the configured npm channel. Tasks, projects, and project templates expose
+developer revisions and require typed `ifMatch` options for their 14 protected mutations. Project
+lifecycle changes and template instantiation remain asynchronous and also accept a stable
+idempotency key. Another 31 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
@@ -100,8 +99,8 @@ headers, secrets, and tenant-routing internals.
   job behind a synchronous project response.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
-- Project, task, and project-template methods use the static Beta 2 contract and reject a legacy
-  `ifMatch` option instead of silently sending an unsupported precondition.
+- Project, task, and project-template mutations require `ifMatch`; the client canonicalizes the
+  typed revision and validates the returned strong ETag before accepting the response.
 - Template instantiation and planned-work replacement expose the accepted operation; bounded
   `wait()` helpers poll credential-owned status without changing operation semantics.
 - Project lifecycle and template-instantiation wait helpers accept the validated

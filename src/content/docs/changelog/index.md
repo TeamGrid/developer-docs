@@ -5,12 +5,26 @@ description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and
 
 ## Current platform
 
-API v1 and the npm packages are in a controlled beta. Until stable releases begin, authoritative changes are recorded in the public source repositories and their release history:
+API v1 and the npm packages are at the `1.0.0-rc.1` release-candidate checkpoint. Until the stable
+release is signed off, authoritative changes are recorded in the public source repositories and
+their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
+
+## 2026-07-27
+
+- Promoted the synchronized API v1, SDK, CLI, and MCP contract to `1.0.0-rc.1`.
+- Qualified strong ETags and mandatory `If-Match` preconditions for 14 project, task, and
+  project-template mutations, including asynchronous lifecycle starts and template instantiation.
+- Added developer revisions to core resource DTOs and source/result revisions to qualified
+  asynchronous operation resources.
+- Kept the durable change feed outside 1.0 until preimage, failover, retention, and recovery
+  semantics complete their separate qualification.
+- Preserved the curated read-only MCP policy while aligning all 181 public operations across
+  OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21
 

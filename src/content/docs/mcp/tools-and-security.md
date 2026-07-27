@@ -51,14 +51,14 @@ request a smaller page if the server returns `result_too_large`. Call-note, cont
 webhook tools can expose personal, commercial, or security-sensitive information and should use
 dedicated least-privilege credentials.
 
-Project and task results use the same static Beta 2 response DTO as API v1 and do not contain
-developer revision fields. The local server does not register mutation tools or accept `If-Match`
-even for independently protected resource families. Use the SDK or CLI for controlled writes.
+Project and task results include the same developer revision as API v1. The local server does not
+register mutation tools or accept `If-Match`, even for protected resource families. Use the SDK or
+CLI for controlled writes.
 
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
 financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
-sensitive operational metadata. The change feed is not part of the current public beta contract
+sensitive operational metadata. The change feed is not part of the current 1.0 release candidate
 and is therefore absent from every MCP profile. A future high-volume durable synchronization stream
 would not be a bounded interactive model task. Custom-field values, project
 templates and their instantiation status, and planned-work schedules and operation status are

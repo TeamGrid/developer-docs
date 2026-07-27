@@ -5,7 +5,7 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-beta.2` controlled-beta API v1 contract contains 111 paths and 181 operations. The TypeScript SDK
+The `1.0.0-rc.1` API v1 release candidate contains 111 paths and 181 operations. The TypeScript SDK
 and CLI map all 181 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
@@ -17,13 +17,13 @@ contacts, comments, activity, documents, files, workspace administration, search
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
 planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
-The durable change feed is deliberately outside the first public beta contract.
+The durable change feed is deliberately outside the 1.0 contract.
 
-The same release boundary keeps 25 project, task, project-template, and associated asynchronous
-operation endpoints on a static non-CAS contract. They do not expose developer revision fields or
-core `If-Match` requirements. This does not remove the 31 independent `If-Match` operations for
-resource families such as planned work, custom-field values, calendar data, documents, workspace
-administration, automations, workspace settings, and webhook-secret rotation.
+The same release boundary qualifies 14 project, task, and project-template mutations with strong
+ETags and required `If-Match`, plus two revision-bound asynchronous-operation reads. Another 31
+protected operations retain resource-specific revision formats for planned work, custom-field
+values, calendar data, documents, workspace administration, automations, workspace settings, and
+webhook-secret rotation.
 
 ## Authorization registry
 
@@ -56,13 +56,13 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the controlled-beta contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the release-candidate contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 13 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-and webhook-secret rotation are now released in the controlled-beta contract. Remaining planned
+and webhook-secret rotation are now released in the release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
 classification applies to discovery, credentials, several core project, task, contact and

@@ -52,7 +52,7 @@ project IDs. The SDK rejects a response if any of those immutable fields changes
 CLI applies the same binding automatically when `--wait` is present.
 
 Only the credential that created an instantiation can read its operation status. A replay with the
-same idempotency key and payload returns the original operation; using the key for different input
-returns `409`. The static Beta 2 template and operation representations do not expose developer,
-source, or result revision fields. Template metadata and operation status are forbidden in every MCP profile because
+same idempotency key, payload, and source revision returns the original operation; using the key for
+different input returns `409`. Templates expose developer revisions; accepted and terminal
+operations expose their source and result revisions. Template metadata and operation status are forbidden in every MCP profile because
 captured workflow shape and bulk creation state are not suitable bounded model tools.

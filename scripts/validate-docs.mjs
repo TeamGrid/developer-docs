@@ -33,7 +33,7 @@ if (
   packageManifest.schemaVersion !== 1
   || packageManifest.sourceRepository !== 'TeamGrid/developer-platform'
   || !/^[0-9a-f]{40}$/.test(packageManifest.sourceCommit || '')
-  || packageManifest.version !== '1.0.0-beta.2'
+  || packageManifest.version !== '1.0.0-rc.1'
   || Object.values(packageManifest.packages || {}).some(
     (item) => item.version !== packageManifest.version || !/^[a-f0-9]{64}$/.test(item.sha256 || ''),
   )
@@ -216,7 +216,7 @@ if (
   fail('OpenAPI and Developer Platform execution bindings differ.')
 }
 
-const expectedBeta2NonCasOperationIds = [
+const expectedCoreOperationIds = [
   'archiveProject',
   'archiveProjectTemplate',
   'archiveTask',
@@ -234,6 +234,22 @@ const expectedBeta2NonCasOperationIds = [
   'listProjects',
   'listProjectTemplates',
   'listTasks',
+  'reopenProject',
+  'reopenTask',
+  'restoreProject',
+  'restoreProjectTemplate',
+  'restoreTask',
+  'updateProject',
+  'updateProjectTemplate',
+  'updateTask',
+]
+const expectedCoreCasOperationIds = [
+  'archiveProject',
+  'archiveProjectTemplate',
+  'archiveTask',
+  'completeProject',
+  'completeTask',
+  'instantiateProjectTemplate',
   'reopenProject',
   'reopenTask',
   'restoreProject',
@@ -279,8 +295,8 @@ const expectedIndependentIfMatchOperationIds = [
 const allV1Operations = Object.values(v1.paths || {})
   .flatMap((pathItem) => Object.values(pathItem))
   .filter((operation) => operation?.operationId)
-const beta2NonCasOperations = allV1Operations
-  .filter((operation) => expectedBeta2NonCasOperationIds.includes(operation.operationId))
+const coreOperations = allV1Operations
+  .filter((operation) => expectedCoreOperationIds.includes(operation.operationId))
   .sort((left, right) => left.operationId.localeCompare(right.operationId))
 const independentIfMatchOperations = allV1Operations
   .filter((operation) =>
@@ -289,29 +305,34 @@ const independentIfMatchOperations = allV1Operations
     ),
   )
   .sort((left, right) => left.operationId.localeCompare(right.operationId))
-const residualResourceCasOperations = allV1Operations.filter(
+const resourceCasOperations = allV1Operations.filter(
   (operation) => operation['x-teamgrid-resource-cas'] === 'resource-cas-v1',
 )
-const residualResourceCasReads = allV1Operations.filter(
+const resourceCasReads = allV1Operations.filter(
   (operation) => operation['x-teamgrid-resource-cas-read'] === 'resource-cas-v1',
 )
 if (
-  beta2NonCasOperations.length !== 25
-  || JSON.stringify(beta2NonCasOperations.map((operation) => operation.operationId))
-    !== JSON.stringify(expectedBeta2NonCasOperationIds)
-  || canonicalManifest.summary?.beta2NonCasResourceOperations !== 25
-  || canonicalManifest.summary?.resourceCasMutationOperations !== 0
-  || canonicalManifest.summary?.resourceCasOperationReads !== 0
-  || residualResourceCasOperations.length !== 0
-  || residualResourceCasReads.length !== 0
+  coreOperations.length !== 25
+  || JSON.stringify(coreOperations.map((operation) => operation.operationId))
+    !== JSON.stringify(expectedCoreOperationIds)
+  || canonicalManifest.summary?.resourceCasMutationOperations !== 14
+  || canonicalManifest.summary?.resourceCasOperationReads !== 2
+  || JSON.stringify(resourceCasOperations.map((operation) => operation.operationId).sort())
+    !== JSON.stringify(expectedCoreCasOperationIds)
+  || JSON.stringify(resourceCasReads.map((operation) => operation.operationId).sort())
+    !== JSON.stringify(['getProjectLifecycleOperation', 'getProjectTemplateInstantiation'])
 ) {
-  fail('Beta 2 must expose exactly 25 static core operations and zero resource-CAS operations.')
+  fail('The release candidate must preserve 25 core operations, 14 CAS mutations, and 2 qualified operation reads.')
 }
+const expectedAllIfMatchOperationIds = [
+  ...expectedCoreCasOperationIds,
+  ...expectedIndependentIfMatchOperationIds,
+].sort()
 if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
-  !== JSON.stringify(expectedIndependentIfMatchOperationIds)
+  !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('Beta 2 must preserve exactly the 31 independent If-Match operations.')
+  fail('The release candidate must preserve exactly 45 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -324,23 +345,22 @@ for (const operation of independentIfMatchOperations) {
     fail(`${operation.operationId} has an incomplete independent If-Match contract.`)
   }
 }
-for (const operation of beta2NonCasOperations) {
+for (const operation of resourceCasOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
     /IfMatch(?:Project|ProjectTemplate|Task)$/.test(parameter.$ref || parameter.name || ''),
   )
   if (
-    ifMatchParameters.length !== 0
-    || operation.responses?.['412'] !== undefined
-    || operation.responses?.['428'] !== undefined
-    || operation['x-teamgrid-resource-cas'] !== undefined
-    || operation['x-teamgrid-resource-cas-read'] !== undefined
+    ifMatchParameters.length !== 1
+    || operation.responses?.['412'] === undefined
+    || operation.responses?.['428'] === undefined
+    || operation['x-teamgrid-resource-cas'] !== 'resource-cas-v1'
   ) {
-    fail(`${operation.operationId} still exposes a retired core resource-CAS contract.`)
+    fail(`${operation.operationId} lacks its required resource-CAS contract.`)
   }
 }
 for (const parameterName of ['IfMatchProject', 'IfMatchProjectTemplate', 'IfMatchTask']) {
-  if (v1.components?.parameters?.[parameterName] !== undefined) {
-    fail(`Retired core parameter ${parameterName} remains in OpenAPI.`)
+  if (v1.components?.parameters?.[parameterName] === undefined) {
+    fail(`Required core parameter ${parameterName} is absent from OpenAPI.`)
   }
 }
 for (const [schemaName, retiredFields] of Object.entries({
@@ -351,8 +371,8 @@ for (const [schemaName, retiredFields] of Object.entries({
   Task: ['developerRevision', 'developerUpdatedAt'],
 })) {
   const properties = v1.components?.schemas?.[schemaName]?.properties?.attributes?.properties
-  if (!properties || retiredFields.some((field) => properties[field] !== undefined)) {
-    fail(`${schemaName} still exposes retired core resource-CAS fields.`)
+  if (!properties || retiredFields.some((field) => properties[field] === undefined)) {
+    fail(`${schemaName} lacks required core resource-CAS fields.`)
   }
 }
 const resourceConcurrencyDocumentation = await readFile(
@@ -360,9 +380,9 @@ const resourceConcurrencyDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  '25 static core operations',
-  '31 independent `If-Match` operations',
-  'do not expose `developerRevision` or `developerUpdatedAt`',
+  'Exactly 14 core mutations require `If-Match`',
+  'Another 31 operations retain their domain-specific compare-and-set contracts',
+  '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',
   '`412 precondition_failed`',
   '`428 precondition_required`',
@@ -391,9 +411,9 @@ if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
   fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
 }
 const changePolicy = capabilities.operationPolicy.find((item) => item.operationId === 'listChanges')
-if (changePolicy) fail('The beta 2 capability contract must exclude listChanges.')
-if (!mcpDocumentation.includes('The change feed is not part of the current public beta contract')) {
-  fail('MCP documentation is missing the explicit beta change-feed boundary.')
+if (changePolicy) fail('The 1.0 release-candidate capability contract must exclude listChanges.')
+if (!mcpDocumentation.includes('The change feed is not part of the current 1.0 release candidate')) {
+  fail('MCP documentation is missing the explicit 1.0 change-feed boundary.')
 }
 
 const changeFeedDocumentation = await readFile(
@@ -401,9 +421,9 @@ const changeFeedDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  'not part of the `1.0.0-beta.2` public contract',
+  'not part of the `1.0.0-rc.1` public contract',
   '`changes:read` cannot be issued',
-  '`GET /v1/changes` is not a supported beta operation',
+  '`GET /v1/changes` is not a supported 1.0 operation',
 ]) {
   if (!changeFeedDocumentation.includes(marker)) {
     fail(`Change-feed status documentation is missing: ${marker}.`)
@@ -510,8 +530,8 @@ for (const marker of [
   `${currentV1PathCount} v1 paths`,
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
-  `${canonicalManifest.summary?.beta2NonCasResourceOperations} static non-CAS core operations`,
-  '31 independent `If-Match` operations',
+  `${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutations`,
+  '31 domain-specific `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)
@@ -522,7 +542,7 @@ const capabilityStatusCounts = capabilities.productCapabilities.reduce((counts, 
   return counts
 }, {})
 for (const [label, status] of [
-  ['Released in the controlled-beta contract', 'released'],
+  ['Released in the release-candidate contract', 'released'],
   ['Partial', 'partial'],
   ['Planned', 'planned'],
   ['Intentionally private', 'private'],

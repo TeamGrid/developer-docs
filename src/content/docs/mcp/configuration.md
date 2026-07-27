@@ -6,7 +6,7 @@ description: Configure the local TeamGrid stdio MCP server in Codex or another M
 Install the current prereleases and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2 @teamgrid/mcp-server@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0-rc.1 @teamgrid/mcp-server@1.0.0-rc.1
 teamgrid auth login
 teamgrid auth status --check
 ```

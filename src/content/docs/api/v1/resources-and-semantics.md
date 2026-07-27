@@ -40,11 +40,10 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
-Project, task, and project-template responses use the static Beta 2 shape and do not contain
-developer revision fields. Their mutations do not accept a core `If-Match` precondition. This
-boundary applies to 25 project, task, template, and associated operation endpoints; independent
-resource families retain their own compare-and-set contracts. See
-[resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the exact boundary.
+Project, task, and project-template responses include developer revision fields. Their 14 mutations
+require a strong `If-Match` precondition; another 31 operations retain resource-specific
+compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
+boundary.
 
 ## Project lifecycle operations
 
@@ -52,7 +51,7 @@ Project completion, reopen, archive, and restore can cascade across related Team
 therefore returns a project-lifecycle operation instead of pretending that the work completed during
 the initiating request.
 
-1. Send the lifecycle command with a stable idempotency key.
+1. Read the project and send the lifecycle command with its latest ETag and a stable idempotency key.
 2. Persist the returned operation ID, action, and target project ID.
 3. Treat the accepted operation as the authoritative handle for subsequent polling.
 4. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
@@ -60,8 +59,8 @@ the initiating request.
 5. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
    unrelated replacement operation.
 
-On success, re-read the project if the next step depends on its resulting state. Beta 2 operation
-resources do not expose the retired core `sourceRevision` or `resultRevision` fields.
+The accepted operation exposes `sourceRevision`; a successful terminal operation exposes
+`resultRevision`. Re-read the project if the next step needs its complete resulting state.
 
 The CLI project commands accept `--wait`, `--max-wait`, and `--poll-interval`. The SDK exposes the
 operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`. Pass

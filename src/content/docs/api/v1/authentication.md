@@ -9,7 +9,7 @@ API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a 
 Authorization: Bearer <credential>
 ```
 
-The current `tg_sk_v1_` credential is the controlled-beta credential format and remains bound to
+The current `tg_sk_v1_` credential format is bound to
 the existing workspace authorization path. It is not a native autonomous service account. Native
 personal-access credentials, service accounts, and delegated OAuth use separate principal models
 and stay unavailable until their cell-local rollout gates are qualified. Existing credentials are

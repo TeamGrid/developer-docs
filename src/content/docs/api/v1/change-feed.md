@@ -1,10 +1,10 @@
 ---
 title: Change feed status
-description: Understand why the change feed is excluded from the first public API v1 beta contract.
+description: Understand why the change feed is excluded from the API v1 1.0 contract.
 ---
 
-The change feed is not part of the `1.0.0-beta.2` public contract. `changes:read` cannot be issued,
-and `GET /v1/changes` is not a supported beta operation. It is therefore absent from OpenAPI, the
+The change feed is not part of the `1.0.0-rc.1` public contract. `changes:read` cannot be issued,
+and `GET /v1/changes` is not a supported 1.0 operation. It is therefore absent from OpenAPI, the
 TypeScript SDK, the CLI, and the cross-interface capability ledger. MCP does not expose it either.
 
 This boundary is deliberate. A durable synchronization feed must preserve an unambiguous
@@ -12,7 +12,7 @@ workspace and resource identity across rapid updates, ownership changes, deletes
 retention compaction, and cell failover. The current capture implementation has not completed that
 preimage and recovery qualification, so TeamGrid does not advertise a weaker contract as ready.
 
-## Supported beta alternatives
+## Supported 1.0 alternatives
 
 Use the normal cursor-paginated resource endpoints for bounded imports and reconciliation. Persist
 resource IDs and the documented current-state fields returned by each endpoint, and repeat a

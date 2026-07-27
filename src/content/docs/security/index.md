@@ -41,7 +41,7 @@ project-statement scope. Do not grant them to an MCP credential: MCP product too
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
 
-The first public beta does not expose a change feed. Do not use audit events, delivery history, or
+The 1.0 release candidate does not expose a change feed. Do not use audit events, delivery history, or
 aggressive polling as an undocumented substitute. For supported webhook workflows, keep signing
 secrets and delivery metadata out of logs and fetch current resource state through its independently
 scoped endpoint.

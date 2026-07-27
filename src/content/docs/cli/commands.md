@@ -61,16 +61,16 @@ Examples:
 teamgrid projects list --completed false
 teamgrid projects create --data @project.json --idempotency-key project-import-42
 teamgrid projects get PROJECT_ID --output json
-teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' --if-match REVISION
 teamgrid projects complete PROJECT_ID \
-  --idempotency-key close-42 --wait
+  --if-match REVISION --idempotency-key close-42 --wait
 ```
 
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
-Project updates and lifecycle commands use the static Beta 2 contract and do not accept
-`--if-match`. Lifecycle starts should use a stable idempotency key.
+Project updates and lifecycle commands require `--if-match` from the latest project read.
+Lifecycle starts should also use a stable idempotency key.
 
 ## Commerce and project statements
 
@@ -165,8 +165,8 @@ teamgrid tasks timer stop TASK_ID --user-id USER_ID
 
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
-Task mutations use the static Beta 2 contract and do not accept `--if-match`. Do not synthesize a
-revision from `updatedAt` or another task field.
+Task mutations require `--if-match` from the latest task read. Do not synthesize a revision from
+`updatedAt` or another task field.
 
 ## Time entries
 
@@ -233,15 +233,15 @@ destructive compare-and-set operation and therefore requires confirmation.
 teamgrid project-templates list|get|create
 teamgrid project-templates update|archive|restore PROJECT_TEMPLATE_ID
 teamgrid project-templates instantiate TEMPLATE_ID --data <json|@file|->
-  [--idempotency-key KEY] [--wait]
+  --if-match REVISION [--idempotency-key KEY] [--wait]
 teamgrid project-template-instantiations get OPERATION_ID
 ```
 
 Template list filters include `--archived`, `--created-at-from`, `--created-at-to`, and
 `--origin-project-id`. Create and instantiate should use stable idempotency keys. `--wait` polls the
 credential-owned instantiation until it succeeds or fails, bounded by `--max-wait` and
-`--poll-interval`. Project-template commands use the static Beta 2 contract and do not accept
-`--if-match`. Instantiation binds its payload to the idempotency key.
+`--poll-interval`. Project-template mutations require `--if-match` from the latest template read.
+Instantiation binds its payload and source revision to the idempotency key.
 
 ## Planned work
 

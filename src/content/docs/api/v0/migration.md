@@ -16,7 +16,7 @@ the platform-wide changes.
 | Endpoint | Global v0 host | Credential-derived regional `/v1` host |
 | Pagination | Page and limit | Opaque cursor and limit |
 | Create retries | Generally unsafe | Required idempotency key |
-| Concurrent project/task/template writes | No uniform public precondition | Static Beta 2 writes without a public core CAS precondition |
+| Concurrent project/task/template writes | No uniform public precondition | Strong resource ETags and required `If-Match` |
 | Errors | Historical response formats | Versioned error envelope with request id |
 | Webhooks | Legacy unsigned delivery | HMAC-signed delivery v2 |
 | Audit | General operational logging | Credential and mutation audit events |
@@ -48,11 +48,11 @@ statements, and credential-owned webhook delivery history. Product acquisition c
 project-statement budget data require explicit finance scope overlays. Value writes and planned-work
 replacement use strong compare-and-set revisions; do not translate v0 writes mechanically.
 
-Project, task, and project-template writers use a static Beta 2 contract without developer revision
-fields or a core `If-Match` requirement. Do not synthesize preconditions for those operations.
-Project lifecycle and template instantiation remain asynchronous and should use stable idempotency
-keys. Other domains, including custom-field values and planned work, retain their explicit
-read-before-write preconditions. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+Project, task, and project-template writers must read the latest developer revision and send its
+strong ETag through `If-Match`. Project lifecycle and template instantiation remain asynchronous
+and should also use stable idempotency keys. Other protected domains, including custom-field values
+and planned work, retain their resource-specific preconditions. See
+[resource concurrency](/api/v1/resource-concurrency/).
 
 The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
 capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,

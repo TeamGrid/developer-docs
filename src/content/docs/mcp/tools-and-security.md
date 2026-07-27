@@ -31,7 +31,7 @@ commercially sensitive billing rates.
 | `teamgrid_tag_get` | Core | Read one tag by ID |
 | `teamgrid_call_notes_list` | Collaboration | List plain-text call notes |
 | `teamgrid_call_note_get` | Collaboration | Read one plain-text call note by ID |
-| `teamgrid_contacts_list` | Collaboration | List people or companies |
+| `teamgrid_contacts_list` | Collaboration | List people or companies with relationship filters |
 | `teamgrid_contact_get` | Collaboration | Read one person or company by ID |
 | `teamgrid_contact_groups_list` | Collaboration | List contact groups |
 | `teamgrid_contact_group_get` | Collaboration | Read one contact group by ID |

@@ -203,7 +203,8 @@ teamgrid contact-groups list|get|create|update|archive|restore
 teamgrid users
 ```
 
-Contact lists accept `--type person|company` and `--archived`. Call-note and contact-group lists
+Contact lists accept type, category, company, creator, customer, group, parent-contact, and archive
+filters. Call-note and contact-group lists
 accept `--archived`. Call-note creation accepts plain-text `content`; the API does not expose
 TeamGrid's internal rich-text representation. Contact-group parent changes are validated against
 cycles and hierarchy limits.

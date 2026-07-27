@@ -2764,7 +2764,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
 | Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
 | Time entries | List, get, create, update, archive, restore, start and stop task timers | Billed entries are immutable; billing operations and financial rates remain outside the core workflow |
-| Contacts | List, get, create, update | No public archive operation in the current contract |
+| Contacts | List, get, create, update | Reads include contact relationships and non-financial CRM summaries; no public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
@@ -2802,6 +2802,13 @@ financial aggregates, cached billing details, and call records are rejected at t
 boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
 task timers form the released operational workflow. Marking entries billed or unbilled remains the
 separate planned time-entry billing capability.
+
+Contact reads include person/company identity, addresses, communication channels, websites, social
+profiles, parent/group/company relationships, provenance, last activity, and non-financial task,
+project, and employee counts. Lists support exact type, category, customer, group, company, parent,
+and creator filters. Billing configuration, rates, costs, revenue, profit, budgets, time aggregates,
+cached display names, image-storage internals, and embedded custom-field storage are never returned.
+Custom-field values remain available only through their dedicated revisioned endpoints.
 
 Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
@@ -3555,7 +3562,8 @@ teamgrid contact-groups list|get|create|update|archive|restore
 teamgrid users
 ```
 
-Contact lists accept `--type person|company` and `--archived`. Call-note and contact-group lists
+Contact lists accept type, category, company, creator, customer, group, parent-contact, and archive
+filters. Call-note and contact-group lists
 accept `--archived`. Call-note creation accepts plain-text `content`; the API does not expose
 TeamGrid's internal rich-text representation. Contact-group parent changes are validated against
 cycles and hierarchy limits.
@@ -3888,19 +3896,19 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 47 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 9 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 48 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 8 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
 project reads, task reads, writes and lifecycle, complete non-billing time-entry reads and writes,
-and webhook-secret rotation are now released in the
+complete contact reads, and webhook-secret rotation are now released in the
 release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, contact projections,
-custom-field values, project templates, planned-work lifecycle, audit, and
+classification applies to discovery, credentials, custom-field values, project templates,
+planned-work lifecycle, audit, and
 webhooks where additional product semantics remain. The change feed is excluded rather than marked
 as a partially released capability.
 
@@ -4145,7 +4153,7 @@ commercially sensitive billing rates.
 | `teamgrid_tag_get` | Core | Read one tag by ID |
 | `teamgrid_call_notes_list` | Collaboration | List plain-text call notes |
 | `teamgrid_call_note_get` | Collaboration | Read one plain-text call note by ID |
-| `teamgrid_contacts_list` | Collaboration | List people or companies |
+| `teamgrid_contacts_list` | Collaboration | List people or companies with relationship filters |
 | `teamgrid_contact_get` | Collaboration | Read one person or company by ID |
 | `teamgrid_contact_groups_list` | Collaboration | List contact groups |
 | `teamgrid_contact_group_get` | Collaboration | Read one contact group by ID |

@@ -15,7 +15,7 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
 | Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
 | Time entries | List, get, create, update, archive, restore, start and stop task timers | Billed entries are immutable; billing operations and financial rates remain outside the core workflow |
-| Contacts | List, get, create, update | No public archive operation in the current contract |
+| Contacts | List, get, create, update | Reads include contact relationships and non-financial CRM summaries; no public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
@@ -53,6 +53,13 @@ financial aggregates, cached billing details, and call records are rejected at t
 boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
 task timers form the released operational workflow. Marking entries billed or unbilled remains the
 separate planned time-entry billing capability.
+
+Contact reads include person/company identity, addresses, communication channels, websites, social
+profiles, parent/group/company relationships, provenance, last activity, and non-financial task,
+project, and employee counts. Lists support exact type, category, customer, group, company, parent,
+and creator filters. Billing configuration, rates, costs, revenue, profit, budgets, time aggregates,
+cached display names, image-storage internals, and embedded custom-field storage are never returned.
+Custom-field values remain available only through their dedicated revisioned endpoints.
 
 Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific

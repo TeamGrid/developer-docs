@@ -40,6 +40,12 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
+Project reads include stable list and scheduling order, creation and duplication provenance,
+planning boundaries, last activity, and non-financial task progress counts. The owning App cell
+projects only these safe summary fields from its internal calculation object; costs, revenue,
+profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
+the API boundary. Project sharing grants remain a separate planned capability.
+
 Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
 compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact

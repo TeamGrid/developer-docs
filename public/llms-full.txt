@@ -2789,6 +2789,12 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
 in the controlled beta, partially covered, planned, or intentionally private.
 
+Project reads include stable list and scheduling order, creation and duplication provenance,
+planning boundaries, last activity, and non-financial task progress counts. The owning App cell
+projects only these safe summary fields from its internal calculation object; costs, revenue,
+profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
+the API boundary. Project sharing grants remain a separate planned capability.
+
 Project, task, and project-template responses include developer revision fields. Their 17 mutations
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
 compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
@@ -3137,6 +3143,9 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
   API, SDK, CLI, and the curated read-only MCP response surface.
 - Completed the task write field set with tenant-validated direct contact assignment, explicit
   project-contact inheritance, and whole-interval validation for partial planning-date updates.
+- Completed project reads with exact creator, contact, individual ID, list, manager and subscriber
+  filters, stable ordering/provenance fields, and a non-financial progress summary whose nested
+  upstream shape rejects private budget, revenue and time calculations.
 - Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
   project-template mutations, including asynchronous lifecycle starts and template instantiation.
 - Added developer revisions to core resource DTOs and source/result revisions to qualified
@@ -3400,6 +3409,10 @@ teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' --if-match REVI
 teamgrid projects complete PROJECT_ID \
   --if-match REVISION --idempotency-key close-42 --wait
 ```
+
+Project lists support `--archived`, `--completed`, `--contact-id`, `--created-by-id`,
+`--individual-id`, `--list-id`, `--manager-id`, and `--subscriber-id`. Multiple filters are
+combined and never broaden the credential's workspace boundary.
 
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
@@ -3866,17 +3879,17 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the release-candidate contract | 44 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 12 | Some useful behavior exists, but the product workflow is not yet complete |
+| Released in the release-candidate contract | 45 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 11 | Some useful behavior exists, but the product workflow is not yet complete |
 | Planned | 11 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
 System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-task reads, writes and lifecycle, and webhook-secret rotation are now released in the
+project reads, task reads, writes and lifecycle, and webhook-secret rotation are now released in the
 release-candidate contract. Remaining planned
 work includes service accounts, delegated OAuth, project sharing and bulk task
 operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, several core project, contact and
+classification applies to discovery, credentials, contact and
 time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
 webhooks where additional product semantics remain. The change feed is excluded rather than marked
 as a partially released capability.

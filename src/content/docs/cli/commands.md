@@ -66,6 +66,10 @@ teamgrid projects complete PROJECT_ID \
   --if-match REVISION --idempotency-key close-42 --wait
 ```
 
+Project lists support `--archived`, `--completed`, `--contact-id`, `--created-by-id`,
+`--individual-id`, `--list-id`, `--manager-id`, and `--subscriber-id`. Multiple filters are
+combined and never broaden the credential's workspace boundary.
+
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.

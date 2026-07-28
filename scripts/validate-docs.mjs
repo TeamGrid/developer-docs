@@ -33,7 +33,7 @@ if (
   packageManifest.schemaVersion !== 1
   || packageManifest.sourceRepository !== 'TeamGrid/developer-platform'
   || !/^[0-9a-f]{40}$/.test(packageManifest.sourceCommit || '')
-  || packageManifest.version !== '1.0.0-beta.2'
+  || packageManifest.version !== '1.0.0'
   || Object.values(packageManifest.packages || {}).some(
     (item) => item.version !== packageManifest.version || !/^[a-f0-9]{64}$/.test(item.sha256 || ''),
   )
@@ -168,12 +168,20 @@ const v1 = JSON.parse(await readFile(path.join(root, 'public', 'openapi', 'v1.js
 if (v1.info?.version !== canonicalManifest.contractVersion) {
   fail('OpenAPI v1 info.version and canonical manifest contractVersion differ.')
 }
+const changeResourceTypes = v1.paths?.['/changes']?.get?.parameters
+  ?.find((parameter) => parameter.name === 'resourceTypes')
+  ?.schema?.items?.enum
+const changeEventResourceTypes = v1.components?.schemas?.ChangeEvent
+  ?.properties?.attributes?.properties?.resourceType?.enum
 if (
-  v1.paths?.['/changes']
-  || v1.components?.schemas?.ChangeEvent
-  || manifest.changeFeed?.availability !== 'excluded'
+  !Array.isArray(changeResourceTypes)
+  || changeResourceTypes.length !== 23
+  || new Set(changeResourceTypes).size !== changeResourceTypes.length
+  || JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
+  || manifest.changeFeed?.availability !== 'released'
+  || manifest.changeFeed?.resourceTypes !== changeResourceTypes.length
 ) {
-  fail('The beta 2 public contract must record the change feed as excluded.')
+  fail('The public contract must record the qualified 23-resource change feed.')
 }
 const contractOperations = []
 for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
@@ -216,7 +224,7 @@ if (
   fail('OpenAPI and Developer Platform execution bindings differ.')
 }
 
-const expectedBeta2NonCasOperationIds = [
+const expectedCoreOperationIds = [
   'archiveProject',
   'archiveProjectTemplate',
   'archiveTask',
@@ -225,8 +233,10 @@ const expectedBeta2NonCasOperationIds = [
   'createProject',
   'createProjectTemplate',
   'createTask',
+  'duplicateTask',
   'getProject',
   'getProjectLifecycleOperation',
+  'getProjectSharing',
   'getProjectTemplate',
   'getProjectTemplateInstantiation',
   'getTask',
@@ -234,8 +244,31 @@ const expectedBeta2NonCasOperationIds = [
   'listProjects',
   'listProjectTemplates',
   'listTasks',
+  'moveTask',
   'reopenProject',
   'reopenTask',
+  'replaceProjectSharing',
+  'replaceTaskSubtasks',
+  'restoreProject',
+  'restoreProjectTemplate',
+  'restoreTask',
+  'updateProject',
+  'updateProjectTemplate',
+  'updateTask',
+]
+const expectedCoreCasOperationIds = [
+  'archiveProject',
+  'archiveProjectTemplate',
+  'archiveTask',
+  'completeProject',
+  'completeTask',
+  'duplicateTask',
+  'instantiateProjectTemplate',
+  'moveTask',
+  'reopenProject',
+  'reopenTask',
+  'replaceProjectSharing',
+  'replaceTaskSubtasks',
   'restoreProject',
   'restoreProjectTemplate',
   'restoreTask',
@@ -257,6 +290,7 @@ const expectedIndependentIfMatchOperationIds = [
   'deleteRole',
   'removeMember',
   'renameFile',
+  'replaceServiceAccountResourceGrants',
   'replaceTaskPlannedWork',
   'resendInvitation',
   'restoreAbsence',
@@ -274,13 +308,15 @@ const expectedIndependentIfMatchOperationIds = [
   'updateGroup',
   'updateMemberRole',
   'updateRole',
+  'updateTimeEntryBilling',
+  'updateWebhook',
   'updateWorkspaceSettings',
 ]
 const allV1Operations = Object.values(v1.paths || {})
   .flatMap((pathItem) => Object.values(pathItem))
   .filter((operation) => operation?.operationId)
-const beta2NonCasOperations = allV1Operations
-  .filter((operation) => expectedBeta2NonCasOperationIds.includes(operation.operationId))
+const coreOperations = allV1Operations
+  .filter((operation) => expectedCoreOperationIds.includes(operation.operationId))
   .sort((left, right) => left.operationId.localeCompare(right.operationId))
 const independentIfMatchOperations = allV1Operations
   .filter((operation) =>
@@ -289,29 +325,34 @@ const independentIfMatchOperations = allV1Operations
     ),
   )
   .sort((left, right) => left.operationId.localeCompare(right.operationId))
-const residualResourceCasOperations = allV1Operations.filter(
+const resourceCasOperations = allV1Operations.filter(
   (operation) => operation['x-teamgrid-resource-cas'] === 'resource-cas-v1',
 )
-const residualResourceCasReads = allV1Operations.filter(
+const resourceCasReads = allV1Operations.filter(
   (operation) => operation['x-teamgrid-resource-cas-read'] === 'resource-cas-v1',
 )
 if (
-  beta2NonCasOperations.length !== 25
-  || JSON.stringify(beta2NonCasOperations.map((operation) => operation.operationId))
-    !== JSON.stringify(expectedBeta2NonCasOperationIds)
-  || canonicalManifest.summary?.beta2NonCasResourceOperations !== 25
-  || canonicalManifest.summary?.resourceCasMutationOperations !== 0
-  || canonicalManifest.summary?.resourceCasOperationReads !== 0
-  || residualResourceCasOperations.length !== 0
-  || residualResourceCasReads.length !== 0
+  coreOperations.length !== 30
+  || JSON.stringify(coreOperations.map((operation) => operation.operationId))
+    !== JSON.stringify(expectedCoreOperationIds)
+  || canonicalManifest.summary?.resourceCasMutationOperations !== 18
+  || canonicalManifest.summary?.resourceCasOperationReads !== 2
+  || JSON.stringify(resourceCasOperations.map((operation) => operation.operationId).sort())
+    !== JSON.stringify(expectedCoreCasOperationIds)
+  || JSON.stringify(resourceCasReads.map((operation) => operation.operationId).sort())
+    !== JSON.stringify(['getProjectLifecycleOperation', 'getProjectTemplateInstantiation'])
 ) {
-  fail('Beta 2 must expose exactly 25 static core operations and zero resource-CAS operations.')
+  fail('The stable contract must preserve 30 core operations, 18 CAS mutations, and 2 qualified operation reads.')
 }
+const expectedAllIfMatchOperationIds = [
+  ...expectedCoreCasOperationIds,
+  ...expectedIndependentIfMatchOperationIds,
+].sort()
 if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
-  !== JSON.stringify(expectedIndependentIfMatchOperationIds)
+  !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('Beta 2 must preserve exactly the 31 independent If-Match operations.')
+  fail('The stable contract must preserve exactly 52 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -324,23 +365,22 @@ for (const operation of independentIfMatchOperations) {
     fail(`${operation.operationId} has an incomplete independent If-Match contract.`)
   }
 }
-for (const operation of beta2NonCasOperations) {
+for (const operation of resourceCasOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
     /IfMatch(?:Project|ProjectTemplate|Task)$/.test(parameter.$ref || parameter.name || ''),
   )
   if (
-    ifMatchParameters.length !== 0
-    || operation.responses?.['412'] !== undefined
-    || operation.responses?.['428'] !== undefined
-    || operation['x-teamgrid-resource-cas'] !== undefined
-    || operation['x-teamgrid-resource-cas-read'] !== undefined
+    ifMatchParameters.length !== 1
+    || operation.responses?.['412'] === undefined
+    || operation.responses?.['428'] === undefined
+    || operation['x-teamgrid-resource-cas'] !== 'resource-cas-v1'
   ) {
-    fail(`${operation.operationId} still exposes a retired core resource-CAS contract.`)
+    fail(`${operation.operationId} lacks its required resource-CAS contract.`)
   }
 }
 for (const parameterName of ['IfMatchProject', 'IfMatchProjectTemplate', 'IfMatchTask']) {
-  if (v1.components?.parameters?.[parameterName] !== undefined) {
-    fail(`Retired core parameter ${parameterName} remains in OpenAPI.`)
+  if (v1.components?.parameters?.[parameterName] === undefined) {
+    fail(`Required core parameter ${parameterName} is absent from OpenAPI.`)
   }
 }
 for (const [schemaName, retiredFields] of Object.entries({
@@ -351,8 +391,8 @@ for (const [schemaName, retiredFields] of Object.entries({
   Task: ['developerRevision', 'developerUpdatedAt'],
 })) {
   const properties = v1.components?.schemas?.[schemaName]?.properties?.attributes?.properties
-  if (!properties || retiredFields.some((field) => properties[field] !== undefined)) {
-    fail(`${schemaName} still exposes retired core resource-CAS fields.`)
+  if (!properties || retiredFields.some((field) => properties[field] === undefined)) {
+    fail(`${schemaName} lacks required core resource-CAS fields.`)
   }
 }
 const resourceConcurrencyDocumentation = await readFile(
@@ -360,9 +400,9 @@ const resourceConcurrencyDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  '25 static core operations',
-  '31 independent `If-Match` operations',
-  'do not expose `developerRevision` or `developerUpdatedAt`',
+  'Exactly 18 core mutations require `If-Match`',
+  'Another 34 operations retain their domain-specific compare-and-set contracts',
+  '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',
   '`412 precondition_failed`',
   '`428 precondition_required`',
@@ -391,9 +431,15 @@ if (!mcpOverview.includes(`profile exposes ${mcpOperations.length}`)) {
   fail(`MCP overview does not report the current ${mcpOperations.length}-tool all profile.`)
 }
 const changePolicy = capabilities.operationPolicy.find((item) => item.operationId === 'listChanges')
-if (changePolicy) fail('The beta 2 capability contract must exclude listChanges.')
-if (!mcpDocumentation.includes('The change feed is not part of the current public beta contract')) {
-  fail('MCP documentation is missing the explicit beta change-feed boundary.')
+if (
+  changePolicy?.sdk !== 'changes.list'
+  || changePolicy?.cli !== 'changes list'
+  || changePolicy?.mcp?.exposure !== 'forbidden'
+) {
+  fail('The qualified change feed must map to SDK/CLI and remain forbidden through MCP.')
+}
+if (!mcpDocumentation.includes('change feed remains forbidden through MCP')) {
+  fail('MCP documentation is missing the explicit change-feed boundary.')
 }
 
 const changeFeedDocumentation = await readFile(
@@ -401,9 +447,10 @@ const changeFeedDocumentation = await readFile(
   'utf8',
 )
 for (const marker of [
-  'not part of the `1.0.0-beta.2` public contract',
-  '`changes:read` cannot be issued',
-  '`GET /v1/changes` is not a supported beta operation',
+  '`GET /v1/changes`',
+  '`changes:read`',
+  '23 resource types',
+  'snapshot-then-catch-up',
 ]) {
   if (!changeFeedDocumentation.includes(marker)) {
     fail(`Change-feed status documentation is missing: ${marker}.`)
@@ -425,8 +472,8 @@ if (
 ) {
   fail('Developer scope contract does not match sources/contracts.json and the canonical manifest.')
 }
-if (scopeContract.scopes?.some((scope) => scope.name === 'changes:read')) {
-  fail('The beta 2 scope contract must not issue changes:read.')
+if (!scopeContract.scopes?.some((scope) => scope.name === 'changes:read')) {
+  fail('The public scope contract must issue changes:read.')
 }
 const documentedScopes = new Set()
 for (const pathItem of Object.values(v1.paths || {})) {
@@ -510,8 +557,8 @@ for (const marker of [
   `${currentV1PathCount} v1 paths`,
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
-  `${canonicalManifest.summary?.beta2NonCasResourceOperations} static non-CAS core operations`,
-  '31 independent `If-Match` operations',
+  `${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutations`,
+  '34 domain-specific `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)
@@ -522,12 +569,12 @@ const capabilityStatusCounts = capabilities.productCapabilities.reduce((counts, 
   return counts
 }, {})
 for (const [label, status] of [
-  ['Released in the controlled-beta contract', 'released'],
+  ['Released in the stable contract', 'released'],
   ['Partial', 'partial'],
   ['Planned', 'planned'],
   ['Intentionally private', 'private'],
 ]) {
-  const marker = `| ${label} | ${capabilityStatusCounts[status]} |`
+  const marker = `| ${label} | ${capabilityStatusCounts[status] || 0} |`
   if (!coverageDocumentation.includes(marker)) {
     fail(`Capability coverage documentation is missing current status count: ${marker}.`)
   }

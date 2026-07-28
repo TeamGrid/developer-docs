@@ -3,10 +3,10 @@ title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 ---
 
-Install the current prereleases and authenticate the CLI first:
+Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2 @teamgrid/mcp-server@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
 teamgrid auth login
 teamgrid auth status --check
 ```

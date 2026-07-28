@@ -5,10 +5,10 @@ description: Use the official typed and region-aware Node.js client for TeamGrid
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
 
-Install the exact verified controlled-beta package version:
+Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-beta.2
+npm install @teamgrid/api-client@1.0.0
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -22,17 +22,17 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
 | `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
 | `events` | Read the authorization-filtered webhook event catalog |
-| `projects` | List, get, create, update, complete, reopen, archive, restore |
+| `projects` | List, get, create, update, read/replace sharing, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
-| `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
-| `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
+| `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
+| `timeEntries` | List, get, create, update, read/update billing, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
 | `contactGroups` | List, get, create, update, archive, restore |
 | `users` | List workspace users |
 | `lists`, `services`, `tags` | List, get, create, update, archive, restore |
 | `customFieldDefinitions` | List, get, create, update, archive, restore |
-| `customFieldValues` | Get, compare-and-set, and compare-and-clear a resource value |
+| `customFieldValues` | Get one or a bounded batch, compare-and-set, and compare-and-clear resource values |
 | `projectTemplates` | List, get, create, update, archive, restore, instantiate |
 | `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
 | `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |
@@ -47,7 +47,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `products` | List, get, create, update, archive |
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
-| `auditEvents` | List credential and mutation audit events |
+| `auditEvents` | List credential and mutation audit events with actor, time, credential, event, outcome, request, source, and target filters |
 | `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
 | `members` | List, get, change role, and remove workspace members |
@@ -59,17 +59,19 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
+| `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
+| `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
+| `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
 
 Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.0-beta.2`; pin that exact version after
-it is available on the configured npm channel. Tasks, projects, and project templates use the
-static Beta 2 resource contract: their representations do not expose developer revisions and their
-mutation options do not accept `ifMatch`. Project lifecycle changes and template instantiation
-remain asynchronous and accept a stable idempotency key. The SDK keeps typed `ifMatch` options for
-the 31 independently protected operations in other resource families.
+The compatible package checkpoint for this contract is `1.0.0`; pin that exact version in
+reproducible deployments. Tasks, projects, and project templates expose
+developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
+lifecycle changes and template instantiation remain asynchronous and also accept a stable
+idempotency key. Another 34 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
@@ -100,8 +102,8 @@ headers, secrets, and tenant-routing internals.
   job behind a synchronous project response.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
-- Project, task, and project-template methods use the static Beta 2 contract and reject a legacy
-  `ifMatch` option instead of silently sending an unsupported precondition.
+- Project, task, and project-template mutations require `ifMatch`; the client canonicalizes the
+  typed revision and validates the returned strong ETag before accepting the response.
 - Template instantiation and planned-work replacement expose the accepted operation; bounded
   `wait()` helpers poll credential-owned status without changing operation semantics.
 - Project lifecycle and template-instantiation wait helpers accept the validated

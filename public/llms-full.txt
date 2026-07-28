@@ -1469,7 +1469,7 @@ the platform-wide changes.
 | Endpoint | Global v0 host | Credential-derived regional `/v1` host |
 | Pagination | Page and limit | Opaque cursor and limit |
 | Create retries | Generally unsafe | Required idempotency key |
-| Concurrent project/task/template writes | No uniform public precondition | Static Beta 2 writes without a public core CAS precondition |
+| Concurrent project/task/template writes | No uniform public precondition | Strong resource ETags and required `If-Match` |
 | Errors | Historical response formats | Versioned error envelope with request id |
 | Webhooks | Legacy unsigned delivery | HMAC-signed delivery v2 |
 | Audit | General operational logging | Credential and mutation audit events |
@@ -1501,20 +1501,18 @@ statements, and credential-owned webhook delivery history. Product acquisition c
 project-statement budget data require explicit finance scope overlays. Value writes and planned-work
 replacement use strong compare-and-set revisions; do not translate v0 writes mechanically.
 
-Project, task, and project-template writers use a static Beta 2 contract without developer revision
-fields or a core `If-Match` requirement. Do not synthesize preconditions for those operations.
-Project lifecycle and template instantiation remain asynchronous and should use stable idempotency
-keys. Other domains, including custom-field values and planned work, retain their explicit
-read-before-write preconditions. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+Project, task, and project-template writers must read the latest developer revision and send its
+strong ETag through `If-Match`. Project lifecycle and template instantiation remain asynchronous
+and should also use stable idempotency keys. Other protected domains, including custom-field values
+and planned work, retain their resource-specific preconditions. See
+[resource concurrency](/api/v1/resource-concurrency/).
 
-The current v1 contract does not yet cover every legacy or TeamGrid product workflow. The canonical
-capability ledger still classifies areas such as service accounts, delegated OAuth, project sharing,
-task ordering, subtasks and bulk changes, time-entry billing, file sharing, commerce orders, report
-jobs, imports, and audit export as planned. Several released domains also remain explicitly partial.
-The first public API v1 beta does not include a durable change feed. Use bounded resource
-pagination and signed webhooks where their delivery semantics fit the integration. Keep only those
-bounded parts on v0 until an explicit v1 domain operation exists; do not emulate missing behavior
-through audit data, unrelated resources, or generic database mutations.
+The current v1 contract also covers personal-access credentials, native service accounts and
+resource grants, project sharing, conflict-safe task bulk changes, time-entry billing, bounded audit
+exports, and the durable change feed. The remaining planned public workflows are delegated OAuth,
+telephony, file sharing, commerce orders, report jobs, and imports. Keep only those bounded parts on
+v0 until an explicit v1 domain operation exists; do not emulate missing behavior through audit
+data, unrelated resources, or generic database mutations.
 
 ## Legacy reference differences
 
@@ -1895,11 +1893,10 @@ API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a 
 Authorization: Bearer <credential>
 ```
 
-The current `tg_sk_v1_` credential is the controlled-beta credential format and remains bound to
-the existing workspace authorization path. It is not a native autonomous service account. Native
-personal-access credentials, service accounts, and delegated OAuth use separate principal models
-and stay unavailable until their cell-local rollout gates are qualified. Existing credentials are
-not converted automatically.
+The current `tg_sk_v1_` format is used for reveal-once personal-access and service-account
+credentials. Their principal models, ownership, expiry, rotation, revocation, and resource grants
+remain distinct. Delegated OAuth is not part of the current public contract. Existing credentials
+are never converted automatically.
 
 ## Security model
 
@@ -1910,7 +1907,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
-- The API and App cell must negotiate the exact code-owned 181-operation action-policy registry
+- The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
 
 ## Scopes
@@ -1921,8 +1918,10 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `workspace-settings:read`, `workspace-settings:write` | Read or compare-and-set the six-field safe workspace-settings projection; sensitive administration scopes |
 | `projects:read`, `projects:write` | Project reads and field mutations |
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
+| `projects:sharing` | Read and atomically replace project access-control entries; sensitive scope for human principals |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
 | `time-entries:read`, `time-entries:write` | Time entries |
+| `time-entries:billing` | Read and compare-and-set billable state and billing rate; sensitive finance scope |
 | `contacts:read`, `contacts:write` | Contacts |
 | `call-notes:read`, `call-notes:write` | Plain-text call notes and their archive lifecycle |
 | `contact-groups:read`, `contact-groups:write` | Hierarchical contact groups |
@@ -1960,6 +1959,10 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 | `automations:read`, `automations:write` | Automation action metadata, definitions, versions, and runs; writes also require scopes implied by the flow |
 | `automations:run` | Abort a running automation; sensitive execution-control scope |
 | `integrations:read` | Installation status without provider secrets; sensitive scope |
+| `credentials:read`, `credentials:write` | List, create, rotate, and revoke personal-access credentials |
+| `service-accounts:read`, `service-accounts:write` | Manage native service-account principals and their reveal-once credentials |
+| `resource-grants:read`, `resource-grants:write` | Read or atomically replace a service account's bounded resource grants |
+| `changes:read` | Read the durable, cursor-based change feed for authorized resource types |
 | `events:read` | Read the authorization-filtered event and channel catalog |
 | `webhooks:read`, `webhooks:write` | Signed webhook registrations; read also covers delivery history owned by this exact service credential |
 | `audit:read` | Developer Platform audit events |
@@ -2061,40 +2064,73 @@ including the `all` profile.
 
 <!-- api/v1/change-feed.md -->
 ---
-title: Change feed status
-description: Understand why the change feed is excluded from the first public API v1 beta contract.
+title: Change feed
+description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
 ---
 
-The change feed is not part of the `1.0.0-beta.2` public contract. `changes:read` cannot be issued,
-and `GET /v1/changes` is not a supported beta operation. It is therefore absent from OpenAPI, the
-TypeScript SDK, the CLI, and the cross-interface capability ledger. MCP does not expose it either.
+`GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
+`changes:read` plus the read scopes and resource grants for every requested domain. The contract
+covers 23 resource types and reports created, updated, archived, restored, or deleted identities
+without embedding a private resource snapshot.
 
-This boundary is deliberate. A durable synchronization feed must preserve an unambiguous
-workspace and resource identity across rapid updates, ownership changes, deletes, restarts,
-retention compaction, and cell failover. The current capture implementation has not completed that
-preimage and recovery qualification, so TeamGrid does not advertise a weaker contract as ready.
+Each page returns an opaque `nextCursor` and a `caughtUp` flag. Persist the cursor only after the
+corresponding page has been applied durably. A cursor is bound to the credential principal,
+workspace, cell, epoch, and exact filter set. Do not decode it, move it between regions, or reuse it
+with different resource or operation filters.
 
-## Supported beta alternatives
+```bash
+checkpoint=$(teamgrid changes checkpoint --resource-type task --output json \
+  | jq -er '.meta.page.nextCursor')
 
-Use the normal cursor-paginated resource endpoints for bounded imports and reconciliation. Persist
-resource IDs and the documented current-state fields returned by each endpoint, and repeat a
-traversal from the beginning when your filter set or reconciliation boundary changes.
+teamgrid changes list \
+  --cursor "$checkpoint" \
+  --resource-type task \
+  --all \
+  --output jsonl
+```
 
-Use [signed webhooks](/api/v1/webhooks/) for supported event-driven workflows. A webhook is a
-delivery signal rather than a complete history: verify its signature, process it idempotently, and
-read the current resource through its independently scoped API endpoint when the workflow needs
-authoritative state.
+## Snapshot-then-catch-up
 
-Do not approximate a change feed through audit events, webhook-delivery history, search results, or
-aggressive polling. Those resources have different authorization, retention, and ordering
-semantics. Keep polling bounded and respect the documented rate-limit headers.
+A new mirror must avoid the gap between its initial traversal and its first incremental read:
 
-## Future qualification
+1. Request a latest checkpoint with the exact intended filters.
+2. Traverse the normal resource endpoints and persist the authoritative current state.
+3. Read changes from the saved checkpoint until `caughtUp` is true.
+4. Continue polling from the last durably applied `nextCursor`.
 
-A later contract checkpoint may add a change feed after TeamGrid has qualified immutable event
-ownership, insert/update/delete semantics, resume and reset behavior, retention, multi-cell
-boundaries, and complete recovery tests. That release will use a new contract and package version;
-clients should not reserve or request `changes:read` in advance.
+The SDK implements this order through `changes.snapshotThenCatchUp()`. It takes the checkpoint
+before invoking the caller's snapshot function and includes the terminal empty page so the newest
+cursor is never lost.
+
+```ts
+const bootstrap = await teamgrid.changes.snapshotThenCatchUp(
+  async () => loadInitialTasks(),
+  { resourceTypes: ['task'] },
+)
+
+await saveSnapshot(bootstrap.snapshot)
+for await (const page of bootstrap.pages) {
+  await applyChangesAndCursor(page.data, page.meta.page.nextCursor)
+}
+```
+
+Change events are invalidation metadata. After an update, read the resource through its normal
+endpoint when the mirror needs the latest authorized fields. A tombstone signals that the
+credential can no longer retrieve the previous state; consumers must remove or re-evaluate their
+local copy.
+
+## Recovery and boundaries
+
+Expired, compacted, wrong-cell, wrong-filter, or otherwise invalid checkpoints fail explicitly.
+Start a new snapshot-then-catch-up cycle instead of guessing a position. The owning cell also
+closes readiness when capture, preimage, epoch, or recovery guarantees cannot be proven.
+
+Signed webhooks remain useful for low-latency notifications, while the change feed provides ordered
+catch-up and reconciliation. Audit events, webhook delivery history, search results, and aggressive
+polling are not substitutes for this contract.
+
+The change feed remains forbidden through MCP because it is a high-volume synchronization
+transport rather than a bounded interactive model tool. Use the API, SDK, or CLI.
 
 <!-- api/v1/collaboration-and-files.md -->
 ---
@@ -2183,6 +2219,23 @@ are booleans; numbers are finite and non-negative; dates are RFC 3339 timestamps
 fields contain one ID or a bounded unique ID array. The API never returns legacy raw storage,
 workspace fields, internal defaults, or an invalid stored value.
 
+## Bounded batch reads
+
+Read 1–100 unique definitions for one resource with one order-preserving request:
+
+```ts
+const values = await client.customFieldValues.getMany(
+  'task',
+  taskId,
+  ['customerReference', 'priority', 'owner'],
+)
+```
+
+The response contains exactly one value state per requested field ID in the same order. The App
+re-authenticates the credential once, checks every definition and the target resource in its owning
+cell, and requires every target and reference-domain scope needed by the complete batch. Empty,
+duplicate, oversized, reordered, or structurally extended results fail closed.
+
 ## SDK and CLI
 
 ```ts
@@ -2201,6 +2254,8 @@ await client.customFieldValues.clear('task', taskId, fieldId, {
 
 ```bash
 teamgrid custom-field-values get task TASK_ID FIELD_ID --output json
+teamgrid custom-field-values get-many task TASK_ID \
+  --field-id FIELD_ID ANOTHER_FIELD_ID --output json
 teamgrid custom-field-values set task TASK_ID FIELD_ID \
   --data '{"value":"ACME-42"}' --if-match "$REVISION" --output json
 teamgrid custom-field-values clear task TASK_ID FIELD_ID \
@@ -2208,7 +2263,8 @@ teamgrid custom-field-values clear task TASK_ID FIELD_ID \
 ```
 
 Custom-field values are deliberately unavailable through MCP. Definition reads are available only
-in the `governance` profile; definition writes and every value operation remain forbidden.
+in the `governance` profile; definition writes and every value operation, including batch reads,
+remain forbidden.
 
 <!-- api/v1/errors.md -->
 ---
@@ -2263,10 +2319,11 @@ The 429 response uses the normal v1 error envelope with code `rate_limit_exceede
 honors `Retry-After` for safe reads, idempotent POST operations, and fully guarded planned-work
 replacements; it does not automatically retry other PUT, PATCH, or DELETE requests.
 
-The static Beta 2 project, task, and project-template operations do not use the precondition errors
-above. For the 31 independently protected operations, distinguish `400 invalid_precondition`,
-`412 precondition_failed`, `428 precondition_required`, and `503 service_unavailable`. The complete
-boundary is documented under [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+Project, task, and project-template mutations use these precondition errors for their 14 protected
+operations. Another 31 compare-and-set operations retain domain-specific validators. Distinguish
+`400 invalid_precondition`, `412 precondition_failed`, `428 precondition_required`, and
+`503 service_unavailable`. The complete boundary is documented under
+[resource concurrency](/api/v1/resource-concurrency/).
 
 <!-- api/v1/index.md -->
 ---
@@ -2274,7 +2331,7 @@ title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 ---
 
-API v1 is the recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, and signed webhook deliveries. The `1.0.0-beta.2` controlled-beta contract contains 111 paths and 181 operations. This is interface coverage, not a claim that every TeamGrid product capability is already public or generally available.
+API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
 
 ## Base URL
 
@@ -2284,7 +2341,7 @@ The credential identifies its home region. Official clients derive the correspon
 https://api.<region>.teamgrid.app/v1
 ```
 
-During the controlled beta, German credentials use:
+German credentials use:
 
 ```text
 https://api.de.teamgrid.app/v1
@@ -2304,13 +2361,14 @@ and credential-owned asynchronous-operation resources.
 
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
-Projects, tasks, and project templates use the static Beta 2 contract: they do not expose developer
-revision fields or accept a core `If-Match` precondition. Other resource families retain 31
-endpoint-specific protected mutations. Review [resource concurrency in Beta 2](/api/v1/resource-concurrency/)
+Projects, project sharing, tasks, and project templates expose developer revisions and require strong
+`If-Match` preconditions for their 18 mutating operations. Another 34 protected operations retain
+domain-specific revision formats. Review [resource concurrency](/api/v1/resource-concurrency/)
 before building a writer.
 
-For bounded mirrors, traverse the normal resource endpoints and use signed webhooks as delivery
-signals. A durable [change feed is deliberately excluded from the first public beta](/api/v1/change-feed/).
+For durable mirrors, create an initial resource snapshot and continue from the matching
+[change-feed checkpoint](/api/v1/change-feed/). Signed webhooks remain useful delivery signals but
+are not a replayable history.
 
 [Review resource and security semantics](/api/v1/resources-and-semantics/) before implementing finance, lifecycle, custom-field, administration, export, automation, or webhook-observability workflows.
 
@@ -2354,8 +2412,8 @@ Idempotency-Key: sync-job-2026-07-19-task-42
 The key must contain 1–128 printable ASCII characters. Repeating the same operation with the same key and payload returns the original result. Reusing the key with a different payload returns a conflict.
 
 For project lifecycle actions and project-template instantiation, a retry must use the same key,
-action, and payload. These static Beta 2 operations do not accept a core `If-Match` precondition or
-bind the key to a developer revision.
+action, payload, and source revision. Every start request also requires the latest strong ETag
+through `If-Match`.
 
 Generate keys from a stable operation identity rather than a random value created on every retry. Keep keys free of credentials and personal data.
 
@@ -2364,8 +2422,8 @@ planned-work PUT is retryable only with both its idempotency key and strong comp
 precondition. Other PUT, PATCH, and DELETE requests should not be retried automatically unless the
 caller has separately established their outcome.
 
-See [resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the distinction between the
-static core operations and independently protected resource families.
+See [resource concurrency](/api/v1/resource-concurrency/) for the distinction between the 17 core
+CAS mutations and the 31 domain-specific protected operations.
 
 <!-- api/v1/planned-work.md -->
 ---
@@ -2431,17 +2489,33 @@ title: Platform discovery and settings
 description: Negotiate TeamGrid capabilities, workspace entitlements, event channels, and safe revisioned workspace defaults.
 ---
 
-The API exposes a small control plane so an integration can discover what its credential can use
-without reading billing internals, raw feature flags, roles, provider configuration, or secrets.
-Every result is calculated in the workspace's owning cell and reflects the current credential,
-scopes, product entitlement, and workspace lock state.
+The API exposes a small control plane so an integration can negotiate the public contract and
+discover what its credential can use without reading billing internals, raw feature flags, roles,
+provider configuration, or secrets. Version discovery is public and contains no workspace data.
+Every authenticated result is calculated in the workspace's owning cell and reflects the current
+credential, scopes, product entitlement, and workspace lock state.
 
 | Resource | Endpoint | Scope | Purpose |
 | --- | --- | --- | --- |
+| API version | `GET /v1/` | None | Negotiate the contract, regional status, deprecations, and supported client versions |
 | System capabilities | `GET /v1/system/capabilities` | `workspace:read` | Compare product entitlement with this credential's accessible domains |
 | Workspace entitlements | `GET /v1/workspace/entitlements` | `workspace:read` | Read stable, secret-free product availability identifiers |
 | Workspace settings | `GET /v1/workspace/settings` | `workspace-settings:read` | Read six safe workspace defaults and their `wst1` revision |
 | Event catalog | `GET /v1/events/catalog` | `events:read` | List only webhook events this credential can consume |
+
+## API version discovery
+
+Call `GET /v1/` before authentication when an integration needs to verify the endpoint and client
+compatibility. The exact response identifies API version `1`, the current contract version and
+manifest SHA-256, the serving region when configured, operational status, active deprecation
+notices, and the minimum supported SDK, CLI, and MCP versions. It never returns workspace,
+credential, or feature-flag data.
+
+The SDK exposes this as `client.system.getApiVersion()` and the CLI as
+`teamgrid api-version`. Clients should reject an unexpected major version, an invalid manifest
+digest, or an unsupported minimum client version. Deprecation entries include an identifier,
+message, optional replacement URL, and optional sunset timestamp so automated tooling can surface
+actionable notices without scraping documentation.
 
 ## Capabilities and entitlements
 
@@ -2503,7 +2577,8 @@ their required resource scope. Each item reports its webhook channel and require
 Use the catalog to configure an integration UI, then follow the [signed webhook verification
 flow](/api/v1/webhooks/). The SDK and CLI equivalents are `client.events.getCatalog()` and
 `teamgrid events catalog`. Event catalog access does not grant access to any event or resource by
-itself. The first public beta does not return change-feed definitions.
+itself. Change-feed domains and filters are governed separately by `GET /v1/changes`; they are not
+webhook event definitions.
 
 <!-- api/v1/project-templates.md -->
 ---
@@ -2560,9 +2635,9 @@ project IDs. The SDK rejects a response if any of those immutable fields changes
 CLI applies the same binding automatically when `--wait` is present.
 
 Only the credential that created an instantiation can read its operation status. A replay with the
-same idempotency key and payload returns the original operation; using the key for different input
-returns `409`. The static Beta 2 template and operation representations do not expose developer,
-source, or result revision fields. Template metadata and operation status are forbidden in every MCP profile because
+same idempotency key, payload, and source revision returns the original operation; using the key for
+different input returns `409`. Templates expose developer revisions; accepted and terminal
+operations expose their source and result revisions. Template metadata and operation status are forbidden in every MCP profile because
 captured workflow shape and bulk creation state are not suitable bounded model tools.
 
 <!-- api/v1/quickstart.md -->
@@ -2607,9 +2682,9 @@ Use `meta.page.nextCursor` to request the next page. Treat cursors as opaque str
 
 For Node.js applications, continue with the [TypeScript SDK quickstart](/sdk/quickstart/). For shell scripts or local operation, use the [CLI](/cli/install-and-authenticate/).
 
-Task, project, and project-template mutations use the static Beta 2 contract and do not accept a
-core `If-Match` precondition. Other resource families retain explicit read-before-write revisions;
-see [resource concurrency in Beta 2](/api/v1/resource-concurrency/) before adding writes.
+Task, project, and project-template mutations require the latest strong ETag through `If-Match`.
+Other protected resource families retain their own explicit revision formats; see
+[resource concurrency](/api/v1/resource-concurrency/) before adding writes.
 
 <!-- api/v1/regions.md -->
 ---
@@ -2621,8 +2696,8 @@ TeamGrid API v1 is cell-aware. Official clients derive the regional endpoint fro
 
 | Region | Endpoint | Current availability |
 | --- | --- | --- |
-| Germany | `https://api.de.teamgrid.app/v1` | Controlled beta |
-| United States | `https://api.us.teamgrid.app/v1` | Maintenance until a regional beta is approved |
+| Germany | `https://api.de.teamgrid.app/v1` | Stable |
+| United States | `https://api.us.teamgrid.app/v1` | Stable |
 
 The global v0 hosts are not API v1 endpoints during the controlled rollout:
 
@@ -2644,51 +2719,78 @@ Business data, credential hashes, audit records, and write delivery stay in the 
 For endpoints that expose resource revisions and strong ETags, those validators are also
 cell-local. Return them only to the same credential's regional endpoint. A tag is not proof of
 authorization, is not portable to another workspace or cell, and must never be used to justify
-following a bearer redirect. Static Beta 2 projects, tasks, and project templates do not expose
-such validators.
+following a bearer redirect. Stable projects, project sharing, tasks, and project templates expose
+these validators on their qualified reads and mutations.
 
 <!-- api/v1/resource-concurrency.md -->
 ---
-title: Resource concurrency in Beta 2
-description: Understand which API v1 writes use If-Match and why projects, tasks, and project templates use a static non-CAS contract in Beta 2.
+title: Resource concurrency
+description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
 ---
 
-API v1 uses endpoint-specific concurrency rules. Do not assume that every mutable resource accepts
-the same revision format or that every write supports `If-Match`.
+API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the
+strong `ETag` response header, and send that value unchanged as `If-Match` with the mutation.
+Never derive an ETag from an ID, timestamp, or another resource.
 
-The `1.0.0-beta.2` contract deliberately keeps the 25 static core operations for projects, tasks,
-project templates, project lifecycle operations, and template instantiations outside the new
-resource-CAS rollout. These resources do not expose `developerRevision` or `developerUpdatedAt`,
-their operations do not carry `resource-cas-v1` extensions, and their mutations do not accept
-project-, task-, or template-specific `If-Match` headers.
+## Projects, tasks, and project templates
 
-This is a release boundary, not a general promise that concurrent writes are merged. When two
-clients update the same core resource, callers must not rely on a public optimistic-concurrency
-precondition in Beta 2. Keep writes narrow, avoid parallel writers for the same object, and re-read
-the resource after a mutation when subsequent work depends on its current state.
+The `1.0.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
+and project templates. Their item reads and synchronous mutation responses include a strong ETag
+and `Cache-Control: private, no-store, no-transform`.
 
-## Static core operations
+Exactly 18 core mutations require `If-Match`:
 
-The 25 static core operations comprise:
-
-| Resource | Operations |
+| Resource | Protected mutations |
 | --- | --- |
-| Projects | List, get, create, update, complete, reopen, archive, and restore |
-| Project lifecycle operations | Get operation status |
-| Project templates | List, get, create, update, archive, restore, and instantiate |
-| Template instantiations | Get instantiation status |
-| Tasks | List, get, create, update, archive, restore, complete, and reopen |
+| Projects | Update, replace sharing, complete, reopen, archive, and restore |
+| Tasks | Update, duplicate, move, replace checklist, archive, restore, complete, and reopen |
+| Project templates | Update, archive, restore, and instantiate |
 
-Project lifecycle commands and template instantiation remain asynchronous. Their start requests
-use a stable `Idempotency-Key` for safe replay, and clients poll the returned operation ID. The
-operation representations no longer expose the retired core `sourceRevision` or `resultRevision`
-fields. Task timer commands and planned-work endpoints are separate contracts and are not part of
-this 25-operation set.
+Project lifecycle commands and template instantiation are asynchronous. Their accepted operation
+contains the immutable `sourceRevision`; a successful terminal operation contains
+`resultRevision`. Operation reads created before revision tracking return `410` rather than
+silently weakening the concurrency guarantee.
 
-## Independent preconditions remain
+```bash
+project=$(teamgrid projects get "$PROJECT_ID" --output json)
+revision=$(printf '%s' "$project" | jq -er '.attributes.developerRevision')
 
-Beta 2 retains exactly 31 independent `If-Match` operations. They protect their own resource
-families and were not part of the retired core resource-CAS rollout:
+teamgrid projects update "$PROJECT_ID" \
+  --data '{"name":"Reviewed project"}' \
+  --if-match "prj1-$revision"
+```
+
+The SDK also accepts the strong ETag returned in transport metadata:
+
+```ts
+const task = await teamgrid.tasks.get('task-id')
+await teamgrid.tasks.update(
+  task.data.id,
+  { name: 'Reviewed task' },
+  { ifMatch: task.transport.headers.etag },
+)
+```
+
+Duplication also requires an idempotency key because it creates a new resource. Its precondition is
+the exact source revision, so retrying the same request cannot silently copy a newer task:
+
+```ts
+await teamgrid.tasks.duplicate(
+  task.data.id,
+  { copyChecklist: true, name: 'Reviewed task copy' },
+  {
+    idempotencyKey: 'review-copy-2026-07-27',
+    ifMatch: task.transport.headers.etag,
+  },
+)
+```
+
+After a successful mutation, retain the newly returned ETag before making another change. Do not
+reuse the pre-mutation validator.
+
+## Other protected resources
+
+Another 34 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |
@@ -2698,50 +2800,27 @@ families and were not part of the retired core resource-CAS rollout:
 | Custom-field values | 2 |
 | Planned work | 1 |
 | Members, invitations, roles, and groups | 8 |
+| Service-account resource grants | 1 |
+| Time-entry billing | 1 |
 | Automation definitions and runs | 4 |
 | Workspace settings | 1 |
-| Webhook secret rotation | 1 |
+| Webhook configuration and secret rotation | 2 |
 
-For one of these operations, read the corresponding resource first and use exactly the revision or
-strong ETag specified by that endpoint. Revision formats are resource-specific. Never turn a task,
-project, or project-template ID or timestamp into an ETag, and never reuse a revision from another
-resource family.
+Revision formats are intentionally resource-specific. Always use the validator returned by the
+corresponding read operation.
 
-For example, planned-work replacement keeps its own compare-and-set contract:
-
-```bash
-current=$(teamgrid planned-work get "$TASK_ID" --output json)
-revision=$(printf '%s' "$current" | jq -er '.attributes.revision')
-
-teamgrid planned-work replace "$TASK_ID" \
-  --data @schedule.json \
-  --if-match "$revision" \
-  --idempotency-key "schedule-${TASK_ID}-v1" \
-  --yes
-```
-
-## Failure contract for protected operations
-
-The independent `If-Match` operations use the following failure contract:
+## Failure contract
 
 | Status and code | Meaning | Action |
 | --- | --- | --- |
-| `400 invalid_precondition` | The supplied validator is malformed, weak, duplicated, or belongs to the wrong resource contract | Correct the request using the latest endpoint response |
-| `412 precondition_failed` | The protected resource no longer matches the supplied revision | Re-read, reconcile, and retry only after a new decision |
-| `428 precondition_required` | A protected operation omitted `If-Match` | Read the resource and send its latest documented revision or strong ETag |
-| `503 service_unavailable` | The owning cell cannot currently prove that endpoint's concurrency contract | Keep the precondition and retry later with bounded backoff |
+| `400 invalid_precondition` | The validator is malformed, weak, duplicated, or belongs to another resource contract | Correct the request using the latest endpoint response |
+| `412 precondition_failed` | The resource changed after it was read | Re-read, reconcile, and retry only after a new decision |
+| `428 precondition_required` | A protected mutation omitted `If-Match` | Read the resource and send its latest strong validator |
+| `503 service_unavailable` | The owning cell cannot currently prove the concurrency contract | Keep the precondition and retry later with bounded backoff |
 
-Never respond to `412` or `503` by removing `If-Match`. Conversely, do not send `If-Match` to a
-static project, task, or project-template mutation: it is not part of the Beta 2 contract and the
-official SDK and CLI intentionally do not expose such an option for those operations.
-
-## Future core concurrency releases
-
-Core CAS can be introduced in a later contract checkpoint after its cell-local revision writes,
-backfill, cutover, enforcement, rollback, and application compatibility have been qualified
-separately. That release will update OpenAPI and the official packages together. Integrations
-should follow the contract they have pinned instead of reserving or synthesizing core revision
-headers in advance.
+Never respond to `412` or `503` by removing `If-Match`. This safety model is qualified per
+production cell and the API readiness check remains closed when resource concurrency cannot be
+proven.
 
 <!-- api/v1/resources-and-semantics.md -->
 ---
@@ -2759,14 +2838,14 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | --- | --- | --- |
 | Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
-| Tasks | List, get, create, update, archive, restore, complete, reopen, timer start and stop | Timer commands require both `tasks:write` and `time-entries:write` |
-| Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
-| Contacts | List, get, create, update | No public archive operation in the current contract |
+| Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
+| Time entries | List, get, create, update, archive, restore, start and stop task timers | Billed entries are immutable; billing operations and financial rates remain outside the core workflow |
+| Contacts | List, get, create, update | Reads include contact relationships and non-financial CRM summaries; no public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
 | Custom-field definitions | List, get, create, update, archive, restore | Only canonical public schema metadata is writable |
-| Custom-field values | Get, compare-and-set, compare-and-clear | Requires a strong revision and the matching target-resource scope |
+| Custom-field values | Get one or 1–100 in an ordered batch, compare-and-set, compare-and-clear | Requires a strong revision for writes and every target/reference scope used by a read |
 | Appointments and absences | Bounded list, get, create, compare-and-set update, archive, restore | Foreign-user access requires a delegated or administrative overlay plus product authorization |
 | Availability | Bounded read | Requires an explicit IANA time zone; foreign users require delegated access |
 | Comments and activity | Target-scoped collaboration | Also requires the matching contact, project, or task read scope |
@@ -2783,14 +2862,35 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Webhooks | List, get, create, remove | Creation returns the signing secret once |
 | Webhook deliveries | List and get | Read-only, credential-owned, privacy-reduced history |
 
-The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
-in the controlled beta, partially covered, planned, or intentionally private.
+The [capability coverage ledger](/guides/capability-coverage/) separately records what is released
+in stable 1.0, planned for a later release, or intentionally private.
 
-Project, task, and project-template responses use the static Beta 2 shape and do not contain
-developer revision fields. Their mutations do not accept a core `If-Match` precondition. This
-boundary applies to 25 project, task, template, and associated operation endpoints; independent
-resource families retain their own compare-and-set contracts. See
-[resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the exact boundary.
+Project reads include stable list and scheduling order, creation and duplication provenance,
+planning boundaries, last activity, and non-financial task progress counts. The owning App cell
+projects only these safe summary fields from its internal calculation object; costs, revenue,
+profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
+the API boundary. Project sharing is exposed separately through a full-replacement,
+human-principal-only contract with strong concurrency control.
+
+Time-entry reads expose task, user and service references, creator/updater provenance, duration,
+billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
+by these safe operational fields and by a start-time window. Internal hourly rates, cost rates,
+financial aggregates, cached billing details, and call records are rejected at the App and API
+boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
+task timers form the released operational workflow. Marking entries billed or unbilled remains the
+separate planned time-entry billing capability.
+
+Contact reads include person/company identity, addresses, communication channels, websites, social
+profiles, parent/group/company relationships, provenance, last activity, and non-financial task,
+project, and employee counts. Lists support exact type, category, customer, group, company, parent,
+and creator filters. Billing configuration, rates, costs, revenue, profit, budgets, time aggregates,
+cached display names, image-storage internals, and embedded custom-field storage are never returned.
+Custom-field values remain available only through their dedicated revisioned endpoints.
+
+Project, task, and project-template responses include developer revision fields. Their 17 mutations
+require a strong `If-Match` precondition; another 31 operations retain resource-specific
+compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
+boundary.
 
 ## Project lifecycle operations
 
@@ -2798,7 +2898,7 @@ Project completion, reopen, archive, and restore can cascade across related Team
 therefore returns a project-lifecycle operation instead of pretending that the work completed during
 the initiating request.
 
-1. Send the lifecycle command with a stable idempotency key.
+1. Read the project and send the lifecycle command with its latest ETag and a stable idempotency key.
 2. Persist the returned operation ID, action, and target project ID.
 3. Treat the accepted operation as the authoritative handle for subsequent polling.
 4. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
@@ -2806,8 +2906,8 @@ the initiating request.
 5. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
    unrelated replacement operation.
 
-On success, re-read the project if the next step depends on its resulting state. Beta 2 operation
-resources do not expose the retired core `sourceRevision` or `resultRevision` fields.
+The accepted operation exposes `sourceRevision`; a successful terminal operation exposes
+`resultRevision`. Re-read the project if the next step needs its complete resulting state.
 
 The CLI project commands accept `--wait`, `--max-wait`, and `--poll-interval`. The SDK exposes the
 operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`. Pass
@@ -2875,7 +2975,8 @@ tool. Use a dedicated credential and request only the resource types needed for 
 
 ## Bounded asynchronous exports
 
-`POST /exports` creates a CSV export job for `contacts`, `projects`, `tasks`, or `timeEntries`.
+`POST /exports` creates a CSV export job for `contacts`, `projects`, `tasks`, `timeEntries`, or
+`auditEvents`.
 Exports are bounded to 10,000 rows and at most 16 selected fields. The request supports archived and
 updated-at filters and must use a stable `Idempotency-Key` when retried.
 
@@ -2883,6 +2984,11 @@ Creating a job requires `exports:write`; status and download operations require 
 matching domain read scope and analytics permission are also enforced. Poll `GET /exports/{id}` until
 the state is `succeeded` or `failed`; a successful job records whether the requested result was
 truncated.
+
+Audit exports additionally require `audit:read` and an immutable `createdAtTo` snapshot boundary.
+They may use `createdAtFrom`, span at most 366 days, and never accept updated-at or archive filters.
+Only the allowlisted sanitized audit projection can be selected; credentials, raw secrets, request
+bodies, and internal tenant fields are not exportable.
 
 Exports stay in the workspace's owning cell and use a dedicated private bucket that is separate
 from normal file uploads. A completed job record is retained for approximately one hour. Objects
@@ -2912,6 +3018,116 @@ internally and streams the file through the API with redirects disabled, a 50 Mi
 `Cache-Control: no-store`, and content-type hardening. It does not reveal a storage URL.
 
 Export jobs, intents, metadata, and bulk content are forbidden in every MCP profile.
+
+<!-- api/v1/task-workflows.md -->
+---
+title: Task workflows
+description: Duplicate, place, reorder, and replace TeamGrid task checklists without lost updates.
+---
+
+Task workflow operations model TeamGrid behavior directly instead of exposing storage fields. Every
+operation is workspace-bound, rejects internal task-like records, and uses the latest task
+revision as a compare-and-set precondition.
+
+## Read and filter tasks
+
+Task reads expose the stable workflow fields needed by integrations without leaking TeamGrid's
+storage document. In addition to identity, assignment, project and scheduling fields, responses
+include lifecycle timestamps and actor IDs, contact and creator references, duplicate provenance,
+comment/file/checklist counts, list order, embedded checklist items, and whether time tracking is
+active. Custom-field values remain behind their dedicated scoped endpoint.
+
+`GET /v1/tasks` supports exact filters for archive and completion state plus `assigneeId`,
+`contactId`, `groupId`, `listId`, `personalListId`, `projectId`, `serviceId`, `subscriberId`, and
+`tagId`. Filters are combined and always applied inside the credential's workspace and owning
+region. A client cannot supply or override a workspace selector.
+
+```bash
+curl "$TEAMGRID_API_BASE_URL/v1/tasks?projectId=$PROJECT_ID&tagId=$TAG_ID&completed=false" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN"
+```
+
+Task create and update accept the stable editable field set, including an optional direct
+`contactId`. References are checked in the owning workspace. If a project changes and no contact is
+supplied, TeamGrid inherits the project's contact; an explicit task contact intentionally
+overrides that inheritance. Planning dates are validated as one interval even when an update sends
+only one boundary, so a partial patch cannot leave the task with a start after its end.
+
+## Duplicate a task
+
+`POST /v1/tasks/{id}/duplicate` creates one idempotent copy of exactly the selected source
+revision. It requires `tasks:read`, `tasks:write`, `If-Match`, and `Idempotency-Key`.
+
+```bash
+curl --request POST "$TEAMGRID_API_BASE_URL/v1/tasks/$TASK_ID/duplicate" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
+  --header "Content-Type: application/json" \
+  --header "Idempotency-Key: onboarding-copy-42" \
+  --header "If-Match: $TASK_ETAG" \
+  --data '{"name":"Onboarding copy","copyChecklist":true,"copyCustomFieldValues":true}'
+```
+
+Checklist and custom-field values are copied by default and can be disabled independently. The new
+task is incomplete, receives its own ID and revision, and is appended to the corresponding
+assignment, project-list, and valid personal-list containers. The response is `201` for the first
+creation or `200` for an exact replay.
+
+## Move or reorder a task
+
+`POST /v1/tasks/{id}/move` changes assignment and ordering atomically. Select one axis:
+
+| Axis | Required target | Order field managed by TeamGrid |
+| --- | --- | --- |
+| `assignee` | Optional `assigneeId` or `groupId`; they are mutually exclusive | Assignee/group board order |
+| `personalList` | `assigneeId` and a personal list owned by that user | Personal-list order |
+| `projectList` | `projectId`; optional list must belong to that project | Project-list order |
+
+Omit both neighbors to append. Supply `previousTaskId`, `nextTaskId`, or both for an exact
+insertion point. Neighbor IDs must refer to active tasks in the same workspace, completion state,
+axis, and target container. Stale or contradictory neighbors produce a conflict rather than a
+best-effort move.
+
+```json
+{
+  "axis": "projectList",
+  "projectId": "project-id",
+  "listId": "review-list-id",
+  "previousTaskId": "task-before",
+  "nextTaskId": "task-after"
+}
+```
+
+Moving to another project validates the target project, list relationship, transition state, and
+the credential principal's access to both source and target context.
+
+## Replace a checklist
+
+TeamGrid subtasks are ordered checklist items embedded in a task. They are not independent task
+resources. `PUT /v1/tasks/{id}/subtasks` therefore replaces the complete checklist atomically:
+
+```json
+{
+  "subtasks": [
+    { "id": "existing-item-id", "title": "Review draft", "completed": true },
+    { "title": "Obtain approval", "completed": false }
+  ]
+}
+```
+
+Keep an existing item ID to preserve its identity. Omit the ID for a new item. The request accepts
+at most 500 unique items, preserves array order, trims titles, and rejects empty or oversized
+content. An empty array clears the checklist.
+
+## Concurrency sequence
+
+1. Read the task and retain its strong `ETag`.
+2. Send one workflow operation with that value as `If-Match`.
+3. Retain the new ETag from the successful response.
+4. Use the new value for the next operation.
+5. On `412`, re-read and reconcile; never remove the precondition.
+
+MCP intentionally does not expose these writes. Use the API, SDK, or CLI when a workflow changes
+TeamGrid data.
 
 <!-- api/v1/webhooks.md -->
 ---
@@ -3006,12 +3222,40 @@ description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and
 
 ## Current platform
 
-API v1 and the npm packages are in a controlled beta. Until stable releases begin, authoritative changes are recorded in the public source repositories and their release history:
+API v1 and the SDK, CLI, and MCP npm packages are synchronized at stable version `1.0.0`.
+Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
+
+## 2026-07-27
+
+- Promoted the synchronized API v1, TypeScript SDK, CLI, and curated read-only MCP server to stable
+  version `1.0.0`.
+- Froze the stable boundary at 128 API paths, 206 governed operations, 87 scopes, and 73 classified
+  product capabilities. Sixty-one capabilities are released, none are partial, six are planned,
+  and six privileged or implementation-level capabilities remain intentionally private.
+- Added reveal-once personal-access credentials, native service accounts, resource grants, project
+  sharing, conflict-safe task bulk operations, time-entry billing, bounded audit exports, and the
+  qualified 23-resource durable change feed across their required public surfaces.
+- Added revision-safe task duplication, placement/reordering, and atomic checklist replacement
+  across the API, TypeScript SDK, and CLI. MCP remains read-only for all three workflows.
+- Completed the stable task read projection with lifecycle, provenance, count, placement, and
+  tracking fields, plus exact contact, group, list, service, subscriber, and tag filters across
+  API, SDK, CLI, and the curated read-only MCP response surface.
+- Completed the task write field set with tenant-validated direct contact assignment, explicit
+  project-contact inheritance, and whole-interval validation for partial planning-date updates.
+- Completed project reads with exact creator, contact, individual ID, list, manager and subscriber
+  filters, stable ordering/provenance fields, and a non-financial progress summary whose nested
+  upstream shape rejects private budget, revenue and time calculations.
+- Qualified strong ETags and mandatory `If-Match` preconditions for 17 project, task, and
+  project-template mutations, including asynchronous lifecycle starts and template instantiation.
+- Added developer revisions to core resource DTOs and source/result revisions to qualified
+  asynchronous operation resources.
+- Preserved the curated read-only MCP policy while aligning all 206 public operations across
+  OpenAPI, SDK, CLI, and an explicit MCP exposure decision.
 
 ## 2026-07-21
 
@@ -3136,10 +3380,20 @@ teamgrid tasks list --project-id "$PROJECT_ID" --all --output jsonl \
 
 `--all` follows opaque cursors and stops at 10,000 pages by default. Lower the guard with `--max-pages` when a job should have a tighter upper bound.
 
-The first public beta has no change-feed commands. For bounded reconciliation, traverse the
-resource list commands with `--all`, preserve resource IDs and revisions, and use signed webhooks as
-delivery signals where supported. Do not substitute audit or webhook-delivery history for a durable
-feed.
+For a durable mirror, create a checkpoint before the initial resource traversal, then catch up from
+that exact cursor:
+
+```bash
+checkpoint=$(teamgrid changes checkpoint --resource-type task --output json \
+  | jq -er '.meta.page.nextCursor')
+
+teamgrid tasks list --all --output jsonl > tasks.snapshot.jsonl
+teamgrid changes list --cursor "$checkpoint" --resource-type task --all --output jsonl
+```
+
+Persist each new cursor only after applying its page durably. Do not decode a cursor, move it
+between cells, or change its filters. See the [change-feed recovery
+contract](/api/v1/change-feed/) before operating a mirror.
 
 ## Make retried writes idempotent
 
@@ -3173,7 +3427,7 @@ fi
 Treat `412` and exit code `6` as a concurrent-edit decision, not a generic retry. Missing
 `--if-match` is rejected locally; an API `428` maps to usage exit code `2`. Planned-work replacement
 overwrites the complete schedule and requires `--yes` in non-interactive execution. Project, task,
-and project-template commands use the static Beta 2 contract and do not accept `--if-match`.
+and project-template mutations also require `--if-match` from their latest read.
 
 ## Exit codes
 
@@ -3247,10 +3501,25 @@ whether to retry. The settings projection contains only six documented fields an
 billing, storage, role, or integration configuration. Capability, entitlement, and event responses
 are current negotiation results, not permanent authorization grants.
 
+## Credentials and service accounts
+
+```text
+teamgrid credentials personal list|create|rotate|revoke
+teamgrid service-accounts list|create|get|update|revoke
+teamgrid service-accounts credentials create|rotate|revoke
+teamgrid service-accounts grants get|replace --if-match REVISION
+```
+
+Credential secrets are returned once. Move them directly into a secret manager. Resource-grant
+replacement is a complete compare-and-set operation; read the current grant revision before
+replacing it.
+
 ## Projects and lifecycle operations
 
 ```text
 teamgrid projects list|get|create|update
+teamgrid projects sharing get PROJECT_ID
+teamgrid projects sharing replace PROJECT_ID --data <json|@file|-> --if-match REVISION
 teamgrid projects complete|reopen|archive|restore PROJECT_ID [--wait]
 teamgrid project-lifecycle-operations get OPERATION_ID
 ```
@@ -3263,16 +3532,23 @@ Examples:
 teamgrid projects list --completed false
 teamgrid projects create --data @project.json --idempotency-key project-import-42
 teamgrid projects get PROJECT_ID --output json
-teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' --if-match REVISION
 teamgrid projects complete PROJECT_ID \
-  --idempotency-key close-42 --wait
+  --if-match REVISION --idempotency-key close-42 --wait
 ```
+
+Project lists support `--archived`, `--completed`, `--contact-id`, `--created-by-id`,
+`--individual-id`, `--list-id`, `--manager-id`, and `--subscriber-id`. Multiple filters are
+combined and never broaden the credential's workspace boundary.
 
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
-Project updates and lifecycle commands use the static Beta 2 contract and do not accept
-`--if-match`. Lifecycle starts should use a stable idempotency key.
+Project updates and lifecycle commands require `--if-match` from the latest project read.
+Lifecycle starts should also use a stable idempotency key.
+
+Project sharing replacement sends the complete desired entry set. It validates local members and
+accepted workspace connections and never permits an unvalidated cross-region user identifier.
 
 ## Commerce and project statements
 
@@ -3356,19 +3632,27 @@ service credentials and machine-readable output should be handled as commerciall
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
-teamgrid tasks archive TASK_ID
-teamgrid tasks restore TASK_ID
-teamgrid tasks complete TASK_ID
-teamgrid tasks reopen TASK_ID
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}' --if-match REVISION
+teamgrid tasks duplicate TASK_ID --data '{"copyChecklist":true}' \
+  --if-match REVISION --idempotency-key task-copy-42
+teamgrid tasks move TASK_ID --data @placement.json --if-match REVISION
+teamgrid tasks subtasks replace TASK_ID --data @checklist.json --if-match REVISION
+teamgrid tasks archive TASK_ID --if-match REVISION
+teamgrid tasks restore TASK_ID --if-match REVISION
+teamgrid tasks complete TASK_ID --if-match REVISION
+teamgrid tasks reopen TASK_ID --if-match REVISION
 teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
 
+Task lists accept `--archived`, `--completed`, `--assignee-id`, `--contact-id`, `--group-id`,
+`--list-id`, `--personal-list-id`, `--project-id`, `--service-id`, `--subscriber-id`, and
+`--tag-id`. Multiple filters are combined. Use `--all` for bounded automatic pagination.
+
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
-Task mutations use the static Beta 2 contract and do not accept `--if-match`. Do not synthesize a
-revision from `updatedAt` or another task field.
+Task mutations require `--if-match` from the latest task read. Do not synthesize a revision from
+`updatedAt` or another task field.
 
 ## Time entries
 
@@ -3376,9 +3660,12 @@ revision from `updatedAt` or another task field.
 
 ```bash
 teamgrid time-entries list --from 2026-07-01 --to 2026-07-31 --all
+teamgrid times list --service-id SERVICE_ID --billable true --billed false
 teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
+teamgrid time-entries billing get TIME_ENTRY_ID
+teamgrid time-entries billing update TIME_ENTRY_ID --data @billing.json --if-match REVISION
 teamgrid times archive TIME_ENTRY_ID
 teamgrid times restore TIME_ENTRY_ID
 ```
@@ -3392,7 +3679,8 @@ teamgrid contact-groups list|get|create|update|archive|restore
 teamgrid users
 ```
 
-Contact lists accept `--type person|company` and `--archived`. Call-note and contact-group lists
+Contact lists accept type, category, company, creator, customer, group, parent-contact, and archive
+filters. Call-note and contact-group lists
 accept `--archived`. Call-note creation accepts plain-text `content`; the API does not expose
 TeamGrid's internal rich-text representation. Contact-group parent changes are validated against
 cycles and hierarchy limits.
@@ -3419,13 +3707,16 @@ Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `s
 
 ```text
 teamgrid custom-field-values get TARGET_TYPE RESOURCE_ID FIELD_ID
+teamgrid custom-field-values get-many TARGET_TYPE RESOURCE_ID
+  --field-id FIELD_ID [FIELD_ID...]
 teamgrid custom-field-values set TARGET_TYPE RESOURCE_ID FIELD_ID
   --data <json|@file|-> --if-match REVISION
 teamgrid custom-field-values clear TARGET_TYPE RESOURCE_ID FIELD_ID
   --if-match REVISION --yes
 ```
 
-Read first, then pass the latest `data.attributes.revision` to `--if-match`. A `412` means another
+`get-many` accepts 1–100 unique field IDs and preserves their order. Read first, then pass the
+latest `data.attributes.revision` to `--if-match`. A `412` means another
 writer changed the value; re-read and decide explicitly instead of blindly retrying. Clear is a
 destructive compare-and-set operation and therefore requires confirmation.
 
@@ -3435,15 +3726,15 @@ destructive compare-and-set operation and therefore requires confirmation.
 teamgrid project-templates list|get|create
 teamgrid project-templates update|archive|restore PROJECT_TEMPLATE_ID
 teamgrid project-templates instantiate TEMPLATE_ID --data <json|@file|->
-  [--idempotency-key KEY] [--wait]
+  --if-match REVISION [--idempotency-key KEY] [--wait]
 teamgrid project-template-instantiations get OPERATION_ID
 ```
 
 Template list filters include `--archived`, `--created-at-from`, `--created-at-to`, and
 `--origin-project-id`. Create and instantiate should use stable idempotency keys. `--wait` polls the
 credential-owned instantiation until it succeeds or fails, bounded by `--max-wait` and
-`--poll-interval`. Project-template commands use the static Beta 2 contract and do not accept
-`--if-match`. Instantiation binds its payload to the idempotency key.
+`--poll-interval`. Project-template mutations require `--if-match` from the latest template read.
+Instantiation binds its payload and source revision to the idempotency key.
 
 ## Planned work
 
@@ -3501,6 +3792,16 @@ Use dedicated administration credentials. Member and invitation PII requires the
 `members:pii:read` overlay. Mutations that change existing authorization state require the latest
 strong revision through `--if-match`; destructive commands require confirmation.
 
+## Change feed
+
+```text
+teamgrid changes checkpoint [--resource-type TYPE] [--operation OPERATION]
+teamgrid changes list --cursor CURSOR [--resource-type TYPE] [--operation OPERATION] [--all]
+```
+
+Persist each returned cursor only after applying its page durably. Checkpoints are bound to the
+credential, workspace, cell, epoch, and exact filter set.
+
 ## Search and exports
 
 ```text
@@ -3516,7 +3817,8 @@ By default, `exports download` creates the short-lived intent internally. To sep
 pipe the token through standard input with `--intent-token-stdin`; it is never accepted on the
 command line or in a URL. `--file` creates a mode-`0600` file exclusively and never overwrites an
 existing path. `--stdout` refuses to write binary data to a terminal. Both paths enforce a maximum
-of 50 MiB.
+of 50 MiB. Audit exports use `resourceType: "auditEvents"` and require an immutable
+`createdAtTo` boundary.
 
 ## Automations and integrations
 
@@ -3535,12 +3837,18 @@ or configuration secrets.
 ## Audit events
 
 ```text
-teamgrid audit-events [--credential-id ID] [--event-type TYPE]
-                      [--outcome success|denied|failure]
+teamgrid audit-events [--actor-id ID] [--actor-type user|serviceCredential|system]
+                      [--created-at-from ISO] [--created-at-to ISO]
+                      [--credential-id ID] [--event-type TYPE]
+                      [--outcome success|denied|failure] [--request-id ID]
+                      [--source teamgrid-app|api-v1|system]
+                      [--target-id ID] [--target-type TYPE]
 ```
 
-Audit output can contain security-sensitive operational metadata. Limit access and retention in
-downstream systems.
+Filters are combined and bound into the opaque pagination cursor, so a cursor cannot be reused with
+another credential, cell, region, or filter set. JSON output includes `meta.retentionDays`, the
+configured retention of the serving cell (30–3650 days; 365 by default). Audit output can contain
+security-sensitive operational metadata. Limit access and retention in downstream systems.
 
 ## Webhooks and delivery history
 
@@ -3582,10 +3890,10 @@ description: Inspect and automate TeamGrid API v1 from a terminal or CI job with
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
 
-Install the exact verified controlled-beta package version:
+Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --version
 ```
 
@@ -3598,8 +3906,8 @@ teamgrid --version
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
 - Bounded resource pagination and structured output for reconciliation scripts
-- Required `--if-match` guards and actionable stale-revision errors for the 31 independently
-  protected operations; static Beta 2 task, project, and project-template commands omit that option
+- Required `--if-match` guards and actionable stale-revision errors for all 52 protected
+  operations, including task, project, and project-template mutations
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 
@@ -3608,21 +3916,27 @@ The CLI is a client of API v1. It does not create another API surface or bypass 
 <!-- cli/install-and-authenticate.md -->
 ---
 title: Install and authenticate
-description: Install the TeamGrid CLI prerelease and store an API v1 credential in the operating-system credential store.
+description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
 ---
 
 ## Requirements
 
 - Node.js 22.14 through 24
 - A TeamGrid API v1 credential created in **Settings → Developer**
+- Linux, macOS, or Windows
 - macOS Keychain or Linux Secret Service for persistent profiles
+
+Stable 1.0 supports the CLI on Windows with a process-scoped
+`TEAMGRID_API_TOKEN`. Persistent Windows profiles are deliberately unavailable
+until TeamGrid can qualify a native operating-system credential-store
+integration; the CLI never falls back to plaintext token storage.
 
 ## Install
 
-The Developer Platform packages are currently prereleases. Install from `next` and pin the resolved version in controlled environments.
+Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --help
 ```
 
@@ -3664,6 +3978,14 @@ For a short-lived CI process, provide `TEAMGRID_API_TOKEN` directly to the proce
 TEAMGRID_API_TOKEN="$TEAMGRID_API_TOKEN" teamgrid workspace --output json
 ```
 
+This is also the supported authentication mode on Windows. PowerShell example:
+
+```powershell
+$env:TEAMGRID_API_TOKEN = "<credential>"
+teamgrid workspace --output json
+Remove-Item Env:TEAMGRID_API_TOKEN
+```
+
 Never commit credentials, place them in command-line arguments, or print them for debugging.
 
 <!-- guides/capability-coverage.md -->
@@ -3674,8 +3996,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-beta.2` controlled-beta API v1 contract contains 111 paths and 181 operations. The TypeScript SDK
-and CLI map all 181 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The stable `1.0.0` API v1 contract contains 128 paths and 206 operations. The TypeScript SDK
+and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -3685,19 +4007,20 @@ lifecycle operations, tasks and timers, time entries, calendar appointments, abs
 contacts, comments, activity, documents, files, workspace administration, search, bounded exports,
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
-planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
-The durable change feed is deliberately outside the first public beta contract.
+planned work, personal access credentials, service accounts, resource grants, and the durable change
+feed. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 
-The same release boundary keeps 25 project, task, project-template, and associated asynchronous
-operation endpoints on a static non-CAS contract. They do not expose developer revision fields or
-core `If-Match` requirements. This does not remove the 31 independent `If-Match` operations for
-resource families such as planned work, custom-field values, calendar data, documents, workspace
-administration, automations, workspace settings, and webhook-secret rotation.
+The same release boundary qualifies 18 project, task, project-sharing, and project-template
+mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
+reads. Another 34
+protected operations retain resource-specific revision formats for planned work, custom-field
+values, calendar data, documents, workspace administration, automations, workspace settings, and
+webhook-secret rotation.
 
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 181 operations. Exactly one discovery operation is anonymous; all 180 remaining
+registry for all 206 operations. Exactly one discovery operation is anonymous; all 205 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -3713,10 +4036,9 @@ resolves stored targets before evaluating grants, and its V13 runtime provides o
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
 alone does not activate principal enforcement.
 
-This registry does not make native service accounts or delegated OAuth generally available. Those
-principal types remain separately feature-gated until cell-local migration, shadow comparison, and
-family qualification have completed. Existing credentials are never silently converted into
-autonomous service accounts.
+The registry covers personal access credentials and native service accounts without converting
+existing credentials. Delegated OAuth remains separately feature-gated until its cell-local
+migration, consent, revocation, and policy-family qualification are complete.
 
 ## Product capability ledger
 
@@ -3725,23 +4047,45 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the controlled-beta contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 13 | The workflow remains on the roadmap and is not part of the current contract |
+| Released in the stable contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 0 | No capability is advertised with an incomplete public workflow |
+| Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
-System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-and webhook-secret rotation are now released in the controlled-beta contract. Remaining planned
-work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
-operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, several core project, task, contact and
-time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
-webhooks where additional product semantics remain. The change feed is excluded rather than marked
-as a partially released capability.
+API version discovery, system capability discovery, workspace entitlements, safe workspace settings, the event catalog,
+project reads, complete project-template capture and instantiation, task reads, writes and lifecycle,
+complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
+complete audit reads and bounded audit exports, complete custom-field-value reads and
+compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
+project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
+and webhook-secret rotation are released in the stable contract. Remaining planned
+work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
 are represented by stable resources and domain commands instead of those internals.
+
+## Post-1.0 qualification boundary
+
+The six planned domains are additive roadmap candidates, not hidden or partially supported
+endpoints:
+
+- **Delegated OAuth** needs complete consent, acting-user, token rotation, revocation, and
+  cell-local policy lifecycles.
+- **Telephony calls** need provider-independent resources plus explicit side-effect, recording,
+  privacy, and delegated-user semantics.
+- **File sharing** needs a public share-link lifecycle distinct from private transfer intents and
+  the internal device-synchronization protocol.
+- **Commerce orders** need a customer-facing order resource rather than exposure of internal
+  project-automation state.
+- **Report jobs** need immutable definitions, bounded execution, private result storage, and
+  snapshot semantics.
+- **Import jobs** need schema-versioned validation, dry-run results, idempotent commit, per-row
+  outcomes, and safe rollback boundaries.
+
+Future 1.x releases may add qualified resources and commands without weakening stable 1.0
+behavior. Existing operation semantics, scopes, errors, regional routing, and security boundaries
+remain compatible throughout the major version. A breaking change requires a new API major.
 
 See the [API v1 reference](/api/v1/reference/), [CLI commands](/cli/commands/), and [MCP tool policy](/mcp/tools-and-security/) for the current public surface.
 
@@ -3766,9 +4110,9 @@ API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that 
 
 Build automation against API v1 or the SDK. Use the CLI as an operator and scripting interface. Treat MCP as an optional adapter for human-supervised read workflows, not as the foundation of an integration.
 
-For bounded mirrors, traverse the resource endpoints and use signed webhooks as delivery signals.
-The [change-feed status page](/api/v1/change-feed/) explains why a durable feed is not part of the
-first public beta.
+For durable mirrors, create a cell-local checkpoint before the initial snapshot, then consume the
+[change feed](/api/v1/change-feed/) for ordered catch-up. Signed webhooks remain useful
+low-latency delivery signals, but they are not a replayable history.
 
 MCP does not introduce a second TeamGrid API, a remote TeamGrid session, or MCP-specific credentials. Every MCP request still passes through the API v1 authentication, scope, tenant, and region checks.
 
@@ -3828,7 +4172,7 @@ integration surfaces.
   </a>
 </div>
 
-API v1 `1.0.0-beta.2` governs 181 operations across 111 paths. That number measures contract parity
+API v1 `1.0.0` governs 206 operations across 128 paths. That number measures contract parity
 across the HTTP API, SDK, and CLI, not complete TeamGrid product coverage. The
 [capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
 areas explicitly, and [choose an interface](/guides/choose-an-interface/) maps common integration
@@ -3853,10 +4197,10 @@ title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 ---
 
-Install the current prereleases and authenticate the CLI first:
+Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2 @teamgrid/mcp-server@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -3918,7 +4262,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2 @teamgrid/mcp-server@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
 teamgrid auth login
 ```
 
@@ -3926,7 +4270,7 @@ teamgrid auth login
 
 - No remote TeamGrid MCP endpoint
 - No MCP-specific credential or database
-- No change-feed tool; that operation is not part of the current public beta contract
+- No change-feed tool; the qualified API/SDK/CLI feed is a high-volume synchronization primitive
 - No write, archive, or remove tools
 - No writes and no mechanism for a model to submit `If-Match`
 - No session affinity or bypass around API authorization
@@ -3940,9 +4284,9 @@ teamgrid auth login
 
 Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
 
-Task and project reads use the static Beta 2 response DTO and do not contain developer revision
-fields. The MCP server remains read-only: no tool accepts an ETag, invokes a protected mutation, or
-polls the excluded project-template operation resources.
+Task and project reads include their developer revision. The MCP server remains read-only: no tool
+accepts an ETag, invokes a protected mutation, or polls project-template operation
+resources.
 
 [Configure an MCP host](/mcp/configuration/) or [review the tools and security model](/mcp/tools-and-security/).
 
@@ -3972,7 +4316,7 @@ commercially sensitive billing rates.
 | `teamgrid_project_get` | Core | Read one project by ID |
 | `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
 | `teamgrid_task_get` | Core | Read one task by ID |
-| `teamgrid_time_entries_list` | Core | List time entries with date, task, and user filters |
+| `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, creator, billable, and billed filters |
 | `teamgrid_time_entry_get` | Core | Read one time entry by ID |
 | `teamgrid_lists_list` | Core | List task lists |
 | `teamgrid_list_get` | Core | Read one list by ID |
@@ -3980,7 +4324,7 @@ commercially sensitive billing rates.
 | `teamgrid_tag_get` | Core | Read one tag by ID |
 | `teamgrid_call_notes_list` | Collaboration | List plain-text call notes |
 | `teamgrid_call_note_get` | Collaboration | Read one plain-text call note by ID |
-| `teamgrid_contacts_list` | Collaboration | List people or companies |
+| `teamgrid_contacts_list` | Collaboration | List people or companies with relationship filters |
 | `teamgrid_contact_get` | Collaboration | Read one person or company by ID |
 | `teamgrid_contact_groups_list` | Collaboration | List contact groups |
 | `teamgrid_contact_group_get` | Collaboration | Read one contact group by ID |
@@ -4000,16 +4344,15 @@ request a smaller page if the server returns `result_too_large`. Call-note, cont
 webhook tools can expose personal, commercial, or security-sensitive information and should use
 dedicated least-privilege credentials.
 
-Project and task results use the same static Beta 2 response DTO as API v1 and do not contain
-developer revision fields. The local server does not register mutation tools or accept `If-Match`
-even for independently protected resource families. Use the SDK or CLI for controlled writes.
+Project and task results include the same developer revision as API v1. The local server does not
+register mutation tools or accept `If-Match`, even for protected resource families. Use the SDK or
+CLI for controlled writes.
 
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain
 financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
-sensitive operational metadata. The change feed is not part of the current public beta contract
-and is therefore absent from every MCP profile. A future high-volume durable synchronization stream
-would not be a bounded interactive model task. Custom-field values, project
+sensitive operational metadata. The qualified change feed remains forbidden through MCP because a
+high-volume durable synchronization stream is not a bounded interactive model task. Custom-field values, project
 templates and their instantiation status, and planned-work schedules and operation status are
 forbidden because they expose sensitive per-resource workflow or workload data. These resources
 cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.
@@ -4066,19 +4409,16 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The current `1.0.0-beta.2` manifest records 111 v1 paths, 181 governed v1 operations, 87 frozen v0
-operations, 87 v0 migration decisions, 78 canonical scopes, and 73 classified TeamGrid product
-capabilities. It also records 25 static non-CAS core operations, zero `resource-cas-v1` mutation or
-read operations, and 31 independent `If-Match` operations outside that retired core CAS rollout.
-These counts describe the synchronized contract; they do not promote planned capabilities into the
-controlled beta.
+The stable `1.0.0` manifest records 128 v1 paths, 206 governed v1 operations, 87 frozen v0
+operations, 87 v0 migration decisions, 87 canonical scopes, and 73 classified TeamGrid product
+capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
+reads, and another 34 domain-specific `If-Match` operations. These counts describe the synchronized
+contract; they do not promote planned capabilities into the stable release.
 
-During the controlled beta, consumers should pin the manifest's `contractVersion` together with the
-OpenAPI digest and the package prerelease they tested. A beta contract checkpoint can add migration
-requirements before the stable `1.0.0` contract exists. The `1.0.0-beta.2` checkpoint intentionally
-removes the unqualified core project, task, and project-template CAS surface while preserving all
-independent endpoint-specific preconditions. Its synchronized SDK, CLI, and MCP package checkpoint
-is `1.0.0-beta.2`. See [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
+release they tested. The `1.0.0` checkpoint qualifies core project, task, and project-template
+CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
+checkpoint is `1.0.0`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -4090,10 +4430,10 @@ description: Use the official typed and region-aware Node.js client for TeamGrid
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
 
-Install the exact verified controlled-beta package version:
+Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-beta.2
+npm install @teamgrid/api-client@1.0.0
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -4107,17 +4447,17 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `system`, `workspace` | API discovery, authenticated workspace metadata, capabilities, and entitlements |
 | `workspaceSettings` | Read and idempotently compare-and-set the safe six-field workspace-settings projection |
 | `events` | Read the authorization-filtered webhook event catalog |
-| `projects` | List, get, create, update, complete, reopen, archive, restore |
+| `projects` | List, get, create, update, read/replace sharing, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
-| `tasks` | List, get, create, update, archive, restore, complete, reopen, timer start and stop |
-| `timeEntries` | List, get, create, update, archive, restore, and cursor page iteration |
+| `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
+| `timeEntries` | List, get, create, update, read/update billing, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
 | `contactGroups` | List, get, create, update, archive, restore |
 | `users` | List workspace users |
 | `lists`, `services`, `tags` | List, get, create, update, archive, restore |
 | `customFieldDefinitions` | List, get, create, update, archive, restore |
-| `customFieldValues` | Get, compare-and-set, and compare-and-clear a resource value |
+| `customFieldValues` | Get one or a bounded batch, compare-and-set, and compare-and-clear resource values |
 | `projectTemplates` | List, get, create, update, archive, restore, instantiate |
 | `projectTemplateInstantiations` | Get and wait for credential-owned instantiation status |
 | `plannedWork` | List a bounded window, get a task schedule, atomically replace a task schedule |
@@ -4132,7 +4472,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `products` | List, get, create, update, archive |
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
-| `auditEvents` | List credential and mutation audit events |
+| `auditEvents` | List credential and mutation audit events with actor, time, credential, event, outcome, request, source, and target filters |
 | `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
 | `members` | List, get, change role, and remove workspace members |
@@ -4144,17 +4484,19 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
+| `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
+| `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
+| `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
 
 Paginated clients also expose `pages()` async iterators. Creates and asynchronous lifecycle starts
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.0-beta.2`; pin that exact version after
-it is available on the configured npm channel. Tasks, projects, and project templates use the
-static Beta 2 resource contract: their representations do not expose developer revisions and their
-mutation options do not accept `ifMatch`. Project lifecycle changes and template instantiation
-remain asynchronous and accept a stable idempotency key. The SDK keeps typed `ifMatch` options for
-the 31 independently protected operations in other resource families.
+The compatible package checkpoint for this contract is `1.0.0`; pin that exact version in
+reproducible deployments. Tasks, projects, and project templates expose
+developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
+lifecycle changes and template instantiation remain asynchronous and also accept a stable
+idempotency key. Another 34 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
@@ -4185,8 +4527,8 @@ headers, secrets, and tenant-routing internals.
   job behind a synchronous project response.
 - Custom-field-value and planned-work writes require the latest resource revision. The SDK accepts
   either that unquoted revision or the corresponding strong ETag and never sends wildcards.
-- Project, task, and project-template methods use the static Beta 2 contract and reject a legacy
-  `ifMatch` option instead of silently sending an unsupported precondition.
+- Project, task, and project-template mutations require `ifMatch`; the client canonicalizes the
+  typed revision and validates the returned strong ETag before accepting the response.
 - Template instantiation and planned-work replacement expose the accepted operation; bounded
   `wait()` helpers poll credential-owned status without changing operation semantics.
 - Project lifecycle and template-instantiation wait helpers accept the validated
@@ -4289,14 +4631,15 @@ and the caller's intent. A `428` is a caller error: read first and supply `ifMat
 `400 invalid_precondition` indicates an invalid or wrong-type ETag. A `503` means the owning cell
 cannot currently prove the revision contract; retain the precondition and retry later.
 
-Projects, tasks, and project templates do not return these core concurrency errors in Beta 2 and
-their SDK mutation methods do not accept `ifMatch`.
+Projects, tasks, and project templates use these concurrency errors for their protected mutations,
+and their SDK mutation methods require `ifMatch`.
 
 When an asynchronous mutation is accepted, bind subsequent polls to that response:
 
 ```ts
 const accepted = await client.projects.complete(projectId, {
   idempotencyKey: 'complete-project-42',
+  ifMatch: project.transport.headers.etag,
 })
 
 const terminal = await client.projectLifecycleOperations.wait(accepted.data.id, {
@@ -4318,7 +4661,7 @@ description: Install the TeamGrid TypeScript SDK and list tasks through a region
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-beta.2
+npm install @teamgrid/api-client@1.0.0
 ```
 
 ## Create a client
@@ -4362,21 +4705,55 @@ console.log(result.data.id)
 
 ## Update a task
 
-Tasks use the static Beta 2 resource contract. Their representations do not expose developer
-revisions and task mutations do not accept an `ifMatch` option:
+Tasks expose a developer revision and strong ETag. Read the task and pass that validator to the
+mutation:
 
 ```ts
+const task = await client.tasks.get('task-id')
 const updated = await client.tasks.update(
   'task-id',
   { name: 'Reviewed launch plan' },
+  { ifMatch: task.transport.headers.etag },
 )
 
 console.log(updated.data.attributes.name)
 ```
 
-Do not synthesize a task ETag or pass a legacy core revision. Other resources retain explicit,
-typed compare-and-set options; read their current revision before calling those methods. See
-[resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+## Use task workflows
+
+Task placement and checklist replacement are atomic, revision-protected operations:
+
+```ts
+const current = await client.tasks.get('task-id')
+const moved = await client.tasks.move(
+  current.data.id,
+  {
+    axis: 'projectList',
+    listId: 'review-list-id',
+    projectId: 'project-id',
+  },
+  { ifMatch: current.transport.headers.etag },
+)
+
+await client.tasks.replaceSubtasks(
+  moved.data.id,
+  {
+    subtasks: [
+      { completed: true, id: 'existing-check-id', title: 'Draft reviewed' },
+      { title: 'Obtain approval' },
+    ],
+  },
+  { ifMatch: moved.transport.headers.etag },
+)
+```
+
+For an exact insertion position, pass `previousTaskId`, `nextTaskId`, or both to `move()`. Those
+neighbors must still belong to the selected axis and container. Checklist replacement preserves
+supplied item IDs and creates IDs for new items.
+
+Do not synthesize a task ETag. Other protected resources retain explicit, typed compare-and-set
+options; always read their current revision first. See
+[resource concurrency](/api/v1/resource-concurrency/).
 
 Keep the credential in a secret manager and inject it through the process environment. Never bundle it into browser code.
 
@@ -4444,9 +4821,9 @@ SDK, CLI, and MCP are clients of this same API boundary. They cannot add authori
 removes most sensitive and all write operations from its local tool catalog, but its allowed reads
 still pass through the complete API policy.
 
-The current controlled beta still issues `tg_sk_v1_` credentials. Native personal-access tokens,
-autonomous service accounts, and delegated OAuth remain separate rollout gates; no legacy
-credential is automatically promoted to a service account.
+Stable API v1 issues reveal-once `tg_sk_v1_` personal-access and service-account credentials.
+Their principal, ownership, expiry, rotation, revocation, and resource-grant rules remain distinct.
+Delegated OAuth is not part of 1.0, and no existing credential is automatically converted.
 
 ## Sensitive resource scopes
 
@@ -4456,10 +4833,11 @@ project-statement scope. Do not grant them to an MCP credential: MCP product too
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
 
-The first public beta does not expose a change feed. Do not use audit events, delivery history, or
-aggressive polling as an undocumented substitute. For supported webhook workflows, keep signing
-secrets and delivery metadata out of logs and fetch current resource state through its independently
-scoped endpoint.
+The stable change feed contains metadata and identifiers, not private resource snapshots. Its
+opaque cursor is bound to the credential principal, workspace, cell, epoch, and exact filter set.
+Do not log it, decode it, transfer it between cells, or use audit events, delivery history, and
+aggressive polling as substitutes. Fetch current state through the independently scoped resource
+endpoint.
 
 Custom-field values and planned-work schedules can contain customer, personnel, or workload data.
 Their write operations require strong compare-and-set revisions so integrations cannot silently

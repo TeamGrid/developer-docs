@@ -6,7 +6,7 @@ description: Install the TeamGrid TypeScript SDK and list tasks through a region
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.0-beta.2
+npm install @teamgrid/api-client@1.0.0
 ```
 
 ## Create a client
@@ -50,20 +50,54 @@ console.log(result.data.id)
 
 ## Update a task
 
-Tasks use the static Beta 2 resource contract. Their representations do not expose developer
-revisions and task mutations do not accept an `ifMatch` option:
+Tasks expose a developer revision and strong ETag. Read the task and pass that validator to the
+mutation:
 
 ```ts
+const task = await client.tasks.get('task-id')
 const updated = await client.tasks.update(
   'task-id',
   { name: 'Reviewed launch plan' },
+  { ifMatch: task.transport.headers.etag },
 )
 
 console.log(updated.data.attributes.name)
 ```
 
-Do not synthesize a task ETag or pass a legacy core revision. Other resources retain explicit,
-typed compare-and-set options; read their current revision before calling those methods. See
-[resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+## Use task workflows
+
+Task placement and checklist replacement are atomic, revision-protected operations:
+
+```ts
+const current = await client.tasks.get('task-id')
+const moved = await client.tasks.move(
+  current.data.id,
+  {
+    axis: 'projectList',
+    listId: 'review-list-id',
+    projectId: 'project-id',
+  },
+  { ifMatch: current.transport.headers.etag },
+)
+
+await client.tasks.replaceSubtasks(
+  moved.data.id,
+  {
+    subtasks: [
+      { completed: true, id: 'existing-check-id', title: 'Draft reviewed' },
+      { title: 'Obtain approval' },
+    ],
+  },
+  { ifMatch: moved.transport.headers.etag },
+)
+```
+
+For an exact insertion position, pass `previousTaskId`, `nextTaskId`, or both to `move()`. Those
+neighbors must still belong to the selected axis and container. Checklist replacement preserves
+supplied item IDs and creates IDs for new items.
+
+Do not synthesize a task ETag. Other protected resources retain explicit, typed compare-and-set
+options; always read their current revision first. See
+[resource concurrency](/api/v1/resource-concurrency/).
 
 Keep the credential in a secret manager and inject it through the process environment. Never bundle it into browser code.

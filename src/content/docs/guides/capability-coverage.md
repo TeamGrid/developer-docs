@@ -5,8 +5,8 @@ description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and 
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The `1.0.0-beta.2` controlled-beta API v1 contract contains 111 paths and 181 operations. The TypeScript SDK
-and CLI map all 181 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The stable `1.0.0` API v1 contract contains 128 paths and 206 operations. The TypeScript SDK
+and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -16,19 +16,20 @@ lifecycle operations, tasks and timers, time entries, calendar appointments, abs
 contacts, comments, activity, documents, files, workspace administration, search, bounded exports,
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
-planned work. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
-The durable change feed is deliberately outside the first public beta contract.
+planned work, personal access credentials, service accounts, resource grants, and the durable change
+feed. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
 
-The same release boundary keeps 25 project, task, project-template, and associated asynchronous
-operation endpoints on a static non-CAS contract. They do not expose developer revision fields or
-core `If-Match` requirements. This does not remove the 31 independent `If-Match` operations for
-resource families such as planned work, custom-field values, calendar data, documents, workspace
-administration, automations, workspace settings, and webhook-secret rotation.
+The same release boundary qualifies 18 project, task, project-sharing, and project-template
+mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
+reads. Another 34
+protected operations retain resource-specific revision formats for planned work, custom-field
+values, calendar data, documents, workspace administration, automations, workspace settings, and
+webhook-secret rotation.
 
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 181 operations. Exactly one discovery operation is anonymous; all 180 remaining
+registry for all 206 operations. Exactly one discovery operation is anonymous; all 205 remaining
 operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
@@ -44,10 +45,9 @@ resolves stored targets before evaluating grants, and its V13 runtime provides o
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
 alone does not activate principal enforcement.
 
-This registry does not make native service accounts or delegated OAuth generally available. Those
-principal types remain separately feature-gated until cell-local migration, shadow comparison, and
-family qualification have completed. Existing credentials are never silently converted into
-autonomous service accounts.
+The registry covers personal access credentials and native service accounts without converting
+existing credentials. Delegated OAuth remains separately feature-gated until its cell-local
+migration, consent, revocation, and policy-family qualification are complete.
 
 ## Product capability ledger
 
@@ -56,22 +56,44 @@ classifies 73 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the controlled-beta contract | 39 | A bounded public v1 workflow is implemented across its required surfaces |
-| Partial | 15 | Some useful behavior exists, but the product workflow is not yet complete |
-| Planned | 13 | The workflow remains on the roadmap and is not part of the current contract |
+| Released in the stable contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Partial | 0 | No capability is advertised with an incomplete public workflow |
+| Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
 
-System capability discovery, workspace entitlements, safe workspace settings, the event catalog,
-and webhook-secret rotation are now released in the controlled-beta contract. Remaining planned
-work includes service accounts, delegated OAuth, project sharing, task ordering, subtasks and bulk
-operations, billing, telephony, file sharing, orders, reports, imports, and audit export. Partial
-classification applies to discovery, credentials, several core project, task, contact and
-time-entry projections, custom-field values, project templates, planned-work lifecycle, audit, and
-webhooks where additional product semantics remain. The change feed is excluded rather than marked
-as a partially released capability.
+API version discovery, system capability discovery, workspace entitlements, safe workspace settings, the event catalog,
+project reads, complete project-template capture and instantiation, task reads, writes and lifecycle,
+complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
+complete audit reads and bounded audit exports, complete custom-field-value reads and
+compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
+project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
+and webhook-secret rotation are released in the stable contract. Remaining planned
+work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
 are represented by stable resources and domain commands instead of those internals.
+
+## Post-1.0 qualification boundary
+
+The six planned domains are additive roadmap candidates, not hidden or partially supported
+endpoints:
+
+- **Delegated OAuth** needs complete consent, acting-user, token rotation, revocation, and
+  cell-local policy lifecycles.
+- **Telephony calls** need provider-independent resources plus explicit side-effect, recording,
+  privacy, and delegated-user semantics.
+- **File sharing** needs a public share-link lifecycle distinct from private transfer intents and
+  the internal device-synchronization protocol.
+- **Commerce orders** need a customer-facing order resource rather than exposure of internal
+  project-automation state.
+- **Report jobs** need immutable definitions, bounded execution, private result storage, and
+  snapshot semantics.
+- **Import jobs** need schema-versioned validation, dry-run results, idempotent commit, per-row
+  outcomes, and safe rollback boundaries.
+
+Future 1.x releases may add qualified resources and commands without weakening stable 1.0
+behavior. Existing operation semantics, scopes, errors, regional routing, and security boundaries
+remain compatible throughout the major version. A breaking change requires a new API major.
 
 See the [API v1 reference](/api/v1/reference/), [CLI commands](/cli/commands/), and [MCP tool policy](/mcp/tools-and-security/) for the current public surface.

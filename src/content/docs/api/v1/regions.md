@@ -7,8 +7,8 @@ TeamGrid API v1 is cell-aware. Official clients derive the regional endpoint fro
 
 | Region | Endpoint | Current availability |
 | --- | --- | --- |
-| Germany | `https://api.de.teamgrid.app/v1` | Controlled beta |
-| United States | `https://api.us.teamgrid.app/v1` | Maintenance until a regional beta is approved |
+| Germany | `https://api.de.teamgrid.app/v1` | Stable |
+| United States | `https://api.us.teamgrid.app/v1` | Stable |
 
 The global v0 hosts are not API v1 endpoints during the controlled rollout:
 
@@ -30,5 +30,5 @@ Business data, credential hashes, audit records, and write delivery stay in the 
 For endpoints that expose resource revisions and strong ETags, those validators are also
 cell-local. Return them only to the same credential's regional endpoint. A tag is not proof of
 authorization, is not portable to another workspace or cell, and must never be used to justify
-following a bearer redirect. Static Beta 2 projects, tasks, and project templates do not expose
-such validators.
+following a bearer redirect. Stable projects, project sharing, tasks, and project templates expose
+these validators on their qualified reads and mutations.

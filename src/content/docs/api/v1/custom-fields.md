@@ -44,6 +44,23 @@ are booleans; numbers are finite and non-negative; dates are RFC 3339 timestamps
 fields contain one ID or a bounded unique ID array. The API never returns legacy raw storage,
 workspace fields, internal defaults, or an invalid stored value.
 
+## Bounded batch reads
+
+Read 1–100 unique definitions for one resource with one order-preserving request:
+
+```ts
+const values = await client.customFieldValues.getMany(
+  'task',
+  taskId,
+  ['customerReference', 'priority', 'owner'],
+)
+```
+
+The response contains exactly one value state per requested field ID in the same order. The App
+re-authenticates the credential once, checks every definition and the target resource in its owning
+cell, and requires every target and reference-domain scope needed by the complete batch. Empty,
+duplicate, oversized, reordered, or structurally extended results fail closed.
+
 ## SDK and CLI
 
 ```ts
@@ -62,6 +79,8 @@ await client.customFieldValues.clear('task', taskId, fieldId, {
 
 ```bash
 teamgrid custom-field-values get task TASK_ID FIELD_ID --output json
+teamgrid custom-field-values get-many task TASK_ID \
+  --field-id FIELD_ID ANOTHER_FIELD_ID --output json
 teamgrid custom-field-values set task TASK_ID FIELD_ID \
   --data '{"value":"ACME-42"}' --if-match "$REVISION" --output json
 teamgrid custom-field-values clear task TASK_ID FIELD_ID \
@@ -69,4 +88,5 @@ teamgrid custom-field-values clear task TASK_ID FIELD_ID \
 ```
 
 Custom-field values are deliberately unavailable through MCP. Definition reads are available only
-in the `governance` profile; definition writes and every value operation remain forbidden.
+in the `governance` profile; definition writes and every value operation, including batch reads,
+remain forbidden.

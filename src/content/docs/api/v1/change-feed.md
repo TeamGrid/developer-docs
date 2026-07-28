@@ -1,35 +1,68 @@
 ---
-title: Change feed status
-description: Understand why the change feed is excluded from the first public API v1 beta contract.
+title: Change feed
+description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
 ---
 
-The change feed is not part of the `1.0.0-beta.2` public contract. `changes:read` cannot be issued,
-and `GET /v1/changes` is not a supported beta operation. It is therefore absent from OpenAPI, the
-TypeScript SDK, the CLI, and the cross-interface capability ledger. MCP does not expose it either.
+`GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
+`changes:read` plus the read scopes and resource grants for every requested domain. The contract
+covers 23 resource types and reports created, updated, archived, restored, or deleted identities
+without embedding a private resource snapshot.
 
-This boundary is deliberate. A durable synchronization feed must preserve an unambiguous
-workspace and resource identity across rapid updates, ownership changes, deletes, restarts,
-retention compaction, and cell failover. The current capture implementation has not completed that
-preimage and recovery qualification, so TeamGrid does not advertise a weaker contract as ready.
+Each page returns an opaque `nextCursor` and a `caughtUp` flag. Persist the cursor only after the
+corresponding page has been applied durably. A cursor is bound to the credential principal,
+workspace, cell, epoch, and exact filter set. Do not decode it, move it between regions, or reuse it
+with different resource or operation filters.
 
-## Supported beta alternatives
+```bash
+checkpoint=$(teamgrid changes checkpoint --resource-type task --output json \
+  | jq -er '.meta.page.nextCursor')
 
-Use the normal cursor-paginated resource endpoints for bounded imports and reconciliation. Persist
-resource IDs and the documented current-state fields returned by each endpoint, and repeat a
-traversal from the beginning when your filter set or reconciliation boundary changes.
+teamgrid changes list \
+  --cursor "$checkpoint" \
+  --resource-type task \
+  --all \
+  --output jsonl
+```
 
-Use [signed webhooks](/api/v1/webhooks/) for supported event-driven workflows. A webhook is a
-delivery signal rather than a complete history: verify its signature, process it idempotently, and
-read the current resource through its independently scoped API endpoint when the workflow needs
-authoritative state.
+## Snapshot-then-catch-up
 
-Do not approximate a change feed through audit events, webhook-delivery history, search results, or
-aggressive polling. Those resources have different authorization, retention, and ordering
-semantics. Keep polling bounded and respect the documented rate-limit headers.
+A new mirror must avoid the gap between its initial traversal and its first incremental read:
 
-## Future qualification
+1. Request a latest checkpoint with the exact intended filters.
+2. Traverse the normal resource endpoints and persist the authoritative current state.
+3. Read changes from the saved checkpoint until `caughtUp` is true.
+4. Continue polling from the last durably applied `nextCursor`.
 
-A later contract checkpoint may add a change feed after TeamGrid has qualified immutable event
-ownership, insert/update/delete semantics, resume and reset behavior, retention, multi-cell
-boundaries, and complete recovery tests. That release will use a new contract and package version;
-clients should not reserve or request `changes:read` in advance.
+The SDK implements this order through `changes.snapshotThenCatchUp()`. It takes the checkpoint
+before invoking the caller's snapshot function and includes the terminal empty page so the newest
+cursor is never lost.
+
+```ts
+const bootstrap = await teamgrid.changes.snapshotThenCatchUp(
+  async () => loadInitialTasks(),
+  { resourceTypes: ['task'] },
+)
+
+await saveSnapshot(bootstrap.snapshot)
+for await (const page of bootstrap.pages) {
+  await applyChangesAndCursor(page.data, page.meta.page.nextCursor)
+}
+```
+
+Change events are invalidation metadata. After an update, read the resource through its normal
+endpoint when the mirror needs the latest authorized fields. A tombstone signals that the
+credential can no longer retrieve the previous state; consumers must remove or re-evaluate their
+local copy.
+
+## Recovery and boundaries
+
+Expired, compacted, wrong-cell, wrong-filter, or otherwise invalid checkpoints fail explicitly.
+Start a new snapshot-then-catch-up cycle instead of guessing a position. The owning cell also
+closes readiness when capture, preimage, epoch, or recovery guarantees cannot be proven.
+
+Signed webhooks remain useful for low-latency notifications, while the change feed provides ordered
+catch-up and reconciliation. Audit events, webhook delivery history, search results, and aggressive
+polling are not substitutes for this contract.
+
+The change feed remains forbidden through MCP because it is a high-volume synchronization
+transport rather than a bounded interactive model tool. Use the API, SDK, or CLI.

@@ -88,14 +88,15 @@ and the caller's intent. A `428` is a caller error: read first and supply `ifMat
 `400 invalid_precondition` indicates an invalid or wrong-type ETag. A `503` means the owning cell
 cannot currently prove the revision contract; retain the precondition and retry later.
 
-Projects, tasks, and project templates do not return these core concurrency errors in Beta 2 and
-their SDK mutation methods do not accept `ifMatch`.
+Projects, tasks, and project templates use these concurrency errors for their protected mutations,
+and their SDK mutation methods require `ifMatch`.
 
 When an asynchronous mutation is accepted, bind subsequent polls to that response:
 
 ```ts
 const accepted = await client.projects.complete(projectId, {
   idempotencyKey: 'complete-project-42',
+  ifMatch: project.transport.headers.etag,
 })
 
 const terminal = await client.projectLifecycleOperations.wait(accepted.data.id, {

@@ -13,14 +13,14 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | --- | --- | --- |
 | Workspace and users | Read | Workspace, region, cell, and membership remain credential-scoped |
 | Projects | List, get, create, update, complete, reopen, archive, restore | Lifecycle actions are asynchronous and require `projects:lifecycle` |
-| Tasks | List, get, create, update, archive, restore, complete, reopen, timer start and stop | Timer commands require both `tasks:write` and `time-entries:write` |
-| Time entries | List, get, create, update, archive, restore | Explicit lifecycle commands preserve TeamGrid time-tracking invariants |
-| Contacts | List, get, create, update | No public archive operation in the current contract |
+| Tasks | List, get, create, update, duplicate, move, replace checklist, archive, restore, complete, reopen, timer start and stop | Workflow writes use task revisions; timer commands require both `tasks:write` and `time-entries:write` |
+| Time entries | List, get, create, update, archive, restore, start and stop task timers | Billed entries are immutable; billing operations and financial rates remain outside the core workflow |
+| Contacts | List, get, create, update | Reads include contact relationships and non-financial CRM summaries; no public archive operation in the current contract |
 | Call notes | List, get, create, archive, restore | Public content is plain text; internal rich-text storage is never returned |
 | Contact groups | List, get, create, update, archive, restore | Parent changes are validated against cycles and hierarchy limits |
 | Lists, services, and tags | List, get, create, update, archive, restore | Service responses can include billing rates |
 | Custom-field definitions | List, get, create, update, archive, restore | Only canonical public schema metadata is writable |
-| Custom-field values | Get, compare-and-set, compare-and-clear | Requires a strong revision and the matching target-resource scope |
+| Custom-field values | Get one or 1–100 in an ordered batch, compare-and-set, compare-and-clear | Requires a strong revision for writes and every target/reference scope used by a read |
 | Appointments and absences | Bounded list, get, create, compare-and-set update, archive, restore | Foreign-user access requires a delegated or administrative overlay plus product authorization |
 | Availability | Bounded read | Requires an explicit IANA time zone; foreign users require delegated access |
 | Comments and activity | Target-scoped collaboration | Also requires the matching contact, project, or task read scope |
@@ -37,14 +37,35 @@ are private even if a similarly named value exists inside the TeamGrid applicati
 | Webhooks | List, get, create, remove | Creation returns the signing secret once |
 | Webhook deliveries | List and get | Read-only, credential-owned, privacy-reduced history |
 
-The [capability coverage ledger](/guides/capability-coverage/) separately records what is implemented
-in the controlled beta, partially covered, planned, or intentionally private.
+The [capability coverage ledger](/guides/capability-coverage/) separately records what is released
+in stable 1.0, planned for a later release, or intentionally private.
 
-Project, task, and project-template responses use the static Beta 2 shape and do not contain
-developer revision fields. Their mutations do not accept a core `If-Match` precondition. This
-boundary applies to 25 project, task, template, and associated operation endpoints; independent
-resource families retain their own compare-and-set contracts. See
-[resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the exact boundary.
+Project reads include stable list and scheduling order, creation and duplication provenance,
+planning boundaries, last activity, and non-financial task progress counts. The owning App cell
+projects only these safe summary fields from its internal calculation object; costs, revenue,
+profit, budgets, time totals, names cached for UI rendering, and image internals are rejected at
+the API boundary. Project sharing is exposed separately through a full-replacement,
+human-principal-only contract with strong concurrency control.
+
+Time-entry reads expose task, user and service references, creator/updater provenance, duration,
+billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
+by these safe operational fields and by a start-time window. Internal hourly rates, cost rates,
+financial aggregates, cached billing details, and call records are rejected at the App and API
+boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
+task timers form the released operational workflow. Marking entries billed or unbilled remains the
+separate planned time-entry billing capability.
+
+Contact reads include person/company identity, addresses, communication channels, websites, social
+profiles, parent/group/company relationships, provenance, last activity, and non-financial task,
+project, and employee counts. Lists support exact type, category, customer, group, company, parent,
+and creator filters. Billing configuration, rates, costs, revenue, profit, budgets, time aggregates,
+cached display names, image-storage internals, and embedded custom-field storage are never returned.
+Custom-field values remain available only through their dedicated revisioned endpoints.
+
+Project, task, and project-template responses include developer revision fields. Their 17 mutations
+require a strong `If-Match` precondition; another 31 operations retain resource-specific
+compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
+boundary.
 
 ## Project lifecycle operations
 
@@ -52,7 +73,7 @@ Project completion, reopen, archive, and restore can cascade across related Team
 therefore returns a project-lifecycle operation instead of pretending that the work completed during
 the initiating request.
 
-1. Send the lifecycle command with a stable idempotency key.
+1. Read the project and send the lifecycle command with its latest ETag and a stable idempotency key.
 2. Persist the returned operation ID, action, and target project ID.
 3. Treat the accepted operation as the authoritative handle for subsequent polling.
 4. Poll `GET /v1/project-lifecycle-operations/{id}` until it reaches a terminal state, or use the SDK
@@ -60,8 +81,8 @@ the initiating request.
 5. Treat a transport timeout as an unknown outcome and resume by operation ID; do not create an
    unrelated replacement operation.
 
-On success, re-read the project if the next step depends on its resulting state. Beta 2 operation
-resources do not expose the retired core `sourceRevision` or `resultRevision` fields.
+The accepted operation exposes `sourceRevision`; a successful terminal operation exposes
+`resultRevision`. Re-read the project if the next step needs its complete resulting state.
 
 The CLI project commands accept `--wait`, `--max-wait`, and `--poll-interval`. The SDK exposes the
 operation through `projectLifecycleOperations.get()` and `projectLifecycleOperations.wait()`. Pass

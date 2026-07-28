@@ -105,10 +105,6 @@ if (html.length < minimumExpectedPages) {
   )
 }
 
-if (await exists(path.join(dist, 'api', 'v1', 'reference', 'operations', 'listchanges', 'index.html'))) {
-  failures.push('The excluded listChanges operation page was generated.')
-}
-
 function builtPageForUrl(url) {
   const pathname = url.split(/[?#]/, 1)[0]
   if (!pathname || pathname === '/') return path.join(dist, 'index.html')

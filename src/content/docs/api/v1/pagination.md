@@ -29,8 +29,8 @@ Idempotency-Key: sync-job-2026-07-19-task-42
 The key must contain 1–128 printable ASCII characters. Repeating the same operation with the same key and payload returns the original result. Reusing the key with a different payload returns a conflict.
 
 For project lifecycle actions and project-template instantiation, a retry must use the same key,
-action, and payload. These static Beta 2 operations do not accept a core `If-Match` precondition or
-bind the key to a developer revision.
+action, payload, and source revision. Every start request also requires the latest strong ETag
+through `If-Match`.
 
 Generate keys from a stable operation identity rather than a random value created on every retry. Keep keys free of credentials and personal data.
 
@@ -39,5 +39,5 @@ planned-work PUT is retryable only with both its idempotency key and strong comp
 precondition. Other PUT, PATCH, and DELETE requests should not be retried automatically unless the
 caller has separately established their outcome.
 
-See [resource concurrency in Beta 2](/api/v1/resource-concurrency/) for the distinction between the
-static core operations and independently protected resource families.
+See [resource concurrency](/api/v1/resource-concurrency/) for the distinction between the 17 core
+CAS mutations and the 31 domain-specific protected operations.

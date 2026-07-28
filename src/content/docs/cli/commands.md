@@ -45,10 +45,25 @@ whether to retry. The settings projection contains only six documented fields an
 billing, storage, role, or integration configuration. Capability, entitlement, and event responses
 are current negotiation results, not permanent authorization grants.
 
+## Credentials and service accounts
+
+```text
+teamgrid credentials personal list|create|rotate|revoke
+teamgrid service-accounts list|create|get|update|revoke
+teamgrid service-accounts credentials create|rotate|revoke
+teamgrid service-accounts grants get|replace --if-match REVISION
+```
+
+Credential secrets are returned once. Move them directly into a secret manager. Resource-grant
+replacement is a complete compare-and-set operation; read the current grant revision before
+replacing it.
+
 ## Projects and lifecycle operations
 
 ```text
 teamgrid projects list|get|create|update
+teamgrid projects sharing get PROJECT_ID
+teamgrid projects sharing replace PROJECT_ID --data <json|@file|-> --if-match REVISION
 teamgrid projects complete|reopen|archive|restore PROJECT_ID [--wait]
 teamgrid project-lifecycle-operations get OPERATION_ID
 ```
@@ -61,16 +76,23 @@ Examples:
 teamgrid projects list --completed false
 teamgrid projects create --data @project.json --idempotency-key project-import-42
 teamgrid projects get PROJECT_ID --output json
-teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}'
+teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' --if-match REVISION
 teamgrid projects complete PROJECT_ID \
-  --idempotency-key close-42 --wait
+  --if-match REVISION --idempotency-key close-42 --wait
 ```
+
+Project lists support `--archived`, `--completed`, `--contact-id`, `--created-by-id`,
+`--individual-id`, `--list-id`, `--manager-id`, and `--subscriber-id`. Multiple filters are
+combined and never broaden the credential's workspace boundary.
 
 Project lifecycle commands create durable asynchronous operations. Without `--wait`, the command
 returns the operation immediately. With `--wait`, it polls until a terminal state, bounded by
 `--max-wait` and `--poll-interval`. Lifecycle access uses the separate `projects:lifecycle` scope.
-Project updates and lifecycle commands use the static Beta 2 contract and do not accept
-`--if-match`. Lifecycle starts should use a stable idempotency key.
+Project updates and lifecycle commands require `--if-match` from the latest project read.
+Lifecycle starts should also use a stable idempotency key.
+
+Project sharing replacement sends the complete desired entry set. It validates local members and
+accepted workspace connections and never permits an unvalidated cross-region user identifier.
 
 ## Commerce and project statements
 
@@ -154,19 +176,27 @@ service credentials and machine-readable output should be handled as commerciall
 teamgrid tasks list --project-id PROJECT_ID --completed false
 teamgrid tasks get TASK_ID --output json
 teamgrid tasks create --data @task.json --idempotency-key task-import-42
-teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}'
-teamgrid tasks archive TASK_ID
-teamgrid tasks restore TASK_ID
-teamgrid tasks complete TASK_ID
-teamgrid tasks reopen TASK_ID
+teamgrid tasks update TASK_ID --data '{"name":"Updated task name"}' --if-match REVISION
+teamgrid tasks duplicate TASK_ID --data '{"copyChecklist":true}' \
+  --if-match REVISION --idempotency-key task-copy-42
+teamgrid tasks move TASK_ID --data @placement.json --if-match REVISION
+teamgrid tasks subtasks replace TASK_ID --data @checklist.json --if-match REVISION
+teamgrid tasks archive TASK_ID --if-match REVISION
+teamgrid tasks restore TASK_ID --if-match REVISION
+teamgrid tasks complete TASK_ID --if-match REVISION
+teamgrid tasks reopen TASK_ID --if-match REVISION
 teamgrid tasks timer start TASK_ID --user-id USER_ID
 teamgrid tasks timer stop TASK_ID --user-id USER_ID
 ```
 
+Task lists accept `--archived`, `--completed`, `--assignee-id`, `--contact-id`, `--group-id`,
+`--list-id`, `--personal-list-id`, `--project-id`, `--service-id`, `--subscriber-id`, and
+`--tag-id`. Multiple filters are combined. Use `--all` for bounded automatic pagination.
+
 Use the explicit `complete` and `reopen` commands for task state transitions. Timer commands accept an optional `--at <date>` ISO timestamp. When omitted, the API receive time is used. Starting a timer can stop the same user's previous timer and update task tracking state, so the credential must grant both `tasks:write` and `time-entries:write`.
 
-Task mutations use the static Beta 2 contract and do not accept `--if-match`. Do not synthesize a
-revision from `updatedAt` or another task field.
+Task mutations require `--if-match` from the latest task read. Do not synthesize a revision from
+`updatedAt` or another task field.
 
 ## Time entries
 
@@ -174,9 +204,12 @@ revision from `updatedAt` or another task field.
 
 ```bash
 teamgrid time-entries list --from 2026-07-01 --to 2026-07-31 --all
+teamgrid times list --service-id SERVICE_ID --billable true --billed false
 teamgrid times get TIME_ENTRY_ID
 teamgrid times create --data @time-entry.json --idempotency-key time-import-42
 teamgrid times update TIME_ENTRY_ID --data @time-entry-patch.json
+teamgrid time-entries billing get TIME_ENTRY_ID
+teamgrid time-entries billing update TIME_ENTRY_ID --data @billing.json --if-match REVISION
 teamgrid times archive TIME_ENTRY_ID
 teamgrid times restore TIME_ENTRY_ID
 ```
@@ -190,7 +223,8 @@ teamgrid contact-groups list|get|create|update|archive|restore
 teamgrid users
 ```
 
-Contact lists accept `--type person|company` and `--archived`. Call-note and contact-group lists
+Contact lists accept type, category, company, creator, customer, group, parent-contact, and archive
+filters. Call-note and contact-group lists
 accept `--archived`. Call-note creation accepts plain-text `content`; the API does not expose
 TeamGrid's internal rich-text representation. Contact-group parent changes are validated against
 cycles and hierarchy limits.
@@ -217,13 +251,16 @@ Canonical field types are `contact`, `date`, `dropdown`, `number`, `project`, `s
 
 ```text
 teamgrid custom-field-values get TARGET_TYPE RESOURCE_ID FIELD_ID
+teamgrid custom-field-values get-many TARGET_TYPE RESOURCE_ID
+  --field-id FIELD_ID [FIELD_ID...]
 teamgrid custom-field-values set TARGET_TYPE RESOURCE_ID FIELD_ID
   --data <json|@file|-> --if-match REVISION
 teamgrid custom-field-values clear TARGET_TYPE RESOURCE_ID FIELD_ID
   --if-match REVISION --yes
 ```
 
-Read first, then pass the latest `data.attributes.revision` to `--if-match`. A `412` means another
+`get-many` accepts 1–100 unique field IDs and preserves their order. Read first, then pass the
+latest `data.attributes.revision` to `--if-match`. A `412` means another
 writer changed the value; re-read and decide explicitly instead of blindly retrying. Clear is a
 destructive compare-and-set operation and therefore requires confirmation.
 
@@ -233,15 +270,15 @@ destructive compare-and-set operation and therefore requires confirmation.
 teamgrid project-templates list|get|create
 teamgrid project-templates update|archive|restore PROJECT_TEMPLATE_ID
 teamgrid project-templates instantiate TEMPLATE_ID --data <json|@file|->
-  [--idempotency-key KEY] [--wait]
+  --if-match REVISION [--idempotency-key KEY] [--wait]
 teamgrid project-template-instantiations get OPERATION_ID
 ```
 
 Template list filters include `--archived`, `--created-at-from`, `--created-at-to`, and
 `--origin-project-id`. Create and instantiate should use stable idempotency keys. `--wait` polls the
 credential-owned instantiation until it succeeds or fails, bounded by `--max-wait` and
-`--poll-interval`. Project-template commands use the static Beta 2 contract and do not accept
-`--if-match`. Instantiation binds its payload to the idempotency key.
+`--poll-interval`. Project-template mutations require `--if-match` from the latest template read.
+Instantiation binds its payload and source revision to the idempotency key.
 
 ## Planned work
 
@@ -299,6 +336,16 @@ Use dedicated administration credentials. Member and invitation PII requires the
 `members:pii:read` overlay. Mutations that change existing authorization state require the latest
 strong revision through `--if-match`; destructive commands require confirmation.
 
+## Change feed
+
+```text
+teamgrid changes checkpoint [--resource-type TYPE] [--operation OPERATION]
+teamgrid changes list --cursor CURSOR [--resource-type TYPE] [--operation OPERATION] [--all]
+```
+
+Persist each returned cursor only after applying its page durably. Checkpoints are bound to the
+credential, workspace, cell, epoch, and exact filter set.
+
 ## Search and exports
 
 ```text
@@ -314,7 +361,8 @@ By default, `exports download` creates the short-lived intent internally. To sep
 pipe the token through standard input with `--intent-token-stdin`; it is never accepted on the
 command line or in a URL. `--file` creates a mode-`0600` file exclusively and never overwrites an
 existing path. `--stdout` refuses to write binary data to a terminal. Both paths enforce a maximum
-of 50 MiB.
+of 50 MiB. Audit exports use `resourceType: "auditEvents"` and require an immutable
+`createdAtTo` boundary.
 
 ## Automations and integrations
 
@@ -333,12 +381,18 @@ or configuration secrets.
 ## Audit events
 
 ```text
-teamgrid audit-events [--credential-id ID] [--event-type TYPE]
-                      [--outcome success|denied|failure]
+teamgrid audit-events [--actor-id ID] [--actor-type user|serviceCredential|system]
+                      [--created-at-from ISO] [--created-at-to ISO]
+                      [--credential-id ID] [--event-type TYPE]
+                      [--outcome success|denied|failure] [--request-id ID]
+                      [--source teamgrid-app|api-v1|system]
+                      [--target-id ID] [--target-type TYPE]
 ```
 
-Audit output can contain security-sensitive operational metadata. Limit access and retention in
-downstream systems.
+Filters are combined and bound into the opaque pagination cursor, so a cursor cannot be reused with
+another credential, cell, region, or filter set. JSON output includes `meta.retentionDays`, the
+configured retention of the serving cell (30–3650 days; 365 by default). Audit output can contain
+security-sensitive operational metadata. Limit access and retention in downstream systems.
 
 ## Webhooks and delivery history
 

@@ -39,6 +39,6 @@ Use `meta.page.nextCursor` to request the next page. Treat cursors as opaque str
 
 For Node.js applications, continue with the [TypeScript SDK quickstart](/sdk/quickstart/). For shell scripts or local operation, use the [CLI](/cli/install-and-authenticate/).
 
-Task, project, and project-template mutations use the static Beta 2 contract and do not accept a
-core `If-Match` precondition. Other resource families retain explicit read-before-write revisions;
-see [resource concurrency in Beta 2](/api/v1/resource-concurrency/) before adding writes.
+Task, project, and project-template mutations require the latest strong ETag through `If-Match`.
+Other protected resource families retain their own explicit revision formats; see
+[resource concurrency](/api/v1/resource-concurrency/) before adding writes.

@@ -29,9 +29,9 @@ SDK, CLI, and MCP are clients of this same API boundary. They cannot add authori
 removes most sensitive and all write operations from its local tool catalog, but its allowed reads
 still pass through the complete API policy.
 
-The current controlled beta still issues `tg_sk_v1_` credentials. Native personal-access tokens,
-autonomous service accounts, and delegated OAuth remain separate rollout gates; no legacy
-credential is automatically promoted to a service account.
+Stable API v1 issues reveal-once `tg_sk_v1_` personal-access and service-account credentials.
+Their principal, ownership, expiry, rotation, revocation, and resource-grant rules remain distinct.
+Delegated OAuth is not part of 1.0, and no existing credential is automatically converted.
 
 ## Sensitive resource scopes
 
@@ -41,10 +41,11 @@ project-statement scope. Do not grant them to an MCP credential: MCP product too
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
 
-The first public beta does not expose a change feed. Do not use audit events, delivery history, or
-aggressive polling as an undocumented substitute. For supported webhook workflows, keep signing
-secrets and delivery metadata out of logs and fetch current resource state through its independently
-scoped endpoint.
+The stable change feed contains metadata and identifiers, not private resource snapshots. Its
+opaque cursor is bound to the credential principal, workspace, cell, epoch, and exact filter set.
+Do not log it, decode it, transfer it between cells, or use audit events, delivery history, and
+aggressive polling as substitutes. Fetch current state through the independently scoped resource
+endpoint.
 
 Custom-field values and planned-work schedules can contain customer, personnel, or workload data.
 Their write operations require strong compare-and-set revisions so integrations cannot silently

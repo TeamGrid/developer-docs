@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "sourceRepository": "TeamGrid/developer-platform",
-  "sourceCommit": "6bd016b47034003932bfe2e5a20df1824f37a1da",
-  "version": "1.0.0-beta.2",
+  "sourceCommit": "02f2d3fb1da50e9fa871c64cf2bd73c47cddd57f",
+  "version": "1.0.0",
   "packages": {
     "apiClient": {
       "name": "@teamgrid/api-client",
-      "version": "1.0.0-beta.2",
-      "sha256": "f45a01b7005967420cbe1166ef0ca258d9247d69704248a33535cb1c9159b5a1"
+      "version": "1.0.0",
+      "sha256": "42caa4bda4267668898b9793c7c92bc9307748c15f5c4ed60c12e39400c067e8"
     },
     "cli": {
       "name": "@teamgrid/cli",
-      "version": "1.0.0-beta.2",
-      "sha256": "1994681d7119352acbc961adb3ad55938801614ed776cf23ba925ae066949856"
+      "version": "1.0.0",
+      "sha256": "96ce5ee8c948c91116a0c186a6709b38bb844cc694b821a462561d611417c544"
     },
     "mcpServer": {
       "name": "@teamgrid/mcp-server",
-      "version": "1.0.0-beta.2",
-      "sha256": "61b3f5708548e06c6a7e0b89778688c58298da4ee4a9302899d12b08a38fc21a"
+      "version": "1.0.0",
+      "sha256": "4c3243e036f21256288041ea18f068162b3d42f62e13ced2486c75c315dc9d74"
     }
   }
 }

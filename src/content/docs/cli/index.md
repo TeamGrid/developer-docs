@@ -5,10 +5,10 @@ description: Inspect and automate TeamGrid API v1 from a terminal or CI job with
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
 
-Install the exact verified controlled-beta package version:
+Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --version
 ```
 
@@ -21,8 +21,8 @@ teamgrid --version
 - Stable exit codes for automation
 - Confirmation before destructive archive or remove operations
 - Bounded resource pagination and structured output for reconciliation scripts
-- Required `--if-match` guards and actionable stale-revision errors for the 31 independently
-  protected operations; static Beta 2 task, project, and project-template commands omit that option
+- Required `--if-match` guards and actionable stale-revision errors for all 52 protected
+  operations, including task, project, and project-template mutations
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 

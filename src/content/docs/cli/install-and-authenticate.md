@@ -1,20 +1,26 @@
 ---
 title: Install and authenticate
-description: Install the TeamGrid CLI prerelease and store an API v1 credential in the operating-system credential store.
+description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
 ---
 
 ## Requirements
 
 - Node.js 22.14 through 24
 - A TeamGrid API v1 credential created in **Settings → Developer**
+- Linux, macOS, or Windows
 - macOS Keychain or Linux Secret Service for persistent profiles
+
+Stable 1.0 supports the CLI on Windows with a process-scoped
+`TEAMGRID_API_TOKEN`. Persistent Windows profiles are deliberately unavailable
+until TeamGrid can qualify a native operating-system credential-store
+integration; the CLI never falls back to plaintext token storage.
 
 ## Install
 
-The Developer Platform packages are currently prereleases. Install from `next` and pin the resolved version in controlled environments.
+Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0-beta.2
+npm install --global @teamgrid/cli@1.0.0
 teamgrid --help
 ```
 
@@ -54,6 +60,14 @@ For a short-lived CI process, provide `TEAMGRID_API_TOKEN` directly to the proce
 
 ```bash
 TEAMGRID_API_TOKEN="$TEAMGRID_API_TOKEN" teamgrid workspace --output json
+```
+
+This is also the supported authentication mode on Windows. PowerShell example:
+
+```powershell
+$env:TEAMGRID_API_TOKEN = "<credential>"
+teamgrid workspace --output json
+Remove-Item Env:TEAMGRID_API_TOKEN
 ```
 
 Never commit credentials, place them in command-line arguments, or print them for debugging.

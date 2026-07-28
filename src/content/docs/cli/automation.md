@@ -14,10 +14,20 @@ teamgrid tasks list --project-id "$PROJECT_ID" --all --output jsonl \
 
 `--all` follows opaque cursors and stops at 10,000 pages by default. Lower the guard with `--max-pages` when a job should have a tighter upper bound.
 
-The first public beta has no change-feed commands. For bounded reconciliation, traverse the
-resource list commands with `--all`, preserve resource IDs and revisions, and use signed webhooks as
-delivery signals where supported. Do not substitute audit or webhook-delivery history for a durable
-feed.
+For a durable mirror, create a checkpoint before the initial resource traversal, then catch up from
+that exact cursor:
+
+```bash
+checkpoint=$(teamgrid changes checkpoint --resource-type task --output json \
+  | jq -er '.meta.page.nextCursor')
+
+teamgrid tasks list --all --output jsonl > tasks.snapshot.jsonl
+teamgrid changes list --cursor "$checkpoint" --resource-type task --all --output jsonl
+```
+
+Persist each new cursor only after applying its page durably. Do not decode a cursor, move it
+between cells, or change its filters. See the [change-feed recovery
+contract](/api/v1/change-feed/) before operating a mirror.
 
 ## Make retried writes idempotent
 
@@ -51,7 +61,7 @@ fi
 Treat `412` and exit code `6` as a concurrent-edit decision, not a generic retry. Missing
 `--if-match` is rejected locally; an API `428` maps to usage exit code `2`. Planned-work replacement
 overwrites the complete schedule and requires `--yes` in non-interactive execution. Project, task,
-and project-template commands use the static Beta 2 contract and do not accept `--if-match`.
+and project-template mutations also require `--if-match` from their latest read.
 
 ## Exit codes
 

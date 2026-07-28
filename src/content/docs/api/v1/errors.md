@@ -50,7 +50,8 @@ The 429 response uses the normal v1 error envelope with code `rate_limit_exceede
 honors `Retry-After` for safe reads, idempotent POST operations, and fully guarded planned-work
 replacements; it does not automatically retry other PUT, PATCH, or DELETE requests.
 
-The static Beta 2 project, task, and project-template operations do not use the precondition errors
-above. For the 31 independently protected operations, distinguish `400 invalid_precondition`,
-`412 precondition_failed`, `428 precondition_required`, and `503 service_unavailable`. The complete
-boundary is documented under [resource concurrency in Beta 2](/api/v1/resource-concurrency/).
+Project, task, and project-template mutations use these precondition errors for their 14 protected
+operations. Another 31 compare-and-set operations retain domain-specific validators. Distinguish
+`400 invalid_precondition`, `412 precondition_failed`, `428 precondition_required`, and
+`503 service_unavailable`. The complete boundary is documented under
+[resource concurrency](/api/v1/resource-concurrency/).

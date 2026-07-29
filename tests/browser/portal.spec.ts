@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
-  await page.route('https://status.teamgrid.app/api/v1/status', async (route) => {
+  await page.route('**/api/status', async (route) => {
     await route.fulfill({
-      body: JSON.stringify({ status: 'operational' }),
+      body: JSON.stringify({ overallStatus: 'operational' }),
       contentType: 'application/json',
       status: 200,
     })
@@ -12,10 +12,43 @@ test.beforeEach(async ({ page }) => {
 
 test('homepage remains structurally stable', async ({ page }, testInfo) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('TeamGrid, built into your workflow.')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Build TeamGrid into the tools your team already uses.',
+  )
   await expect(page.getByText('206 documented operations')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'What do you want to build?' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'One contract. Four ways to work.' })).toBeVisible()
   await expect(page.locator('html')).toHaveJSProperty('scrollWidth', testInfo.project.name === 'mobile' ? 390 : 1440)
   await expect(page).toHaveScreenshot(`homepage-${testInfo.project.name}.png`, { fullPage: true })
+})
+
+test('homepage interface controls remain coherent and keyboard accessible', async ({ page }) => {
+  await page.goto('/')
+
+  const requestLab = page.locator('[data-request-lab]')
+  await requestLab.getByRole('button', { name: 'US', exact: true }).click()
+  await expect(requestLab.locator('[data-regional-url]')).toHaveText(
+    'https://api.us.teamgrid.app/v1/workspace',
+  )
+  await expect(requestLab.locator('[data-response-region]')).toHaveText('"us"')
+  await expect(requestLab.locator('[data-response-cell]')).toHaveText('"us-iad-001"')
+
+  const curlTab = requestLab.getByRole('tab', { name: 'cURL', exact: true })
+  await curlTab.press('ArrowRight')
+  await expect(requestLab.getByRole('tab', { name: 'TypeScript', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(requestLab.locator('[data-code-panel="typescript"]')).toBeVisible()
+
+  const interfaceSwitcher = page.locator('[data-interface-switcher]')
+  const apiTab = interfaceSwitcher.getByRole('tab', { name: '01 API v1 HTTP · OpenAPI 3.1' })
+  await apiTab.press('End')
+  await expect(
+    interfaceSwitcher.getByRole('tab', { name: '04 MCP server @teamgrid/mcp-server' }),
+  ).toHaveAttribute('aria-selected', 'true')
+  await expect(interfaceSwitcher.getByRole('tabpanel', { name: '04 MCP server @teamgrid/mcp-server' }))
+    .toContainText('Give compatible AI clients bounded context.')
 })
 
 test('search filters every documented surface', async ({ page }) => {

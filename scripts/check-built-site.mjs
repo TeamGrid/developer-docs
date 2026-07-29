@@ -27,6 +27,10 @@ const required = [
   'mcp/index.html',
   'openapi/v0.json',
   'openapi/v1.json',
+  'collections/teamgrid-api-v1.postman.json',
+  'collections/teamgrid-api-v1.http',
+  'changelog/feed.xml',
+  'changelog/releases.json',
   'llms.txt',
   'llms-full.txt',
   'social-card.png',
@@ -49,6 +53,9 @@ async function htmlFiles(directory) {
 }
 
 const html = await htmlFiles(dist)
+const builtHtmlPaths = new Set(
+  html.map((file) => path.relative(dist, file).split(path.sep).join('/')),
+)
 async function contentPageFiles(directory) {
   const result = []
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -93,6 +100,11 @@ for (const version of ['v0', 'v1']) {
     )
     if (!(await exists(operationPage))) {
       failures.push(`Missing generated ${version} operation page for ${operationId}.`)
+    } else if (
+      version === 'v1'
+      && !(await readFile(operationPage, 'utf8')).includes('Interactive request builder')
+    ) {
+      failures.push(`API v1 operation ${operationId} has no request builder.`)
     }
   }
   documentedOperations += operationIds.length
@@ -111,17 +123,40 @@ function builtPageForUrl(url) {
   return path.join(dist, pathname.replace(/^\//, '').replace(/\/$/, ''), 'index.html')
 }
 
+function hasBuiltPageWithExactCase(url) {
+  const target = path.relative(dist, builtPageForUrl(url)).split(path.sep).join('/')
+  return builtHtmlPaths.has(target)
+}
+
 for (const file of html) {
   const content = await readFile(file, 'utf8')
   const relative = path.relative(dist, file)
+  if (!/<html\b[^>]*\blang="en"/.test(content)) failures.push(`${relative} does not declare an English document language.`)
+  if (!/<meta\b[^>]*\bname="description"/.test(content)) failures.push(`${relative} has no meta description.`)
   if (!/<link\b[^>]*\brel="canonical"/.test(content)) failures.push(`${relative} has no canonical URL.`)
   if (!content.includes('property="og:image"')) failures.push(`${relative} has no Open Graph image.`)
   if (!content.includes('TeamGrid')) failures.push(`${relative} has no TeamGrid identity.`)
   if (content.includes('ssl.readmessl.com')) failures.push(`${relative} still references ReadMe hosting.`)
+  const h1Count = [...content.matchAll(/<h1(?:\s|>)/g)].length
+  if (h1Count !== 1) failures.push(`${relative} contains ${h1Count} h1 elements; expected exactly one.`)
+  const ids = [...content.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1])
+  const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))]
+  if (duplicateIds.length) failures.push(`${relative} contains duplicate ids: ${duplicateIds.join(', ')}.`)
+  for (const match of content.matchAll(/<button\b([^>]*)>/g)) {
+    if (!/\btype="(?:button|submit|reset)"/.test(match[1])) failures.push(`${relative} contains a button without an explicit type.`)
+  }
+  for (const match of content.matchAll(/<img\b([^>]*)>/g)) {
+    if (!/\balt="[^"]*"/.test(match[1])) failures.push(`${relative} contains an image without alt text.`)
+  }
+  for (const match of content.matchAll(/<a\b([^>]*)\btarget="_blank"([^>]*)>/g)) {
+    if (!/\brel="[^"]*(?:noopener|noreferrer)[^"]*"/.test(`${match[1]} ${match[2]}`)) {
+      failures.push(`${relative} opens a new tab without a safe rel attribute.`)
+    }
+  }
   for (const match of content.matchAll(/<a\b[^>]*\bhref="(\/[^"]*)"/g)) {
     const href = match[1]
     if (!href || /\.[a-z0-9]+(?:[?#]|$)/i.test(href)) continue
-    if (!(await exists(builtPageForUrl(href)))) {
+    if (!hasBuiltPageWithExactCase(href)) {
       failures.push(`${relative} links to missing page ${href}.`)
     }
   }
@@ -129,6 +164,17 @@ for (const file of html) {
 
 for (const file of ['sitemap-index.xml', 'llms.txt', 'llms-full.txt']) {
   if (!(await exists(path.join(dist, file)))) failures.push(`Missing discovery file: ${file}`)
+}
+
+const releaseFeed = await readFile(path.join(dist, 'changelog', 'feed.xml'), 'utf8')
+if (!releaseFeed.includes('<feed xmlns="http://www.w3.org/2005/Atom">')) {
+  failures.push('The changelog Atom feed is invalid.')
+}
+const releaseJson = JSON.parse(
+  await readFile(path.join(dist, 'changelog', 'releases.json'), 'utf8'),
+)
+if (releaseJson.schemaVersion !== 1 || !Array.isArray(releaseJson.releases)) {
+  failures.push('The machine-readable changelog is invalid.')
 }
 
 const redirects = await readFile(path.join(dist, '_redirects'), 'utf8')

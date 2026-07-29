@@ -1,6 +1,8 @@
 ---
 title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 Webhook registrations created through API v1 use signed delivery version 2. The create response

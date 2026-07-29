@@ -1,9 +1,9 @@
 ---
 title: "Data Model and IDs"
 description: "Map public API names such as tasks, time entries, and journal entries to TeamGrid data concepts and ids."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Map public API names such as tasks, time entries, and journal entries to TeamGrid data concepts and ids.
 

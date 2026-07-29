@@ -1,0 +1,81 @@
+---
+import type { ApiOperation } from '../lib/openapi'
+import { codeSamples } from '../lib/openapi'
+
+interface Props {
+  operation: ApiOperation
+}
+
+const { operation } = Astro.props
+const samples = codeSamples(operation)
+const languages = [
+  { id: 'curl', label: 'cURL', value: samples.curl },
+  { id: 'javascript', label: 'JavaScript', value: samples.javascript },
+  { id: 'typescript', label: 'TypeScript', value: samples.typescript },
+  ...(samples.cli ? [{ id: 'cli', label: 'CLI', value: samples.cli }] : []),
+]
+---
+
+<aside class="code-panel">
+  <div class="code-panel__top">
+    <span>Request example</span>
+    <button type="button" data-copy-code>Copy</button>
+  </div>
+  <div class="code-tabs" role="tablist" aria-label="Code language">
+    {
+      languages.map((language, index) => (
+        <button
+          type="button"
+          class:list={{ 'is-active': index === 0 }}
+          role="tab"
+          aria-selected={index === 0 ? 'true' : 'false'}
+          data-code-tab={language.id}
+        >
+          {language.label}
+        </button>
+      ))
+    }
+  </div>
+  {
+    languages.map((language, index) => (
+      <div class:list={{ 'code-panel__sample': true, 'is-active': index === 0 }} data-code-sample={language.id}>
+        <pre><code>{language.value}</code></pre>
+      </div>
+    ))
+  }
+  {
+    samples.response && (
+      <details class="code-panel__response">
+        <summary>Example response <span>2xx</span></summary>
+        <pre><code>{samples.response}</code></pre>
+      </details>
+    )
+  }
+  <div class="code-panel__note">
+    <span>Endpoint</span>
+    <strong>{operation.version === 'v1' ? 'German region' : 'Legacy API'}</strong>
+  </div>
+</aside>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-code-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const language = button.dataset.codeTab
+      document.querySelectorAll<HTMLElement>('[data-code-tab]').forEach((candidate) => {
+        const active = candidate === button
+        candidate.classList.toggle('is-active', active)
+        candidate.setAttribute('aria-selected', String(active))
+      })
+      document.querySelectorAll<HTMLElement>('[data-code-sample]').forEach((sample) => {
+        sample.classList.toggle('is-active', sample.dataset.codeSample === language)
+      })
+    })
+  })
+  document.querySelector('[data-copy-code]')?.addEventListener('click', async (event) => {
+    const active = document.querySelector('[data-code-sample].is-active code')?.textContent || ''
+    await navigator.clipboard.writeText(active)
+    const button = event.currentTarget as HTMLButtonElement
+    button.textContent = 'Copied'
+    window.setTimeout(() => { button.textContent = 'Copy' }, 1500)
+  })
+</script>

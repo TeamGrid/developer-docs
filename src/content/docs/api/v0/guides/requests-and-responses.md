@@ -1,9 +1,9 @@
 ---
 title: "Requests and Responses"
 description: "Understand JSON request bodies, TeamGrid response envelopes, server-managed fields, and partial updates."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Understand JSON request bodies, TeamGrid response envelopes, server-managed fields, and partial updates.
 

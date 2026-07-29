@@ -1,17 +1,16 @@
 ---
 title: "More filters on /tasks"
-description: "We've added a few more filters for the `/tasks` endpoint."
+description: "Historical API v0 release note for task date and scheduling filters."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We've added a few more filters for the `/tasks` endpoint.
+This archived release added date and scheduling filters to the legacy
+[`GET /tasks`](/api/v0/reference/operations/v0_get_tasks/) collection endpoint.
 
 **Changelog**
 
-* added: updatedAt
-* added: createdAt
-* added: plannedStart
-* added: plannedEnd
-* added: scheduledStart
-* added: scheduledEnd
+* `updatedAt`
+* `createdAt`
+* `plannedStart`
+* `plannedEnd`
+* `scheduledStart`
+* `scheduledEnd`

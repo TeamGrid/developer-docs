@@ -1,6 +1,8 @@
 ---
 title: Resources and semantics
 description: Understand TeamGrid API v1 lifecycle, finance, ownership, hierarchy, and privacy guarantees before building an integration.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 exposes bounded resource DTOs and explicit domain commands. It does not mirror TeamGrid's
@@ -51,9 +53,10 @@ Time-entry reads expose task, user and service references, creator/updater prove
 billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
 by these safe operational fields and by a start-time window. Internal hourly rates, cost rates,
 financial aggregates, cached billing details, and call records are rejected at the App and API
-boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
-task timers form the released operational workflow. Marking entries billed or unbilled remains the
-separate planned time-entry billing capability.
+boundaries. Creating and editing completed entries, archiving/restoring them, starting/stopping task
+timers, and marking entries billed or unbilled form the released workflow. Billing mutations remain
+separate from ordinary time-entry updates, require their dedicated billing scope, and preserve the
+immutability rules for billed entries.
 
 Contact reads include person/company identity, addresses, communication channels, websites, social
 profiles, parent/group/company relationships, provenance, last activity, and non-financial task,

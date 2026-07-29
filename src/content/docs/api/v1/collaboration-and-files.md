@@ -1,6 +1,8 @@
 ---
 title: Collaboration and files
 description: Use scoped comments, activity, documents, and private file-transfer intents.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Comments and activity

@@ -1,0 +1,76 @@
+---
+import { schemaLabel, schemaRows, type ApiVersion } from '../lib/openapi'
+
+interface Props {
+  schema: any
+  required?: string[]
+  version: ApiVersion
+}
+
+const { schema, version } = Astro.props
+const rows = schemaRows(version, schema)
+---
+
+{
+  rows.length > 0 ? (
+    <div class="schema-properties" data-schema-tree>
+      {rows.map((row) => (
+        <div
+          class="schema-property"
+          data-schema-path={row.path}
+          data-schema-parent={row.parentPath}
+          hidden={row.depth > 0}
+          style={`--schema-depth: ${row.depth}`}
+        >
+          <div class="schema-property__name">
+            {
+              row.hasChildren
+                ? <button type="button" aria-expanded="false" data-schema-toggle={row.path}>
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 6 3 3 3-3" /></svg>
+                    <code>{row.name}</code>
+                  </button>
+                : <code>{row.name}</code>
+            }
+            {row.required && <span>required</span>}
+          </div>
+          <div class="schema-property__detail">
+            <span class="schema-property__type">
+              {row.label}{row.format && <small>{row.format}</small>}{row.nullable && <small>nullable</small>}
+            </span>
+            {row.description && <p>{row.description}</p>}
+            {row.defaultValue !== undefined && <p class="schema-property__default">Default: <code>{JSON.stringify(row.defaultValue)}</code></p>}
+            {row.enumValues && <div class="schema-property__enum">{row.enumValues.map((value) => <code>{String(value)}</code>)}</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="schema-empty">Schema type: <code>{schemaLabel(schema)}</code></div>
+  )
+}
+
+<script>
+  if (!document.documentElement.dataset.schemaTreeReady) {
+    document.documentElement.dataset.schemaTreeReady = 'true'
+    document.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-schema-toggle]')
+      if (!button) return
+      const tree = button.closest<HTMLElement>('[data-schema-tree]')
+      const path = button.dataset.schemaToggle
+      if (!tree || !path) return
+      const expanded = button.getAttribute('aria-expanded') === 'true'
+      button.setAttribute('aria-expanded', String(!expanded))
+      tree.querySelectorAll<HTMLElement>('[data-schema-path]').forEach((row) => {
+        const rowPath = row.dataset.schemaPath || ''
+        if (expanded && rowPath.startsWith(`${path}.`)) {
+          row.hidden = true
+          row.querySelectorAll<HTMLButtonElement>('[data-schema-toggle]').forEach((nested) => {
+            nested.setAttribute('aria-expanded', 'false')
+          })
+        } else if (!expanded && row.dataset.schemaParent === path) {
+          row.hidden = false
+        }
+      })
+    })
+  }
+</script>

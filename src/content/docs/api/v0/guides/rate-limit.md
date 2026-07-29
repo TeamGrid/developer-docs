@@ -1,9 +1,9 @@
 ---
 title: "Errors and Rate Limits"
 description: "Handle TeamGrid API status codes, rate limits, retries, and non-idempotent create requests."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Handle TeamGrid API status codes, rate limits, retries, and non-idempotent create requests.
 

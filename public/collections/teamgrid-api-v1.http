@@ -1,0 +1,1779 @@
+# TeamGrid API v1
+# Generated from the published OpenAPI contract. Keep tokens in environment variables.
+@baseUrl = https://api.de.teamgrid.app/v1
+@token = replace-with-a-reveal-once-credential
+
+### Discover API v1
+GET {{baseUrl}}/
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get the authenticated workspace
+GET {{baseUrl}}/workspace
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List appointments in a bounded interval
+GET {{baseUrl}}/appointments?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&start={{start}}&end={{end}}&userId={{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a TeamGrid-managed appointment
+POST {{baseUrl}}/appointments
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "allDay": false,
+  "busy": false,
+  "description": "string",
+  "end": {
+    "at": "2026-07-29T09:00:00.000Z",
+    "timeZone": "string"
+  },
+  "location": "string",
+  "start": {
+    "at": "2026-07-29T09:00:00.000Z",
+    "timeZone": "string"
+  },
+  "title": "string",
+  "visibility": "default",
+  "userId": "string"
+}
+
+### Get an appointment
+GET {{baseUrl}}/appointments/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a TeamGrid-managed appointment
+PATCH {{baseUrl}}/appointments/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "allDay": false,
+  "busy": false,
+  "description": "string",
+  "end": {
+    "at": "2026-07-29T09:00:00.000Z",
+    "timeZone": "string"
+  },
+  "location": "string",
+  "start": {
+    "at": "2026-07-29T09:00:00.000Z",
+    "timeZone": "string"
+  },
+  "title": "string",
+  "visibility": "default"
+}
+
+### Archive a TeamGrid-managed appointment
+DELETE {{baseUrl}}/appointments/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a TeamGrid-managed appointment
+POST {{baseUrl}}/appointments/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List absences in a bounded interval
+GET {{baseUrl}}/absences?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&start={{start}}&end={{end}}&userId={{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create an absence
+POST {{baseUrl}}/absences
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "end": "2026-07-29T09:00:00.000Z",
+  "reason": null,
+  "start": "2026-07-29T09:00:00.000Z",
+  "userId": "string"
+}
+
+### Get an absence
+GET {{baseUrl}}/absences/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update an absence
+PATCH {{baseUrl}}/absences/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "end": "2026-07-29T09:00:00.000Z",
+  "reason": null,
+  "start": "2026-07-29T09:00:00.000Z"
+}
+
+### Archive an absence
+DELETE {{baseUrl}}/absences/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an absence
+POST {{baseUrl}}/absences/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List user availability
+GET {{baseUrl}}/availability?start={{start}}&end={{end}}&timeZone={{timeZone}}&userId={{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List target activity
+GET {{baseUrl}}/activity?cursor={{cursor}}&limit={{limit}}&targetType={{targetType}}&targetId={{targetId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List target comments
+GET {{baseUrl}}/comments?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&targetType={{targetType}}&targetId={{targetId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a target comment
+POST {{baseUrl}}/comments
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "targetId": "string",
+  "targetType": "contact",
+  "text": "string"
+}
+
+### Get a comment
+GET {{baseUrl}}/comments/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Archive a comment
+DELETE {{baseUrl}}/comments/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a comment
+POST {{baseUrl}}/comments/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List document metadata
+GET {{baseUrl}}/documents?cursor={{cursor}}&limit={{limit}}&archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a document
+POST {{baseUrl}}/documents
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "content": "string",
+  "name": "string"
+}
+
+### Get a document
+GET {{baseUrl}}/documents/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a document
+PATCH {{baseUrl}}/documents/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "content": "string",
+  "name": "string"
+}
+
+### Archive a document
+DELETE {{baseUrl}}/documents/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a document
+POST {{baseUrl}}/documents/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List public-space file metadata
+GET {{baseUrl}}/files?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&entityType={{entityType}}&entityId={{entityId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get file metadata
+GET {{baseUrl}}/files/{id}?archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Rename a file
+PATCH {{baseUrl}}/files/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "string"
+}
+
+### Archive a file
+DELETE {{baseUrl}}/files/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a file
+POST {{baseUrl}}/files/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a file download intent
+POST {{baseUrl}}/files/{id}/download-intent
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Reserve and create a private file upload intent
+POST {{baseUrl}}/file-upload-intents
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "destination": {
+    "id": "string",
+    "type": "contact"
+  },
+  "file": {
+    "fileName": "string",
+    "mimeType": "string",
+    "size": 0
+  }
+}
+
+### Finalize a file upload intent
+POST {{baseUrl}}/file-upload-intents/{id}/finalize
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Cancel a file upload intent
+DELETE {{baseUrl}}/file-upload-intents/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List products
+GET {{baseUrl}}/products?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&disabled={{disabled}}&productGroupId={{productGroupId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a product
+POST {{baseUrl}}/products
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "amount": null,
+  "annotation": null,
+  "costCenter": null,
+  "description": null,
+  "disabled": null,
+  "financeAccount": null,
+  "name": "string",
+  "priceGroupIds": null,
+  "productGroupId": null,
+  "productNumber": null,
+  "purchasePrice": null,
+  "retailPrice": null
+}
+
+### Get a product
+GET {{baseUrl}}/products/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a product
+PATCH {{baseUrl}}/products/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "amount": null,
+  "annotation": null,
+  "costCenter": null,
+  "description": null,
+  "disabled": null,
+  "financeAccount": null,
+  "name": "string",
+  "priceGroupIds": null,
+  "productGroupId": null,
+  "productNumber": null,
+  "purchasePrice": null,
+  "retailPrice": null
+}
+
+### Archive a product
+DELETE {{baseUrl}}/products/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List product groups
+GET {{baseUrl}}/product-groups?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&parentId={{parentId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a product group
+POST {{baseUrl}}/product-groups
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": null,
+  "name": "string",
+  "parentId": null
+}
+
+### Get a product group
+GET {{baseUrl}}/product-groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a product group
+PATCH {{baseUrl}}/product-groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": null,
+  "name": "string",
+  "parentId": null
+}
+
+### Archive a product group
+DELETE {{baseUrl}}/product-groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List projects
+GET {{baseUrl}}/projects?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&completed={{completed}}&contactId={{contactId}}&createdById={{createdById}}&individualId={{individualId}}&listId={{listId}}&managerId={{managerId}}&subscriberId={{subscriberId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a project
+POST {{baseUrl}}/projects
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "additionalContactIds": null,
+  "color": null,
+  "contactId": null,
+  "description": null,
+  "dueAt": "2026-07-29T09:00:00.000Z",
+  "individualId": null,
+  "listId": null,
+  "managerId": null,
+  "name": "string",
+  "plannedEndAt": "2026-07-29T09:00:00.000Z",
+  "plannedStartAt": "2026-07-29T09:00:00.000Z",
+  "showInScheduling": null
+}
+
+### Get a project
+GET {{baseUrl}}/projects/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a project
+PATCH {{baseUrl}}/projects/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "additionalContactIds": null,
+  "color": null,
+  "contactId": null,
+  "description": null,
+  "dueAt": "2026-07-29T09:00:00.000Z",
+  "individualId": null,
+  "listId": null,
+  "managerId": null,
+  "name": "string",
+  "plannedEndAt": "2026-07-29T09:00:00.000Z",
+  "plannedStartAt": "2026-07-29T09:00:00.000Z",
+  "showInScheduling": null
+}
+
+### Get project sharing
+GET {{baseUrl}}/projects/{id}/sharing
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Replace project sharing
+PUT {{baseUrl}}/projects/{id}/sharing
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "entries": [
+    {
+      "permissions": [
+        "string"
+      ],
+      "userId": null,
+      "workspaceId": "string"
+    }
+  ]
+}
+
+### Complete a project asynchronously
+POST {{baseUrl}}/projects/{id}/complete
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Reopen a project asynchronously
+POST {{baseUrl}}/projects/{id}/reopen
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Archive a project asynchronously
+POST {{baseUrl}}/projects/{id}/archive
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a project asynchronously
+POST {{baseUrl}}/projects/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a project lifecycle operation
+GET {{baseUrl}}/project-lifecycle-operations/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List project templates
+GET {{baseUrl}}/project-templates?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&createdAtFrom={{createdAtFrom}}&createdAtTo={{createdAtTo}}&originProjectId={{originProjectId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Capture a project as a template
+POST {{baseUrl}}/project-templates
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "color": "string",
+  "description": "string",
+  "projectId": "string",
+  "title": "string"
+}
+
+### Get project-template metadata
+GET {{baseUrl}}/project-templates/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update project-template metadata
+PATCH {{baseUrl}}/project-templates/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "color": "string",
+  "description": "string",
+  "title": "string"
+}
+
+### Archive a project template
+DELETE {{baseUrl}}/project-templates/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived project template
+POST {{baseUrl}}/project-templates/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Instantiate a project template asynchronously
+POST {{baseUrl}}/project-templates/{id}/instantiate
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "additionalContactIds": null,
+  "color": null,
+  "contactId": null,
+  "description": "string",
+  "dueAt": "2026-07-29T09:00:00.000Z",
+  "individualId": null,
+  "listId": null,
+  "managerId": null,
+  "name": "string",
+  "plannedEndAt": "2026-07-29T09:00:00.000Z",
+  "plannedStartAt": "2026-07-29T09:00:00.000Z",
+  "showInScheduling": null
+}
+
+### Get a project-template instantiation operation
+GET {{baseUrl}}/project-template-instantiations/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List planned work in a bounded window
+GET {{baseUrl}}/planned-work?cursor={{cursor}}&limit={{limit}}&start={{start}}&end={{end}}&taskId={{taskId}}&projectId={{projectId}}&userId={{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a planned-work replacement operation
+GET {{baseUrl}}/planned-work-operations/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a task planned-work schedule
+GET {{baseUrl}}/tasks/{id}/planned-work
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Replace task planned work asynchronously
+PUT {{baseUrl}}/tasks/{id}/planned-work
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "dayLoads": [
+    0
+  ],
+  "plannedEnd": "2026-07-29T09:00:00.000Z",
+  "plannedStart": "2026-07-29T09:00:00.000Z"
+}
+
+### List project statements
+GET {{baseUrl}}/project-statements?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&projectId={{projectId}}&productId={{productId}}&createdBy={{createdBy}}&dateFrom={{dateFrom}}&dateTo={{dateTo}}&createdAtFrom={{createdAtFrom}}&createdAtTo={{createdAtTo}}&type={{type}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a project statement
+POST {{baseUrl}}/project-statements
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "amount": null,
+  "comment": null,
+  "count": null,
+  "date": "2026-07-29T09:00:00.000Z",
+  "description": null,
+  "isCharge": false,
+  "productNumber": null,
+  "purchasePrice": null,
+  "title": "string",
+  "projectId": "string",
+  "productId": null,
+  "type": "manual"
+}
+
+### Get a project statement
+GET {{baseUrl}}/project-statements/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a project statement
+PATCH {{baseUrl}}/project-statements/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "amount": null,
+  "comment": null,
+  "count": null,
+  "date": "2026-07-29T09:00:00.000Z",
+  "description": null,
+  "isCharge": false,
+  "productNumber": null,
+  "purchasePrice": null,
+  "title": "string"
+}
+
+### Archive a project statement
+DELETE {{baseUrl}}/project-statements/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a project statement
+POST {{baseUrl}}/project-statements/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List tasks
+GET {{baseUrl}}/tasks?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&assigneeId={{assigneeId}}&completed={{completed}}&contactId={{contactId}}&groupId={{groupId}}&listId={{listId}}&personalListId={{personalListId}}&projectId={{projectId}}&serviceId={{serviceId}}&subscriberId={{subscriberId}}&tagId={{tagId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a task
+POST {{baseUrl}}/tasks
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "assigneeId": null,
+  "billable": null,
+  "contactId": null,
+  "description": null,
+  "dueAt": "2026-07-29T09:00:00.000Z",
+  "groupId": null,
+  "listId": null,
+  "name": "string",
+  "plannedEndAt": "2026-07-29T09:00:00.000Z",
+  "plannedMinutes": null,
+  "plannedStartAt": "2026-07-29T09:00:00.000Z",
+  "projectId": null
+}
+
+### Update multiple tasks safely
+POST {{baseUrl}}/tasks/bulk-update
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "data": {
+        "billable": null,
+        "contactId": null,
+        "description": null,
+        "dueAt": "2026-07-29T09:00:00.000Z",
+        "name": "string",
+        "plannedEndAt": "2026-07-29T09:00:00.000Z",
+        "plannedMinutes": null,
+        "plannedStartAt": "2026-07-29T09:00:00.000Z",
+        "serviceId": null,
+        "subscriberIds": null,
+        "tagIds": null
+      },
+      "id": "string",
+      "revision": "string"
+    }
+  ]
+}
+
+### Get a task
+GET {{baseUrl}}/tasks/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a task
+PATCH {{baseUrl}}/tasks/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "assigneeId": null,
+  "billable": null,
+  "contactId": null,
+  "description": null,
+  "dueAt": "2026-07-29T09:00:00.000Z",
+  "groupId": null,
+  "listId": null,
+  "name": "string",
+  "plannedEndAt": "2026-07-29T09:00:00.000Z",
+  "plannedMinutes": null,
+  "plannedStartAt": "2026-07-29T09:00:00.000Z",
+  "projectId": null
+}
+
+### Archive a task
+DELETE {{baseUrl}}/tasks/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived task
+POST {{baseUrl}}/tasks/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Duplicate a task
+POST {{baseUrl}}/tasks/{id}/duplicate
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "copyChecklist": true,
+  "copyCustomFieldValues": true,
+  "name": null
+}
+
+### Move or reorder a task
+POST {{baseUrl}}/tasks/{id}/move
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "assigneeId": null,
+  "axis": "assignee",
+  "groupId": null,
+  "listId": null,
+  "nextTaskId": null,
+  "personalListId": null,
+  "previousTaskId": null,
+  "projectId": null
+}
+
+### Replace a task checklist
+PUT {{baseUrl}}/tasks/{id}/subtasks
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "subtasks": [
+    {
+      "completed": null,
+      "id": null,
+      "title": "string"
+    }
+  ]
+}
+
+### Complete a task
+POST {{baseUrl}}/tasks/{id}/complete
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Reopen a completed task
+POST {{baseUrl}}/tasks/{id}/reopen
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Start task time tracking
+POST {{baseUrl}}/tasks/{id}/timer/start
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "at": "2026-07-29T09:00:00.000Z",
+  "userId": "string"
+}
+
+### Stop task time tracking
+POST {{baseUrl}}/tasks/{id}/timer/stop
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "at": "2026-07-29T09:00:00.000Z",
+  "userId": "string"
+}
+
+### List time entries
+GET {{baseUrl}}/time-entries?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&billable={{billable}}&billed={{billed}}&createdById={{createdById}}&from={{from}}&serviceId={{serviceId}}&to={{to}}&taskId={{taskId}}&userId={{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a time entry
+POST {{baseUrl}}/time-entries
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "billable": null,
+  "comment": null,
+  "endAt": "2026-07-29T09:00:00.000Z",
+  "serviceId": null,
+  "startAt": "2026-07-29T09:00:00.000Z",
+  "taskId": "string",
+  "userId": "string"
+}
+
+### Get a time entry
+GET {{baseUrl}}/time-entries/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a time entry
+PATCH {{baseUrl}}/time-entries/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "billable": null,
+  "comment": null,
+  "endAt": "2026-07-29T09:00:00.000Z",
+  "serviceId": null,
+  "startAt": "2026-07-29T09:00:00.000Z"
+}
+
+### Archive a time entry
+DELETE {{baseUrl}}/time-entries/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get time-entry billing state
+GET {{baseUrl}}/time-entries/{id}/billing
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update time-entry billing state
+PUT {{baseUrl}}/time-entries/{id}/billing
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "billed": false
+}
+
+### Restore an archived time entry
+POST {{baseUrl}}/time-entries/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List contacts
+GET {{baseUrl}}/contacts?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&category={{category}}&companyId={{companyId}}&createdById={{createdById}}&customerId={{customerId}}&groupId={{groupId}}&parentContactId={{parentContactId}}&type={{type}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a contact
+POST {{baseUrl}}/contacts
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "birthday": "2026-07-29T09:00:00.000Z",
+  "category": "customer",
+  "companyTitle": null,
+  "customerId": null,
+  "emails": null,
+  "firstName": null,
+  "gender": "female",
+  "groupId": null,
+  "lastName": null,
+  "nickname": null,
+  "notes": null,
+  "parentContactId": null
+}
+
+### List call notes
+GET {{baseUrl}}/call-notes?cursor={{cursor}}&limit={{limit}}&archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a call note
+POST {{baseUrl}}/call-notes
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "callId": "string",
+  "content": "string"
+}
+
+### Get a call note
+GET {{baseUrl}}/call-notes/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Archive a call note
+DELETE {{baseUrl}}/call-notes/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived call note
+POST {{baseUrl}}/call-notes/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List contact groups
+GET {{baseUrl}}/contact-groups?cursor={{cursor}}&limit={{limit}}&archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a contact group
+POST {{baseUrl}}/contact-groups
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "parentId": null,
+  "title": "string"
+}
+
+### Get a contact group
+GET {{baseUrl}}/contact-groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a contact group
+PATCH {{baseUrl}}/contact-groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "parentId": null,
+  "title": "string"
+}
+
+### Archive a contact group
+DELETE {{baseUrl}}/contact-groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived contact group
+POST {{baseUrl}}/contact-groups/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a contact
+GET {{baseUrl}}/contacts/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a contact
+PATCH {{baseUrl}}/contacts/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "birthday": "2026-07-29T09:00:00.000Z",
+  "category": "customer",
+  "companyTitle": null,
+  "customerId": null,
+  "emails": null,
+  "firstName": null,
+  "gender": "female",
+  "groupId": null,
+  "lastName": null,
+  "nickname": null,
+  "notes": null,
+  "parentContactId": null
+}
+
+### List workspace users
+GET {{baseUrl}}/users?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List workspace lists
+GET {{baseUrl}}/lists?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&type={{type}}&parentId={{parentId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a list
+POST {{baseUrl}}/lists
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "string",
+  "parentId": null,
+  "type": "tasks"
+}
+
+### Get a list
+GET {{baseUrl}}/lists/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a list
+PATCH {{baseUrl}}/lists/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "string"
+}
+
+### Archive a list
+DELETE {{baseUrl}}/lists/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived list
+POST {{baseUrl}}/lists/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List services
+GET {{baseUrl}}/services?cursor={{cursor}}&limit={{limit}}&archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a service
+POST {{baseUrl}}/services
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "billable": false,
+  "billingRate": null,
+  "title": "string"
+}
+
+### Get a service
+GET {{baseUrl}}/services/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a service
+PATCH {{baseUrl}}/services/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "billable": false,
+  "billingRate": null,
+  "title": "string"
+}
+
+### Archive a service
+DELETE {{baseUrl}}/services/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived service
+POST {{baseUrl}}/services/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List tags
+GET {{baseUrl}}/tags?cursor={{cursor}}&limit={{limit}}&archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a tag
+POST {{baseUrl}}/tags
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "color": "string",
+  "name": "string"
+}
+
+### Get a tag
+GET {{baseUrl}}/tags/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a tag
+PATCH {{baseUrl}}/tags/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "color": "string",
+  "name": "string"
+}
+
+### Archive a tag
+DELETE {{baseUrl}}/tags/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived tag
+POST {{baseUrl}}/tags/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List custom-field definitions
+GET {{baseUrl}}/custom-field-definitions?cursor={{cursor}}&limit={{limit}}&archived={{archived}}&defaultEnabled={{defaultEnabled}}&fieldType={{fieldType}}&targetType={{targetType}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a custom-field definition
+POST {{baseUrl}}/custom-field-definitions
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "configuration": null,
+  "defaultEnabled": false,
+  "description": "string",
+  "required": false,
+  "title": "string",
+  "fieldType": "contact",
+  "targetType": "contact"
+}
+
+### Get a custom-field definition
+GET {{baseUrl}}/custom-field-definitions/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a custom-field definition
+PATCH {{baseUrl}}/custom-field-definitions/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "configuration": null,
+  "defaultEnabled": false,
+  "description": "string",
+  "required": false,
+  "title": "string"
+}
+
+### Archive a custom-field definition
+DELETE {{baseUrl}}/custom-field-definitions/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an archived custom-field definition
+POST {{baseUrl}}/custom-field-definitions/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Read custom-field values for one resource
+POST {{baseUrl}}/custom-field-values/{targetType}/{resourceId}/batch-read
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "fieldIds": [
+    "string"
+  ]
+}
+
+### Get a custom-field value
+GET {{baseUrl}}/custom-field-values/{targetType}/{resourceId}/{fieldId}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Set a custom-field value
+PUT {{baseUrl}}/custom-field-values/{targetType}/{resourceId}/{fieldId}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "value": null
+}
+
+### Clear a custom-field value
+DELETE {{baseUrl}}/custom-field-values/{targetType}/{resourceId}/{fieldId}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List developer audit events
+GET {{baseUrl}}/audit-events?cursor={{cursor}}&limit={{limit}}&actorId={{actorId}}&actorType={{actorType}}&createdAtFrom={{createdAtFrom}}&createdAtTo={{createdAtTo}}&credentialId={{credentialId}}&eventType={{eventType}}&outcome={{outcome}}&requestId={{requestId}}&source={{source}}&targetId={{targetId}}&targetType={{targetType}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List webhooks
+GET {{baseUrl}}/webhooks?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a webhook
+POST {{baseUrl}}/webhooks
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "actions": [
+    "string"
+  ],
+  "url": "string"
+}
+
+### List webhook delivery history
+GET {{baseUrl}}/webhook-deliveries?cursor={{cursor}}&limit={{limit}}&webhookId={{webhookId}}&state={{state}}&event={{event}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get webhook delivery metadata
+GET {{baseUrl}}/webhook-deliveries/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a webhook
+GET {{baseUrl}}/webhooks/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update or reactivate a webhook
+PATCH {{baseUrl}}/webhooks/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "actions": [
+    "string"
+  ],
+  "disabled": false,
+  "url": "string"
+}
+
+### Remove a webhook
+DELETE {{baseUrl}}/webhooks/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List workspace members
+GET {{baseUrl}}/members?cursor={{cursor}}&limit={{limit}}&includePii={{includePii}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a workspace member
+GET {{baseUrl}}/members/{id}?includePii={{includePii}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Remove a workspace member
+DELETE {{baseUrl}}/members/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Change a member role
+PATCH {{baseUrl}}/members/{id}/role
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "roleId": "string"
+}
+
+### List pending invitations
+GET {{baseUrl}}/invitations?cursor={{cursor}}&limit={{limit}}&includePii={{includePii}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Invite a workspace member
+POST {{baseUrl}}/invitations
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "string",
+  "firstname": "string",
+  "lastname": "string",
+  "position": "string",
+  "roleId": "string"
+}
+
+### Get a pending invitation
+GET {{baseUrl}}/invitations/{id}?includePii={{includePii}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Cancel a pending invitation
+DELETE {{baseUrl}}/invitations/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Resend a pending invitation
+POST {{baseUrl}}/invitations/{id}/resend
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List workspace roles
+GET {{baseUrl}}/roles?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a workspace role
+POST {{baseUrl}}/roles
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "name": "string",
+  "permissions": [
+    "string"
+  ]
+}
+
+### Get a workspace role
+GET {{baseUrl}}/roles/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a workspace role
+PATCH {{baseUrl}}/roles/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "name": "string",
+  "permissions": [
+    "string"
+  ]
+}
+
+### Delete a workspace role
+DELETE {{baseUrl}}/roles/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List workspace groups
+GET {{baseUrl}}/groups?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a workspace group
+POST {{baseUrl}}/groups
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "memberIds": [
+    "string"
+  ],
+  "name": "string",
+  "visibility": "all"
+}
+
+### Get a workspace group
+GET {{baseUrl}}/groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a workspace group
+PATCH {{baseUrl}}/groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "memberIds": [
+    "string"
+  ],
+  "name": "string",
+  "visibility": "all"
+}
+
+### Delete a workspace group
+DELETE {{baseUrl}}/groups/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Search authorized TeamGrid resources
+POST {{baseUrl}}/search
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "limit": 1,
+  "term": "string",
+  "types": [
+    "contacts"
+  ]
+}
+
+### Create an asynchronous export
+POST {{baseUrl}}/exports
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "createdAtFrom": "2026-07-29T09:00:00.000Z",
+  "createdAtTo": "2026-07-29T09:00:00.000Z",
+  "fields": [
+    "string"
+  ],
+  "fileName": "string",
+  "format": "string",
+  "includeArchived": false,
+  "maxRows": 1,
+  "resourceType": "auditEvents",
+  "updatedFrom": "2026-07-29T09:00:00.000Z",
+  "updatedUntil": "2026-07-29T09:00:00.000Z"
+}
+
+### Get export job status
+GET {{baseUrl}}/exports/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create an export download intent
+POST {{baseUrl}}/exports/{id}/download-intent
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Download a completed export through TeamGrid
+GET {{baseUrl}}/exports/{id}/download
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List public automation actions
+GET {{baseUrl}}/automation-actions
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List automation definitions
+GET {{baseUrl}}/automation-definitions?cursor={{cursor}}&limit={{limit}}&archived={{archived}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create an automation definition
+POST {{baseUrl}}/automation-definitions
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "flow": [
+    {
+      "actionId": "automationTask",
+      "branches": [
+        {
+          "flow": null,
+          "key": null
+        }
+      ],
+      "config": [
+        {
+          "key": null,
+          "value": null
+        }
+      ],
+      "input": [
+        {
+          "key": null,
+          "value": null
+        }
+      ],
+      "output": [
+        {
+          "key": null,
+          "value": null
+        }
+      ]
+    }
+  ],
+  "name": "string",
+  "trigger": {
+    "data": {
+      "type": "projects"
+    },
+    "event": "change"
+  }
+}
+
+### Get an automation definition
+GET {{baseUrl}}/automation-definitions/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update an automation definition
+PATCH {{baseUrl}}/automation-definitions/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "flow": [
+    {
+      "actionId": "automationTask",
+      "branches": [
+        {
+          "flow": null,
+          "key": null
+        }
+      ],
+      "config": [
+        {
+          "key": null,
+          "value": null
+        }
+      ],
+      "input": [
+        {
+          "key": null,
+          "value": null
+        }
+      ],
+      "output": [
+        {
+          "key": null,
+          "value": null
+        }
+      ]
+    }
+  ],
+  "name": "string",
+  "trigger": {
+    "data": {
+      "type": "projects"
+    },
+    "event": "change"
+  }
+}
+
+### Archive an automation definition
+DELETE {{baseUrl}}/automation-definitions/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore an automation definition
+POST {{baseUrl}}/automation-definitions/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List immutable automation definition versions
+GET {{baseUrl}}/automation-definitions/{id}/versions?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List automation runs
+GET {{baseUrl}}/automation-runs?cursor={{cursor}}&limit={{limit}}&definitionId={{definitionId}}&referenceId={{referenceId}}&referenceType={{referenceType}}&state={{state}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get an automation run
+GET {{baseUrl}}/automation-runs/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Abort a running automation
+POST {{baseUrl}}/automation-runs/{id}/abort
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List integration installation status
+GET {{baseUrl}}/integration-installations
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get the scoped public event catalog
+GET {{baseUrl}}/events/catalog
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List cell-local resource changes
+GET {{baseUrl}}/changes?cursor={{cursor}}&limit={{limit}}&operations={{operations}}&resourceTypes={{resourceTypes}}&startAtLatest={{startAtLatest}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get credential-aware system capabilities
+GET {{baseUrl}}/system/capabilities
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get public workspace entitlements
+GET {{baseUrl}}/workspace/entitlements
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get public workspace settings
+GET {{baseUrl}}/workspace/settings
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update public workspace settings
+PATCH {{baseUrl}}/workspace/settings
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "currency": "AUD",
+  "defaultLanguage": "de",
+  "defaultPlannedTime": 0,
+  "defaultProductivity": 0,
+  "defaultShowInScheduling": false,
+  "name": "string"
+}
+
+### Rotate a credential-owned webhook signing secret
+POST {{baseUrl}}/webhooks/{id}/secret-rotation
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### List personal access tokens owned by the current user
+GET {{baseUrl}}/me/personal-access-tokens?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a personal access token
+POST {{baseUrl}}/me/personal-access-tokens
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "expiresAt": "2026-07-29T09:00:00.000Z",
+  "name": "string",
+  "scopes": [
+    "string"
+  ]
+}
+
+### Revoke a personal access token
+DELETE {{baseUrl}}/me/personal-access-tokens/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Rotate a personal access token
+POST {{baseUrl}}/me/personal-access-tokens/{id}/rotation
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "expiresAt": "2026-07-29T09:00:00.000Z",
+  "gracePeriodSeconds": 60,
+  "scopes": [
+    "string"
+  ]
+}
+
+### List service accounts
+GET {{baseUrl}}/service-accounts?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a service account and its initial credential
+POST {{baseUrl}}/service-accounts
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "expiresAt": "2026-07-29T09:00:00.000Z",
+  "name": "string",
+  "scopes": [
+    "string"
+  ]
+}
+
+### Get a service account
+GET {{baseUrl}}/service-accounts/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Enable or disable a service account
+PATCH {{baseUrl}}/service-accounts/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "reason": "string",
+  "status": "active"
+}
+
+### Permanently revoke a service account
+DELETE {{baseUrl}}/service-accounts/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create an independent service account credential
+POST {{baseUrl}}/service-accounts/{id}/credentials
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "description": "string",
+  "expiresAt": "2026-07-29T09:00:00.000Z",
+  "name": "string",
+  "scopes": [
+    "string"
+  ]
+}
+
+### Revoke a service account credential
+DELETE {{baseUrl}}/service-accounts/{id}/credentials/{credentialId}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Rotate a service account credential
+POST {{baseUrl}}/service-accounts/{id}/credentials/{credentialId}/rotation
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "expiresAt": "2026-07-29T09:00:00.000Z",
+  "gracePeriodSeconds": 60,
+  "scopes": [
+    "string"
+  ]
+}
+
+### Get the complete service account resource grant set
+GET {{baseUrl}}/service-accounts/{id}/resource-grants
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Replace the complete service account resource grant set
+PUT {{baseUrl}}/service-accounts/{id}/resource-grants
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "grants": [
+    {
+      "anchorId": "string",
+      "anchorType": "workspace",
+      "capabilities": [
+        "string"
+      ],
+      "expiresAt": "2026-07-29T09:00:00.000Z",
+      "inheritance": "domainDescendants",
+      "resourceKey": "string"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 ---
 title: "Webhook Event Catalog"
 description: "Review TeamGrid webhook event action names, source collections, trigger conditions, payload shape, and receiver recommendations."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Review TeamGrid webhook event action names, source collections, trigger conditions, payload shape, and receiver recommendations.
 

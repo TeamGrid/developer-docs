@@ -1,6 +1,8 @@
 ---
 title: Automations and integrations
 description: Inspect the public automation DSL, manage versioned definitions and runs, and read installation status without revealing provider secrets.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Public automation contract

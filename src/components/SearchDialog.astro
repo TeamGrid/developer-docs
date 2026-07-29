@@ -1,0 +1,203 @@
+<dialog class="search-dialog" data-search-dialog aria-label="Search TeamGrid Developer">
+  <div class="search-dialog__surface">
+    <div class="search-dialog__field">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="6.5"></circle>
+        <path d="m16 16 4 4"></path>
+      </svg>
+      <input type="search" aria-label="Search guides, endpoints, SDK, CLI" placeholder="Search guides, endpoints, SDK, CLI…" autocomplete="off" data-search-input />
+      <kbd>Esc</kbd>
+    </div>
+    <div class="search-dialog__filters" aria-label="Search areas">
+      <button type="button" class="is-active" data-search-filter="all">All</button>
+      <button type="button" data-search-filter="API v1">API v1</button>
+      <button type="button" data-search-filter="API v0">API v0</button>
+      <button type="button" data-search-filter="TypeScript SDK">SDK</button>
+      <button type="button" data-search-filter="CLI">CLI</button>
+      <button type="button" data-search-filter="MCP server">MCP</button>
+      <button type="button" data-search-filter="docs">Guides</button>
+    </div>
+    <div class="search-dialog__body" data-search-results>
+      <div class="search-dialog__empty">
+        <p>Search TeamGrid Developer</p>
+        <span>Find guides, concepts and every API operation.</span>
+      </div>
+    </div>
+    <div class="search-dialog__footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+      <span><kbd>↵</kbd> Open</span>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  type SearchEntry = { title: string; description: string; href: string; area: string; category: string; method?: string }
+  const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]')
+  const input = dialog?.querySelector<HTMLInputElement>('[data-search-input]')
+  const results = dialog?.querySelector<HTMLElement>('[data-search-results]')
+  let index: SearchEntry[] = []
+  let selected = 0
+  let activeFilter = 'all'
+  let telemetryTimer: number | undefined
+
+  async function loadIndex() {
+    if (index.length > 0) return
+    index = await fetch('/search-index.json').then((response) => response.json())
+  }
+
+  function escapeHtml(value: string) {
+    const element = document.createElement('span')
+    element.textContent = value
+    return element.innerHTML
+  }
+
+  function highlight(value: string, tokens: string[]) {
+    return tokens.reduce((content, token) => {
+      const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      return escaped ? content.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>') : content
+    }, escapeHtml(value))
+  }
+
+  function render() {
+    if (!results || !input) return
+    const query = input.value.trim().toLowerCase()
+    if (!query) {
+      let recent: Array<{ href: string; title: string }> = []
+      try {
+        recent = JSON.parse(localStorage.getItem('teamgrid-developer-recent-pages') || '[]')
+      } catch {
+        localStorage.removeItem('teamgrid-developer-recent-pages')
+      }
+      const recentEntries = recent
+        .map((item) => index.find((entry) => entry.href === item.href))
+        .filter((entry): entry is SearchEntry => Boolean(entry))
+      results.innerHTML = recentEntries.length
+        ? `<section class="search-result-group search-result-group--recent">
+            <span>Recently viewed</span>
+            ${recentEntries.map((entry, index) => `
+              <a href="${entry.href}" class="search-result ${index === selected ? 'is-selected' : ''}" data-search-result>
+                <span class="search-result__icon">${entry.method ? escapeHtml(entry.method) : 'DOC'}</span>
+                <span class="search-result__copy"><strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.area)}</small></span>
+                <span class="search-result__area">${escapeHtml(entry.area)}</span>
+              </a>
+            `).join('')}
+          </section>`
+        : `<div class="search-dialog__empty"><p>Search TeamGrid Developer</p><span>Find guides, concepts and every API operation.</span></div>`
+      return
+    }
+    const tokens = query.split(/\s+/)
+    const filtered = index.filter((entry) => {
+      // `area` keeps filtering compatible with a search index cached before
+      // categories were introduced.
+      const category = entry.category || entry.area
+      if (activeFilter === 'all') return true
+      if (activeFilter === 'docs') return !category.startsWith('API ') && !['TypeScript SDK', 'CLI', 'MCP server'].includes(category)
+      return category === activeFilter
+    })
+    const matches = filtered
+      .map((entry) => ({
+        entry,
+        score: tokens.reduce((score, token) => {
+          const title = entry.title.toLowerCase()
+          const haystack = `${title} ${entry.description} ${entry.area} ${entry.method || ''}`.toLowerCase()
+          if (title === token) return score + 20
+          if (title.startsWith(token)) return score + 12
+          if (title.includes(token)) return score + 8
+          return haystack.includes(token) ? score + 2 : -100
+        }, 0),
+      }))
+      .filter(({ score }) => score >= 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12)
+      .map(({ entry }) => entry)
+    window.clearTimeout(telemetryTimer)
+    telemetryTimer = window.setTimeout(() => {
+      if (window.location.hostname !== 'developer.teamgridapp.com') return
+      void fetch('/api/docs-events', {
+        body: JSON.stringify({
+          event: 'search_performed',
+          filter: activeFilter,
+          path: window.location.pathname,
+          value: matches.length,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        method: 'POST',
+      }).catch(() => undefined)
+    }, 700)
+    selected = Math.min(selected, Math.max(matches.length - 1, 0))
+    if (matches.length === 0) {
+      results.innerHTML = `<div class="search-dialog__empty"><p>No results</p><span>Try another phrase or an operation name.</span></div>`
+      return
+    }
+    let resultIndex = 0
+    const groups = new Map<string, SearchEntry[]>()
+    matches.forEach((entry) => groups.set(entry.area, [...(groups.get(entry.area) || []), entry]))
+    results.innerHTML = [...groups.entries()].map(([area, entries]) => `
+      <section class="search-result-group">
+        <span>${escapeHtml(area)}</span>
+        ${entries.map((entry) => {
+          const currentIndex = resultIndex++
+          return `
+            <a href="${entry.href}" class="search-result ${currentIndex === selected ? 'is-selected' : ''}" data-search-result>
+              <span class="search-result__icon">${entry.method ? escapeHtml(entry.method) : 'DOC'}</span>
+              <span class="search-result__copy">
+                <strong>${highlight(entry.title, tokens)}</strong>
+                <small>${highlight(entry.description || entry.area, tokens)}</small>
+              </span>
+              <span class="search-result__area">${escapeHtml(entry.area)}</span>
+            </a>
+          `
+        }).join('')}
+      </section>
+    `).join('')
+  }
+
+  async function openSearch() {
+    await loadIndex()
+    selected = 0
+    render()
+    dialog?.showModal()
+    requestAnimationFrame(() => input?.focus())
+  }
+
+  document.querySelectorAll('[data-search-open]').forEach((button) => button.addEventListener('click', openSearch))
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close()
+  })
+  input?.addEventListener('input', () => {
+    selected = 0
+    render()
+  })
+  dialog?.querySelectorAll<HTMLButtonElement>('[data-search-filter]').forEach((button) => {
+    button.addEventListener('click', () => {
+      activeFilter = button.dataset.searchFilter || 'all'
+      selected = 0
+      dialog.querySelectorAll('[data-search-filter]').forEach((candidate) => {
+        candidate.classList.toggle('is-active', candidate === button)
+      })
+      render()
+      input?.focus()
+    })
+  })
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault()
+      openSearch()
+    }
+    if (!dialog?.open) return
+    if (event.key === 'Escape') dialog.close()
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const count = dialog.querySelectorAll('[data-search-result]').length
+      if (count === 0) return
+      selected = (selected + (event.key === 'ArrowDown' ? 1 : -1) + count) % count
+      render()
+      dialog.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest' })
+    }
+    if (event.key === 'Enter') {
+      const target = dialog.querySelector<HTMLAnchorElement>('.search-result.is-selected')
+      if (target) window.location.href = target.href
+    }
+  })
+</script>

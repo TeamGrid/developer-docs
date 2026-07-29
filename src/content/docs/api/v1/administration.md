@@ -1,6 +1,8 @@
 ---
 title: Workspace administration
 description: Manage members, invitations, roles, and groups with explicit PII overlays and strong revisions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 The administration resources are intended for tightly controlled workspace-management services.

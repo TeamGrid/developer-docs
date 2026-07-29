@@ -1,6 +1,8 @@
 ---
 title: Change feed
 description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 `GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires

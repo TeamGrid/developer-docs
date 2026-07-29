@@ -1,6 +1,8 @@
 ---
 title: Custom-field definitions and values
 description: Manage TeamGrid custom-field schemas and safely compare and set values on supported resources.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 separates a custom-field **definition** from the value stored on one resource. Definitions

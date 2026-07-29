@@ -1,6 +1,8 @@
 ---
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a credential in the `Authorization` header:

@@ -1,6 +1,8 @@
 ---
 title: Regional endpoints
 description: Route TeamGrid API v1 credentials to their home region without cross-region redirects or data movement.
+owner: Platform Operations
+reviewedAt: 2026-07-29
 ---
 
 TeamGrid API v1 is cell-aware. Official clients derive the regional endpoint from the credential and the destination cell performs the authoritative authentication.

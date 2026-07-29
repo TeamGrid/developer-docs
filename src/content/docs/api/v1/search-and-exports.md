@@ -1,6 +1,8 @@
 ---
 title: Search and exports
 description: Search authorized resources and download bounded CSV exports through a header-only capability.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Federated search
@@ -49,7 +51,7 @@ Completed exports use a two-step download flow:
 
 ```bash
 curl --fail-with-body \
-  --header "Authorization: Bearer $TEAMGRID_TOKEN" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
   --header "X-TeamGrid-Export-Download-Intent: $DOWNLOAD_INTENT" \
   --output teamgrid-export.csv \
   "https://api.de.teamgrid.app/v1/exports/$EXPORT_ID/download"

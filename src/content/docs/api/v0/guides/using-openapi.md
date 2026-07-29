@@ -1,9 +1,9 @@
 ---
 title: "Using the OpenAPI File"
 description: "Use the TeamGrid OpenAPI definition with API tools, generated clients, bearer authentication, request schemas, and response envelopes."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Use the TeamGrid OpenAPI definition with API tools, generated clients, bearer authentication, request schemas, and response envelopes.
 

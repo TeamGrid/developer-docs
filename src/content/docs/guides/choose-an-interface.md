@@ -1,6 +1,8 @@
 ---
 title: Choose an interface
 description: Decide whether a TeamGrid integration should use API v1, the TypeScript SDK, the CLI, or the read-only MCP server.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that API rather than independent integration surfaces.

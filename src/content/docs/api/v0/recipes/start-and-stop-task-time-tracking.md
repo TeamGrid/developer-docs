@@ -1,9 +1,9 @@
 ---
 title: "Start and stop task time tracking"
-description: "USER_ID=$(curl \"https://api.teamgrid.app/users?email=alex@example.com\" \\"
+description: "Resolve a TeamGrid user, start task time tracking through API v0, and close the running timer with an explicit timestamp."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```bash Shell
 USER_ID=$(curl "https://api.teamgrid.app/users?email=alex@example.com" \
@@ -32,24 +32,17 @@ curl "https://api.teamgrid.app/tasks/$TASK_ID/stopTracking" \
   }"
 ```
 
-```json Response Example
-Use UTC timestamps and avoid overlapping active timers for the same user unless that is intentional for your workflow.
-```
+> **Production note:** Use UTC timestamps and avoid overlapping active timers for the same user
+> unless that is intentional for your workflow.
 
-# Resolve the user and task ids
-
-<!-- bash@1-7 -->
+## Resolve the user and task ids
 
 Use GET /users to find the TeamGrid user id and store the task id from your task workflow.
 
-# Start tracking
-
-<!-- bash@9-18 -->
+## Start tracking
 
 Send userId and the start timestamp to `POST /tasks/{_id}/startTracking`.
 
-# Stop tracking
-
-<!-- bash@20-29 -->
+## Stop tracking
 
 Send the stop timestamp to `POST /tasks/{_id}/stopTracking`. Include userId when your integration tracks multiple users.

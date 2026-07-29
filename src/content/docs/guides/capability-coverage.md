@@ -1,6 +1,8 @@
 ---
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.

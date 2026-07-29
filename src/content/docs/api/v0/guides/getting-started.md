@@ -1,9 +1,9 @@
 ---
 title: "Quickstart"
 description: "Create a token, call the API, retrieve users, create projects and tasks, and start tracking time."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Create a token, call the API, retrieve users, create projects and tasks, and start tracking time.
 

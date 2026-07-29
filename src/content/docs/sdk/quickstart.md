@@ -1,6 +1,8 @@
 ---
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Install

@@ -1,12 +1,16 @@
 ---
 title: OpenAPI files
 description: Download the exact TeamGrid API v0 and v1 OpenAPI 3.1 contracts used to generate this documentation.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 The API reference is generated from checked-in OpenAPI 3.1 contracts. The same files are available for code generation, validation, or import into an API client:
 
 - [Download API v1 OpenAPI JSON](/openapi/v1.json)
 - [Download API v0 OpenAPI JSON](/openapi/v0.json)
+- [Download the generated Postman collection](/collections/teamgrid-api-v1.postman.json)
+- [Download the generated HTTP client file](/collections/teamgrid-api-v1.http)
 - [Download the Developer Platform capability ledger](/openapi/developer-capabilities.json)
 - [Download the canonical scope contract](/openapi/developer-scopes.json)
 - [Download the complete v0-to-v1 migration map](/openapi/v0-to-v1-migration.json)
@@ -34,3 +38,14 @@ CAS while preserving all domain-specific preconditions. Its synchronized SDK, CL
 checkpoint is `1.0.0`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
+
+## API clients
+
+Postman can import the generated collection directly. Bruno, Insomnia and other clients that
+support OpenAPI should import `/openapi/v1.json`; this preserves the complete schema instead of
+depending on a client-specific export. Editors with an HTTP client can use the generated `.http`
+file.
+
+Both generated downloads contain placeholders rather than credentials. Set `baseUrl` to the
+regional endpoint indicated by the credential and keep `token` in the client’s secret or
+environment store.

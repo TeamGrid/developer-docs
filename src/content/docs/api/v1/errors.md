@@ -1,6 +1,8 @@
 ---
 title: Errors and rate limits
 description: Handle API v1 error envelopes, request identifiers, retryable failures, and rate-limit responses.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 returns a consistent error document and a request identifier:
@@ -55,3 +57,19 @@ operations. Another 31 compare-and-set operations retain domain-specific validat
 `400 invalid_precondition`, `412 precondition_failed`, `428 precondition_required`, and
 `503 service_unavailable`. The complete boundary is documented under
 [resource concurrency](/api/v1/resource-concurrency/).
+
+## Diagnose without exposing customer data
+
+Use this order when a request fails:
+
+1. Record the HTTP status, structured error code, request ID, time, and regional endpoint.
+2. Re-run `GET /workspace` with the same credential to separate authentication from operation
+   authorization.
+3. Compare the credential with the operation's required and conditional scopes.
+4. For guarded writes, read the latest resource and compare its revision with the attempted
+   `If-Match` value.
+5. Retry only when the method, idempotency key, and response status make that safe.
+
+The compact [request troubleshooting matrix](/resources/troubleshooting/) maps common symptoms to
+their likely causes. Never send bearer tokens, signing secrets, upload intents, or raw customer
+payloads to support.

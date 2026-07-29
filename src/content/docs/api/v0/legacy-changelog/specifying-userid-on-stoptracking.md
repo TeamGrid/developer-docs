@@ -1,8 +1,9 @@
 ---
 title: "Specifying userId on stopTracking"
-description: "We've added a new optional parameter to the [stopTracking method](https://developer.teamgridapp.com/reference#tasks_idstoptracking) to stop the tracking for a specific user"
+description: "Historical API v0 release note for stopping task time tracking for a specific user."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We've added a new optional parameter to the [stopTracking method](https://developer.teamgridapp.com/reference#tasks_idstoptracking) to stop the tracking for a specific user
+This archived release added an optional `userId` parameter to
+[`POST /tasks/{_id}/stopTracking`](/api/v0/reference/operations/v0_post_tasks_id_stoptracking/).
+Existing integrations could omit it; integrations tracking multiple users could select whose active
+timer should stop.

@@ -1,9 +1,9 @@
 ---
 title: "Dates and Time Zones"
 description: "Use ISO 8601 timestamps and UTC for predictable filtering, scheduling, and time tracking."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Use ISO 8601 timestamps and UTC for predictable filtering, scheduling, and time tracking.
 

@@ -1,9 +1,9 @@
 ---
 title: "Pagination and Filtering"
 description: "Use page, limit, id, boolean, and date filters to retrieve the exact TeamGrid records an integration needs."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Use page, limit, id, boolean, and date filters to retrieve the exact TeamGrid records an integration needs.
 

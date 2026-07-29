@@ -1,0 +1,64 @@
+---
+import type { MarkdownHeading } from 'astro'
+import Sidebar from '../components/Sidebar.astro'
+import TableOfContents from '../components/TableOfContents.astro'
+import BaseLayout from './BaseLayout.astro'
+import PageFeedback from '../components/PageFeedback.astro'
+
+interface Props {
+  title: string
+  description: string
+  headings: MarkdownHeading[]
+  source?: string
+  owner?: string
+  reviewedAt?: Date
+}
+
+const { title, description, headings, source, owner, reviewedAt } = Astro.props
+const isLegacyApi = Astro.url.pathname.startsWith('/api/v0/')
+---
+
+<BaseLayout title={title} description={description} layout="docs">
+  <button class="sidebar-mobile-trigger" type="button" data-sidebar-open>
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
+    Browse documentation
+  </button>
+  <div class="docs-shell">
+    <Sidebar pathname={Astro.url.pathname} />
+    <main class="docs-main" id="main-content">
+      <div class="docs-main__content">
+        <div class="page-eyebrow">TeamGrid Developer</div>
+        <h1>{title}</h1>
+        <p class="page-lead">{description}</p>
+        {isLegacyApi && (
+          <aside class="legacy-notice">
+            <strong>Legacy API v0</strong>
+            <span>
+              This page is retained for existing integrations. New development should use
+              <a href="/api/v1/">API v1</a>.
+            </span>
+          </aside>
+        )}
+        <article class="prose">
+          <slot />
+        </article>
+        <div class="page-meta">
+          <span>
+            Stable documentation
+            {owner && ` · ${owner}`}
+            {reviewedAt && ` · Reviewed ${reviewedAt.toISOString().slice(0, 10)}`}
+          </span>
+          {source && <a href={`https://github.com/TeamGrid/developer-docs/edit/main/${source}`}>Edit this page ↗</a>}
+        </div>
+        <PageFeedback />
+      </div>
+      <TableOfContents headings={headings} />
+    </main>
+  </div>
+</BaseLayout>
+
+<script>
+  const sidebar = document.querySelector<HTMLElement>('[data-sidebar]')
+  document.querySelector('[data-sidebar-open]')?.addEventListener('click', () => sidebar?.classList.add('is-open'))
+  document.querySelector('[data-sidebar-close]')?.addEventListener('click', () => sidebar?.classList.remove('is-open'))
+</script>

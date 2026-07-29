@@ -1,0 +1,41 @@
+<section class="page-feedback" data-page-feedback>
+  <div>
+    <span>Documentation feedback</span>
+    <strong>Was this page useful?</strong>
+  </div>
+  <div class="page-feedback__actions" data-feedback-actions>
+    <button type="button" data-feedback-value="1">Yes</button>
+    <button type="button" data-feedback-value="0">Not yet</button>
+  </div>
+  <p hidden data-feedback-thanks>Thank you. Your answer contains no account or customer data.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-page-feedback]').forEach((component) => {
+    const key = `teamgrid-developer-feedback:${window.location.pathname}`
+    const actions = component.querySelector<HTMLElement>('[data-feedback-actions]')
+    const thanks = component.querySelector<HTMLElement>('[data-feedback-thanks]')
+    if (localStorage.getItem(key)) {
+      if (actions) actions.hidden = true
+      if (thanks) thanks.hidden = false
+    }
+    component.querySelectorAll<HTMLButtonElement>('[data-feedback-value]').forEach((button) => {
+      button.addEventListener('click', () => {
+        localStorage.setItem(key, button.dataset.feedbackValue || '0')
+        if (actions) actions.hidden = true
+        if (thanks) thanks.hidden = false
+        if (window.location.hostname !== 'developer.teamgridapp.com') return
+        void fetch('/api/docs-events', {
+          body: JSON.stringify({
+            event: 'page_feedback',
+            path: window.location.pathname,
+            value: Number(button.dataset.feedbackValue || 0),
+          }),
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          method: 'POST',
+        }).catch(() => undefined)
+      })
+    })
+  })
+</script>

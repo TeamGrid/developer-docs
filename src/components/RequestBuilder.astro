@@ -1,0 +1,203 @@
+---
+import {
+  apiDocument,
+  exampleFromSchema,
+  operationParameters,
+  requestSchema,
+  type ApiOperation,
+} from '../lib/openapi'
+
+interface Props {
+  operation: ApiOperation
+}
+
+const { operation } = Astro.props
+const parameters = operationParameters(operation)
+  .filter((parameter: any) => ['path', 'query', 'header'].includes(parameter.in))
+  .filter((parameter: any) => parameter.name.toLowerCase() !== 'authorization')
+  .map((parameter: any) => ({
+    description: parameter.description,
+    example: String(
+      parameter.example
+      ?? parameter.schema?.example
+      ?? parameter.schema?.default
+      ?? (parameter.schema?.format === 'date-time' ? '2026-07-29T09:00:00Z' : ''),
+    ),
+    location: parameter.in,
+    name: parameter.name,
+    required: Boolean(parameter.required),
+  }))
+const body = requestSchema(operation)
+const bodyExample = body ? JSON.stringify(exampleFromSchema(operation.version, body.schema), null, 2) : ''
+const defaultServer = apiDocument(operation.version).servers?.[0]?.url || ''
+const builderId = `request-builder-${operation.operationId.toLowerCase()}`
+---
+
+<section
+  class="request-builder"
+  id={builderId}
+  data-request-builder
+  data-method={operation.method.toUpperCase()}
+  data-path={operation.path}
+  data-version={operation.version}
+  data-default-server={defaultServer}
+>
+  <div class="request-builder__head">
+    <div>
+      <span>Interactive request builder</span>
+      <h2>Prepare this request</h2>
+    </div>
+    <span class="request-builder__safe">Build locally · nothing is sent</span>
+  </div>
+
+  <div class="request-builder__workspace">
+    <div class="request-builder__controls">
+      <div class="request-builder__settings">
+        <div class="request-builder__region">
+          <span>Region</span>
+          <div role="group" aria-label="API region">
+            <button type="button" class="is-active" data-request-region="https://api.de.teamgrid.app/v1">Germany</button>
+            <button type="button" data-request-region="https://api.us.teamgrid.app/v1">United States</button>
+          </div>
+        </div>
+        <label>
+          <span>Credential variable</span>
+          <input value="$TEAMGRID_API_TOKEN" data-request-token aria-label="Credential variable" />
+        </label>
+      </div>
+
+      {
+        parameters.length > 0 && (
+          <div class="request-builder__parameters">
+            {parameters.map((parameter: any) => (
+              <label>
+                <span>
+                  {parameter.name}
+                  <small>{parameter.location}{parameter.required ? ' · required' : ''}</small>
+                </span>
+                <input
+                  value={parameter.example}
+                  placeholder={parameter.required ? 'Required value' : 'Optional'}
+                  data-request-parameter
+                  data-location={parameter.location}
+                  data-name={parameter.name}
+                  required={parameter.required}
+                  title={parameter.description}
+                />
+              </label>
+            ))}
+          </div>
+        )
+      }
+
+      {
+        body && (
+          <label class="request-builder__body">
+            <span>JSON request body</span>
+            <textarea rows="10" spellcheck="false" data-request-body>{bodyExample}</textarea>
+            <small data-request-body-status>Valid JSON</small>
+          </label>
+        )
+      }
+    </div>
+
+    <div class="request-builder__result">
+      <div class="request-builder__output">
+        <div>
+          <span>Generated cURL</span>
+          <button type="button" data-request-copy>Copy</button>
+        </div>
+        <pre><code data-request-output></code></pre>
+      </div>
+      <p class="request-builder__note">
+        The builder does not execute requests or persist credentials. Replace the environment-variable
+        placeholder only in your terminal or secret-aware runtime.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-request-builder]').forEach((builder) => {
+    const output = builder.querySelector<HTMLElement>('[data-request-output]')
+    const body = builder.querySelector<HTMLTextAreaElement>('[data-request-body]')
+    const bodyStatus = builder.querySelector<HTMLElement>('[data-request-body-status]')
+    const copy = builder.querySelector<HTMLButtonElement>('[data-request-copy]')
+
+    function shellQuote(value: string) {
+      return `'${value.replaceAll("'", "'\\''")}'`
+    }
+
+    function render() {
+      if (!output) return
+      const method = builder.dataset.method || 'GET'
+      const region = builder.querySelector<HTMLButtonElement>('[data-request-region].is-active')?.dataset.requestRegion
+        || builder.dataset.defaultServer
+        || ''
+      const token = builder.querySelector<HTMLInputElement>('[data-request-token]')?.value.trim()
+        || '$TEAMGRID_API_TOKEN'
+      let path = builder.dataset.path || ''
+      const query = new URLSearchParams()
+      const headers: Array<[string, string]> = []
+
+      builder.querySelectorAll<HTMLInputElement>('[data-request-parameter]').forEach((input) => {
+        const value = input.value.trim()
+        const name = input.dataset.name || ''
+        if (!value) return
+        if (input.dataset.location === 'path') {
+          path = path.replace(`{${name}}`, encodeURIComponent(value))
+        } else if (input.dataset.location === 'query') {
+          query.append(name, value)
+        } else if (input.dataset.location === 'header') {
+          headers.push([name, value])
+        }
+      })
+
+      const queryString = query.size > 0 ? `?${query.toString()}` : ''
+      const lines = [
+        `curl --request ${method} \\`,
+        `  --url ${shellQuote(`${region}${path}${queryString}`)} \\`,
+        `  --header ${shellQuote(`Authorization: Bearer ${token}`)}`,
+      ]
+
+      headers.forEach(([name, value]) => {
+        lines[lines.length - 1] += ' \\'
+        lines.push(`  --header ${shellQuote(`${name}: ${value}`)}`)
+      })
+
+      if (body?.value.trim()) {
+        try {
+          const formatted = JSON.stringify(JSON.parse(body.value), null, 2)
+          bodyStatus?.classList.remove('is-invalid')
+          if (bodyStatus) bodyStatus.textContent = 'Valid JSON'
+          lines[lines.length - 1] += ' \\'
+          lines.push(`  --header 'Content-Type: application/json' \\`)
+          lines.push(`  --data ${shellQuote(formatted)}`)
+        } catch {
+          bodyStatus?.classList.add('is-invalid')
+          if (bodyStatus) bodyStatus.textContent = 'Fix the JSON before copying'
+        }
+      }
+
+      output.textContent = lines.join('\n')
+    }
+
+    builder.addEventListener('input', render)
+    builder.addEventListener('change', render)
+    builder.querySelectorAll<HTMLButtonElement>('[data-request-region]').forEach((button) => {
+      button.addEventListener('click', () => {
+        builder.querySelectorAll('[data-request-region]').forEach((candidate) => {
+          candidate.classList.toggle('is-active', candidate === button)
+        })
+        render()
+      })
+    })
+    copy?.addEventListener('click', async () => {
+      if (!output?.textContent) return
+      await navigator.clipboard.writeText(output.textContent)
+      copy.textContent = 'Copied'
+      window.setTimeout(() => { copy.textContent = 'Copy' }, 1200)
+    })
+    render()
+  })
+</script>

@@ -1,6 +1,8 @@
 ---
 title: Resource concurrency
 description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the

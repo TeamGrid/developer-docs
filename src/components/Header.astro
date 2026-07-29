@@ -1,0 +1,112 @@
+---
+import { primaryNavigation } from '../data/navigation'
+import Brand from './Brand.astro'
+
+const pathname = Astro.url.pathname
+const section = pathname.split('/').filter(Boolean)[0]
+
+function isActive(href: string) {
+  if (href.startsWith('/api/')) return section === 'api'
+  if (href.startsWith('/guides/')) return section === 'guides'
+  return pathname.startsWith(href)
+}
+---
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <Brand />
+    <nav class="primary-nav" aria-label="Developer portal">
+      {
+        primaryNavigation.map((item) => (
+          <a class:list={{ 'is-active': isActive(item.href) }} href={item.href}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="site-header__actions">
+      <button class="search-trigger" type="button" data-search-open aria-label="Search documentation">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="m16 16 4 4"></path>
+        </svg>
+        <span>Search</span>
+        <kbd>⌘ K</kbd>
+      </button>
+      <a class="status-link status--unknown" href="https://status.teamgrid.app/" target="_blank" rel="noreferrer" data-live-status>
+        <span class="status-link__dot" aria-hidden="true" data-status-dot></span>
+        <span data-status-label>Status</span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"></path></svg>
+      </a>
+      <button class="mobile-menu-trigger" type="button" aria-label="Open navigation" data-menu-open>
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="mobile-menu" data-mobile-menu>
+  <div class="mobile-menu__head">
+    <Brand />
+    <button type="button" data-menu-close aria-label="Close navigation">×</button>
+  </div>
+  <nav aria-label="Mobile developer portal">
+    {primaryNavigation.map((item) => <a href={item.href}>{item.label}<span>→</span></a>)}
+    <a href="https://status.teamgrid.app/">System status<span>↗</span></a>
+  </nav>
+</dialog>
+
+<script>
+  const menu = document.querySelector<HTMLDialogElement>('[data-mobile-menu]')
+  document.querySelector('[data-menu-open]')?.addEventListener('click', () => menu?.showModal())
+  document.querySelector('[data-menu-close]')?.addEventListener('click', () => menu?.close())
+
+  type PublicStatus = { overallStatus?: 'operational' | 'degraded' | 'outage' | 'unknown' }
+  const statusLabels = {
+    degraded: 'Degraded',
+    operational: 'Operational',
+    outage: 'Service issue',
+    unknown: 'Status',
+  } as const
+
+  function applyStatus(status: keyof typeof statusLabels) {
+    document.querySelectorAll<HTMLElement>('[data-live-status]').forEach((element) => {
+      element.classList.remove('status--operational', 'status--degraded', 'status--outage', 'status--unknown')
+      element.classList.add(`status--${status}`)
+      const label = element.querySelector<HTMLElement>('[data-status-label]')
+      if (label) label.textContent = statusLabels[status]
+      element.setAttribute('data-status', status)
+    })
+  }
+
+  async function refreshStatus() {
+    try {
+      const cached = sessionStorage.getItem('teamgrid-public-status')
+      if (cached) {
+        const value = JSON.parse(cached) as { fetchedAt: number; status: keyof typeof statusLabels }
+        if (Date.now() - value.fetchedAt < 60_000 && value.status in statusLabels) {
+          applyStatus(value.status)
+          return
+        }
+      }
+      const controller = new AbortController()
+      const timeout = window.setTimeout(() => controller.abort(), 4_000)
+      const response = await fetch('https://status.teamgrid.app/api/v1/status', {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      })
+      window.clearTimeout(timeout)
+      if (!response.ok) throw new Error('Status endpoint unavailable')
+      const payload = await response.json() as PublicStatus
+      const status = payload.overallStatus && payload.overallStatus in statusLabels
+        ? payload.overallStatus
+        : 'unknown'
+      applyStatus(status)
+      sessionStorage.setItem('teamgrid-public-status', JSON.stringify({ fetchedAt: Date.now(), status }))
+    } catch {
+      applyStatus('unknown')
+    }
+  }
+
+  refreshStatus()
+</script>

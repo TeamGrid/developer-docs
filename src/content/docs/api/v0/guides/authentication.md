@@ -1,9 +1,9 @@
 ---
 title: "Authentication"
 description: "Authenticate requests with team-specific TeamGrid API tokens and understand token scope."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Authenticate requests with team-specific TeamGrid API tokens and understand token scope.
 

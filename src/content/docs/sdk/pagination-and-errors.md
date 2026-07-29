@@ -1,6 +1,8 @@
 ---
 title: SDK pagination and errors
 description: Traverse TeamGrid cursor pages and handle typed API and client failures.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Async page iteration

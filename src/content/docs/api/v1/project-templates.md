@@ -1,6 +1,8 @@
 ---
 title: Project templates
 description: Capture safe project templates and instantiate them through credential-owned asynchronous operations.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Project templates capture a reusable project, list, and task structure. Public responses contain

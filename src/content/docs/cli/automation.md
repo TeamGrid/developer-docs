@@ -1,6 +1,8 @@
 ---
 title: CLI automation
 description: Use TeamGrid CLI output modes, pagination, idempotency, and exit codes safely in scripts and CI.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Prefer structured output

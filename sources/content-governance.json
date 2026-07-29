@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "maxReviewAgeDays": 120,
+  "enforceAllMaintained": true,
+  "excludedPrefixes": [
+    "api/v0/legacy-changelog/"
+  ],
+  "allowedOwners": [
+    "Developer Experience",
+    "Developer Platform",
+    "Platform Operations",
+    "Security"
+  ],
+  "required": {
+    "api/v1/index.md": "Developer Platform",
+    "api/v1/authentication.md": "Security",
+    "api/v1/errors.md": "Developer Platform",
+    "api/v1/quickstart.md": "Developer Experience",
+    "api/v1/regions.md": "Platform Operations",
+    "cli/index.md": "Developer Experience",
+    "guides/get-started.mdx": "Developer Experience",
+    "mcp/index.md": "Developer Platform",
+    "resources/compatibility.md": "Developer Platform",
+    "resources/troubleshooting.md": "Developer Experience",
+    "sdk/index.md": "Developer Platform",
+    "security/index.md": "Security"
+  }
+}

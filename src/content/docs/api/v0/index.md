@@ -1,6 +1,8 @@
 ---
 title: API v0 · Legacy
 description: Compatibility documentation for existing TeamGrid API v0 integrations.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v0 is a frozen compatibility surface for existing integrations. New integrations should use [API v1](/api/v1/).

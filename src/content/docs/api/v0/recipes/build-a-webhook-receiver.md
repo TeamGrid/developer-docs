@@ -1,9 +1,9 @@
 ---
 title: "Build a webhook receiver"
-description: "import express from 'express'"
+description: "Receive TeamGrid API v0 webhook events safely, acknowledge them quickly, and process each delivery idempotently."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```javascript Node.js
 import express from 'express'
@@ -39,24 +39,17 @@ app.listen(3000)
 //   }'
 ```
 
-```json Response Example
-Make webhook handlers idempotent and respond quickly. If processing fails later in your own queue, retry from that queue rather than blocking the TeamGrid webhook response.
-```
+> **Production note:** Make webhook handlers idempotent and respond quickly. If processing fails
+> later in your own queue, retry from that queue rather than blocking the TeamGrid webhook response.
 
-# Create the receiver endpoint
-
-<!-- javascript@1-18 -->
+## Create the receiver endpoint
 
 Expose a POST endpoint that accepts JSON and returns a 2xx response after the event is safely recorded.
 
-# Register the webhook
-
-<!-- javascript@20-30 -->
+## Register the webhook
 
 Use POST /webhooks with the public HTTPS URL and the event actions your integration needs.
 
-# Process events asynchronously
-
-<!-- javascript@8-15 -->
+## Process events asynchronously
 
 Use event, webhookId, collection, and doc._id for routing and idempotency. Enqueue slow work after receipt.

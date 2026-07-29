@@ -207,18 +207,39 @@ const interfaces = [
               <strong>{path.link} <span aria-hidden="true">→</span></strong>
             </div>
             {path.featured && (
-              <div class="intent-card__event" aria-hidden="true">
-                <div>
-                  <span>Task changed</span>
-                  <code>revision 184</code>
+              <div class="intent-card__sequence" aria-hidden="true">
+                <div class="intent-card__sequence-header">
+                  <span>Change sequence</span>
+                  <span>Completed</span>
                 </div>
-                <div>
-                  <span>Change feed</span>
-                  <code>cursor eyJvZmZzZXQi…</code>
+                <div class="intent-card__sequence-body">
+                  <div class="intent-card__sequence-row">
+                    <span class="intent-card__sequence-index">01</span>
+                    <div>
+                      <strong>Task updated</strong>
+                      <code>revision 184</code>
+                    </div>
+                    <span class="intent-card__sequence-state">Recorded</span>
+                  </div>
+                  <div class="intent-card__sequence-row">
+                    <span class="intent-card__sequence-index">02</span>
+                    <div>
+                      <strong>Change read</strong>
+                      <code>cursor saved</code>
+                    </div>
+                    <span class="intent-card__sequence-state">Delivered</span>
+                  </div>
+                  <div class="intent-card__sequence-row">
+                    <span class="intent-card__sequence-index">03</span>
+                    <div>
+                      <strong>Integration applied</strong>
+                      <code>200 · no conflict</code>
+                    </div>
+                    <span class="intent-card__sequence-state">In sync</span>
+                  </div>
                 </div>
-                <div>
-                  <span>Your service</span>
-                  <code>applied · 200</code>
+                <div class="intent-card__sequence-footer">
+                  The next read resumes after revision 184.
                 </div>
               </div>
             )}

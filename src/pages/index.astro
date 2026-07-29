@@ -461,43 +461,52 @@ const interfaces = [
       </div>
     </section>
 
-    <section class="home-resources">
+    <section id="production-guides" class="home-resources">
       <div class="home-resources__inner">
-        <div class="home-resources__guides">
+        <div class="home-resources__heading">
           <p class="home-kicker">Continue with a real workflow</p>
           <h2>Guides written for production work.</h2>
-          <div>
-            <a href="/guides/reliable-webhooks/">
-              <span>Guide · Webhooks</span>
-              <strong>Build a reliable webhook consumer</strong>
-              <p>Verify signatures, acknowledge quickly and process deliveries idempotently.</p>
-              <em>Read guide →</em>
-            </a>
-            <a href="/guides/upload-a-file/">
-              <span>Guide · Files</span>
-              <strong>Upload and attach a file</strong>
-              <p>Request an upload target, transfer bytes and attach the completed file safely.</p>
-              <em>Read guide →</em>
-            </a>
-            <a href="/guides/audit-users-and-access/">
-              <span>Guide · Administration</span>
-              <strong>Audit users and access</strong>
-              <p>Review workspace membership and build a repeatable access report.</p>
-              <em>Read guide →</em>
-            </a>
-          </div>
+          <p>
+            Follow complete implementation paths for the work integrations need to handle beyond
+            the first successful request.
+          </p>
         </div>
 
         <aside class="home-release">
-          <span>Latest release · {latestRelease.date}</span>
-          <strong>{latestRelease.title}</strong>
-          <code>{latestRelease.version}</code>
-          <p>{latestRelease.description}</p>
-          <ul>
-            {latestRelease.highlights.slice(0, 2).map((highlight) => <li>{highlight}</li>)}
-          </ul>
+          <div class="home-release__identity">
+            <span>Latest release · {latestRelease.date}</span>
+            <strong>{latestRelease.title}</strong>
+            <code>{latestRelease.version}</code>
+          </div>
+          <div class="home-release__details">
+            <p>{latestRelease.description}</p>
+            <ul>
+              {latestRelease.highlights.slice(0, 2).map((highlight) => <li>{highlight}</li>)}
+            </ul>
+          </div>
           <a href="/changelog/">Read the changelog <span aria-hidden="true">→</span></a>
         </aside>
+
+        <div class="home-resources__guides">
+          <a href="/guides/reliable-webhooks/">
+            <span>Webhooks</span>
+            <strong>Build a reliable webhook consumer</strong>
+            <p>Verify signatures, acknowledge quickly and process deliveries idempotently.</p>
+            <em>Read guide <span aria-hidden="true">→</span></em>
+          </a>
+          <a href="/guides/upload-a-file/">
+            <span>Files</span>
+            <strong>Upload and attach a file</strong>
+            <p>Request an upload target, transfer bytes and attach the completed file safely.</p>
+            <em>Read guide <span aria-hidden="true">→</span></em>
+          </a>
+          <a href="/guides/audit-users-and-access/">
+            <span>Administration</span>
+            <strong>Audit users and access</strong>
+            <p>Review workspace membership and build a repeatable access report.</p>
+            <em>Read guide <span aria-hidden="true">→</span></em>
+          </a>
+        </div>
       </div>
     </section>
 

@@ -53,6 +53,9 @@ async function htmlFiles(directory) {
 }
 
 const html = await htmlFiles(dist)
+const builtHtmlPaths = new Set(
+  html.map((file) => path.relative(dist, file).split(path.sep).join('/')),
+)
 async function contentPageFiles(directory) {
   const result = []
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -120,6 +123,11 @@ function builtPageForUrl(url) {
   return path.join(dist, pathname.replace(/^\//, '').replace(/\/$/, ''), 'index.html')
 }
 
+function hasBuiltPageWithExactCase(url) {
+  const target = path.relative(dist, builtPageForUrl(url)).split(path.sep).join('/')
+  return builtHtmlPaths.has(target)
+}
+
 for (const file of html) {
   const content = await readFile(file, 'utf8')
   const relative = path.relative(dist, file)
@@ -148,7 +156,7 @@ for (const file of html) {
   for (const match of content.matchAll(/<a\b[^>]*\bhref="(\/[^"]*)"/g)) {
     const href = match[1]
     if (!href || /\.[a-z0-9]+(?:[?#]|$)/i.test(href)) continue
-    if (!(await exists(builtPageForUrl(href)))) {
+    if (!hasBuiltPageWithExactCase(href)) {
       failures.push(`${relative} links to missing page ${href}.`)
     }
   }

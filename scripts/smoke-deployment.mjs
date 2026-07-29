@@ -6,6 +6,7 @@ const checks = [
   ['/guides/get-started/', 'Create a developer credential'],
   ['/api/v1/reference/operations/getworkspace/', 'Interactive request builder'],
   ['/openapi/v1.json', '"openapi": "3.1.0"'],
+  ['/api/status', '"overallStatus"'],
   ['/search-index.json', '"category":"API v1"'],
   ['/changelog/feed.xml', '<feed xmlns="http://www.w3.org/2005/Atom">'],
 ]

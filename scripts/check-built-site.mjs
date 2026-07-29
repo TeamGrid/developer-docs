@@ -178,6 +178,9 @@ if (releaseJson.schemaVersion !== 1 || !Array.isArray(releaseJson.releases)) {
 }
 
 const redirects = await readFile(path.join(dist, '_redirects'), 'utf8')
+if (redirects.includes('/changelog/:slug ')) {
+  failures.push('Legacy redirects shadow current changelog resources.')
+}
 for (const line of redirects.split('\n')) {
   if (!line.startsWith('/reference/')) continue
   const [, target] = line.trim().split(/\s+/)

@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
@@ -26,6 +26,22 @@ for (const [slug, mapping] of Object.entries(referenceMap).sort(([left], [right]
 }
 
 lines.push('/reference/* /api/v0/reference/ 301')
-lines.push('/changelog/:slug /api/v0/legacy-changelog/:slug/ 301', '')
+const legacyChangelogDirectory = path.join(
+  root,
+  'src',
+  'content',
+  'docs',
+  'api',
+  'v0',
+  'legacy-changelog',
+)
+const legacyChangelogSlugs = (await readdir(legacyChangelogDirectory))
+  .filter((file) => file.endsWith('.md'))
+  .map((file) => file.replace(/\.md$/, ''))
+  .sort()
+for (const slug of legacyChangelogSlugs) {
+  lines.push(`/changelog/${slug} /api/v0/legacy-changelog/${slug}/ 301`)
+}
+lines.push('')
 await writeFile(path.join(root, 'public', '_redirects'), `${lines.join('\n')}\n`)
 console.log(`Generated ${lines.filter((line) => line && !line.startsWith('#')).length} redirects.`)

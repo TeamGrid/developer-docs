@@ -665,6 +665,22 @@ if (!redirects.includes('/reference/* /api/v0/reference/ 301')) {
 for (const slug of Object.keys(referenceMap)) {
   if (!redirects.includes(`/reference/${slug} `)) fail(`Missing legacy redirect for ${slug}.`)
 }
+if (redirects.includes('/changelog/:slug ')) {
+  fail('The legacy changelog redirect must not shadow current changelog resources.')
+}
+const legacyChangelogFiles = await readdir(
+  path.join(root, 'src', 'content', 'docs', 'api', 'v0', 'legacy-changelog'),
+)
+for (const file of legacyChangelogFiles.filter((candidate) => candidate.endsWith('.md'))) {
+  const slug = file.replace(/\.md$/, '')
+  const expected = `/changelog/${slug} /api/v0/legacy-changelog/${slug}/ 301`
+  if (!redirects.includes(expected)) fail(`Missing legacy changelog redirect for ${slug}.`)
+}
+for (const currentResource of ['feed.xml', 'releases.json']) {
+  if (redirects.includes(`/changelog/${currentResource} `)) {
+    fail(`Current changelog resource ${currentResource} must not be redirected.`)
+  }
+}
 
 const headers = await readFile(path.join(root, 'public', '_headers'), 'utf8')
 for (const pattern of ['https://:project.pages.dev/*', 'https://:version.:project.pages.dev/*']) {

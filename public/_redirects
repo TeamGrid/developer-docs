@@ -61,5 +61,9 @@
 /reference/updatetask /api/v0/reference/operations/v0_put_tasks_id/ 301
 /reference/updatetimeentry /api/v0/reference/operations/v0_put_times_id/ 301
 /reference/* /api/v0/reference/ 301
-/changelog/:slug /api/v0/legacy-changelog/:slug/ 301
+/changelog/documentation-refresh-2026 /api/v0/legacy-changelog/documentation-refresh-2026/ 301
+/changelog/more-filters-on-tasks /api/v0/legacy-changelog/more-filters-on-tasks/ 301
+/changelog/new-endpoints-for-project-templates-and-journal-entries /api/v0/legacy-changelog/new-endpoints-for-project-templates-and-journal-entries/ 301
+/changelog/scheduled-work-of-tasks /api/v0/legacy-changelog/scheduled-work-of-tasks/ 301
+/changelog/specifying-userid-on-stoptracking /api/v0/legacy-changelog/specifying-userid-on-stoptracking/ 301
 

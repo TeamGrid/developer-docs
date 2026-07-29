@@ -1,9 +1,9 @@
 ---
 title: "Common Workflows"
 description: "Build common integrations such as project creation, task assignment, contact imports, time sync, and webhook handling."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Build common integrations such as project creation, task assignment, contact imports, time sync, and webhook handling.
 

@@ -1,0 +1,79 @@
+---
+import { groupedOperations, operationHref, type ApiVersion } from '../lib/openapi'
+
+interface Props {
+  version: ApiVersion
+  currentOperationId?: string
+}
+
+const { version, currentOperationId } = Astro.props
+const groups = groupedOperations(version)
+---
+
+<aside class="api-sidebar" data-api-sidebar>
+  <div class="api-sidebar__mobile-head">
+    <span>API reference</span>
+    <button type="button" aria-label="Close API navigation" data-api-sidebar-close>×</button>
+  </div>
+  <div class="api-sidebar__head">
+    <div class="version-switch" aria-label="API version">
+      <a class:list={{ 'is-active': version === 'v1' }} href="/api/v1/reference/">v1 <span>Stable</span></a>
+      <a class:list={{ 'is-active': version === 'v0' }} href="/api/v0/reference/">v0 <span>Legacy</span></a>
+    </div>
+    <label class="api-filter">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+      <input type="search" placeholder="Filter endpoints" data-api-filter />
+    </label>
+  </div>
+  <nav aria-label={`API ${version} endpoints`} data-api-nav>
+    <a class="api-sidebar__overview" href={`/api/${version}/reference/`}>Reference overview</a>
+    {
+      groups.map(({ tag, operations }) => {
+        const containsCurrent = operations.some((operation) => operation.operationId === currentOperationId)
+        return (
+          <details open={containsCurrent}>
+            <summary>
+              <span>{tag}</span>
+              <small>{operations.length}</small>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 6 3 3 3-3" /></svg>
+            </summary>
+            <div>
+              {operations.map((operation) => (
+                <a
+                  class:list={{ 'is-current': operation.operationId === currentOperationId }}
+                  href={operationHref(operation)}
+                  data-operation-search={`${operation.summary} ${operation.method} ${operation.path}`.toLowerCase()}
+                >
+                  <span class={`method method--${operation.method}`}>{operation.method}</span>
+                  <span>{operation.summary}</span>
+                </a>
+              ))}
+            </div>
+          </details>
+        )
+      })
+    }
+    <div class="api-sidebar__empty" data-api-empty hidden>No matching endpoints.</div>
+  </nav>
+</aside>
+
+<script>
+  const filter = document.querySelector<HTMLInputElement>('[data-api-filter]')
+  const nav = document.querySelector<HTMLElement>('[data-api-nav]')
+  const empty = document.querySelector<HTMLElement>('[data-api-empty]')
+  filter?.addEventListener('input', () => {
+    const query = filter.value.trim().toLowerCase()
+    let visible = 0
+    nav?.querySelectorAll<HTMLAnchorElement>('[data-operation-search]').forEach((link) => {
+      const match = !query || link.dataset.operationSearch?.includes(query)
+      link.hidden = !match
+      if (match) visible += 1
+    })
+    nav?.querySelectorAll<HTMLDetailsElement>('details').forEach((group) => {
+      const matches = [...group.querySelectorAll('[data-operation-search]')].some((item) => !(item as HTMLElement).hidden)
+      group.hidden = !matches
+      if (query && matches) group.open = true
+    })
+    if (empty) empty.hidden = visible > 0
+  })
+</script>

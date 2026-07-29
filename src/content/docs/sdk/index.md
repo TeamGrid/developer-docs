@@ -1,6 +1,8 @@
 ---
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.

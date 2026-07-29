@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout title="Page not found" description="The requested TeamGrid Developer page does not exist." noindex>
+  <main class="not-found" id="main-content">
+    <span>404</span>
+    <h1>This page moved or does not exist.</h1>
+    <p>Search the developer portal or return to the documentation overview.</p>
+    <div>
+      <button class="button button--dark" type="button" data-search-open>Search documentation</button>
+      <a class="button button--outline" href="/">Developer home</a>
+    </div>
+  </main>
+</BaseLayout>

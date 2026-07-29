@@ -1,6 +1,8 @@
 ---
 title: MCP tools and security
 description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 ## Available tools

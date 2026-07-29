@@ -1,6 +1,8 @@
 ---
 title: Calendar and availability
 description: Work with TeamGrid appointments, absences, availability, and planned-work schedules without bypassing delegated access controls.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 separates four scheduling concepts:

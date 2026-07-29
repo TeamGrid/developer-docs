@@ -1,6 +1,8 @@
 ---
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Global options

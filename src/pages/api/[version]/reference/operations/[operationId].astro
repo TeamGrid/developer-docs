@@ -1,0 +1,205 @@
+---
+import ApiReferenceLayout from '../../../../../layouts/ApiReferenceLayout.astro'
+import CodePanel from '../../../../../components/CodePanel.astro'
+import RequestBuilder from '../../../../../components/RequestBuilder.astro'
+import PageFeedback from '../../../../../components/PageFeedback.astro'
+import SchemaProperties from '../../../../../components/SchemaProperties.astro'
+import {
+  apiOperations,
+  operationHref,
+  operationParameters,
+  requestSchema,
+  responseEntries,
+  schemaLabel,
+  type ApiOperation,
+  type ApiVersion,
+} from '../../../../../lib/openapi'
+
+export function getStaticPaths() {
+  return (['v1', 'v0'] as const).flatMap((version) =>
+    apiOperations(version).map((operation) => ({
+      params: {
+        operationId: operation.operationId.toLowerCase(),
+        version,
+      },
+      props: { operation },
+    })),
+  )
+}
+
+const { operation } = Astro.props as { operation: ApiOperation }
+const version = Astro.params.version as ApiVersion
+const parameters = operationParameters(operation)
+const parameterGroups = ['path', 'query', 'header'].map((location) => ({
+  location,
+  parameters: parameters.filter((parameter: any) => parameter.in === location),
+})).filter((group) => group.parameters.length > 0)
+const body = requestSchema(operation)
+const responses = responseEntries(operation)
+const scopes = operation.operation['x-teamgrid-required-scopes'] || []
+const description = operation.description || `${operation.method.toUpperCase()} ${operation.path}`
+const allOperations = apiOperations(version)
+const operationIndex = allOperations.findIndex((candidate) => candidate.operationId === operation.operationId)
+const previousOperation = operationIndex > 0 ? allOperations[operationIndex - 1] : undefined
+const nextOperation = operationIndex >= 0 ? allOperations[operationIndex + 1] : undefined
+const relatedOperations = allOperations
+  .filter((candidate) => candidate.tag === operation.tag && candidate.operationId !== operation.operationId)
+  .slice(0, 4)
+const conditionalScopes = operation.operation['x-teamgrid-conditional-scopes'] || []
+const isWrite = operation.method !== 'get'
+---
+
+<ApiReferenceLayout
+  title={operation.summary}
+  description={description}
+  version={version}
+  currentOperationId={operation.operationId}
+>
+  <div class="operation-layout">
+    <article class="operation-doc">
+      <div class="operation-intro">
+        <nav class="operation-breadcrumbs" aria-label="Breadcrumb">
+          <a href={`/api/${version}/reference/`}>API {version}</a>
+          <span>/</span>
+          <span>{operation.tag}</span>
+        </nav>
+        <div class="operation-title">
+          <span class={`method method--${operation.method}`}>{operation.method}</span>
+          <code>{operation.path}</code>
+          <span class:list={{ 'operation-kind': true, 'is-write': isWrite }}>{isWrite ? 'Write operation' : 'Read operation'}</span>
+        </div>
+        <h1>{operation.summary}</h1>
+        {operation.description && <p class="operation-lead">{operation.description}</p>}
+        {
+          scopes.length > 0 && (
+            <div class="scope-line">
+              <span>Required scopes</span>
+              <div>{scopes.map((scope: string) => <code>{scope}</code>)}</div>
+            </div>
+          )
+        }
+        {
+          conditionalScopes.length > 0 && (
+            <div class="scope-line scope-line--conditional">
+              <span>Conditional scopes</span>
+              <div>{conditionalScopes.map((scope: string) => <code>{scope}</code>)}</div>
+            </div>
+          )
+        }
+      </div>
+      <CodePanel operation={operation} />
+      {version === 'v1' && <RequestBuilder operation={operation} />}
+
+      <div class="operation-details">
+        {
+          parameterGroups.map((group) => (
+            <section class="operation-section">
+              <div class="operation-section__heading">
+                <h2>{group.location === 'path' ? 'Path parameters' : group.location === 'query' ? 'Query parameters' : 'Headers'}</h2>
+                <span>{group.parameters.length}</span>
+              </div>
+              <div class="parameter-list">
+                {group.parameters.map((parameter: any) => (
+                  <div class="parameter-row">
+                    <div class="parameter-row__identity">
+                      <code>{parameter.name}</code>
+                      {parameter.required && <span>required</span>}
+                    </div>
+                    <div class="parameter-row__content">
+                      <span>{schemaLabel(parameter.schema)}</span>
+                      {parameter.description && <p>{parameter.description}</p>}
+                      {parameter.schema?.enum && <div>{parameter.schema.enum.map((value: any) => <code>{String(value)}</code>)}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))
+        }
+
+        {
+          body && (
+            <section class="operation-section">
+              <div class="operation-section__heading">
+                <h2>Request body</h2>
+                <span>{body.mediaType}</span>
+              </div>
+              <SchemaProperties schema={body.schema} version={version} />
+            </section>
+          )
+        }
+
+        <section class="operation-section">
+          <div class="operation-section__heading">
+            <h2>Responses</h2>
+            <span>{responses.length}</span>
+          </div>
+          <div class="response-list">
+            {
+              responses.map((response, index) => (
+                <details open={index === 0}>
+                  <summary>
+                    <span class:list={{
+                      'response-code': true,
+                      'is-success': /^2/.test(response.status),
+                      'is-error': /^[45]/.test(response.status),
+                    }}>{response.status}</span>
+                    <strong>{response.description}</strong>
+                    {response.mediaType && <code>{response.mediaType}</code>}
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 6 3 3 3-3" /></svg>
+                  </summary>
+                  {
+                    response.schema && (
+                      <div class="response-schema">
+                        <div class="response-schema__head">
+                          <span>Response schema</span>
+                          {response.mediaType && <code>{response.mediaType}</code>}
+                        </div>
+                        <SchemaProperties schema={response.schema} version={version} />
+                      </div>
+                    )
+                  }
+                </details>
+              ))
+            }
+          </div>
+        </section>
+
+        <div class="operation-footer">
+          <span>Operation ID</span>
+          <code>{operation.operationId}</code>
+          <a href={`/openapi/${version}.json`}>OpenAPI JSON ↗</a>
+        </div>
+        {
+          relatedOperations.length > 0 && (
+            <section class="related-operations">
+              <span>More in {operation.tag}</span>
+              <div>
+                {relatedOperations.map((related) => (
+                  <a href={operationHref(related)}>
+                    <span class={`method method--${related.method}`}>{related.method}</span>
+                    <strong>{related.summary}</strong>
+                    <span>→</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )
+        }
+        <nav class="operation-pagination" aria-label="API operation pagination">
+          {
+            previousOperation
+              ? <a href={operationHref(previousOperation)} rel="prev"><span>Previous operation</span><strong>← {previousOperation.summary}</strong></a>
+              : <span></span>
+          }
+          {
+            nextOperation
+              ? <a href={operationHref(nextOperation)} rel="next"><span>Next operation</span><strong>{nextOperation.summary} →</strong></a>
+              : <span></span>
+          }
+        </nav>
+        <PageFeedback />
+      </div>
+    </article>
+  </div>
+</ApiReferenceLayout>

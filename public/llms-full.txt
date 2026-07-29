@@ -21,50 +21,13 @@ API v1 is the source of truth for new integrations. The SDK, CLI, and MCP server
 
 # Documentation source
 
-<!-- 404.md -->
----
-title: Page not found
-description: The requested page does not exist. Continue from the API v1 documentation, the SDK, the CLI, or the MCP server.
-template: splash
-sitemap:
-  exclude: true
----
-
-This URL does not exist on the developer portal. If you followed a link from an older
-integration guide, the legacy reference has moved under [API v0](/api/v0/); its paths are
-redirected where an equivalent page exists.
-
-## Continue from here
-
-<div class="interface-index">
-  <a href="/">
-    <span class="interface-index__name">Developer documentation</span>
-    <span class="interface-index__note">Start page, with the first authenticated request and the four interfaces.</span>
-  </a>
-  <a href="/api/v1/">
-    <span class="interface-index__name">API v1</span>
-    <span class="interface-index__note">The versioned HTTP contract, its quickstart, and the endpoint reference.</span>
-  </a>
-  <a href="/api/v0/">
-    <span class="interface-index__name">API v0 · Legacy</span>
-    <span class="interface-index__note">The frozen contract kept for existing integrations, with migration guidance.</span>
-  </a>
-  <a href="/guides/choose-an-interface/">
-    <span class="interface-index__name">Choose an interface</span>
-    <span class="interface-index__note">Which of API, SDK, CLI, or MCP fits a given integration shape.</span>
-  </a>
-</div>
-
-Searching the portal with <kbd>⌘</kbd><kbd>K</kbd> is usually faster than browsing, and the
-results can be narrowed by area.
-
 <!-- api/v0/guides/authentication.md -->
 ---
 title: "Authentication"
 description: "Authenticate requests with team-specific TeamGrid API tokens and understand token scope."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Authenticate requests with team-specific TeamGrid API tokens and understand token scope.
 
@@ -128,9 +91,9 @@ Authentication failures return an error response and no team data.
 ---
 title: "Common Workflows"
 description: "Build common integrations such as project creation, task assignment, contact imports, time sync, and webhook handling."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Build common integrations such as project creation, task assignment, contact imports, time sync, and webhook handling.
 
@@ -256,9 +219,9 @@ but your integration should still tolerate repeated or delayed deliveries.
 ---
 title: "Data Model and IDs"
 description: "Map public API names such as tasks, time entries, and journal entries to TeamGrid data concepts and ids."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Map public API names such as tasks, time entries, and journal entries to TeamGrid data concepts and ids.
 
@@ -366,9 +329,9 @@ records.
 ---
 title: "Dates and Time Zones"
 description: "Use ISO 8601 timestamps and UTC for predictable filtering, scheduling, and time tracking."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Use ISO 8601 timestamps and UTC for predictable filtering, scheduling, and time tracking.
 
@@ -444,9 +407,9 @@ time.
 ---
 title: "Quickstart"
 description: "Create a token, call the API, retrieve users, create projects and tasks, and start tracking time."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Create a token, call the API, retrieve users, create projects and tasks, and start tracking time.
 
@@ -574,9 +537,9 @@ using the API in production.
 ---
 title: "Overview"
 description: "Programmatic access to TeamGrid contacts, projects, tasks, time entries, webhooks, scheduled work, journal entries, and project templates."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Programmatic access to TeamGrid contacts, projects, tasks, time entries, webhooks, scheduled work, journal entries, and project templates.
 
@@ -638,9 +601,9 @@ team data exposed by the API.
 ---
 title: "Pagination and Filtering"
 description: "Use page, limit, id, boolean, and date filters to retrieve the exact TeamGrid records an integration needs."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Use page, limit, id, boolean, and date filters to retrieve the exact TeamGrid records an integration needs.
 
@@ -751,9 +714,9 @@ Journal entries support:
 ---
 title: "Errors and Rate Limits"
 description: "Handle TeamGrid API status codes, rate limits, retries, and non-idempotent create requests."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Handle TeamGrid API status codes, rate limits, retries, and non-idempotent create requests.
 
@@ -839,56 +802,13 @@ Recommended approach:
 * Add your own external reference fields only where the endpoint and data model
   support them.
 
-<!-- api/v0/guides/recipes.md -->
----
-title: "Recipes"
-description: "Follow practical TeamGrid API integration recipes for projects, contacts, reporting, webhooks, and time tracking."
----
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-Follow practical TeamGrid API integration recipes for projects, contacts, reporting, webhooks, and time tracking.
-
-Recipes are practical integration patterns built from the API Reference and
-guides. Use them when you want to copy a working sequence rather than assemble
-individual endpoint calls from scratch.
-
-## Available Recipes
-
-| Recipe                                                                          | Use case                                                     |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [Create a project with tasks](/api/v0/recipes/create-a-project-with-tasks/)             | Create a project, add tasks, and store returned ids.         |
-| [Import contacts](/api/v0/recipes/import-contacts/)                                     | Upsert customer or supplier contacts from another system.    |
-| [Sync time entries for reporting](/api/v0/recipes/sync-time-entries-for-reporting/)     | Pull time entries into a BI, payroll, or invoicing pipeline. |
-| [Build a webhook receiver](/api/v0/recipes/build-a-webhook-receiver/)                   | Receive TeamGrid events safely and idempotently.             |
-| [Start and stop task time tracking](/api/v0/recipes/start-and-stop-task-time-tracking/) | Start an active timer and close it with an end timestamp.    |
-
-## Before You Start
-
-Read these guides first:
-
-* [Authentication](/api/v0/guides/authentication/)
-* [Requests and Responses](/api/v0/guides/requests-and-responses/)
-* [Pagination and Filtering](/api/v0/guides/pagination/)
-* [Errors and Rate Limits](/api/v0/guides/rate-limit/)
-
-## Production Checklist
-
-* Store the TeamGrid API token in a secret manager.
-* Use `https://api.teamgrid.app` as the API base URL.
-* Verify tokens with [GET /teams](/api/v0/reference/operations/v0_get_teams/).
-* Add retry behavior for `429` and transient `5xx` responses.
-* Avoid blind retries for create requests unless your own system can detect
-  duplicates.
-* Log TeamGrid ids returned by create requests.
-
 <!-- api/v0/guides/requests-and-responses.md -->
 ---
 title: "Requests and Responses"
 description: "Understand JSON request bodies, TeamGrid response envelopes, server-managed fields, and partial updates."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Understand JSON request bodies, TeamGrid response envelopes, server-managed fields, and partial updates.
 
@@ -1004,9 +924,9 @@ Use UTF-8 for request and response bodies.
 ---
 title: "Using the OpenAPI File"
 description: "Use the TeamGrid OpenAPI definition with API tools, generated clients, bearer authentication, request schemas, and response envelopes."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Use the TeamGrid OpenAPI definition with API tools, generated clients, bearer authentication, request schemas, and response envelopes.
 
@@ -1117,9 +1037,9 @@ integration.
 ---
 title: "Webhook Event Catalog"
 description: "Review TeamGrid webhook event action names, source collections, trigger conditions, payload shape, and receiver recommendations."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Review TeamGrid webhook event action names, source collections, trigger conditions, payload shape, and receiver recommendations.
 
@@ -1251,9 +1171,9 @@ Call notes are delivered with their rich text content converted to plain text.
 ---
 title: "Webhooks"
 description: "Register webhook endpoints, understand delivery payloads, and handle TeamGrid event notifications."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Register webhook endpoints, understand delivery payloads, and handle TeamGrid event notifications.
 
@@ -1345,6 +1265,8 @@ one with `DELETE /webhooks/{_id}`.
 ---
 title: API v0 · Legacy
 description: Compatibility documentation for existing TeamGrid API v0 integrations.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v0 is a frozen compatibility surface for existing integrations. New integrations should use [API v1](/api/v1/).
@@ -1377,13 +1299,11 @@ The endpoint reference is generated from the checked runtime route inventory rat
 <!-- api/v0/legacy-changelog/documentation-refresh-2026.md -->
 ---
 title: "Documentation refresh 2026"
-description: "We refreshed the TeamGrid Developer Hub to make the API easier to understand,"
+description: "Historical note covering the 2026 documentation refresh for the legacy TeamGrid API v0."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We refreshed the TeamGrid Developer Hub to make the API easier to understand,
-navigate, and integrate.
+This archived entry records a documentation-only refresh completed in 2026. It did not change API
+behavior.
 
 Highlights:
 
@@ -1394,66 +1314,64 @@ Highlights:
 * Added grouped explanations for pagination and common filters.
 * Cleaned up stale navigation areas from the previous documentation structure.
 
-No API behavior changed as part of this documentation refresh.
-
 <!-- api/v0/legacy-changelog/more-filters-on-tasks.md -->
 ---
 title: "More filters on /tasks"
-description: "We've added a few more filters for the `/tasks` endpoint."
+description: "Historical API v0 release note for task date and scheduling filters."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We've added a few more filters for the `/tasks` endpoint.
+This archived release added date and scheduling filters to the legacy
+[`GET /tasks`](/api/v0/reference/operations/v0_get_tasks/) collection endpoint.
 
 **Changelog**
 
-* added: updatedAt
-* added: createdAt
-* added: plannedStart
-* added: plannedEnd
-* added: scheduledStart
-* added: scheduledEnd
+* `updatedAt`
+* `createdAt`
+* `plannedStart`
+* `plannedEnd`
+* `scheduledStart`
+* `scheduledEnd`
 
 <!-- api/v0/legacy-changelog/new-endpoints-for-project-templates-and-journal-entries.md -->
 ---
 title: "New endpoints for project templates and journal entries"
-description: "We've added new endpoints for [project templates](https://developer.teamgridapp.com/reference#projecttemplates) and [journal entries](https://developer.teamgridapp.com/reference#journalentries) to have control over these data with the api"
+description: "Historical API v0 release note for project-template and project journal-entry endpoints."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We've added new endpoints for [project templates](https://developer.teamgridapp.com/reference#projecttemplates) and [journal entries](https://developer.teamgridapp.com/reference#journalentries) to have control over these data with the api
+This archived release introduced API v0 operations for
+[project templates](/api/v0/reference/operations/v0_get_projecttemplates/) and
+[project journal entries](/api/v0/reference/operations/v0_get_journalentries/).
 
 <!-- api/v0/legacy-changelog/scheduled-work-of-tasks.md -->
 ---
 title: "Scheduled work of tasks"
-description: "We've added a new endpoint for the data which is generated by our automatic scheduling service."
+description: "Historical API v0 release note for scheduled-work data produced by automatic scheduling."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We've added a new endpoint for the data which is generated by our automatic scheduling service.
+This archived release exposed scheduled-work data generated by TeamGrid automatic scheduling.
 
 **Changelog**
 
-* added: `/scheduledWork` endpoint
-* added: `includeScheduledWork` flag on `/tasks` endpoint
+* Added the [`/scheduledWork`](/api/v0/reference/operations/v0_get_scheduledwork/) endpoint.
+* Added the `includeScheduledWork` flag to the legacy `/tasks` endpoint.
 
 <!-- api/v0/legacy-changelog/specifying-userid-on-stoptracking.md -->
 ---
 title: "Specifying userId on stopTracking"
-description: "We've added a new optional parameter to the [stopTracking method](https://developer.teamgridapp.com/reference#tasks_idstoptracking) to stop the tracking for a specific user"
+description: "Historical API v0 release note for stopping task time tracking for a specific user."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We've added a new optional parameter to the [stopTracking method](https://developer.teamgridapp.com/reference#tasks_idstoptracking) to stop the tracking for a specific user
+This archived release added an optional `userId` parameter to
+[`POST /tasks/{_id}/stopTracking`](/api/v0/reference/operations/v0_post_tasks_id_stopTracking/).
+Existing integrations could omit it; integrations tracking multiple users could select whose active
+timer should stop.
 
 <!-- api/v0/migration.md -->
 ---
 title: Migrate from API v0 to v1
 description: Map TeamGrid API v0 authentication, pagination, writes, errors, endpoints, and webhooks to API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Migrate one bounded integration at a time. Keep its v0 token active until the equivalent v1 reads and writes have been verified, then revoke the old token.
@@ -1523,10 +1441,10 @@ The new reference follows the runtime contract. Old links to those eight pages l
 <!-- api/v0/recipes/build-a-webhook-receiver.md -->
 ---
 title: "Build a webhook receiver"
-description: "import express from 'express'"
+description: "Receive TeamGrid API v0 webhook events safely, acknowledge them quickly, and process each delivery idempotently."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```javascript Node.js
 import express from 'express'
@@ -1562,35 +1480,28 @@ app.listen(3000)
 //   }'
 ```
 
-```json Response Example
-Make webhook handlers idempotent and respond quickly. If processing fails later in your own queue, retry from that queue rather than blocking the TeamGrid webhook response.
-```
+> **Production note:** Make webhook handlers idempotent and respond quickly. If processing fails
+> later in your own queue, retry from that queue rather than blocking the TeamGrid webhook response.
 
-# Create the receiver endpoint
-
-<!-- javascript@1-18 -->
+## Create the receiver endpoint
 
 Expose a POST endpoint that accepts JSON and returns a 2xx response after the event is safely recorded.
 
-# Register the webhook
-
-<!-- javascript@20-30 -->
+## Register the webhook
 
 Use POST /webhooks with the public HTTPS URL and the event actions your integration needs.
 
-# Process events asynchronously
-
-<!-- javascript@8-15 -->
+## Process events asynchronously
 
 Use event, webhookId, collection, and doc._id for routing and idempotency. Enqueue slow work after receipt.
 
 <!-- api/v0/recipes/create-a-project-with-tasks.md -->
 ---
 title: "Create a project with tasks"
-description: "PROJECT_RESPONSE=$(curl https://api.teamgrid.app/projects \\"
+description: "Create a TeamGrid project through API v0, add its first tasks, and retain the returned identifiers for later synchronization."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```bash Shell
 PROJECT_RESPONSE=$(curl https://api.teamgrid.app/projects \
@@ -1631,35 +1542,29 @@ curl https://api.teamgrid.app/tasks \
   }"
 ```
 
-```json Response Example
-Use the returned ids as the durable link between your system and TeamGrid. Avoid retrying POST requests blindly after a timeout unless your integration can detect duplicates.
-```
+> **Production note:** Use the returned identifiers as the durable link between your system and
+> TeamGrid. Avoid retrying POST requests blindly after a timeout unless your integration can detect
+> duplicates.
 
-# Create the project
-
-<!-- bash@1-12 -->
+## Create the project
 
 Send the project name and optional planning fields to POST /projects. TeamGrid assigns the team from the API token, so do not send teamId.
 
-# Store the project id
-
-<!-- bash@14-16 -->
+## Store the project id
 
 Persist the returned project _id in your own system. Use that id when creating tasks and when reconciling later updates.
 
-# Create tasks for the project
-
-<!-- bash@18-32 -->
+## Create tasks for the project
 
 Create each task with the returned project id. Keep the returned task ids so future updates target the existing tasks instead of creating duplicates.
 
 <!-- api/v0/recipes/import-contacts.md -->
 ---
 title: "Import contacts"
-description: "CONTACT_PAYLOAD='{"
+description: "Map contacts from another system to TeamGrid API v0, create each record, and preserve identifiers for repeatable updates."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```bash Shell
 CONTACT_PAYLOAD='{
@@ -1692,49 +1597,60 @@ CONTACT_ID=$(printf '%s' "$CONTACT_RESPONSE" | jq -r '.data._id')
 echo "Created contact $CONTACT_ID"
 ```
 
-```json Response Example
-For repeat imports, keep a mapping from your source id to TeamGrid _id. If you do not have that mapping yet, search existing contacts first and only create missing records.
-```
+> **Production note:** For repeat imports, keep a mapping from your source identifier to the
+> TeamGrid `_id`. If you do not have that mapping yet, search existing contacts first and create
+> only records that are missing.
 
-# Prepare one contact payload per record
-
-<!-- bash@1-16 -->
+## Prepare one contact payload per record
 
 Map your source record to the TeamGrid contact fields. Use type person or company and include email addresses where available.
 
-# Create the contact
-
-<!-- bash@18-24 -->
+## Create the contact
 
 Send the contact to POST /contacts. TeamGrid assigns teamId from the API token.
 
-# Persist the TeamGrid id
-
-<!-- bash@26-28 -->
+## Persist the TeamGrid id
 
 Store the returned _id next to your source-system id. Use `PUT /contacts/{_id}` for future changes instead of creating another contact.
 
 <!-- api/v0/recipes/index.md -->
 ---
 title: API v0 recipes
-description: Migrated recipes for existing TeamGrid API v0 integrations.
+description: Follow practical TeamGrid API v0 integration recipes for projects, contacts, reporting, webhooks, and time tracking.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
-These recipes are retained for existing v0 integrations. New automation should begin with [API v1](/api/v1/), the [SDK](/sdk/), or the [CLI](/cli/).
+These recipes are retained for existing v0 integrations. They combine several endpoint calls into
+copyable workflows and call out the retry, identifier, and synchronization behavior that matters in
+production.
 
-- [Build a webhook receiver](/api/v0/recipes/build-a-webhook-receiver/)
-- [Create a project with tasks](/api/v0/recipes/create-a-project-with-tasks/)
-- [Import contacts](/api/v0/recipes/import-contacts/)
-- [Start and stop task time tracking](/api/v0/recipes/start-and-stop-task-time-tracking/)
-- [Synchronize time entries for reporting](/api/v0/recipes/sync-time-entries-for-reporting/)
+| Recipe | Use case |
+| --- | --- |
+| [Create a project with tasks](/api/v0/recipes/create-a-project-with-tasks/) | Create a project, add its first tasks, and store the returned identifiers |
+| [Import contacts](/api/v0/recipes/import-contacts/) | Move customer or supplier contacts from another system into TeamGrid |
+| [Synchronize time entries for reporting](/api/v0/recipes/sync-time-entries-for-reporting/) | Pull time entries into a BI, payroll, or invoicing pipeline |
+| [Build a webhook receiver](/api/v0/recipes/build-a-webhook-receiver/) | Receive events safely and process repeated deliveries idempotently |
+| [Start and stop task time tracking](/api/v0/recipes/start-and-stop-task-time-tracking/) | Start an active timer and close it with an explicit timestamp |
+
+## Before you start
+
+Read [authentication](/api/v0/guides/authentication/),
+[requests and responses](/api/v0/guides/requests-and-responses/),
+[pagination](/api/v0/guides/pagination/), and
+[rate limits](/api/v0/guides/rate-limit/) before using a recipe against production data.
+
+Store tokens in a secret manager, retain TeamGrid identifiers returned by create requests, and avoid
+blind retries for v0 write operations. The legacy API does not provide the idempotency and
+resource-concurrency guarantees available in API v1.
 
 <!-- api/v0/recipes/start-and-stop-task-time-tracking.md -->
 ---
 title: "Start and stop task time tracking"
-description: "USER_ID=$(curl \"https://api.teamgrid.app/users?email=alex@example.com\" \\"
+description: "Resolve a TeamGrid user, start task time tracking through API v0, and close the running timer with an explicit timestamp."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```bash Shell
 USER_ID=$(curl "https://api.teamgrid.app/users?email=alex@example.com" \
@@ -1763,35 +1679,28 @@ curl "https://api.teamgrid.app/tasks/$TASK_ID/stopTracking" \
   }"
 ```
 
-```json Response Example
-Use UTC timestamps and avoid overlapping active timers for the same user unless that is intentional for your workflow.
-```
+> **Production note:** Use UTC timestamps and avoid overlapping active timers for the same user
+> unless that is intentional for your workflow.
 
-# Resolve the user and task ids
-
-<!-- bash@1-7 -->
+## Resolve the user and task ids
 
 Use GET /users to find the TeamGrid user id and store the task id from your task workflow.
 
-# Start tracking
-
-<!-- bash@9-18 -->
+## Start tracking
 
 Send userId and the start timestamp to `POST /tasks/{_id}/startTracking`.
 
-# Stop tracking
-
-<!-- bash@20-29 -->
+## Stop tracking
 
 Send the stop timestamp to `POST /tasks/{_id}/stopTracking`. Include userId when your integration tracks multiple users.
 
 <!-- api/v0/recipes/sync-time-entries-for-reporting.md -->
 ---
 title: "Sync time entries for reporting"
-description: "START_FROM=\"2026-07-01T00:00:00Z\""
+description: "Page through TeamGrid API v0 time entries, synchronize a bounded time window, and upsert records safely into reporting systems."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```bash Shell
 START_FROM="2026-07-01T00:00:00Z"
@@ -1816,25 +1725,18 @@ while true; do
 done
 ```
 
-```json Response Example
-Run incremental syncs with overlap if downstream processing can be delayed. Upsert by TeamGrid _id so repeated syncs remain safe.
-```
+> **Production note:** Run incremental syncs with a small overlap if downstream processing can be
+> delayed. Upsert by TeamGrid `_id` so repeated synchronization remains safe.
 
-# Choose a synchronization window
-
-<!-- bash@1-3 -->
+## Choose a synchronization window
 
 Use an ISO 8601 UTC timestamp for startFrom. Store the latest completed sync timestamp in your own system.
 
-# Page through time entries
-
-<!-- bash@5-13 -->
+## Page through time entries
 
 Request a stable page size and continue until the pagination metadata indicates that no more pages remain.
 
-# Upsert by TeamGrid id
-
-<!-- bash@15-18 -->
+## Upsert by TeamGrid id
 
 Use each time entry _id as the primary external key in the reporting system.
 
@@ -1842,6 +1744,8 @@ Use each time entry _id as the primary external key in the reporting system.
 ---
 title: Workspace administration
 description: Manage members, invitations, roles, and groups with explicit PII overlays and strong revisions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 The administration resources are intended for tightly controlled workspace-management services.
@@ -1885,6 +1789,8 @@ not a substitute for those checks.
 ---
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a credential in the `Authorization` header:
@@ -1983,6 +1889,8 @@ rotated and revoked independently.
 ---
 title: Automations and integrations
 description: Inspect the public automation DSL, manage versioned definitions and runs, and read installation status without revealing provider secrets.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Public automation contract
@@ -2021,6 +1929,8 @@ workflows.
 ---
 title: Calendar and availability
 description: Work with TeamGrid appointments, absences, availability, and planned-work schedules without bypassing delegated access controls.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 separates four scheduling concepts:
@@ -2066,6 +1976,8 @@ including the `all` profile.
 ---
 title: Change feed
 description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 `GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
@@ -2136,6 +2048,8 @@ transport rather than a bounded interactive model tool. Use the API, SDK, or CLI
 ---
 title: Collaboration and files
 description: Use scoped comments, activity, documents, and private file-transfer intents.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Comments and activity
@@ -2176,6 +2090,8 @@ MCP. Use API v1, the SDK, or the CLI for a controlled file workflow.
 ---
 title: Custom-field definitions and values
 description: Manage TeamGrid custom-field schemas and safely compare and set values on supported resources.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 separates a custom-field **definition** from the value stored on one resource. Definitions
@@ -2270,6 +2186,8 @@ remain forbidden.
 ---
 title: Errors and rate limits
 description: Handle API v1 error envelopes, request identifiers, retryable failures, and rate-limit responses.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 returns a consistent error document and a request identifier:
@@ -2325,10 +2243,28 @@ operations. Another 31 compare-and-set operations retain domain-specific validat
 `503 service_unavailable`. The complete boundary is documented under
 [resource concurrency](/api/v1/resource-concurrency/).
 
+## Diagnose without exposing customer data
+
+Use this order when a request fails:
+
+1. Record the HTTP status, structured error code, request ID, time, and regional endpoint.
+2. Re-run `GET /workspace` with the same credential to separate authentication from operation
+   authorization.
+3. Compare the credential with the operation's required and conditional scopes.
+4. For guarded writes, read the latest resource and compare its revision with the attempted
+   `If-Match` value.
+5. Retry only when the method, idempotency key, and response status make that safe.
+
+The compact [request troubleshooting matrix](/resources/troubleshooting/) maps common symptoms to
+their likely causes. Never send bearer tokens, signing secrets, upload intents, or raw customer
+payloads to support.
+
 <!-- api/v1/index.md -->
 ---
 title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
@@ -2384,6 +2320,8 @@ are not a replayable history.
 ---
 title: Pagination and idempotency
 description: Traverse stable cursor pages and make safe retriable creates with TeamGrid API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Cursor pagination
@@ -2429,6 +2367,8 @@ CAS mutations and the 31 domain-specific protected operations.
 ---
 title: Planned work
 description: Read bounded workload windows and atomically replace one task schedule with strong revisions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Planned work exposes the per-day workload assigned to a task and user. Treat it as sensitive
@@ -2487,6 +2427,8 @@ lists, task schedules, writes, and operation polling are forbidden in every MCP 
 ---
 title: Platform discovery and settings
 description: Negotiate TeamGrid capabilities, workspace entitlements, event channels, and safe revisioned workspace defaults.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 The API exposes a small control plane so an integration can negotiate the public contract and
@@ -2584,6 +2526,8 @@ webhook event definitions.
 ---
 title: Project templates
 description: Capture safe project templates and instantiate them through credential-owned asynchronous operations.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Project templates capture a reusable project, list, and task structure. Public responses contain
@@ -2644,6 +2588,8 @@ captured workflow shape and bulk creation state are not suitable bounded model t
 ---
 title: API v1 quickstart
 description: Create a TeamGrid API v1 credential and make the first workspace and task requests.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## 1. Create a credential
@@ -2667,6 +2613,26 @@ curl --fail-with-body \
 
 The response identifies the authenticated workspace and its region and cell. A credential never selects another workspace through a request parameter.
 
+```json
+{
+  "data": {
+    "type": "workspace",
+    "id": "exampleWorkspaceId",
+    "attributes": {
+      "name": "Example workspace",
+      "region": "de",
+      "cellId": "de-nbg-001"
+    }
+  },
+  "meta": {
+    "requestId": "req_example"
+  }
+}
+```
+
+The exact attribute set follows the [workspace operation](/api/v1/reference/operations/getworkspace/).
+Persist resource identifiers, but do not infer routing or permissions from their format.
+
 ## 3. List tasks
 
 ```bash
@@ -2678,7 +2644,44 @@ curl --fail-with-body \
 
 Use `meta.page.nextCursor` to request the next page. Treat cursors as opaque strings.
 
-## 4. Prefer an official client when possible
+```json
+{
+  "data": [
+    {
+      "type": "task",
+      "id": "exampleTaskId",
+      "attributes": {
+        "title": "Prepare integration rollout",
+        "completed": false,
+        "archived": false
+      }
+    }
+  ],
+  "meta": {
+    "requestId": "req_example",
+    "page": {
+      "limit": 25,
+      "nextCursor": null
+    }
+  }
+}
+```
+
+## 4. Diagnose the first request
+
+| Result | Meaning | Next step |
+| --- | --- | --- |
+| `200` | The credential and regional endpoint are correct | Continue with the required resource scopes |
+| `401 invalid_token` | The credential is missing, malformed, expired, or revoked | Re-copy the reveal-once value or create a replacement |
+| `403 insufficient_scope` | The credential lacks a scope required by the operation | Add only the required scope through a new credential |
+| `404` from the host | The path or regional hostname is incorrect | Verify the `/v1` prefix and the credential's region |
+| `429` | The current rate-limit bucket is exhausted | Respect `Retry-After` before retrying |
+
+For every support case, retain `meta.requestId`, the timestamp, HTTP status, and regional hostname.
+Never record the bearer credential itself. Continue with the
+[request troubleshooting guide](/resources/troubleshooting/) if workspace discovery fails.
+
+## 5. Prefer an official client when possible
 
 For Node.js applications, continue with the [TypeScript SDK quickstart](/sdk/quickstart/). For shell scripts or local operation, use the [CLI](/cli/install-and-authenticate/).
 
@@ -2690,6 +2693,8 @@ Other protected resource families retain their own explicit revision formats; se
 ---
 title: Regional endpoints
 description: Route TeamGrid API v1 credentials to their home region without cross-region redirects or data movement.
+owner: Platform Operations
+reviewedAt: 2026-07-29
 ---
 
 TeamGrid API v1 is cell-aware. Official clients derive the regional endpoint from the credential and the destination cell performs the authoritative authentication.
@@ -2726,6 +2731,8 @@ these validators on their qualified reads and mutations.
 ---
 title: Resource concurrency
 description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the
@@ -2826,6 +2833,8 @@ proven.
 ---
 title: Resources and semantics
 description: Understand TeamGrid API v1 lifecycle, finance, ownership, hierarchy, and privacy guarantees before building an integration.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 API v1 exposes bounded resource DTOs and explicit domain commands. It does not mirror TeamGrid's
@@ -2876,9 +2885,10 @@ Time-entry reads expose task, user and service references, creator/updater prove
 billable and billed state, billing timestamp, and whether a timer is still active. Lists can filter
 by these safe operational fields and by a start-time window. Internal hourly rates, cost rates,
 financial aggregates, cached billing details, and call records are rejected at the App and API
-boundaries. Creating and editing completed entries, archiving/restoring them, and starting/stopping
-task timers form the released operational workflow. Marking entries billed or unbilled remains the
-separate planned time-entry billing capability.
+boundaries. Creating and editing completed entries, archiving/restoring them, starting/stopping task
+timers, and marking entries billed or unbilled form the released workflow. Billing mutations remain
+separate from ordinary time-entry updates, require their dedicated billing scope, and preserve the
+immutability rules for billed entries.
 
 Contact reads include person/company identity, addresses, communication channels, websites, social
 profiles, parent/group/company relationships, provenance, last activity, and non-financial task,
@@ -2958,6 +2968,8 @@ See [custom fields](/api/v1/custom-fields/) before writing values.
 ---
 title: Search and exports
 description: Search authorized resources and download bounded CSV exports through a header-only capability.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Federated search
@@ -3006,7 +3018,7 @@ Completed exports use a two-step download flow:
 
 ```bash
 curl --fail-with-body \
-  --header "Authorization: Bearer $TEAMGRID_TOKEN" \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
   --header "X-TeamGrid-Export-Download-Intent: $DOWNLOAD_INTENT" \
   --output teamgrid-export.csv \
   "https://api.de.teamgrid.app/v1/exports/$EXPORT_ID/download"
@@ -3023,6 +3035,8 @@ Export jobs, intents, metadata, and bulk content are forbidden in every MCP prof
 ---
 title: Task workflows
 description: Duplicate, place, reorder, and replace TeamGrid task checklists without lost updates.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Task workflow operations model TeamGrid behavior directly instead of exposing storage fields. Every
@@ -3133,6 +3147,8 @@ TeamGrid data.
 ---
 title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 Webhook registrations created through API v1 use signed delivery version 2. The create response
@@ -3218,6 +3234,8 @@ Use delivery history for bounded troubleshooting, not as a durable event store o
 ---
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Current platform
@@ -3229,6 +3247,9 @@ Authoritative changes are recorded in the public source repositories and their r
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
+
+Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
+[machine-readable release history](/changelog/releases.json).
 
 ## 2026-07-27
 
@@ -3367,6 +3388,8 @@ The previous ReadMe changelog has been preserved below for historical context:
 ---
 title: CLI automation
 description: Use TeamGrid CLI output modes, pagination, idempotency, and exit codes safely in scripts and CI.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Prefer structured output
@@ -3457,6 +3480,8 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 ---
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Global options
@@ -3886,6 +3911,8 @@ workflow.
 ---
 title: TeamGrid CLI
 description: Inspect and automate TeamGrid API v1 from a terminal or CI job with structured output and stable exit codes.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
@@ -3917,6 +3944,8 @@ The CLI is a client of API v1. It does not create another API surface or bypass 
 ---
 title: Install and authenticate
 description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Requirements
@@ -3988,10 +4017,84 @@ Remove-Item Env:TEAMGRID_API_TOKEN
 
 Never commit credentials, place them in command-line arguments, or print them for debugging.
 
+<!-- guides/audit-users-and-access.md -->
+---
+title: Audit users and integration access
+description: Review workspace users, scopes and service-account authority without broadening access.
+owner: Security
+reviewedAt: 2026-07-29
+---
+
+## Keep identity and authority separate
+
+`GET /users` returns users visible to the credential. It does not grant permission to act as those
+users. Delegated calendar or administrative operations require their own documented scopes and
+product permissions.
+
+## Inventory machine access
+
+List personal credentials and service accounts through the administration endpoints. Record the
+owner, purpose, creation date, last rotation and granted scopes outside the token itself. Never log
+or export reveal-once secrets.
+
+For service accounts with resource grants, read the current grant revision before replacing the
+complete desired set. Grant replacement is a compare-and-set operation, not an additive patch.
+
+## Review regularly
+
+A useful access review checks:
+
+- whether the integration is still in use;
+- whether each scope is exercised;
+- whether the owner still has the expected role;
+- whether credentials have a recent tested rotation;
+- whether resource grants remain narrower than workspace-wide access.
+
+Revoke unused credentials immediately and verify that the integration fails closed. See
+[credentials and scopes](/api/v1/authentication/) and
+[administration](/api/v1/administration/) for the complete contract.
+
+<!-- guides/automate-project-setup.md -->
+---
+title: Automate project setup
+description: Create repeatable TeamGrid project structures without duplicating work on retries.
+owner: Developer Experience
+reviewedAt: 2026-07-29
+---
+
+## Prefer templates for stable structures
+
+If many projects share lists, tasks or other setup data, start from a project template. Keep the
+template ID in configuration and validate that it still belongs to the target workspace before
+running the automation.
+
+## Use a stable business key
+
+Derive the idempotency key from a source record that is unique within the integration, such as
+`crm-opportunity-4821`. A network retry can then recover the original TeamGrid result instead of
+creating a second project.
+
+## Separate creation from lifecycle actions
+
+Create the project through `POST /projects`. Completion, reopening, archiving and restoring are
+explicit lifecycle operations. They can be asynchronous, so retain the returned operation ID and
+poll `GET /project-lifecycle-operations/{id}` with a bounded deadline.
+
+## Keep later changes safe
+
+Read the project before updating it and pass its current validator. If a workspace member changed
+the project in the meantime, a `412` should lead to a deliberate merge decision rather than a blind
+retry.
+
+The [project templates guide](/api/v1/project-templates/) documents template semantics and
+[resource concurrency](/api/v1/resource-concurrency/) covers validators and idempotency.
+
 <!-- guides/capability-coverage.md -->
 ---
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
@@ -4093,6 +4196,8 @@ See the [API v1 reference](/api/v1/reference/), [CLI commands](/cli/commands/), 
 ---
 title: Choose an interface
 description: Decide whether a TeamGrid integration should use API v1, the TypeScript SDK, the CLI, or the read-only MCP server.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that API rather than independent integration surfaces.
@@ -4116,85 +4221,275 @@ low-latency delivery signals, but they are not a replayable history.
 
 MCP does not introduce a second TeamGrid API, a remote TeamGrid session, or MCP-specific credentials. Every MCP request still passes through the API v1 authentication, scope, tenant, and region checks.
 
-<!-- index.mdx -->
+<!-- guides/export-time-entries.md -->
 ---
-title: TeamGrid Developer
-description: Build reliable TeamGrid integrations with API v1, the TypeScript SDK, the CLI, or the optional read-only MCP server.
-template: splash
-hero:
-  title: TeamGrid developer documentation
-  tagline: API v1 is the versioned contract for new integrations. The TypeScript SDK, CLI, and MCP server are clients of that same API.
-  actions:
-    - text: API v1 quickstart
-      link: /api/v1/quickstart/
-      variant: primary
-    - text: API reference
-      link: /api/v1/reference/
-      variant: minimal
+title: Export time entries for reporting
+description: Build a bounded, repeatable time-entry export for reporting or finance workflows.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
-## First request
+## Define the reporting interval
 
-Authenticate with a reveal-once credential and call the regional endpoint that credential encodes.
+Use an explicit inclusive start and exclusive end. Keep the timezone used by the reporting system
+alongside the export job; do not infer it from a user’s current browser.
+
+Read `GET /time-entries` with the narrowest available date, user, project, service and billing
+filters. Follow cursor pagination and persist the cursor only after the corresponding page has been
+stored successfully.
+
+## Treat commercial fields carefully
+
+Billing and finance fields can require additional scopes. Missing fields are not necessarily zero:
+they may be deliberately omitted because the credential lacks authority. Keep commercially
+sensitive exports in access-controlled storage and use short retention periods.
+
+## Prefer asynchronous exports for large datasets
+
+For larger workloads, create an export through `POST /exports`, poll `GET /exports/{id}` until it is
+terminal, then create a short-lived download intent. Do not share or persist the resulting download
+URL as if it were a permanent file location.
+
+## Make reruns deterministic
+
+Name each export job with the workspace, interval and contract version. Upsert downstream records by
+opaque TeamGrid ID and record the last successful boundary. A rerun of the same interval should
+replace or reconcile records rather than duplicate them.
+
+<!-- guides/get-started.mdx -->
+---
+title: Start building with TeamGrid
+description: A practical path from a scoped credential to a production-ready TeamGrid integration.
+owner: Developer Experience
+reviewedAt: 2026-07-29
+---
+
+import OnboardingChecklist from '../../../components/OnboardingChecklist.astro'
+import CredentialDeepLink from '../../../components/CredentialDeepLink.astro'
+
+<OnboardingChecklist />
+
+<CredentialDeepLink />
+
+## What you need
+
+Use a workspace in which you are allowed to create developer credentials. Decide first whether the
+integration runs on behalf of one person or as a long-lived service account. That choice determines
+who owns the credential and how it should be rotated.
+
+Keep the credential in a secret manager. TeamGrid reveals its secret once and the official clients
+derive the correct regional endpoint from the credential.
+
+## 1. Confirm the platform
+
+Call the workspace endpoint before working with business data:
 
 ```bash
 curl --fail-with-body \
   --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
-  --header 'Accept: application/json' \
+  --header "Accept: application/json" \
   https://api.de.teamgrid.app/v1/workspace
 ```
 
-The response identifies the authenticated workspace, its region, and its cell. The
-[quickstart](/api/v1/quickstart/) covers creating the credential, listing tasks, and paginating with
-cursors.
+A successful response confirms the credential, region and API version. A `401` means the token
+cannot authenticate. A `403` means it authenticated but lacks the required scope.
 
-## Interfaces
+## 2. Read before you write
 
-API v1 is the source of truth. The other three interfaces are clients of it rather than independent
-integration surfaces.
+Start with one bounded list request, such as `GET /projects?limit=25`. Store the returned IDs
+unchanged. TeamGrid identifiers are opaque and must not be parsed or generated by clients.
 
-<div class="interface-index">
-  <a href="/api/v1/">
-    <span class="interface-index__name">API v1</span>
-    <span class="interface-index__note">The versioned HTTP contract: scoped credentials, regional ingress, cursor pagination, idempotent creates, and signed webhooks.</span>
-  </a>
-  <a href="/sdk/">
-    <span class="interface-index__name">TypeScript SDK</span>
-    <span class="interface-index__note">A typed Node.js client with regional routing, bounded retries, timeouts, pagination iterators, and versioned errors.</span>
-  </a>
-  <a href="/cli/">
-    <span class="interface-index__name">CLI</span>
-    <span class="interface-index__note">Inspect and automate TeamGrid from a terminal or a CI job, with structured output and stable exit codes.</span>
-  </a>
-  <a href="/mcp/">
-    <span class="interface-index__name">MCP server</span>
-    <span class="interface-index__note">An optional local stdio adapter with a deliberately bounded read-only tool surface, using the same credentials as the CLI.</span>
-  </a>
-</div>
+For updates, read the resource first and retain its strong ETag or developer revision. Send that
+value with the following write so another change cannot be overwritten silently.
 
-API v1 `1.0.0` governs 206 operations across 128 paths. That number measures contract parity
-across the HTTP API, SDK, and CLI, not complete TeamGrid product coverage. The
-[capability ledger](/guides/capability-coverage/) records the remaining partial, planned, and private
-areas explicitly, and [choose an interface](/guides/choose-an-interface/) maps common integration
-shapes to a recommended surface.
+## 3. Make writes repeatable
 
-## Existing v0 integrations
+Use a stable idempotency key for create operations and domain actions. Reusing the same key with the
+same request lets a retry return the original result. Reusing it with a different request is an
+error.
 
-API v0 remains available for compatibility. Its contract is frozen and documented separately, with
-migration guidance beside the legacy reference.
+## 4. Prepare for operation
 
-<p class="doc-links">
-  <a href="/api/v0/">API v0 documentation</a>
-  <a href="/api/v0/migration/">Migrate to v1</a>
-  <a href="/openapi/">OpenAPI files</a>
-  <a href="/changelog/">Changelog</a>
-  <a href="/security/">Security</a>
-</p>
+Before enabling the integration for customers:
+
+- cap request timeouts and retries;
+- record TeamGrid request IDs without recording bearer tokens;
+- handle `409`, `412` and `429` explicitly;
+- verify webhook signatures before parsing payloads;
+- monitor the [TeamGrid status page](https://status.teamgrid.app/);
+- keep a tested credential-revocation path.
+
+Continue with the [API v1 quickstart](/api/v1/quickstart/) for request details or
+[choose an interface](/guides/choose-an-interface/) before implementing the client.
+
+<!-- guides/reliable-webhooks.md -->
+---
+title: Process webhooks reliably
+description: Verify, acknowledge and process TeamGrid webhook deliveries without losing events.
+owner: Security
+reviewedAt: 2026-07-29
+---
+
+## Verify the raw request
+
+Validate the signature against the exact bytes received from TeamGrid before parsing JSON. Enforce a
+bounded body size and reject signatures outside the documented timestamp tolerance.
+
+The TypeScript SDK exposes `verifyTeamGridWebhook` for this purpose. Keep the webhook secret in a
+secret manager and support overlapping secrets during a controlled rotation.
+
+## Acknowledge quickly
+
+After verification, store the delivery ID and payload in a durable queue, then return a success
+response. Do not perform slow third-party calls while TeamGrid is waiting for acknowledgement.
+
+Use the delivery ID as a deduplication key. Delivery is at least once, so a receiver must treat a
+repeat as normal.
+
+## Re-read important resources
+
+A webhook tells you that something changed. When correctness matters, fetch the current resource
+through API v1 before applying a downstream update. This avoids building state from an event that
+was followed immediately by another change.
+
+## Operate the receiver
+
+Monitor signature failures, queue age and repeated processing errors separately. Rotate the secret
+through `POST /webhooks/{id}/secret-rotation`, confirm the new receiver path, then retire the old
+secret.
+
+See [signed webhooks](/api/v1/webhooks/) and the
+[SDK verification guide](/sdk/webhook-verification/) for the exact contract.
+
+<!-- guides/service-account-rollout.md -->
+---
+title: Roll out a service account
+description: Introduce a long-lived TeamGrid integration with least privilege, resource grants, and tested rotation.
+owner: Security
+reviewedAt: 2026-07-29
+---
+
+Use a service account when an integration represents a system rather than one person. Keep personal
+access tokens for human-owned workflows and local development.
+
+## Define the boundary
+
+List the exact operations the integration performs and translate them into the smallest required
+scope set. Add resource grants when the service should see only selected governed resources.
+
+Avoid broad administration, finance, audit, or credential-management scopes unless the integration
+actually implements those responsibilities.
+
+## Create and reveal once
+
+Create the service account, attach its resource grants, and then issue a credential. The secret is
+returned once. Move it directly into a secret manager and record only the credential identifier,
+owner, purpose, and planned rotation date.
+
+## Prove access before rollout
+
+1. Call `GET /workspace`.
+2. Run one expected read.
+3. Confirm a forbidden resource returns `403` or remains invisible.
+4. Exercise one idempotent write in a dedicated test resource.
+5. Revoke a test credential and verify it immediately stops authenticating.
+
+## Rotate without downtime
+
+Issue the replacement credential, deploy it, verify successful traffic, and only then revoke the
+old credential. Keep the overlap short and monitor request IDs rather than bearer values.
+
+Review [credentials and scopes](/api/v1/authentication/), [administration](/api/v1/administration/)
+and the [error guide](/api/v1/errors/) before enabling the service for customer data.
+
+<!-- guides/sync-tasks.md -->
+---
+title: Synchronize tasks safely
+description: Keep an external system aligned with TeamGrid tasks without overwriting concurrent changes.
+owner: Developer Experience
+reviewedAt: 2026-07-29
+---
+
+## Choose an ownership boundary
+
+Write down which system owns each field. A reliable synchronization does not let both systems
+freely overwrite the same property. For example, an external intake system may own the original
+request text while TeamGrid owns planning, completion and assignment.
+
+## Establish a snapshot
+
+Read tasks with `GET /tasks` and follow cursor pagination until `nextCursor` is empty. Keep the
+opaque task ID, the current revision or ETag, and only the fields relevant to the integration.
+
+Use narrow filters such as `projectId`, `completed` and updated-time bounds where the contract
+provides them. Never remove the workspace and permission boundary in an attempt to make a sync
+“complete.”
+
+## Apply changes
+
+Create tasks with `POST /tasks` and a stable idempotency key derived from the source record. Update
+an existing task with `PATCH /tasks/{id}` and the validator from the latest read.
+
+Task moves, completion, reopening, timer control and checklist replacement are domain operations.
+Use their dedicated endpoints instead of approximating them through a generic patch.
+
+## Recover from conflicts
+
+A `412 Precondition Failed` means the task changed after your read. Fetch it again, compare the
+fields your integration owns, and decide whether to merge or leave the newer TeamGrid value.
+Automatic blind retries defeat the purpose of optimistic concurrency.
+
+For incremental processing, use the [change feed](/api/v1/change-feed/) after taking a checkpoint.
+The feed is a signal to re-read the current resource, not a permanent copy of every historical
+document.
+
+<!-- guides/upload-a-file.md -->
+---
+title: Upload a file safely
+description: Use private upload intents without exposing TeamGrid storage URLs or long-lived credentials.
+owner: Developer Experience
+reviewedAt: 2026-07-29
+---
+
+TeamGrid file uploads use short-lived intents. The API never asks a client to invent a storage path
+or attach a bearer credential to an object-storage URL.
+
+## 1. Create an upload intent
+
+Call `POST /file-upload-intents` with the target resource, file name, media type, and byte size. Use
+a stable idempotency key so a retry cannot allocate unrelated upload reservations.
+
+Store the returned intent ID only for the duration of the upload. Treat every upload header and
+opaque upload token as a secret.
+
+## 2. Transfer the exact file
+
+Upload directly to the returned destination with the required headers. Do not add the TeamGrid API
+bearer token. Enforce the declared maximum byte count locally and reject redirects.
+
+## 3. Finalize
+
+Call the finalize operation with the intent ID. TeamGrid verifies the reservation and creates the
+file resource in the workspace. If the reservation expired, create a new intent instead of
+replaying the old upload URL.
+
+## Failure handling
+
+- Cancel an intent when the user abandons an upload.
+- Never log upload URLs, opaque tokens, or private file contents.
+- Retry the transfer only when the destination explicitly allows it.
+- Treat a finalize conflict as an instruction to inspect the current intent state.
+- Create downloads through a private download intent; do not persist its temporary destination.
+
+Use the API reference filter to locate the upload-intent, finalize, cancellation, and download
+operations.
 
 <!-- mcp/configuration.md -->
 ---
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 Install the stable packages and authenticate the CLI first:
@@ -4251,10 +4546,30 @@ credential into it.
 
 The server communicates over standard input/output. It does not listen on a TCP port.
 
+## Verify the connection
+
+After restarting the host:
+
+1. Confirm that a server named `teamgrid` is connected without a startup error.
+2. Ask the host to list TeamGrid tools and verify that the selected tool profile is reflected.
+3. Run a bounded read such as workspace discovery before enabling any write-capable profile.
+4. Confirm that the returned workspace and region match the intended credential.
+
+If the server does not start, run `teamgrid auth status --check` in the same operating-system user
+session and then run `teamgrid-mcp --profile default --tool-profile core` in a terminal. A JSON-RPC
+stdio server normally waits silently for host input; an authentication or configuration error is
+printed before that wait. Check that the host inherits the same `PATH` used by the terminal and that
+Node.js satisfies the supported range in [versions and compatibility](/resources/compatibility/).
+
+Do not select a broader tool profile merely to diagnose a connection problem. Tool availability is
+an authorization boundary in addition to the scopes held by the credential.
+
 <!-- mcp/index.md -->
 ---
 title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 `@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
@@ -4294,6 +4609,8 @@ resources.
 ---
 title: MCP tools and security
 description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 ## Available tools
@@ -4388,12 +4705,16 @@ MCP tools intentionally cannot create, update, archive, or remove TeamGrid resou
 ---
 title: OpenAPI files
 description: Download the exact TeamGrid API v0 and v1 OpenAPI 3.1 contracts used to generate this documentation.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 The API reference is generated from checked-in OpenAPI 3.1 contracts. The same files are available for code generation, validation, or import into an API client:
 
 - [Download API v1 OpenAPI JSON](/openapi/v1.json)
 - [Download API v0 OpenAPI JSON](/openapi/v0.json)
+- [Download the generated Postman collection](/collections/teamgrid-api-v1.postman.json)
+- [Download the generated HTTP client file](/collections/teamgrid-api-v1.http)
 - [Download the Developer Platform capability ledger](/openapi/developer-capabilities.json)
 - [Download the canonical scope contract](/openapi/developer-scopes.json)
 - [Download the complete v0-to-v1 migration map](/openapi/v0-to-v1-migration.json)
@@ -4422,10 +4743,146 @@ checkpoint is `1.0.0`. See [resource concurrency](/api/v1/resource-concurrency/)
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
+## API clients
+
+Postman can import the generated collection directly. Bruno, Insomnia and other clients that
+support OpenAPI should import `/openapi/v1.json`; this preserves the complete schema instead of
+depending on a client-specific export. Editors with an HTTP client can use the generated `.http`
+file.
+
+Both generated downloads contain placeholders rather than credentials. Set `baseUrl` to the
+regional endpoint indicated by the credential and keep `token` in the client’s secret or
+environment store.
+
+<!-- resources/compatibility.md -->
+---
+title: Versions and compatibility
+description: Match the stable TeamGrid API contract with supported SDK, CLI, MCP, and Node.js versions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
+---
+
+The stable Developer Platform is released as one synchronized compatibility checkpoint. Pin the
+client package version in automated environments and review the changelog before updating.
+
+| Surface | Stable version | Runtime | Contract | Support |
+| --- | --- | --- | --- | --- |
+| API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.0` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.0` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.0` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
+
+## Install the synchronized clients
+
+```bash
+npm install @teamgrid/api-client@1.0.0
+npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
+```
+
+SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent
+authorization models or bypass API scopes.
+
+## Compatibility policy
+
+- Patch releases may fix defects without changing the documented contract.
+- Minor releases may add optional fields, operations, commands, or tools.
+- Breaking changes require a new major API or package version and a migration guide.
+- API v1 additions remain backwards compatible within the stable major version.
+- MCP exposure is intentionally narrower than API and SDK coverage.
+- API v0 remains available for existing integrations but receives no new product surface.
+
+The downloadable [OpenAPI files and client collections](/resources/developer-tooling/) are generated
+from the same verified contract used by this documentation.
+
+<!-- resources/developer-tooling.md -->
+---
+title: Developer tooling and downloads
+description: Official TeamGrid packages, API contracts and importable client collections in one place.
+owner: Developer Experience
+reviewedAt: 2026-07-29
+---
+
+## Official packages
+
+The stable public packages share version `1.0.0` and the API v1 contract:
+
+| Package | Install | Use |
+| --- | --- | --- |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.0` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.0` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.0` | Compatible MCP hosts |
+
+Pin the exact package version in reproducible deployments. CI for this portal verifies that every
+documented stable package is publicly available before Production deployment.
+
+## Contracts and collections
+
+- [API v1 OpenAPI 3.1 JSON](/openapi/v1.json)
+- [API v0 OpenAPI 3.1 JSON](/openapi/v0.json)
+- [Postman collection for API v1](/collections/teamgrid-api-v1.postman.json)
+- [HTTP client collection for API v1](/collections/teamgrid-api-v1.http)
+- [Developer Platform manifest](/openapi/developer-platform-manifest.json)
+- [Canonical scope contract](/openapi/developer-scopes.json)
+
+Bruno, Insomnia and other OpenAPI-capable tools should import the API v1 JSON directly. This keeps
+their generated requests aligned with every path, parameter and schema in the stable contract.
+
+## Credential setup
+
+Create credentials from **TeamGrid Settings → Developer**. Select the smallest required scopes,
+copy the reveal-once secret into the client’s environment or secret store, and use the region
+encoded by the credential.
+
+Never commit a credential into a collection, `.http` file, shell history or source repository.
+
+<!-- resources/troubleshooting.md -->
+---
+title: Request troubleshooting
+description: Diagnose TeamGrid API failures from authentication and scopes through concurrency, routing, and rate limits.
+owner: Developer Experience
+reviewedAt: 2026-07-29
+---
+
+Start with the HTTP status, structured error code, and `meta.requestId`. Never include a bearer
+credential, webhook secret, upload intent, or unredacted customer payload in a support request.
+
+| Symptom | Likely cause | What to verify |
+| --- | --- | --- |
+| `401 invalid_token` | Missing, expired, revoked, or malformed credential | Secret source, rotation state, Authorization header |
+| `403 insufficient_scope` | Credential lacks an operation scope | Required and conditional scopes in the operation reference |
+| `403 forbidden` | Workspace, role, grant, plan, or sharing policy denied access | Principal ownership and resource grants |
+| `404 not_found` | Wrong opaque ID or resource is intentionally invisible | Workspace boundary, resource lifecycle, exact ID |
+| `409 idempotency_conflict` | One key was reused with different input | Original request fingerprint and retry code |
+| `409 conflict` | Current resource state rejects the action | Lifecycle state and latest resource |
+| `412 precondition_failed` | The supplied revision is stale | Re-read, merge deliberately, send the new ETag |
+| `428 precondition_required` | A guarded write omitted `If-Match` | Read the resource before writing |
+| `429 rate_limit_exceeded` | Current credential or source exceeded its bucket | `Retry-After` and rate-limit headers |
+| `502–504` | A cell-local dependency is temporarily unavailable | Request ID, status page, bounded safe retry |
+
+## Region and endpoint checks
+
+Official clients derive the regional endpoint from the credential. For direct HTTP integrations,
+send German credentials to `https://api.de.teamgrid.app/v1` and United States credentials to
+`https://api.us.teamgrid.app/v1`. Do not follow a redirect with an Authorization header.
+
+## Safe diagnostic sequence
+
+1. Call `GET /workspace` with the same credential and endpoint.
+2. Confirm the operation's required and conditional scopes.
+3. Remove optional filters and retry one bounded read.
+4. For a write, obtain the latest resource revision and keep the same idempotency key.
+5. Record the response status, error code, request ID, time, and regional endpoint.
+
+The [errors and rate limits guide](/api/v1/errors/) defines retry behavior. For platform-wide
+availability, check [TeamGrid Status](https://status.teamgrid.app/).
+
 <!-- sdk/index.md -->
 ---
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -4544,6 +5001,8 @@ pipelines therefore stay stable while application code can inspect `response.tra
 ---
 title: SDK pagination and errors
 description: Traverse TeamGrid cursor pages and handle typed API and client failures.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Async page iteration
@@ -4656,6 +5115,8 @@ CLI `--wait` supplies the acceptance binding automatically.
 ---
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Install
@@ -4761,6 +5222,8 @@ Keep the credential in a secret manager and inject it through the process enviro
 ---
 title: Verify webhook signatures
 description: Verify TeamGrid webhook v2 HMAC signatures over the exact raw request body in Node.js.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 Capture the request body as raw bytes before any JSON parser runs. The SDK helper verifies the
@@ -4789,10 +5252,55 @@ The default timestamp window is five minutes and can be bounded with
 or invalid signature throws `TeamGridWebhookVerificationError` with a stable `code`. Store the
 reveal-once signing secret separately from API credentials.
 
+## Express: preserve the raw body
+
+Register the raw-body parser on the webhook route before any application-wide JSON parser. Parse
+the payload only after verification succeeds.
+
+```ts
+import express from 'express'
+import { verifyTeamGridWebhook } from '@teamgrid/api-client'
+
+const app = express()
+
+app.post(
+  '/webhooks/teamgrid',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  async (request, response, next) => {
+    try {
+      const delivery = await verifyTeamGridWebhook({
+        body: new Uint8Array(request.body),
+        headers: request.headers,
+        signingSecret: process.env.TEAMGRID_WEBHOOK_SECRET!,
+        deduplicationStore: deliveryIds,
+      })
+
+      await events.enqueue(delivery.payload)
+      response.sendStatus(204)
+    } catch (error) {
+      next(error)
+    }
+  },
+)
+```
+
+Do not call `express.json()` for this route before signature verification. Re-serializing a parsed
+object can change whitespace or property ordering and therefore changes the signed byte sequence.
+
+## Failure handling
+
+Return a non-2xx response for an invalid signature, stale timestamp, or malformed envelope. For a
+valid delivery, persist or enqueue the event before returning `204`; perform slow downstream work
+asynchronously. The deduplication claim must be atomic and retained for at least the delivery retry
+window. Log the stable verification error code and delivery identifier when available, but never
+log the signing secret or an unrestricted payload.
+
 <!-- security/index.md -->
 ---
 title: Security
 description: Handle TeamGrid API credentials, scopes, regional routing, webhooks, and vulnerability reports safely.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 ## Credentials

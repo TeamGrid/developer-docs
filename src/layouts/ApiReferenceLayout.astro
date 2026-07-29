@@ -1,0 +1,36 @@
+---
+import ApiSidebar from '../components/ApiSidebar.astro'
+import BaseLayout from './BaseLayout.astro'
+import type { ApiVersion } from '../lib/openapi'
+
+interface Props {
+  title: string
+  description: string
+  version: ApiVersion
+  currentOperationId?: string
+}
+
+const { title, description, version, currentOperationId } = Astro.props
+---
+
+<BaseLayout title={title} description={description} layout="api">
+  <button class="sidebar-mobile-trigger" type="button" data-api-sidebar-open>
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
+    Browse API {version}
+  </button>
+  <div class="api-shell">
+    <ApiSidebar version={version} currentOperationId={currentOperationId} />
+    <main class="api-main" id="main-content">
+      <slot />
+    </main>
+  </div>
+</BaseLayout>
+
+<script>
+  const sidebar = document.querySelector<HTMLElement>('[data-api-sidebar]')
+  document.querySelector('[data-api-sidebar-open]')?.addEventListener('click', () => sidebar?.classList.add('is-open'))
+  document.querySelector('[data-api-sidebar-close]')?.addEventListener('click', () => sidebar?.classList.remove('is-open'))
+  sidebar?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => sidebar.classList.remove('is-open'))
+  })
+</script>

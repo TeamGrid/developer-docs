@@ -17,6 +17,25 @@ function countOperations(document) {
   )
 }
 
+function visitSchemaProperties(node, callback, seen = new Set()) {
+  if (!node || typeof node !== 'object' || seen.has(node)) return
+  seen.add(node)
+  if (node.properties) {
+    for (const [name, schema] of Object.entries(node.properties)) {
+      if (schema && typeof schema === 'object') callback(name, schema)
+      visitSchemaProperties(schema, callback, seen)
+    }
+  }
+  for (const key of ['items', 'additionalProperties', 'not']) {
+    if (node[key] && typeof node[key] === 'object') {
+      visitSchemaProperties(node[key], callback, seen)
+    }
+  }
+  for (const key of ['allOf', 'anyOf', 'oneOf', 'prefixItems']) {
+    for (const schema of node[key] || []) visitSchemaProperties(schema, callback, seen)
+  }
+}
+
 const manifest = JSON.parse(await readFile(path.join(root, 'sources', 'contracts.json'), 'utf8'))
 if (
   manifest.schemaVersion !== 1 ||
@@ -129,6 +148,55 @@ for (const [version, expectedOperations] of [
   if (manifest.contracts?.[version]?.sha256 !== sha256) {
     fail(`${version} does not match sources/contracts.json.`)
   }
+  const documentedTags = new Map((document.tags || []).map((tag) => [tag.name, tag]))
+  for (const [operationPath, pathItem] of Object.entries(document.paths || {})) {
+    for (const [method, operation] of Object.entries(pathItem)) {
+      if (!methods.has(method)) continue
+      const label = `${version} ${operation.operationId || `${method} ${operationPath}`}`
+      if (!operation.summary || !operation.description || operation.summary === operation.description) {
+        fail(`${label} needs a distinct summary and detailed description.`)
+      }
+      for (const tag of operation.tags || []) {
+        if (!documentedTags.get(tag)?.description) fail(`${version} tag ${tag} needs a description.`)
+      }
+      for (const parameter of operation.parameters || []) {
+        if (!parameter.$ref && !parameter.description) {
+          fail(`${label} parameter ${parameter.name} needs a description.`)
+        }
+      }
+      if (operation.requestBody) {
+        if (!operation.requestBody.description) fail(`${label} request body needs a description.`)
+        if (
+          operation.requestBody.content?.['application/json']
+          && operation.requestBody.content['application/json'].example === undefined
+        ) {
+          fail(`${label} JSON request body needs an example.`)
+        }
+      }
+      for (const [status, response] of Object.entries(operation.responses || {})) {
+        if (response.$ref) continue
+        if (!response.description || /^(Successful response|Legacy success response)\.?$/i.test(response.description)) {
+          fail(`${label} response ${status} needs a meaningful description.`)
+        }
+        if (
+          /^2/.test(status)
+          && response.content?.['application/json']
+          && response.content['application/json'].example === undefined
+        ) {
+          fail(`${label} response ${status} needs a JSON example.`)
+        }
+      }
+    }
+  }
+  for (const [name, parameter] of Object.entries(document.components?.parameters || {})) {
+    if (!parameter.description) fail(`${version} component parameter ${name} needs a description.`)
+  }
+  for (const [name, schema] of Object.entries(document.components?.schemas || {})) {
+    if (!schema.description) fail(`${version} schema ${name} needs a description.`)
+  }
+  visitSchemaProperties(document.components?.schemas || {}, (name, schema) => {
+    if (!schema.description) fail(`${version} schema property ${name} needs a description.`)
+  })
 }
 
 const capabilityFile = path.join(root, 'public', 'openapi', 'developer-capabilities.json')
@@ -619,7 +687,7 @@ for (const route of ['cli', 'mcp', 'sdk', 'security', 'openapi', 'changelog']) {
 }
 
 const requiredDirectories = {
-  'src/content/docs/api/v0/guides': 13,
+  'src/content/docs/api/v0/guides': 12,
   'src/content/docs/api/v0/legacy-changelog': 5,
   'src/content/docs/api/v0/recipes': 6,
 }
@@ -636,6 +704,28 @@ async function collectFiles(directory) {
     else result.push(file)
   }
   return result
+}
+
+for (const file of (await collectFiles(path.join(root, 'src', 'content', 'docs')))
+  .filter((candidate) => /\.mdx?$/.test(candidate))) {
+  const content = await readFile(file, 'utf8')
+  const relativePath = path.relative(path.join(root, 'src', 'content', 'docs'), file)
+  const frontmatter = content.match(/^---\n([\s\S]*?)\n---/)
+  const title = frontmatter?.[1].match(/^title:\s*(.+)$/m)?.[1]?.trim()
+  const description = frontmatter?.[1].match(/^description:\s*(.+)$/m)?.[1]?.trim()
+  if (!title || !description) fail(`${relativePath} needs a title and description.`)
+  if (
+    description
+    && (
+      /^(import |export |const |let |var |[A-Z_]+=\$?\(|[A-Z_]+=['"]?\{)/.test(description.replace(/^["']|["']$/g, ''))
+      || description.length > 220
+    )
+  ) {
+    fail(`${relativePath} has an invalid or overly long page description.`)
+  }
+  if (/\b(TODO|TBD|coming soon)\b/i.test(content)) {
+    fail(`${relativePath} contains unfinished editorial placeholder text.`)
+  }
 }
 
 for (const file of await collectFiles(path.join(root, 'src'))) {

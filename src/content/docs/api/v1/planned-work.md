@@ -1,6 +1,8 @@
 ---
 title: Planned work
 description: Read bounded workload windows and atomically replace one task schedule with strong revisions.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Planned work exposes the per-day workload assigned to a task and user. Treat it as sensitive

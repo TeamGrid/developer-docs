@@ -1,0 +1,96 @@
+---
+import ApiReferenceLayout from '../../../../layouts/ApiReferenceLayout.astro'
+import {
+  apiDocument,
+  groupedOperations,
+  operationHref,
+  type ApiVersion,
+} from '../../../../lib/openapi'
+
+export function getStaticPaths() {
+  return ['v1', 'v0'].map((version) => ({ params: { version } }))
+}
+
+const version = Astro.params.version as ApiVersion
+const document = apiDocument(version)
+const groups = groupedOperations(version)
+const operationCount = groups.reduce((total, group) => total + group.operations.length, 0)
+const description = version === 'v1'
+  ? 'Complete reference for the stable, regional TeamGrid API v1.'
+  : 'Reference for the frozen TeamGrid legacy API v0 compatibility contract.'
+---
+
+<ApiReferenceLayout
+  title={`API ${version} reference`}
+  description={description}
+  version={version}
+>
+  <section class="api-overview">
+    <div class="api-overview__eyebrow">
+      <span>TeamGrid API</span>
+      <strong class:list={{ 'is-legacy': version === 'v0' }}>{version === 'v1' ? 'Stable 1.0' : 'Legacy'}</strong>
+    </div>
+    <h1>API {version} reference</h1>
+    <p>{document.info.description}</p>
+    <div class="api-overview__facts">
+      <div><span>Operations</span><strong>{operationCount}</strong></div>
+      <div><span>Resource groups</span><strong>{groups.length}</strong></div>
+      <div><span>Specification</span><strong>OpenAPI {document.openapi}</strong></div>
+    </div>
+    <label class="reference-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+      <input type="search" placeholder={`Search ${operationCount} operations`} data-reference-search />
+      <kbd>/</kbd>
+    </label>
+    <div class="reference-groups" data-reference-groups>
+      {
+        groups.map(({ tag, operations }) => (
+          <section class="reference-group" data-reference-group>
+            <div class="reference-group__head">
+              <h2>{tag}</h2>
+              <span>{operations.length} {operations.length === 1 ? 'operation' : 'operations'}</span>
+            </div>
+            <div>
+              {operations.map((operation) => (
+                <a
+                  href={operationHref(operation)}
+                  data-reference-operation={`${operation.summary} ${operation.method} ${operation.path} ${tag}`.toLowerCase()}
+                >
+                  <span class={`method method--${operation.method}`}>{operation.method}</span>
+                  <strong>{operation.summary}</strong>
+                  <code>{operation.path}</code>
+                  <span class="reference-operation__arrow">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))
+      }
+      <div class="reference-search-empty" data-reference-empty hidden>No operations match your search.</div>
+    </div>
+  </section>
+</ApiReferenceLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-reference-search]')
+  const empty = document.querySelector<HTMLElement>('[data-reference-empty]')
+  input?.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase()
+    let visible = 0
+    document.querySelectorAll<HTMLElement>('[data-reference-operation]').forEach((operation) => {
+      const matches = !query || operation.dataset.referenceOperation?.includes(query)
+      operation.hidden = !matches
+      if (matches) visible += 1
+    })
+    document.querySelectorAll<HTMLElement>('[data-reference-group]').forEach((group) => {
+      group.hidden = ![...group.querySelectorAll('[data-reference-operation]')].some((item) => !(item as HTMLElement).hidden)
+    })
+    if (empty) empty.hidden = visible > 0
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key === '/' && document.activeElement !== input) {
+      event.preventDefault()
+      input?.focus()
+    }
+  })
+</script>

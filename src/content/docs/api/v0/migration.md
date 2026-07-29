@@ -1,6 +1,8 @@
 ---
 title: Migrate from API v0 to v1
 description: Map TeamGrid API v0 authentication, pagination, writes, errors, endpoints, and webhooks to API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 Migrate one bounded integration at a time. Keep its v0 token active until the equivalent v1 reads and writes have been verified, then revoke the old token.

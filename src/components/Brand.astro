@@ -1,0 +1,22 @@
+---
+interface Props {
+  product?: string
+}
+
+const { product = 'developer' } = Astro.props
+---
+
+<a class="brand" href="/" aria-label={`TeamGrid ${product} home`}>
+  <svg class="brand__mark" viewBox="0 0 115.01 73.231" aria-hidden="true">
+    <g fill="currentColor">
+      <polygon points="53.822,59.575 40.337,73.231 40.337,0 53.822,13.656"></polygon>
+      <polygon points="32.971,57.527 19.485,69.134 19.485,4.097 32.971,15.705"></polygon>
+      <polygon points="12.12,52.064 0,61.623 0,13.656 12.12,21.167"></polygon>
+      <polygon points="61.188,59.575 74.673,73.231 74.673,0 61.188,13.656"></polygon>
+      <polygon points="82.039,57.527 95.524,69.134 95.524,4.097 82.039,15.705"></polygon>
+      <polygon points="102.89,52.064 115.01,61.623 115.01,13.656 102.89,21.167"></polygon>
+    </g>
+  </svg>
+  <span class="brand__name">TeamGrid</span>
+  <span class="brand__product">{product}</span>
+</a>

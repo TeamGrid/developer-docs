@@ -1,0 +1,57 @@
+---
+const steps = [
+  { id: 'credential', label: 'Credential created and stored safely' },
+  { id: 'workspace', label: 'Workspace request returns successfully' },
+  { id: 'resource', label: 'First bounded resource list completed' },
+  { id: 'operations', label: 'Retries, conflicts and revocation path reviewed' },
+]
+---
+
+<section class="onboarding-checklist" aria-labelledby="onboarding-checklist-title" data-onboarding-checklist>
+  <div class="onboarding-checklist__head">
+    <div>
+      <span>Implementation checklist</span>
+      <h2 id="onboarding-checklist-title">A dependable first integration</h2>
+    </div>
+    <strong data-onboarding-progress>0 of {steps.length}</strong>
+  </div>
+  <div class="onboarding-checklist__progress" aria-hidden="true"><span data-onboarding-bar></span></div>
+  <div class="onboarding-checklist__steps">
+    {
+      steps.map((step) => (
+        <label>
+          <input type="checkbox" value={step.id} data-onboarding-step />
+          <span aria-hidden="true"></span>
+          <strong>{step.label}</strong>
+        </label>
+      ))
+    }
+  </div>
+  <p>Progress is stored only in this browser and is never sent to TeamGrid.</p>
+</section>
+
+<script>
+  const checklist = document.querySelector<HTMLElement>('[data-onboarding-checklist]')
+  const storageKey = 'teamgrid-developer-onboarding-v1'
+  if (checklist) {
+    const inputs = [...checklist.querySelectorAll<HTMLInputElement>('[data-onboarding-step]')]
+    const progress = checklist.querySelector<HTMLElement>('[data-onboarding-progress]')
+    const bar = checklist.querySelector<HTMLElement>('[data-onboarding-bar]')
+
+    function update() {
+      const completed = inputs.filter((input) => input.checked).map((input) => input.value)
+      if (progress) progress.textContent = `${completed.length} of ${inputs.length}`
+      if (bar) bar.style.width = `${(completed.length / inputs.length) * 100}%`
+      localStorage.setItem(storageKey, JSON.stringify(completed))
+    }
+
+    try {
+      const completed = new Set<string>(JSON.parse(localStorage.getItem(storageKey) || '[]'))
+      inputs.forEach((input) => { input.checked = completed.has(input.value) })
+    } catch {
+      localStorage.removeItem(storageKey)
+    }
+    inputs.forEach((input) => input.addEventListener('change', update))
+    update()
+  }
+</script>

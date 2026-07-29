@@ -1,0 +1,50 @@
+name: Developer contract drift
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 5 * * 1-5"
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out documentation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: developer-docs
+      - name: Check out API contracts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: TeamGrid/teamgrid-api
+          token: ${{ secrets.TEAMGRID_REPOSITORY_TOKEN }}
+          path: teamgrid-api
+      - name: Check out official clients
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: TeamGrid/developer-platform
+          token: ${{ secrets.TEAMGRID_REPOSITORY_TOKEN }}
+          path: developer-platform
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: developer-docs/.nvmrc
+          cache: npm
+          cache-dependency-path: developer-docs/package-lock.json
+      - run: npm ci
+        working-directory: developer-docs
+      - name: Synchronize the latest governed contracts
+        run: npm run sync:contracts -- ../teamgrid-api HEAD HEAD
+        working-directory: developer-docs
+      - name: Synchronize the latest official client versions
+        run: npm run sync:packages -- ../developer-platform HEAD
+        working-directory: developer-docs
+      - name: Regenerate derived developer assets
+        run: npm run generate
+        working-directory: developer-docs
+      - name: Fail when published documentation is behind
+        run: git diff --exit-code -- public/openapi public/collections public/llms.txt public/llms-full.txt sources
+        working-directory: developer-docs

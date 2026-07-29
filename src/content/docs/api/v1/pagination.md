@@ -1,6 +1,8 @@
 ---
 title: Pagination and idempotency
 description: Traverse stable cursor pages and make safe retriable creates with TeamGrid API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Cursor pagination

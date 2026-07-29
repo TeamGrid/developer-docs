@@ -1,6 +1,8 @@
 ---
 title: Install and authenticate
 description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
+owner: Developer Experience
+reviewedAt: 2026-07-29
 ---
 
 ## Requirements

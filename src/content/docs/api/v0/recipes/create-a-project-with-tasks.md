@@ -1,9 +1,9 @@
 ---
 title: "Create a project with tasks"
-description: "PROJECT_RESPONSE=$(curl https://api.teamgrid.app/projects \\"
+description: "Create a TeamGrid project through API v0, add its first tasks, and retain the returned identifiers for later synchronization."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 ```bash Shell
 PROJECT_RESPONSE=$(curl https://api.teamgrid.app/projects \
@@ -44,24 +44,18 @@ curl https://api.teamgrid.app/tasks \
   }"
 ```
 
-```json Response Example
-Use the returned ids as the durable link between your system and TeamGrid. Avoid retrying POST requests blindly after a timeout unless your integration can detect duplicates.
-```
+> **Production note:** Use the returned identifiers as the durable link between your system and
+> TeamGrid. Avoid retrying POST requests blindly after a timeout unless your integration can detect
+> duplicates.
 
-# Create the project
-
-<!-- bash@1-12 -->
+## Create the project
 
 Send the project name and optional planning fields to POST /projects. TeamGrid assigns the team from the API token, so do not send teamId.
 
-# Store the project id
-
-<!-- bash@14-16 -->
+## Store the project id
 
 Persist the returned project _id in your own system. Use that id when creating tasks and when reconciling later updates.
 
-# Create tasks for the project
-
-<!-- bash@18-32 -->
+## Create tasks for the project
 
 Create each task with the returned project id. Keep the returned task ids so future updates target the existing tasks instead of creating duplicates.

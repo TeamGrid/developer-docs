@@ -1,12 +1,10 @@
 ---
 title: "Documentation refresh 2026"
-description: "We refreshed the TeamGrid Developer Hub to make the API easier to understand,"
+description: "Historical note covering the 2026 documentation refresh for the legacy TeamGrid API v0."
 ---
 
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
-
-We refreshed the TeamGrid Developer Hub to make the API easier to understand,
-navigate, and integrate.
+This archived entry records a documentation-only refresh completed in 2026. It did not change API
+behavior.
 
 Highlights:
 
@@ -16,5 +14,3 @@ Highlights:
   descriptions, and examples.
 * Added grouped explanations for pagination and common filters.
 * Cleaned up stale navigation areas from the previous documentation structure.
-
-No API behavior changed as part of this documentation refresh.

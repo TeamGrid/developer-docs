@@ -1,6 +1,8 @@
 ---
 title: Security
 description: Handle TeamGrid API credentials, scopes, regional routing, webhooks, and vulnerability reports safely.
+owner: Security
+reviewedAt: 2026-07-29
 ---
 
 ## Credentials

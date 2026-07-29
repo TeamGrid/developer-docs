@@ -1,9 +1,9 @@
 ---
 title: "Overview"
 description: "Programmatic access to TeamGrid contacts, projects, tasks, time entries, webhooks, scheduled work, journal entries, and project templates."
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
-
-> This page documents the legacy API v0. New integrations should use [API v1](/api/v1/).
 
 Programmatic access to TeamGrid contacts, projects, tasks, time entries, webhooks, scheduled work, journal entries, and project templates.
 

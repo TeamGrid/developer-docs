@@ -1,6 +1,8 @@
 ---
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 ## Current platform
@@ -12,6 +14,9 @@ Authoritative changes are recorded in the public source repositories and their r
 - [SDK, CLI, and MCP packages](https://github.com/TeamGrid/developer-platform)
 
 Breaking changes are not made silently. OpenAPI contract changes, package versions, and migration notes are reviewed together before release.
+
+Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
+[machine-readable release history](/changelog/releases.json).
 
 ## 2026-07-27
 

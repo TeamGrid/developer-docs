@@ -1,0 +1,73 @@
+---
+import Footer from '../components/Footer.astro'
+import Header from '../components/Header.astro'
+import SearchDialog from '../components/SearchDialog.astro'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description: string
+  noindex?: boolean
+  layout?: 'default' | 'docs' | 'api'
+}
+
+const {
+  title,
+  description,
+  noindex = false,
+  layout = 'default',
+} = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const pageTitle = title === 'TeamGrid Developer' ? title : `${title} · TeamGrid Developer`
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: title,
+  description,
+  publisher: { '@type': 'Organization', name: 'TeamGrid', url: 'https://teamgrid.app' },
+  url: canonical.href,
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/atom+xml" title="TeamGrid Developer Platform changelog" href="/changelog/feed.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content="https://developer.teamgridapp.com/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <title>{pageTitle}</title>
+  </head>
+  <body data-layout={layout} data-page-title={title} data-page-description={description}>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <Header />
+    <slot />
+    <Footer />
+    <SearchDialog />
+    <script>
+      const recentKey = 'teamgrid-developer-recent-pages'
+      try {
+        const page = {
+          href: window.location.pathname,
+          title: document.body.dataset.pageTitle || document.title,
+        }
+        const previous = JSON.parse(localStorage.getItem(recentKey) || '[]') as Array<{ href: string; title: string }>
+        const recent = [page, ...previous.filter((item) => item.href !== page.href)].slice(0, 5)
+        localStorage.setItem(recentKey, JSON.stringify(recent))
+      } catch {
+        localStorage.removeItem(recentKey)
+      }
+    </script>
+  </body>
+</html>

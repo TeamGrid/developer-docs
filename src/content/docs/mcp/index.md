@@ -1,6 +1,8 @@
 ---
 title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 `@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the

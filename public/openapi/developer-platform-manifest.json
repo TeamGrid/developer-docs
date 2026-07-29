@@ -39,16 +39,16 @@
       "sha256": "313ab009498a200421a87ac3bd5b46b4453f8c81addea69be58699525b2a0567"
     },
     {
-      "bytes": 210370,
+      "bytes": 301532,
       "id": "openapi-v0",
       "path": "openapi/v0.json",
-      "sha256": "46da62dba5b8a459362f4edd3c74fed1dac92300c414e606dfa9f433120da947"
+      "sha256": "929242ab3c5047a2780ff544ca01c939f99c6f613a8e639b51bb78bd47ba3c02"
     },
     {
-      "bytes": 873778,
+      "bytes": 1250727,
       "id": "openapi-v1",
       "path": "openapi/v1.json",
-      "sha256": "569dd16ef9a6cf20b51667aa29db27a27efdfa2a9f9e752a75bb98a35dd7eb66"
+      "sha256": "a9b1b27dad5404a62ea5b77ea62b1666e15973622ba5e4862382299efe695245"
     }
   ],
   "summary": {

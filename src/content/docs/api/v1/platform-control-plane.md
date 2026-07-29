@@ -1,6 +1,8 @@
 ---
 title: Platform discovery and settings
 description: Negotiate TeamGrid capabilities, workspace entitlements, event channels, and safe revisioned workspace defaults.
+owner: Developer Platform
+reviewedAt: 2026-07-29
 ---
 
 The API exposes a small control plane so an integration can negotiate the public contract and

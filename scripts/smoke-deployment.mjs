@@ -2,7 +2,7 @@ const baseUrl = (process.argv[2] || process.env.DEVELOPER_PORTAL_URL || '').repl
 if (!baseUrl) throw new Error('Provide the deployed portal URL.')
 
 const checks = [
-  ['/', 'Build TeamGrid into the tools your team already uses.'],
+  ['/', 'Build dependable integrations with TeamGrid API v1'],
   ['/guides/get-started/', 'Create a developer credential'],
   ['/api/v1/reference/operations/getworkspace/', 'Interactive request builder'],
   ['/openapi/v1.json', '"openapi": "3.1.0"'],

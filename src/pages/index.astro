@@ -1,649 +1,600 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
+import type { MarkdownHeading } from 'astro'
+import DocsLayout from '../layouts/DocsLayout.astro'
 import { developerReleases } from '../data/releases'
 import { apiOperations } from '../lib/openapi'
 
 const stableOperationCount = apiOperations('v1').length
 const latestRelease = developerReleases[0]
-
-const buildPaths = [
-  {
-    eyebrow: 'Product integration',
-    title: 'Keep tasks in sync',
-    description:
-      'Read task changes, preserve TeamGrid revisions and apply updates without creating a second source of truth.',
-    href: '/guides/sync-tasks/',
-    link: 'Build a task sync',
-    featured: true,
-  },
-  {
-    eyebrow: 'Reporting',
-    title: 'Export time entries',
-    description:
-      'Move approved time data into finance, reporting or data-warehouse workflows.',
-    href: '/guides/export-time-entries/',
-    link: 'Export time entries',
-  },
-  {
-    eyebrow: 'Operations',
-    title: 'Automate project setup',
-    description:
-      'Create repeatable project structures from a service, script or CI job.',
-    href: '/guides/automate-project-setup/',
-    link: 'Automate a project',
-  },
-  {
-    eyebrow: 'AI workflows',
-    title: 'Connect an assistant safely',
-    description:
-      'Expose a deliberately bounded set of TeamGrid tools through the local MCP server.',
-    href: '/mcp/tools-and-security/',
-    link: 'Review MCP access',
-  },
+const headings: MarkdownHeading[] = [
+  { depth: 2, slug: 'choose-an-interface', text: 'Choose an interface' },
+  { depth: 2, slug: 'make-the-first-request', text: 'Make the first request' },
+  { depth: 2, slug: 'build-a-real-workflow', text: 'Build a real workflow' },
+  { depth: 2, slug: 'prepare-for-production', text: 'Prepare for production' },
 ]
 
 const interfaces = [
   {
-    id: 'api',
-    label: 'API v1',
+    name: 'API v1',
     meta: 'HTTP · OpenAPI 3.1',
-    title: 'Work directly with the stable contract.',
     description:
-      'Use regional HTTPS endpoints when your application owns transport, retries and data flow. Every other official TeamGrid interface follows this contract.',
-    bestFor: 'Backend services, product integrations and generated clients',
-    command: 'GET https://api.de.teamgrid.app/v1/tasks?limit=25',
+      'Use the stable regional HTTP contract directly from a service, product integration or generated client.',
     href: '/api/v1/',
     link: 'Read the API overview',
   },
   {
-    id: 'sdk',
-    label: 'TypeScript SDK',
+    name: 'TypeScript SDK',
     meta: '@teamgrid/api-client',
-    title: 'Use typed resources without rebuilding HTTP.',
     description:
-      'The official Node.js client handles regional routing, bounded retries, cursor iteration and versioned TeamGrid errors.',
-    bestFor: 'TypeScript applications, workers and backend services',
-    command: 'npm install @teamgrid/api-client',
+      'Work with typed resources, cursor iteration and bounded retries without rebuilding the HTTP layer.',
     href: '/sdk/',
     link: 'Open the SDK guide',
   },
   {
-    id: 'cli',
-    label: 'CLI',
+    name: 'CLI',
     meta: '@teamgrid/cli',
-    title: 'Inspect and automate from the terminal.',
     description:
-      'Run repeatable operations locally or in CI with structured output, stable exit codes and the same scoped credentials as the API.',
-    bestFor: 'Operations, scripts and deployment pipelines',
-    command: 'npm install --global @teamgrid/cli',
+      'Inspect workspace data and run repeatable TeamGrid operations locally or from a CI pipeline.',
     href: '/cli/',
-    link: 'Open the CLI guide',
+    link: 'Install the CLI',
   },
   {
-    id: 'mcp',
-    label: 'MCP server',
+    name: 'MCP server',
     meta: '@teamgrid/mcp-server',
-    title: 'Give compatible AI clients bounded context.',
     description:
-      'Run a local stdio adapter with an intentionally limited tool surface. Credentials remain local and TeamGrid permissions still apply.',
-    bestFor: 'Supervised, read-oriented AI-assisted workflows',
-    command: 'npx --yes @teamgrid/mcp-server',
+      'Expose a deliberately bounded TeamGrid tool surface to compatible, supervised assistants.',
     href: '/mcp/',
-    link: 'Open the MCP guide',
+    link: 'Review MCP access',
+  },
+]
+
+const workflows = [
+  {
+    title: 'Synchronize tasks',
+    description:
+      'Import the current state, follow the change feed and handle concurrent updates explicitly.',
+    href: '/guides/sync-tasks/',
+  },
+  {
+    title: 'Export time entries',
+    description:
+      'Move approved time data into finance, reporting or a data warehouse with stable pagination.',
+    href: '/guides/export-time-entries/',
+  },
+  {
+    title: 'Automate project setup',
+    description:
+      'Create repeatable project structures safely from a service, script or deployment job.',
+    href: '/guides/automate-project-setup/',
+  },
+  {
+    title: 'Process webhooks reliably',
+    description:
+      'Verify signatures, acknowledge deliveries quickly and process each event idempotently.',
+    href: '/guides/reliable-webhooks/',
   },
 ]
 ---
 
-<BaseLayout
-  title="TeamGrid Developer"
-  description="Build reliable TeamGrid integrations with API v1, the TypeScript SDK, the CLI, and the TeamGrid MCP server."
+<DocsLayout
+  title="Welcome to TeamGrid Developer"
+  description="Build dependable integrations with TeamGrid API v1, the official TypeScript SDK, the CLI, and the TeamGrid MCP server."
+  headings={headings}
+  source="src/pages/index.astro"
+  owner="Developer Platform"
+  reviewedAt={new Date('2026-07-30')}
 >
-  <main id="main-content" class="developer-home">
-    <section class="home-hero">
-      <div class="home-hero__inner">
-        <div class="home-hero__copy">
-          <p class="home-kicker home-kicker--inverse">
-            <span></span>
-            TeamGrid developer platform
-          </p>
-          <h1>Build TeamGrid into the tools your team already uses.</h1>
-          <p class="home-hero__lead">
-            Connect projects, tasks, time entries and workspace data through one stable,
-            region-aware contract—and choose the interface that fits the work.
-          </p>
-          <div class="home-hero__actions">
-            <a class="button button--light" href="/api/v1/quickstart/">
-              Start building <span aria-hidden="true">→</span>
-            </a>
-            <a class="button button--ghost" href="/api/v1/reference/">Explore API v1</a>
-          </div>
-        </div>
-
-        <div class="hero-workbench" aria-label="TeamGrid CLI task query">
-          <div class="hero-workbench__top">
-            <div>
-              <span></span><span></span><span></span>
-            </div>
-            <strong>teamgrid</strong>
-            <small>CLI</small>
-          </div>
-          <div class="hero-workbench__command">
-            <span>~</span>
-            <code>teamgrid tasks list --status in_progress --limit 3</code>
-          </div>
-          <div class="hero-workbench__result">
-            <div class="hero-workbench__result-head">
-              <span>Task</span>
-              <span>Project</span>
-              <span>Status</span>
-            </div>
-            <div>
-              <strong>Launch developer portal</strong>
-              <span>Platform</span>
-              <em>In progress</em>
-            </div>
-            <div>
-              <strong>Review integration scopes</strong>
-              <span>Security</span>
-              <em>In progress</em>
-            </div>
-            <div>
-              <strong>Publish migration guide</strong>
-              <span>API v1</span>
-              <em>In progress</em>
-            </div>
-          </div>
-          <div class="hero-workbench__footer">
-            <span><i></i> api.de.teamgrid.app</span>
-            <span class="hero-workbench__activity">3 results · 42 ms</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-facts" aria-label="Developer platform facts">
+  <div class="welcome-page">
+    <dl class="welcome-summary">
       <div>
-        <span>Current contract</span>
-        <strong>API v1 · Stable 1.0</strong>
+        <dt>Stable contract</dt>
+        <dd>API v1 · {latestRelease.version}</dd>
       </div>
       <div>
-        <span>Reference coverage</span>
-        <strong>{stableOperationCount} documented operations</strong>
+        <dt>Reference</dt>
+        <dd>{stableOperationCount} operations</dd>
       </div>
       <div>
-        <span>Production regions</span>
-        <strong>Germany and United States</strong>
+        <dt>Production regions</dt>
+        <dd>Germany and United States</dd>
       </div>
-      <a class="status--unknown" href="https://status.teamgrid.app/" data-live-status>
-        <span class="home-facts__status-dot" data-status-dot></span>
-        <span data-status-label>Status</span>
-        <span aria-hidden="true">↗</span>
-      </a>
-    </section>
+    </dl>
 
-    <section class="home-section home-intents">
-      <div class="home-heading">
-        <div>
-          <p class="home-kicker">Start with the job</p>
-          <h2>What do you want to build?</h2>
-        </div>
-        <p>
-          Begin with the outcome. Each guide recommends the right interface, scopes and
-          production behavior for that workflow.
-        </p>
-      </div>
+    <section aria-labelledby="choose-an-interface">
+      <h2 id="choose-an-interface">Choose an interface</h2>
+      <p>
+        API, SDK, CLI and MCP use the same regional credentials, scopes and resource semantics.
+        Choose the interface that fits where your integration runs; you do not need to learn a
+        second TeamGrid platform.
+      </p>
 
-      <div class="intent-grid">
-        {buildPaths.map((path, index) => (
-          <a
-            class:list={['intent-card', { 'intent-card--featured': path.featured }]}
-            href={path.href}
-          >
-            <div class="intent-card__number">0{index + 1}</div>
-            <div>
-              <span>{path.eyebrow}</span>
-              <h3>{path.title}</h3>
-              <p>{path.description}</p>
-              <strong>{path.link} <span aria-hidden="true">→</span></strong>
-            </div>
-            {path.featured && (
-              <div class="intent-card__sequence" aria-hidden="true">
-                <div class="intent-card__sequence-header">
-                  <span>Change sequence</span>
-                  <span>Completed</span>
-                </div>
-                <div class="intent-card__sequence-body">
-                  <div class="intent-card__sequence-row">
-                    <span class="intent-card__sequence-index">01</span>
-                    <div>
-                      <strong>Task updated</strong>
-                      <code>revision 184</code>
-                    </div>
-                    <span class="intent-card__sequence-state">Recorded</span>
-                  </div>
-                  <div class="intent-card__sequence-row">
-                    <span class="intent-card__sequence-index">02</span>
-                    <div>
-                      <strong>Change read</strong>
-                      <code>cursor saved</code>
-                    </div>
-                    <span class="intent-card__sequence-state">Delivered</span>
-                  </div>
-                  <div class="intent-card__sequence-row">
-                    <span class="intent-card__sequence-index">03</span>
-                    <div>
-                      <strong>Integration applied</strong>
-                      <code>200 · no conflict</code>
-                    </div>
-                    <span class="intent-card__sequence-state">In sync</span>
-                  </div>
-                </div>
-                <div class="intent-card__sequence-footer">
-                  The next read resumes after revision 184.
-                </div>
-              </div>
-            )}
+      <div class="welcome-interface-grid">
+        {interfaces.map((item) => (
+          <a class="welcome-interface" href={item.href}>
+            <span>{item.meta}</span>
+            <h3>{item.name}</h3>
+            <p>{item.description}</p>
+            <strong>{item.link} <i aria-hidden="true">→</i></strong>
           </a>
         ))}
       </div>
     </section>
 
-    <section class="home-flow">
-      <div class="home-flow__inner">
-        <div class="home-flow__copy">
-          <p class="home-kicker">One governed data path</p>
-          <h2>Your integration reaches the right workspace, in the right region.</h2>
-          <p>
-            TeamGrid credentials carry a location hint and explicit scopes. Official clients use
-            both locally, then connect directly to the assigned production region.
-          </p>
-          <a class="text-link" href="/api/v1/regions/">
-            Understand regional routing <span aria-hidden="true">→</span>
-          </a>
-        </div>
+    <section aria-labelledby="make-the-first-request">
+      <h2 id="make-the-first-request">Make the first request</h2>
+      <p>
+        Begin with the read-only workspace endpoint. It confirms that the credential is valid,
+        reaches the correct production region and can access the expected TeamGrid workspace.
+      </p>
 
-        <div class="platform-flow" aria-label="TeamGrid integration data flow">
-          <div class="platform-flow__stage platform-flow__workspace">
-            <span>Workspace</span>
-            <strong>TeamGrid</strong>
+      <div class="welcome-request">
+        <ol>
+          <li>
+            <span>1</span>
             <div>
-              <code>Tasks</code>
-              <code>Projects</code>
-              <code>Time entries</code>
-              <code>Contacts</code>
+              <strong>Create a scoped credential</strong>
+              <p>Open Developer settings in TeamGrid and grant <code>workspace:read</code>.</p>
             </div>
-          </div>
-          <div class="platform-flow__connector" aria-hidden="true">
-            <span></span><i>HTTPS</i><span></span>
-          </div>
-          <div class="platform-flow__stage platform-flow__credential">
-            <span>Credential</span>
-            <strong>Scoped access</strong>
+          </li>
+          <li>
+            <span>2</span>
             <div>
-              <code>tasks:read</code>
-              <code>region: de</code>
+              <strong>Store the token outside source code</strong>
+              <p>Use an environment variable or the profile store provided by the TeamGrid CLI.</p>
             </div>
-          </div>
-          <div class="platform-flow__connector" aria-hidden="true">
-            <span></span><i>v1</i><span></span>
-          </div>
-          <div class="platform-flow__stage platform-flow__client">
-            <span>Your workflow</span>
-            <strong>Use one interface</strong>
+          </li>
+          <li>
+            <span>3</span>
             <div>
-              <code>API</code>
-              <code>SDK</code>
-              <code>CLI</code>
-              <code>MCP</code>
+              <strong>Call the regional endpoint</strong>
+              <p>A successful response identifies the workspace, region and API contract.</p>
             </div>
-          </div>
-        </div>
+          </li>
+        </ol>
 
-        <div class="home-flow__principles">
+        <div class="welcome-request__example">
           <div>
-            <span>01</span>
-            <strong>Data stays regional</strong>
-            <p>Requests go straight to the workspace’s assigned cell.</p>
-          </div>
-          <div>
-            <span>02</span>
-            <strong>Authority stays explicit</strong>
-            <p>Granular scopes bound every credential and official client.</p>
-          </div>
-          <div>
-            <span>03</span>
-            <strong>Writes stay recoverable</strong>
-            <p>Revisions and idempotency make conflicts and retries visible.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-lab">
-      <div class="home-lab__inner">
-        <div class="home-lab__copy">
-          <p class="home-kicker home-kicker--inverse">Your first request</p>
-          <h2>Verify the contract in a few minutes.</h2>
-          <p>
-            The workspace endpoint confirms authentication, regional routing and the active API
-            version without changing any TeamGrid data.
-          </p>
-          <ol>
-            <li>
-              <span>1</span>
-              <div>
-                <strong>Create a scoped credential</strong>
-                <small>Open Developer settings in an unlocked workspace.</small>
-              </div>
-            </li>
-            <li>
-              <span>2</span>
-              <div>
-                <strong>Keep the token in an environment variable</strong>
-                <small>The credential is shown only once.</small>
-              </div>
-            </li>
-            <li>
-              <span>3</span>
-              <div>
-                <strong>Call the regional workspace endpoint</strong>
-                <small>A successful response identifies the workspace and cell.</small>
-              </div>
-            </li>
-          </ol>
-          <a class="text-link text-link--inverse" href="/api/v1/quickstart/">
-            Follow the complete quickstart <span aria-hidden="true">→</span>
-          </a>
-        </div>
-
-        <div class="request-lab" data-request-lab>
-          <div class="request-lab__top">
             <span>Read-only request</span>
-            <div class="request-lab__region" aria-label="Select API region">
-              <button type="button" class="is-active" aria-pressed="true" data-region="de">DE</button>
-              <button type="button" aria-pressed="false" data-region="us">US</button>
-            </div>
+            <strong>200 OK</strong>
           </div>
-          <div class="request-lab__tabs" role="tablist" aria-label="Request language">
-            <button
-              id="request-tab-curl"
-              type="button"
-              role="tab"
-              aria-controls="request-panel-curl"
-              aria-selected="true"
-              data-code-tab="curl"
-            >cURL</button>
-            <button
-              id="request-tab-typescript"
-              type="button"
-              role="tab"
-              aria-controls="request-panel-typescript"
-              aria-selected="false"
-              tabindex="-1"
-              data-code-tab="typescript"
-            >TypeScript</button>
-            <button
-              id="request-tab-cli"
-              type="button"
-              role="tab"
-              aria-controls="request-panel-cli"
-              aria-selected="false"
-              tabindex="-1"
-              data-code-tab="cli"
-            >CLI</button>
+          <pre><code>curl --fail-with-body \
+  --header "Authorization: Bearer $TEAMGRID_API_TOKEN" \
+  https://api.de.teamgrid.app/v1/workspace</code></pre>
+          <div>
+            <code>workspace:read</code>
+            <a href="/api/v1/quickstart/">Open the quickstart →</a>
           </div>
-          <div class="request-lab__code">
-            <pre id="request-panel-curl" role="tabpanel" aria-labelledby="request-tab-curl" data-code-panel="curl"><code><span class="code-command">curl</span> --fail-with-body \
-  --header <span class="code-string">"Authorization: Bearer $TEAMGRID_API_TOKEN"</span> \
-  --header <span class="code-string">"Accept: application/json"</span> \
-  <span class="code-url" data-regional-url>https://api.de.teamgrid.app/v1/workspace</span></code></pre>
-            <pre id="request-panel-typescript" role="tabpanel" aria-labelledby="request-tab-typescript" data-code-panel="typescript" hidden><code><span class="code-command">const</span> client = <span class="code-command">new</span> TeamGridClient({`{`}
-  token: process.env.TEAMGRID_API_TOKEN,
-{`}`}
+        </div>
+      </div>
+    </section>
 
-<span class="code-command">const</span> workspace = <span class="code-command">await</span> client.workspace.get()</code></pre>
-            <pre id="request-panel-cli" role="tabpanel" aria-labelledby="request-tab-cli" data-code-panel="cli" hidden><code><span class="code-command">teamgrid</span> workspace get --output json</code></pre>
-            <button type="button" data-copy-request>Copy</button>
-          </div>
-          <div class="request-lab__response">
+    <section aria-labelledby="build-a-real-workflow">
+      <h2 id="build-a-real-workflow">Build a real workflow</h2>
+      <p>
+        The implementation guides continue beyond a successful example request. They cover
+        permissions, pagination, retries, verification and the failure cases that matter in
+        production.
+      </p>
+
+      <nav class="welcome-workflows" aria-label="Integration guides">
+        {workflows.map((workflow, index) => (
+          <a href={workflow.href}>
+            <span>0{index + 1}</span>
             <div>
-              <span><i></i> 200 OK</span>
-              <small>application/json</small>
+              <strong>{workflow.title}</strong>
+              <p>{workflow.description}</p>
             </div>
-            <pre><code>{`{`}
-  <span class="json-key">"id"</span>: <span class="json-value">"qJfnmjBvWpfbEsLEa"</span>,
-  <span class="json-key">"name"</span>: <span class="json-value">"Acme Inc."</span>,
-  <span class="json-key">"region"</span>: <span class="json-value" data-response-region>"de"</span>,
-  <span class="json-key">"cell"</span>: <span class="json-value" data-response-cell>"de-nbg-001"</span>
-{`}`}</code></pre>
-          </div>
-          <div class="request-lab__note">
-            <span>No credential is entered or sent from this page.</span>
-            <span data-region-label>German region</span>
-          </div>
-        </div>
-      </div>
+            <i aria-hidden="true">→</i>
+          </a>
+        ))}
+      </nav>
     </section>
 
-    <section class="home-section home-interfaces">
-      <div class="home-heading">
+    <section aria-labelledby="prepare-for-production">
+      <h2 id="prepare-for-production">Prepare for production</h2>
+      <p>
+        Credentials carry a region and explicit scopes. Writes use idempotency keys or resource
+        revisions where the operation requires them. Keep those boundaries visible in your
+        implementation from the beginning.
+      </p>
+
+      <div class="welcome-production">
         <div>
-          <p class="home-kicker">Choose an interface</p>
-          <h2>One contract. Four ways to work.</h2>
+          <h3>Before you ship</h3>
+          <ul>
+            <li><a href="/api/v1/authentication/">Review credentials and required scopes</a></li>
+            <li><a href="/api/v1/regions/">Confirm regional routing</a></li>
+            <li><a href="/api/v1/errors/">Implement errors, rate limits and retries</a></li>
+            <li><a href="/api/v1/resource-concurrency/">Protect concurrent writes</a></li>
+          </ul>
         </div>
-        <p>
-          Authentication, regional routing and resource semantics remain the same. Change the
-          interface without learning a second TeamGrid platform.
-        </p>
-      </div>
-
-      <div class="interface-switcher" data-interface-switcher>
-        <div class="interface-switcher__tabs" role="tablist" aria-label="TeamGrid interfaces">
-          {interfaces.map((item, index) => (
-            <button
-              type="button"
-              role="tab"
-              id={`interface-tab-${item.id}`}
-              aria-controls={`interface-panel-${item.id}`}
-              aria-selected={index === 0 ? 'true' : 'false'}
-              tabindex={index === 0 ? '0' : '-1'}
-              data-interface-tab={item.id}
-            >
-              <span>0{index + 1}</span>
-              <strong>{item.label}</strong>
-              <small>{item.meta}</small>
-            </button>
-          ))}
-        </div>
-        <div class="interface-switcher__panels">
-          {interfaces.map((item, index) => (
-            <article
-              id={`interface-panel-${item.id}`}
-              role="tabpanel"
-              aria-labelledby={`interface-tab-${item.id}`}
-              data-interface-panel={item.id}
-              hidden={index !== 0}
-            >
-              <div>
-                <span>Best for</span>
-                <strong>{item.bestFor}</strong>
-              </div>
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <a class="text-link" href={item.href}>
-                  {item.link} <span aria-hidden="true">→</span>
-                </a>
-              </div>
-              <code>{item.command}</code>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <section id="production-guides" class="home-resources">
-      <div class="home-resources__inner">
-        <div class="home-resources__heading">
-          <p class="home-kicker">Continue with a real workflow</p>
-          <h2>Guides written for production work.</h2>
-          <p>
-            Follow complete implementation paths for the work integrations need to handle beyond
-            the first successful request.
-          </p>
-        </div>
-
-        <aside class="home-release">
-          <div class="home-release__identity">
-            <span>Latest release · {latestRelease.date}</span>
-            <strong>{latestRelease.title}</strong>
-            <code>{latestRelease.version}</code>
+        <aside>
+          <span>Current release</span>
+          <strong>{latestRelease.title}</strong>
+          <p>{latestRelease.description}</p>
+          <div>
+            <a href="/changelog/">Read the changelog</a>
+            <a href="https://status.teamgrid.app/">Platform status ↗</a>
           </div>
-          <div class="home-release__details">
-            <p>{latestRelease.description}</p>
-            <ul>
-              {latestRelease.highlights.slice(0, 2).map((highlight) => <li>{highlight}</li>)}
-            </ul>
-          </div>
-          <a href="/changelog/">Read the changelog <span aria-hidden="true">→</span></a>
         </aside>
-
-        <div class="home-resources__guides">
-          <a href="/guides/reliable-webhooks/">
-            <span>Webhooks</span>
-            <strong>Build a reliable webhook consumer</strong>
-            <p>Verify signatures, acknowledge quickly and process deliveries idempotently.</p>
-            <em>Read guide <span aria-hidden="true">→</span></em>
-          </a>
-          <a href="/guides/upload-a-file/">
-            <span>Files</span>
-            <strong>Upload and attach a file</strong>
-            <p>Request an upload target, transfer bytes and attach the completed file safely.</p>
-            <em>Read guide <span aria-hidden="true">→</span></em>
-          </a>
-          <a href="/guides/audit-users-and-access/">
-            <span>Administration</span>
-            <strong>Audit users and access</strong>
-            <p>Review workspace membership and build a repeatable access report.</p>
-            <em>Read guide <span aria-hidden="true">→</span></em>
-          </a>
-        </div>
       </div>
     </section>
+  </div>
+</DocsLayout>
 
-    <section class="home-finish">
-      <div>
-        <p class="home-kicker">Ready when you are</p>
-        <h2>Make the first request, then build from the contract.</h2>
-      </div>
-      <div>
-        <a class="button button--dark" href="/api/v1/quickstart/">
-          Open the quickstart <span aria-hidden="true">→</span>
-        </a>
-        <a class="button button--outline" href="/api/v1/reference/">Browse API v1</a>
-      </div>
-    </section>
-  </main>
-</BaseLayout>
-
-<script>
-  const requestLab = document.querySelector<HTMLElement>('[data-request-lab]')
-  const codeTabs = requestLab?.querySelectorAll<HTMLButtonElement>('[data-code-tab]') || []
-  const codePanels = requestLab?.querySelectorAll<HTMLElement>('[data-code-panel]') || []
-
-  const selectCodeTab = (tab: HTMLButtonElement) => {
-    const selected = tab.dataset.codeTab
-    codeTabs.forEach((candidate) => {
-      const active = candidate === tab
-      candidate.setAttribute('aria-selected', String(active))
-      candidate.tabIndex = active ? 0 : -1
-    })
-    codePanels.forEach((panel) => {
-      panel.hidden = panel.dataset.codePanel !== selected
-    })
+<style>
+  .welcome-page {
+    --welcome-blue: #4169e8;
+    --welcome-blue-dark: #2f54cf;
+    --welcome-blue-soft: #f2f5ff;
+    --welcome-ink: #20242c;
+    --welcome-copy: #656c78;
+    --welcome-muted: #8b919b;
+    --welcome-rule: #dfe2e7;
   }
 
-  codeTabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => selectCodeTab(tab))
-    tab.addEventListener('keydown', (event) => {
-      const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
-      if (!keys.includes(event.key)) return
-      event.preventDefault()
-      let nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? codeTabs.length - 1 : index
-      if (event.key === 'ArrowLeft') nextIndex = (index - 1 + codeTabs.length) % codeTabs.length
-      if (event.key === 'ArrowRight') nextIndex = (index + 1) % codeTabs.length
-      const nextTab = codeTabs[nextIndex]
-      if (!nextTab) return
-      selectCodeTab(nextTab)
-      nextTab.focus()
-    })
-  })
-
-  requestLab?.querySelectorAll<HTMLButtonElement>('[data-region]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const region = button.dataset.region === 'us' ? 'us' : 'de'
-      requestLab.querySelectorAll<HTMLButtonElement>('[data-region]').forEach((candidate) => {
-        const active = candidate === button
-        candidate.classList.toggle('is-active', active)
-        candidate.setAttribute('aria-pressed', String(active))
-      })
-      const url = requestLab.querySelector<HTMLElement>('[data-regional-url]')
-      if (url) url.textContent = `https://api.${region}.teamgrid.app/v1/workspace`
-      const label = requestLab.querySelector<HTMLElement>('[data-region-label]')
-      if (label) label.textContent = region === 'us' ? 'United States region' : 'German region'
-      const responseRegion = requestLab.querySelector<HTMLElement>('[data-response-region]')
-      if (responseRegion) responseRegion.textContent = `"${region}"`
-      const responseCell = requestLab.querySelector<HTMLElement>('[data-response-cell]')
-      if (responseCell) {
-        responseCell.textContent = region === 'us' ? '"us-iad-001"' : '"de-nbg-001"'
-      }
-    })
-  })
-
-  const copyButton = requestLab?.querySelector<HTMLButtonElement>('[data-copy-request]')
-  copyButton?.addEventListener('click', async () => {
-    const activeCode = requestLab?.querySelector<HTMLElement>('[data-code-panel]:not([hidden])')
-    await navigator.clipboard.writeText(activeCode?.textContent || '')
-    copyButton.textContent = 'Copied'
-    window.setTimeout(() => {
-      copyButton.textContent = 'Copy'
-    }, 1600)
-  })
-
-  const interfaceSwitcher = document.querySelector<HTMLElement>('[data-interface-switcher]')
-  const interfaceTabs =
-    interfaceSwitcher?.querySelectorAll<HTMLButtonElement>('[data-interface-tab]') || []
-  const interfacePanels =
-    interfaceSwitcher?.querySelectorAll<HTMLElement>('[data-interface-panel]') || []
-
-  const selectInterfaceTab = (tab: HTMLButtonElement) => {
-    const selected = tab.dataset.interfaceTab
-    interfaceTabs.forEach((candidate) => {
-      const active = candidate === tab
-      candidate.setAttribute('aria-selected', String(active))
-      candidate.tabIndex = active ? 0 : -1
-    })
-    interfacePanels.forEach((panel) => {
-      panel.hidden = panel.dataset.interfacePanel !== selected
-    })
+  .welcome-page > section {
+    margin-top: 72px;
+    padding-top: 4px;
   }
 
-  interfaceTabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => selectInterfaceTab(tab))
-    tab.addEventListener('keydown', (event) => {
-      const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
-      if (!keys.includes(event.key)) return
-      event.preventDefault()
-      let nextIndex =
-        event.key === 'Home' ? 0 : event.key === 'End' ? interfaceTabs.length - 1 : index
-      if (event.key === 'ArrowLeft') {
-        nextIndex = (index - 1 + interfaceTabs.length) % interfaceTabs.length
-      }
-      if (event.key === 'ArrowRight') nextIndex = (index + 1) % interfaceTabs.length
-      const nextTab = interfaceTabs[nextIndex]
-      if (!nextTab) return
-      selectInterfaceTab(nextTab)
-      nextTab.focus()
-    })
-  })
-</script>
+  .welcome-page > section > h2 {
+    margin-top: 0;
+  }
+
+  .welcome-page > section > p {
+    max-width: 690px;
+  }
+
+  .welcome-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 10px 0 0;
+    overflow: hidden;
+    border: 1px solid var(--welcome-rule);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .welcome-summary > div {
+    padding: 18px 20px;
+    border-right: 1px solid var(--welcome-rule);
+  }
+
+  .welcome-summary > div:last-child {
+    border-right: 0;
+  }
+
+  .welcome-summary dt {
+    color: var(--welcome-muted);
+    font-size: 10px;
+  }
+
+  .welcome-summary dd {
+    margin: 5px 0 0;
+    color: var(--welcome-ink);
+    font-size: 12px;
+    font-weight: 680;
+  }
+
+  .welcome-interface-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .welcome-interface {
+    display: flex;
+    min-height: 220px;
+    flex-direction: column;
+    padding: 24px;
+    border: 1px solid var(--welcome-rule);
+    border-radius: 12px;
+    color: inherit;
+    background: #fff;
+    text-decoration: none;
+    transition:
+      border-color 140ms ease,
+      transform 140ms ease;
+  }
+
+  .welcome-interface:hover {
+    border-color: #b8c6f5;
+    transform: translateY(-1px);
+  }
+
+  .welcome-interface > span {
+    color: var(--welcome-muted);
+    font-size: 10px;
+  }
+
+  .welcome-interface h3 {
+    margin: 18px 0 0;
+    color: var(--welcome-ink);
+    font-size: 20px;
+    letter-spacing: -0.025em;
+  }
+
+  .welcome-interface p {
+    margin: 10px 0 20px;
+    color: var(--welcome-copy);
+    font-size: 12px;
+    line-height: 1.62;
+  }
+
+  .welcome-interface > strong {
+    margin-top: auto;
+    color: var(--welcome-blue-dark);
+    font-size: 11px;
+  }
+
+  .welcome-interface > strong i {
+    margin-left: 6px;
+    font-style: normal;
+  }
+
+  .welcome-request {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.82fr) minmax(360px, 1.18fr);
+    gap: 32px;
+    align-items: center;
+    margin-top: 30px;
+    padding: 30px;
+    border: 1px solid var(--welcome-rule);
+    border-radius: 12px;
+    background: #f8f9fb;
+  }
+
+  .welcome-request ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .welcome-request li {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--welcome-rule);
+  }
+
+  .welcome-request li:first-child {
+    padding-top: 0;
+  }
+
+  .welcome-request li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .welcome-request li > span {
+    color: var(--welcome-blue-dark);
+    font-size: 11px;
+    font-weight: 680;
+  }
+
+  .welcome-request li strong {
+    color: var(--welcome-ink);
+    font-size: 12px;
+  }
+
+  .welcome-request li p {
+    margin: 4px 0 0;
+    color: var(--welcome-copy);
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .welcome-request li code {
+    font-size: 9px;
+  }
+
+  .welcome-request__example {
+    overflow: hidden;
+    border: 1px solid #31343b;
+    border-radius: 11px;
+    color: #cbd0d8;
+    background: #1c1e23;
+  }
+
+  .welcome-request__example > div {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 0 16px;
+    border-bottom: 1px solid #353841;
+    color: #8b909b;
+    font-size: 9px;
+  }
+
+  .welcome-request__example > div:last-child {
+    border-top: 1px solid #353841;
+    border-bottom: 0;
+  }
+
+  .welcome-request__example > div > strong {
+    color: #79c397;
+    font-size: 9px;
+  }
+
+  .welcome-request__example > div > code {
+    color: #aebdf7;
+    font-size: 8px;
+  }
+
+  .welcome-request__example > div > a {
+    color: #c0cbf8;
+    font-size: 9px;
+  }
+
+  .welcome-request__example pre {
+    margin: 0;
+    padding: 22px 18px;
+    overflow: auto;
+    border: 0;
+    border-radius: 0;
+    color: #d8dbe1;
+    background: transparent;
+    font-size: 9px;
+    line-height: 1.75;
+    white-space: pre;
+  }
+
+  .welcome-workflows {
+    margin-top: 28px;
+    border-top: 1px solid var(--welcome-ink);
+  }
+
+  .welcome-workflows a {
+    display: grid;
+    grid-template-columns: 38px 1fr 18px;
+    gap: 18px;
+    align-items: start;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--welcome-rule);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .welcome-workflows a > span {
+    color: var(--welcome-blue-dark);
+    font-size: 10px;
+    font-weight: 680;
+  }
+
+  .welcome-workflows strong {
+    color: var(--welcome-ink);
+    font-size: 14px;
+  }
+
+  .welcome-workflows p {
+    margin: 6px 0 0;
+    color: var(--welcome-copy);
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .welcome-workflows i {
+    color: var(--welcome-ink);
+    font-size: 16px;
+    font-style: normal;
+  }
+
+  .welcome-production {
+    display: grid;
+    grid-template-columns: 1fr 0.92fr;
+    gap: 18px;
+    margin-top: 28px;
+  }
+
+  .welcome-production > div,
+  .welcome-production > aside {
+    padding: 24px;
+    border: 1px solid var(--welcome-rule);
+    border-radius: 12px;
+  }
+
+  .welcome-production h3 {
+    margin: 0 0 16px;
+    color: var(--welcome-ink);
+    font-size: 16px;
+  }
+
+  .welcome-production ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .welcome-production li {
+    border-top: 1px solid var(--welcome-rule);
+  }
+
+  .welcome-production li a {
+    display: block;
+    padding: 11px 0;
+    color: var(--welcome-ink);
+    font-size: 11px;
+    text-decoration: none;
+  }
+
+  .welcome-production li a::after {
+    float: right;
+    color: var(--welcome-muted);
+    content: "→";
+  }
+
+  .welcome-production > aside {
+    background: var(--welcome-blue-soft);
+  }
+
+  .welcome-production > aside > span {
+    color: var(--welcome-blue-dark);
+    font-size: 10px;
+    font-weight: 650;
+  }
+
+  .welcome-production > aside > strong {
+    display: block;
+    margin-top: 12px;
+    color: var(--welcome-ink);
+    font-size: 20px;
+  }
+
+  .welcome-production > aside > p {
+    margin: 12px 0 0;
+    color: var(--welcome-copy);
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .welcome-production > aside > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 23px;
+    padding-top: 18px;
+    border-top: 1px solid #ccd7fa;
+  }
+
+  .welcome-production > aside a {
+    color: var(--welcome-blue-dark);
+    font-size: 10px;
+    font-weight: 650;
+  }
+
+  @media (max-width: 760px) {
+    .welcome-summary,
+    .welcome-interface-grid,
+    .welcome-request,
+    .welcome-production {
+      grid-template-columns: 1fr;
+    }
+
+    .welcome-summary > div,
+    .welcome-summary > div:last-child {
+      border-right: 0;
+      border-bottom: 1px solid var(--welcome-rule);
+    }
+
+    .welcome-summary > div:last-child {
+      border-bottom: 0;
+    }
+
+    .welcome-interface {
+      min-height: 0;
+    }
+
+    .welcome-request {
+      padding: 20px;
+    }
+
+    .welcome-request__example pre {
+      font-size: 8px;
+    }
+  }
+</style>

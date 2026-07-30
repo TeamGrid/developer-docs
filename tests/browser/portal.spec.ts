@@ -13,42 +13,33 @@ test.beforeEach(async ({ page }) => {
 test('homepage remains structurally stable', async ({ page }, testInfo) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Build TeamGrid into the tools your team already uses.',
+    'Welcome to TeamGrid Developer',
   )
-  await expect(page.getByText('206 documented operations')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'What do you want to build?' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'One contract. Four ways to work.' })).toBeVisible()
+  await expect(page.locator('.docs-sidebar')).toBeVisible()
+  await expect(page.locator('.docs-sidebar a.is-current')).toHaveText('Developer home')
+  await expect(page.getByText('206 operations')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Choose an interface' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Make the first request' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Prepare for production' })).toBeVisible()
   await expect(page.locator('html')).toHaveJSProperty('scrollWidth', testInfo.project.name === 'mobile' ? 390 : 1440)
   await expect(page).toHaveScreenshot(`homepage-${testInfo.project.name}.png`, { fullPage: true })
 })
 
-test('homepage interface controls remain coherent and keyboard accessible', async ({ page }) => {
+test('homepage routes developers into every supported interface', async ({ page }) => {
   await page.goto('/')
 
-  const requestLab = page.locator('[data-request-lab]')
-  await requestLab.getByRole('button', { name: 'US', exact: true }).click()
-  await expect(requestLab.locator('[data-regional-url]')).toHaveText(
-    'https://api.us.teamgrid.app/v1/workspace',
+  const interfaces = page.locator('.welcome-interface-grid')
+  await expect(interfaces.getByRole('link', { name: /API v1/ })).toHaveAttribute('href', '/api/v1/')
+  await expect(interfaces.getByRole('link', { name: /TypeScript SDK/ })).toHaveAttribute(
+    'href',
+    '/sdk/',
   )
-  await expect(requestLab.locator('[data-response-region]')).toHaveText('"us"')
-  await expect(requestLab.locator('[data-response-cell]')).toHaveText('"us-iad-001"')
-
-  const curlTab = requestLab.getByRole('tab', { name: 'cURL', exact: true })
-  await curlTab.press('ArrowRight')
-  await expect(requestLab.getByRole('tab', { name: 'TypeScript', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
+  await expect(interfaces.getByRole('link', { name: /CLI/ })).toHaveAttribute('href', '/cli/')
+  await expect(interfaces.getByRole('link', { name: /MCP server/ })).toHaveAttribute(
+    'href',
+    '/mcp/',
   )
-  await expect(requestLab.locator('[data-code-panel="typescript"]')).toBeVisible()
-
-  const interfaceSwitcher = page.locator('[data-interface-switcher]')
-  const apiTab = interfaceSwitcher.getByRole('tab', { name: '01 API v1 HTTP · OpenAPI 3.1' })
-  await apiTab.press('End')
-  await expect(
-    interfaceSwitcher.getByRole('tab', { name: '04 MCP server @teamgrid/mcp-server' }),
-  ).toHaveAttribute('aria-selected', 'true')
-  await expect(interfaceSwitcher.getByRole('tabpanel', { name: '04 MCP server @teamgrid/mcp-server' }))
-    .toContainText('Give compatible AI clients bounded context.')
+  await expect(page.locator('.page-toc')).toContainText('Prepare for production')
 })
 
 test('search filters every documented surface', async ({ page }) => {

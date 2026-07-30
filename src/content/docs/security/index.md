@@ -2,7 +2,7 @@
 title: Security
 description: Handle TeamGrid API credentials, scopes, regional routing, webhooks, and vulnerability reports safely.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 ## Credentials
@@ -13,7 +13,7 @@ API credentials are bearer secrets. TeamGrid reveals a new API v1 credential onc
 - Use separate credentials per environment and workload.
 - Never place credentials in URLs, source control, screenshots, or support messages.
 - Do not pass credentials as command-line arguments.
-- Revoke suspected or unused credentials in **Settings → Developer**.
+- Revoke suspected or unused credentials in **Settings → Team → Developer → Access**.
 - Treat a copied credential as compromised, even if it was not used.
 
 The location prefix helps official clients choose the correct regional endpoint. It is not an authorization decision. The destination cell validates the full secret and workspace permissions.
@@ -31,9 +31,11 @@ SDK, CLI, and MCP are clients of this same API boundary. They cannot add authori
 removes most sensitive and all write operations from its local tool catalog, but its allowed reads
 still pass through the complete API policy.
 
-Stable API v1 issues reveal-once `tg_sk_v1_` personal-access and service-account credentials.
-Their principal, ownership, expiry, rotation, revocation, and resource-grant rules remain distinct.
-Delegated OAuth is not part of 1.0, and no existing credential is automatically converted.
+Stable API v1 issues reveal-once `tg_pat_v2_` personal access tokens and `tg_sa_v2_`
+service-account credentials. Existing `tg_sk_v1_` credentials remain supported during migration.
+The three formats have distinct principal, ownership, expiry, rotation, revocation, and
+resource-grant rules. Delegated OAuth is not part of 1.0, and no existing credential is
+automatically converted.
 
 ## Sensitive resource scopes
 

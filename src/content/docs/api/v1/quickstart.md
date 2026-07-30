@@ -2,12 +2,14 @@
 title: API v1 quickstart
 description: Create a TeamGrid API v1 credential and make the first workspace and task requests.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 ## 1. Create a credential
 
-In TeamGrid, open **Settings → Team → Developer**, choose API v1, select the minimum required scopes, and create a credential.
+In TeamGrid, open **Settings → Team → Developer → Access**. Create a personal access token for a
+workflow you own, or a service account for an independently operated production integration.
+Select only the scopes the first request needs.
 
 The secret is shown once. Store it in an OS keychain or secret manager. Do not place it in source control, command history, URLs, or logs.
 

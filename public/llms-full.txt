@@ -1790,19 +1790,44 @@ not a substitute for those checks.
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
-API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a credential in the `Authorization` header:
+API v1 accepts three reveal-once bearer credential formats:
+
+| Credential | Prefix | Use it for |
+| --- | --- | --- |
+| Personal access token | `tg_pat_v2_` | A developer's local tools, scripts, or other user-owned workflows |
+| Service-account credential | `tg_sa_v2_` | A deployed integration that must not depend on one person's account |
+| Legacy API v1 credential | `tg_sk_v1_` | Existing integrations while they migrate to a native principal |
+
+Send any of these credentials in the `Authorization` header:
 
 ```http
 Authorization: Bearer <credential>
 ```
 
-The current `tg_sk_v1_` format is used for reveal-once personal-access and service-account
-credentials. Their principal models, ownership, expiry, rotation, revocation, and resource grants
-remain distinct. Delegated OAuth is not part of the current public contract. Existing credentials
-are never converted automatically.
+The prefix is only a routing hint. Personal tokens, service accounts, and legacy credentials have
+different ownership, expiry, rotation, revocation, and resource-grant rules. Existing credentials
+are never converted automatically. Delegated OAuth is not part of the current public contract.
+
+## Choose a credential
+
+Use a personal access token when a named TeamGrid member owns and supervises the workflow. Its
+effective authority is the intersection of its scopes and that member's current workspace
+permissions. Disabling the member or removing a permission narrows access immediately.
+
+Use a service account for production services, shared automations, and integrations that must
+continue when an employee changes roles or leaves the workspace. A workspace administrator owns
+its lifecycle and can restrict it with scopes and resource grants independently of a human role.
+
+Create credentials in **Settings → Team → Developer → Access**. The secret is shown once. Store it
+directly in an operating-system keychain or secret manager; TeamGrid stores only a verifier.
+
+Creating a personal token requires the `settings.api.personalCredentials` permission. Managing
+service accounts requires `settings.api.serviceAccounts.manage`. An administrator with both
+permissions can create a personal token first and then use the Developer Center, CLI, SDK, or API
+to configure service accounts.
 
 ## Security model
 
@@ -1813,6 +1838,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
+- Personal and service-account principals must be active at request time.
 - The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
 
@@ -2589,12 +2615,14 @@ captured workflow shape and bulk creation state are not suitable bounded model t
 title: API v1 quickstart
 description: Create a TeamGrid API v1 credential and make the first workspace and task requests.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 ## 1. Create a credential
 
-In TeamGrid, open **Settings → Team → Developer**, choose API v1, select the minimum required scopes, and create a credential.
+In TeamGrid, open **Settings → Team → Developer → Access**. Create a personal access token for a
+workflow you own, or a service account for an independently operated production integration.
+Select only the scopes the first request needs.
 
 The secret is shown once. Store it in an OS keychain or secret manager. Do not place it in source control, command history, URLs, or logs.
 
@@ -3920,7 +3948,7 @@ reviewedAt: 2026-07-29
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0
+npm install --global @teamgrid/cli@1.0.1
 teamgrid --version
 ```
 
@@ -3945,13 +3973,13 @@ The CLI is a client of API v1. It does not create another API surface or bypass 
 title: Install and authenticate
 description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 ## Requirements
 
 - Node.js 22.14 through 24
-- A TeamGrid API v1 credential created in **Settings → Developer**
+- A TeamGrid API v1 credential created in **Settings → Team → Developer → Access**
 - Linux, macOS, or Windows
 - macOS Keychain or Linux Secret Service for persistent profiles
 
@@ -3965,7 +3993,7 @@ integration; the CLI never falls back to plaintext token storage.
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0
+npm install --global @teamgrid/cli@1.0.1
 teamgrid --help
 ```
 
@@ -4366,7 +4394,7 @@ See [signed webhooks](/api/v1/webhooks/) and the
 title: Roll out a service account
 description: Introduce a long-lived TeamGrid integration with least privilege, resource grants, and tested rotation.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 Use a service account when an integration represents a system rather than one person. Keep personal
@@ -4382,9 +4410,13 @@ actually implements those responsibilities.
 
 ## Create and reveal once
 
-Create the service account, attach its resource grants, and then issue a credential. The secret is
-returned once. Move it directly into a secret manager and record only the credential identifier,
-owner, purpose, and planned rotation date.
+The Developer Center creates the service-account principal and its first credential together. The
+initial grant set is derived from the selected scopes. Before production use, replace it through
+the API or CLI when the service must be restricted to specific governed resources. Additional
+credentials can then be issued only inside the account's existing scope ceiling.
+
+Every secret is returned once. Move it directly into a secret manager and record only the
+credential identifier, owner, purpose, and planned rotation date.
 
 ## Prove access before rollout
 
@@ -4495,7 +4527,7 @@ reviewedAt: 2026-07-29
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
+npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -4577,7 +4609,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
+npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
 teamgrid auth login
 ```
 
@@ -4768,16 +4800,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.0` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.0` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.0` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.1` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.1` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.1` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.0
-npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
+npm install @teamgrid/api-client@1.0.1
+npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent
@@ -4809,9 +4841,9 @@ The stable public packages share version `1.0.0` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.0` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.0` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.0` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.1` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.1` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.1` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.
@@ -4830,7 +4862,7 @@ their generated requests aligned with every path, parameter and schema in the st
 
 ## Credential setup
 
-Create credentials from **TeamGrid Settings → Developer**. Select the smallest required scopes,
+Create credentials from **TeamGrid Settings → Team → Developer → Access**. Select the smallest required scopes,
 copy the reveal-once secret into the client’s environment or secret store, and use the region
 encoded by the credential.
 
@@ -4890,7 +4922,7 @@ reviewedAt: 2026-07-29
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.0
+npm install @teamgrid/api-client@1.0.1
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -4949,7 +4981,7 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.0`; pin that exact version in
+The compatible package checkpoint for this contract is `1.0.1`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
@@ -5122,7 +5154,7 @@ reviewedAt: 2026-07-29
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.0
+npm install @teamgrid/api-client@1.0.1
 ```
 
 ## Create a client
@@ -5300,7 +5332,7 @@ log the signing secret or an unrestricted payload.
 title: Security
 description: Handle TeamGrid API credentials, scopes, regional routing, webhooks, and vulnerability reports safely.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 ## Credentials
@@ -5311,7 +5343,7 @@ API credentials are bearer secrets. TeamGrid reveals a new API v1 credential onc
 - Use separate credentials per environment and workload.
 - Never place credentials in URLs, source control, screenshots, or support messages.
 - Do not pass credentials as command-line arguments.
-- Revoke suspected or unused credentials in **Settings → Developer**.
+- Revoke suspected or unused credentials in **Settings → Team → Developer → Access**.
 - Treat a copied credential as compromised, even if it was not used.
 
 The location prefix helps official clients choose the correct regional endpoint. It is not an authorization decision. The destination cell validates the full secret and workspace permissions.
@@ -5329,9 +5361,11 @@ SDK, CLI, and MCP are clients of this same API boundary. They cannot add authori
 removes most sensitive and all write operations from its local tool catalog, but its allowed reads
 still pass through the complete API policy.
 
-Stable API v1 issues reveal-once `tg_sk_v1_` personal-access and service-account credentials.
-Their principal, ownership, expiry, rotation, revocation, and resource-grant rules remain distinct.
-Delegated OAuth is not part of 1.0, and no existing credential is automatically converted.
+Stable API v1 issues reveal-once `tg_pat_v2_` personal access tokens and `tg_sa_v2_`
+service-account credentials. Existing `tg_sk_v1_` credentials remain supported during migration.
+The three formats have distinct principal, ownership, expiry, rotation, revocation, and
+resource-grant rules. Delegated OAuth is not part of 1.0, and no existing credential is
+automatically converted.
 
 ## Sensitive resource scopes
 

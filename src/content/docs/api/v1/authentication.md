@@ -2,19 +2,44 @@
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
-API v1 uses reveal-once service credentials with the `tg_sk_v1_` prefix. Send a credential in the `Authorization` header:
+API v1 accepts three reveal-once bearer credential formats:
+
+| Credential | Prefix | Use it for |
+| --- | --- | --- |
+| Personal access token | `tg_pat_v2_` | A developer's local tools, scripts, or other user-owned workflows |
+| Service-account credential | `tg_sa_v2_` | A deployed integration that must not depend on one person's account |
+| Legacy API v1 credential | `tg_sk_v1_` | Existing integrations while they migrate to a native principal |
+
+Send any of these credentials in the `Authorization` header:
 
 ```http
 Authorization: Bearer <credential>
 ```
 
-The current `tg_sk_v1_` format is used for reveal-once personal-access and service-account
-credentials. Their principal models, ownership, expiry, rotation, revocation, and resource grants
-remain distinct. Delegated OAuth is not part of the current public contract. Existing credentials
-are never converted automatically.
+The prefix is only a routing hint. Personal tokens, service accounts, and legacy credentials have
+different ownership, expiry, rotation, revocation, and resource-grant rules. Existing credentials
+are never converted automatically. Delegated OAuth is not part of the current public contract.
+
+## Choose a credential
+
+Use a personal access token when a named TeamGrid member owns and supervises the workflow. Its
+effective authority is the intersection of its scopes and that member's current workspace
+permissions. Disabling the member or removing a permission narrows access immediately.
+
+Use a service account for production services, shared automations, and integrations that must
+continue when an employee changes roles or leaves the workspace. A workspace administrator owns
+its lifecycle and can restrict it with scopes and resource grants independently of a human role.
+
+Create credentials in **Settings → Team → Developer → Access**. The secret is shown once. Store it
+directly in an operating-system keychain or secret manager; TeamGrid stores only a verifier.
+
+Creating a personal token requires the `settings.api.personalCredentials` permission. Managing
+service accounts requires `settings.api.serviceAccounts.manage`. An administrator with both
+permissions can create a personal token first and then use the Developer Center, CLI, SDK, or API
+to configure service accounts.
 
 ## Security model
 
@@ -25,6 +50,7 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
 - Existing credentials remain visible by name and metadata so administrators can revoke them.
+- Personal and service-account principals must be active at request time.
 - The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
 

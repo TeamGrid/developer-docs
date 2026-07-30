@@ -8,7 +8,7 @@ reviewedAt: 2026-07-29
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0 @teamgrid/mcp-server@1.0.0
+npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
 teamgrid auth login
 teamgrid auth status --check
 ```

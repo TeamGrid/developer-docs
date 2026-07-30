@@ -10,7 +10,7 @@ reviewedAt: 2026-07-29
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0
+npm install --global @teamgrid/cli@1.0.1
 teamgrid --version
 ```
 

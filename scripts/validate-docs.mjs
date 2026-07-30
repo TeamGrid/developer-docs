@@ -52,7 +52,7 @@ if (
   packageManifest.schemaVersion !== 1
   || packageManifest.sourceRepository !== 'TeamGrid/developer-platform'
   || !/^[0-9a-f]{40}$/.test(packageManifest.sourceCommit || '')
-  || packageManifest.version !== '1.0.0'
+  || !/^\d+\.\d+\.\d+$/.test(packageManifest.version || '')
   || Object.values(packageManifest.packages || {}).some(
     (item) => item.version !== packageManifest.version || !/^[a-f0-9]{64}$/.test(item.sha256 || ''),
   )

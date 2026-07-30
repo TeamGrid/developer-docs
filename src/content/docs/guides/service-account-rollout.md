@@ -2,7 +2,7 @@
 title: Roll out a service account
 description: Introduce a long-lived TeamGrid integration with least privilege, resource grants, and tested rotation.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 Use a service account when an integration represents a system rather than one person. Keep personal
@@ -18,9 +18,13 @@ actually implements those responsibilities.
 
 ## Create and reveal once
 
-Create the service account, attach its resource grants, and then issue a credential. The secret is
-returned once. Move it directly into a secret manager and record only the credential identifier,
-owner, purpose, and planned rotation date.
+The Developer Center creates the service-account principal and its first credential together. The
+initial grant set is derived from the selected scopes. Before production use, replace it through
+the API or CLI when the service must be restricted to specific governed resources. Additional
+credentials can then be issued only inside the account's existing scope ceiling.
+
+Every secret is returned once. Move it directly into a secret manager and record only the
+credential identifier, owner, purpose, and planned rotation date.
 
 ## Prove access before rollout
 

@@ -72,11 +72,11 @@ for (const [name, packagePath] of Object.entries(packagePaths)) {
 
 const version = packages.apiClient.version
 if (
-  version !== '1.0.0'
+  !/^\d+\.\d+\.\d+$/.test(version)
   || packages.cli.version !== version
   || packages.mcpServer.version !== version
 ) {
-  throw new Error('All public Developer Platform packages must use stable version 1.0.0.')
+  throw new Error('All public Developer Platform packages must use the same stable version.')
 }
 
 const { document: cliPackage } = await readSourceJson(packagePaths.cli)

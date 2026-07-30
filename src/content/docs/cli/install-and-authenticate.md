@@ -2,13 +2,13 @@
 title: Install and authenticate
 description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-30
 ---
 
 ## Requirements
 
 - Node.js 22.14 through 24
-- A TeamGrid API v1 credential created in **Settings → Developer**
+- A TeamGrid API v1 credential created in **Settings → Team → Developer → Access**
 - Linux, macOS, or Windows
 - macOS Keychain or Linux Secret Service for persistent profiles
 
@@ -22,7 +22,7 @@ integration; the CLI never falls back to plaintext token storage.
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.0
+npm install --global @teamgrid/cli@1.0.1
 teamgrid --help
 ```
 

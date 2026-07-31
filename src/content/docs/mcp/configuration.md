@@ -2,13 +2,13 @@
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
+npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -58,6 +58,8 @@ use. If a host cannot isolate environment variables or redact logs reliably, do 
 credential into it.
 
 The server communicates over standard input/output. It does not listen on a TCP port.
+It does not open a browser. Complete `teamgrid auth login` in a terminal first. An unattended MCP
+process must use a service-account credential rather than a personal browser credential.
 
 ## Verify the connection
 

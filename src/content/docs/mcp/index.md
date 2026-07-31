@@ -2,7 +2,7 @@
 title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 `@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
@@ -10,7 +10,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
+npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
 teamgrid auth login
 ```
 

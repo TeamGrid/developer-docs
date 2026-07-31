@@ -100,6 +100,7 @@ export const navigation: NavigationGroup[] = [
     label: 'Resources',
     items: [
       { label: 'Developer tooling', href: '/resources/developer-tooling/' },
+      { label: 'Authentication by environment', href: '/resources/authentication-by-environment/' },
       { label: 'Versions and compatibility', href: '/resources/compatibility/' },
       { label: 'Request troubleshooting', href: '/resources/troubleshooting/' },
       { label: 'Changelog', href: '/changelog/' },

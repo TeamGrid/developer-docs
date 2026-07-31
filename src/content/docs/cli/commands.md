@@ -2,7 +2,7 @@
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Global options
@@ -20,7 +20,8 @@ Global options can be placed before a command group.
 ## Authentication and workspace
 
 ```text
-teamgrid auth login [--token-stdin]
+teamgrid auth login [--preset read-only|daily-work] [--scope SCOPE]
+  [--no-browser|--manual|--token-stdin] [--replace]
 teamgrid auth logout
 teamgrid auth profiles
 teamgrid auth status [--check]
@@ -59,6 +60,11 @@ teamgrid service-accounts grants get|replace --if-match REVISION
 Credential secrets are returned once. Move them directly into a secret manager. Resource-grant
 replacement is a complete compare-and-set operation; read the current grant revision before
 replacing it.
+
+Browser login is the default authentication path. `--no-browser` prints the private approval URL
+but still requires the loopback callback to reach the CLI host. `--manual` prompts for an existing
+personal or service credential; `--token-stdin` reads it without placing it in process arguments.
+`auth logout` is local only, so revoke the server credential separately when access must stop.
 
 ## Projects and lifecycle operations
 

@@ -1790,7 +1790,7 @@ not a substitute for those checks.
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-07-30
+reviewedAt: 2026-07-31
 ---
 
 API v1 accepts three reveal-once bearer credential formats:
@@ -1824,6 +1824,12 @@ its lifecycle and can restrict it with scopes and resource grants independently 
 Create credentials in **Settings → Team → Developer → Access**. The secret is shown once. Store it
 directly in an operating-system keychain or secret manager; TeamGrid stores only a verifier.
 
+For a local CLI, `teamgrid auth login` is the preferred personal-credential flow. It opens the
+normal TeamGrid login, asks the user to choose a workspace and approve bounded scopes, and stores
+the new credential in the operating-system credential store. The Developer Center labels it
+**TeamGrid CLI** and shows its non-secret client and lifecycle metadata. The SDK never opens a
+browser, and CI or unattended services must use service accounts.
+
 Creating a personal token requires the `settings.api.personalCredentials` permission. Managing
 service accounts requires `settings.api.serviceAccounts.manage`. An administrator with both
 permissions can create a personal token first and then use the Developer Center, CLI, SDK, or API
@@ -1837,10 +1843,25 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Bearer requests are not redirected to another region.
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
-- Existing credentials remain visible by name and metadata so administrators can revoke them.
+- Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
+- Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
 - The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
+
+`teamgrid auth logout` deletes only the local CLI profile and keychain entry. Revoke the credential
+in Developer Center when server-side access must stop. Expired or revoked credentials are replaced,
+not restored.
+
+## API v0 legacy tokens
+
+API v0 workspace tokens are separate legacy credentials and are accepted only by the v0 contract.
+They are not personal credentials, service accounts, browser-login results, or valid API v1 bearer
+credentials. Existing v0 integrations can continue during migration, but new automation should use
+API v1 with a personal credential for local work or a service account for unattended workloads.
+
+See [authentication by environment](/resources/authentication-by-environment/) for the exact local
+desktop, remote terminal, container, MCP, SDK, and CI choices.
 
 ## Scopes
 
@@ -3417,7 +3438,7 @@ The previous ReadMe changelog has been preserved below for historical context:
 title: CLI automation
 description: Use TeamGrid CLI output modes, pagination, idempotency, and exit codes safely in scripts and CI.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Prefer structured output
@@ -3497,6 +3518,7 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 
 ## CI checklist
 
+- Create a dedicated service account; never use `teamgrid auth login` or a personal credential in CI.
 - Store `TEAMGRID_API_TOKEN` in the CI secret store and mask it in logs.
 - Grant only the scopes the job needs.
 - Use JSON or JSONL output.
@@ -3509,7 +3531,7 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Global options
@@ -3527,7 +3549,8 @@ Global options can be placed before a command group.
 ## Authentication and workspace
 
 ```text
-teamgrid auth login [--token-stdin]
+teamgrid auth login [--preset read-only|daily-work] [--scope SCOPE]
+  [--no-browser|--manual|--token-stdin] [--replace]
 teamgrid auth logout
 teamgrid auth profiles
 teamgrid auth status [--check]
@@ -3566,6 +3589,11 @@ teamgrid service-accounts grants get|replace --if-match REVISION
 Credential secrets are returned once. Move them directly into a secret manager. Resource-grant
 replacement is a complete compare-and-set operation; read the current grant revision before
 replacing it.
+
+Browser login is the default authentication path. `--no-browser` prints the private approval URL
+but still requires the loopback callback to reach the CLI host. `--manual` prompts for an existing
+personal or service credential; `--token-stdin` reads it without placing it in process arguments.
+`auth logout` is local only, so revoke the server credential separately when access must stop.
 
 ## Projects and lifecycle operations
 
@@ -3940,7 +3968,7 @@ workflow.
 title: TeamGrid CLI
 description: Inspect and automate TeamGrid API v1 from a terminal or CI job with structured output and stable exit codes.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
@@ -3948,13 +3976,14 @@ reviewedAt: 2026-07-29
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.1
+npm install --global @teamgrid/cli@1.0.2
 teamgrid --version
 ```
 
 ## What the CLI adds
 
-- Credentials in macOS Keychain or Linux Secret Service instead of the profile JSON
+- Browser login with workspace selection, scope approval, PKCE, and a loopback callback
+- Credentials in macOS Keychain, Linux Secret Service, or Windows Credential Manager instead of the profile JSON
 - Named profiles for different workspaces or environments
 - Human-readable tables and machine-readable JSON or JSONL
 - Cursor pagination with bounded `--all` traversal
@@ -3971,42 +4000,71 @@ The CLI is a client of API v1. It does not create another API surface or bypass 
 <!-- cli/install-and-authenticate.md -->
 ---
 title: Install and authenticate
-description: Install the stable TeamGrid CLI and store an API v1 credential in the operating-system credential store.
+description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-07-30
+reviewedAt: 2026-07-31
 ---
 
 ## Requirements
 
 - Node.js 22.14 through 24
-- A TeamGrid API v1 credential created in **Settings → Team → Developer → Access**
+- A TeamGrid account with access to an enabled workspace
 - Linux, macOS, or Windows
-- macOS Keychain or Linux Secret Service for persistent profiles
-
-Stable 1.0 supports the CLI on Windows with a process-scoped
-`TEAMGRID_API_TOKEN`. Persistent Windows profiles are deliberately unavailable
-until TeamGrid can qualify a native operating-system credential-store
-integration; the CLI never falls back to plaintext token storage.
+- macOS Keychain, Linux Secret Service, or Windows Credential Manager for persistent profiles
 
 ## Install
 
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.1
+npm install --global @teamgrid/cli@1.0.2
 teamgrid --help
 ```
 
-## Create the default profile
+## Sign in through the browser
 
 ```bash
 teamgrid auth login
 teamgrid auth status --check
 ```
 
-The credential prompt is masked. The secret is written to the operating-system credential store; the CLI profile file contains only non-secret location metadata.
+The CLI opens TeamGrid in the system browser. Sign in normally, select one workspace, compare the
+pairing phrase shown in the browser and terminal, review the requested scopes, and approve. The
+regional cell creates a personal credential named **TeamGrid CLI** and returns it through an
+Authorization Code with PKCE loopback flow.
 
-To avoid shell history and process arguments in a non-interactive setup, pass the credential over standard input:
+The reveal-once secret is written to the operating-system credential store. The CLI profile contains
+only non-secret region, cell, credential ID, scopes, expiry, origin, and timestamps. TeamGrid never
+writes the browser session, authorization code, or credential secret to that file.
+
+Use the bounded `daily-work` preset only when the CLI needs ordinary task writes:
+
+```bash
+teamgrid auth login --preset daily-work
+```
+
+Browser login rejects sensitive administrative, finance, credential-management, and PII scopes.
+Create an explicitly scoped personal credential in Developer Center and import it with `--manual`
+when a reviewed local workflow genuinely needs one.
+
+## When a browser cannot open
+
+`--no-browser` prints the private, short-lived approval URL while the CLI continues to wait for its
+loopback callback:
+
+```bash
+teamgrid auth login --no-browser
+```
+
+This is not a general device flow. The callback must still reach the machine running the CLI. For a
+remote host without a safe callback path, create a personal credential in Developer Center and use:
+
+```bash
+teamgrid auth login --manual
+```
+
+To avoid shell history and process arguments, an existing credential can also be passed over
+standard input:
 
 ```bash
 printf '%s' "$TEAMGRID_API_TOKEN" | teamgrid auth login --token-stdin
@@ -4027,15 +4085,23 @@ Remove a stored profile and its credential with:
 teamgrid --profile production auth logout
 ```
 
+This logout is local only. It removes the profile and operating-system credential-store entry but
+does not revoke the server credential. Revoke **TeamGrid CLI** under **Settings → Team → Developer
+Center → Access** when access must stop. An existing profile is never overwritten implicitly; use a
+different profile or `--replace` only after deciding whether the prior credential must be revoked.
+
 ## Ephemeral credentials
 
-For a short-lived CI process, provide `TEAMGRID_API_TOKEN` directly to the process instead of creating a persistent profile. Secret masking and log redaction still belong in the CI system.
+For a short-lived process, provide `TEAMGRID_API_TOKEN` directly instead of creating a persistent
+profile. CI and unattended services must use a service-account credential from a secret manager,
+not a personal browser credential. Secret masking and log redaction still belong in the execution
+environment.
 
 ```bash
 TEAMGRID_API_TOKEN="$TEAMGRID_API_TOKEN" teamgrid workspace --output json
 ```
 
-This is also the supported authentication mode on Windows. PowerShell example:
+PowerShell example:
 
 ```powershell
 $env:TEAMGRID_API_TOKEN = "<credential>"
@@ -4044,6 +4110,8 @@ Remove-Item Env:TEAMGRID_API_TOKEN
 ```
 
 Never commit credentials, place them in command-line arguments, or print them for debugging.
+See [authentication by environment](/resources/authentication-by-environment/) for remote shells,
+containers, SDK, MCP, CI, expiry, revocation, and safe support data.
 
 <!-- guides/audit-users-and-access.md -->
 ---
@@ -4521,13 +4589,13 @@ operations.
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
+npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -4577,6 +4645,8 @@ use. If a host cannot isolate environment variables or redact logs reliably, do 
 credential into it.
 
 The server communicates over standard input/output. It does not listen on a TCP port.
+It does not open a browser. Complete `teamgrid auth login` in a terminal first. An unattended MCP
+process must use a service-account credential rather than a personal browser credential.
 
 ## Verify the connection
 
@@ -4601,7 +4671,7 @@ an authorization boundary in addition to the scopes held by the credential.
 title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 `@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
@@ -4609,7 +4679,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
+npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
 teamgrid auth login
 ```
 
@@ -4786,12 +4856,147 @@ Both generated downloads contain placeholders rather than credentials. Set `base
 regional endpoint indicated by the credential and keep `token` in the client’s secret or
 environment store.
 
+<!-- resources/authentication-by-environment.md -->
+---
+title: Authentication by environment
+description: Choose the correct TeamGrid credential and sign-in method for a desktop, remote terminal, container, SDK, MCP host, or CI job.
+owner: Security
+reviewedAt: 2026-07-31
+---
+
+TeamGrid deliberately separates interactive access from unattended automation. A developer working
+locally should use a personal credential tied to their own membership. A deployed process should use
+a service account whose lifecycle is owned by the workspace.
+
+| Environment | Recommended authentication | Why |
+| --- | --- | --- |
+| Local desktop CLI | `teamgrid auth login` | Opens TeamGrid in the browser and stores a scoped personal credential in the operating-system credential store |
+| Remote terminal | A personal credential imported with `--manual`, or `--no-browser` only when the loopback callback can reach the CLI host | The browser flow still finishes on the CLI host's IPv4 loopback address |
+| Interactive development container | A short-lived personal credential injected through `TEAMGRID_API_TOKEN` | Containers often have no usable desktop credential store; do not bake the value into an image or layer |
+| Local SDK script | Personal credential from the process environment | The SDK accepts an explicit token and never starts a browser flow |
+| Local MCP host | An existing CLI profile | The MCP server reads the same operating-system credential store and never opens a browser itself |
+| CI, server, or scheduled job | Service-account credential from a secret manager | It remains independent of one employee's login and can be rotated without changing a personal account |
+
+## Local desktop
+
+Install the CLI, then start the default browser flow:
+
+```bash
+teamgrid auth login
+teamgrid auth status --check
+```
+
+Sign in with the normal TeamGrid login, select one workspace, compare the pairing phrase in the
+browser and terminal, review the requested scopes, and approve. The owning regional cell creates a
+credential named **TeamGrid CLI**. Developer Center shows its creation time, last use, expiry,
+scopes, region, status, platform, and CLI version without revealing the secret.
+
+The CLI stores the secret in macOS Keychain, Linux Secret Service, or Windows Credential Manager.
+Its profile file contains location and lifecycle metadata only.
+
+## Remote terminals
+
+`teamgrid auth login --no-browser` prints the short-lived approval URL instead of invoking the
+system browser. It still waits for the exact callback on the CLI process's IPv4 loopback address.
+Use it only when that callback is available on the same host or through a deliberately configured,
+private forwarding path. Do not paste the URL into logs or send it to another person.
+
+When loopback delivery is unavailable, create a narrowly scoped personal credential in
+**Settings → Team → Developer Center → Access** and import it interactively:
+
+```bash
+teamgrid auth login --manual
+```
+
+For a non-interactive but still user-owned setup, deliver the reveal-once value over standard input:
+
+```bash
+printf '%s' "$TEAMGRID_API_TOKEN" | teamgrid auth login --token-stdin
+```
+
+Device authorization is not part of this release.
+
+## Containers
+
+Do not install a desktop keyring only to make an ephemeral container look like a workstation.
+Inject a short-lived credential at runtime and remove it with the container:
+
+```bash
+TEAMGRID_API_TOKEN="$TEAMGRID_API_TOKEN" teamgrid workspace --output json
+```
+
+Use a personal credential only for an interactive developer-owned container. A shared, scheduled,
+or production container must use a service account. Never put a TeamGrid credential in an image,
+Dockerfile, Compose file, build argument, repository variable, or diagnostic archive.
+
+## SDK
+
+The TypeScript SDK accepts a credential explicitly and derives the regional endpoint from it:
+
+```ts
+const client = new TeamGridClient({
+  token: process.env.TEAMGRID_API_TOKEN!,
+})
+```
+
+It does not open a browser or reuse a CLI profile. Use a personal credential for a local script and
+a service-account credential for a deployed process.
+
+## MCP
+
+Authenticate the CLI before starting a local MCP host:
+
+```bash
+teamgrid auth login
+teamgrid auth status --check
+teamgrid-mcp --profile default --tool-profile core
+```
+
+The MCP server reads the selected CLI profile and operating-system credential store. It never
+starts an interactive login and exposes no credential-management tools. For an unattended MCP
+process, inject a service-account credential through the process environment only if the host can
+isolate secrets and redact logs reliably.
+
+## CI and unattended services
+
+Create a dedicated service account in Developer Center, grant only the required scopes and resource
+access, and store its reveal-once credential in the CI platform's secret manager. Inject it as
+`TEAMGRID_API_TOKEN` at runtime. Do not run `teamgrid auth login`, create a personal credential, or
+persist a CLI profile in CI.
+
+Rotate a service credential by adding the replacement, updating the secret manager, verifying the
+new generation, and then revoking the predecessor after the intended grace period.
+
+## Logout, expiry, and revocation
+
+`teamgrid auth logout` removes only the local profile and its operating-system credential-store
+entry. It does not contact TeamGrid and does not revoke the server-side credential. This makes local
+cleanup reliable while offline, but the credential remains usable wherever else it was copied.
+
+To stop access, revoke the exact credential in **Developer Center → Access**. Expired or revoked
+credentials cannot be renewed in place; run browser login again or issue a replacement service
+credential. Disabling or removing a TeamGrid member immediately affects their personal credentials.
+
+## Safe support data
+
+Run `teamgrid auth status --check` and record only:
+
+- the command's non-secret status and error code;
+- profile name, region, cell, credential ID, authentication source, scopes, and expiry;
+- CLI, Node.js, and operating-system versions;
+- the API response status, structured error code, `meta.requestId`, and timestamp.
+
+Never send the bearer credential, browser approval URL, authorization code, PKCE verifier, pairing
+request, operating-system keychain export, environment dump, profile directory archive, request or
+response body containing customer data, or an unredacted terminal transcript. Reproduce with a
+bounded `teamgrid workspace --output json` request before collecting broader logs.
+
 <!-- resources/compatibility.md -->
 ---
 title: Versions and compatibility
 description: Match the stable TeamGrid API contract with supported SDK, CLI, MCP, and Node.js versions.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 The stable Developer Platform is released as one synchronized compatibility checkpoint. Pin the
@@ -4800,16 +5005,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.1` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.1` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.1` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.2` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.2` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.2` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.1
-npm install --global @teamgrid/cli@1.0.1 @teamgrid/mcp-server@1.0.1
+npm install @teamgrid/api-client@1.0.2
+npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent
@@ -4832,18 +5037,18 @@ from the same verified contract used by this documentation.
 title: Developer tooling and downloads
 description: Official TeamGrid packages, API contracts and importable client collections in one place.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Official packages
 
-The stable public packages share version `1.0.0` and the API v1 contract:
+The stable public packages share version `1.0.2` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.1` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.1` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.1` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.2` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.2` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.2` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.
@@ -4866,6 +5071,9 @@ Create credentials from **TeamGrid Settings → Team → Developer → Access**.
 copy the reveal-once secret into the client’s environment or secret store, and use the region
 encoded by the credential.
 
+For a local CLI, prefer browser login instead of creating and pasting a token. For a deployed
+integration or CI job, create a service account and inject its credential from a secret manager.
+
 Never commit a credential into a collection, `.http` file, shell history or source repository.
 
 <!-- resources/troubleshooting.md -->
@@ -4873,7 +5081,7 @@ Never commit a credential into a collection, `.http` file, shell history or sour
 title: Request troubleshooting
 description: Diagnose TeamGrid API failures from authentication and scopes through concurrency, routing, and rate limits.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 Start with the HTTP status, structured error code, and `meta.requestId`. Never include a bearer
@@ -4906,6 +5114,13 @@ send German credentials to `https://api.de.teamgrid.app/v1` and United States cr
 4. For a write, obtain the latest resource revision and keep the same idempotency key.
 5. Record the response status, error code, request ID, time, and regional endpoint.
 
+For CLI authentication, run `teamgrid auth status --check`. A support report may include the
+profile name, region, cell, credential ID, authentication source, scopes, expiry, CLI version,
+Node.js version, operating system, structured error code, and request ID. It must not include a
+credential, environment dump, browser approval URL, authorization code, PKCE verifier, keychain
+export, customer response body, or unredacted terminal transcript. See
+[authentication by environment](/resources/authentication-by-environment/).
+
 The [errors and rate limits guide](/api/v1/errors/) defines retry behavior. For platform-wide
 availability, check [TeamGrid Status](https://status.teamgrid.app/).
 
@@ -4914,7 +5129,7 @@ availability, check [TeamGrid Status](https://status.teamgrid.app/).
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -4922,7 +5137,7 @@ reviewedAt: 2026-07-29
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.1
+npm install @teamgrid/api-client@1.0.2
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -4981,7 +5196,7 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.1`; pin that exact version in
+The compatible package checkpoint for this contract is `1.0.2`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
@@ -5148,13 +5363,13 @@ CLI `--wait` supplies the acceptance binding automatically.
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.1
+npm install @teamgrid/api-client@1.0.2
 ```
 
 ## Create a client
@@ -5168,6 +5383,9 @@ const client = new TeamGridClient({
 ```
 
 The client derives the regional API endpoint from the credential. Do not hard-code the German endpoint in a multi-region service.
+The SDK never starts browser authentication and does not read CLI profiles. Use a personal
+credential from the process environment for a local developer-owned script. Use a service-account
+credential from a secret manager for every deployed, scheduled, or shared process.
 
 ## Read a page
 
@@ -5249,6 +5467,8 @@ options; always read their current revision first. See
 [resource concurrency](/api/v1/resource-concurrency/).
 
 Keep the credential in a secret manager and inject it through the process environment. Never bundle it into browser code.
+See [authentication by environment](/resources/authentication-by-environment/) for lifecycle and
+revocation guidance.
 
 <!-- sdk/webhook-verification.md -->
 ---

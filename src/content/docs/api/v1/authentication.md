@@ -2,7 +2,7 @@
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-07-30
+reviewedAt: 2026-07-31
 ---
 
 API v1 accepts three reveal-once bearer credential formats:
@@ -36,6 +36,12 @@ its lifecycle and can restrict it with scopes and resource grants independently 
 Create credentials in **Settings → Team → Developer → Access**. The secret is shown once. Store it
 directly in an operating-system keychain or secret manager; TeamGrid stores only a verifier.
 
+For a local CLI, `teamgrid auth login` is the preferred personal-credential flow. It opens the
+normal TeamGrid login, asks the user to choose a workspace and approve bounded scopes, and stores
+the new credential in the operating-system credential store. The Developer Center labels it
+**TeamGrid CLI** and shows its non-secret client and lifecycle metadata. The SDK never opens a
+browser, and CI or unattended services must use service accounts.
+
 Creating a personal token requires the `settings.api.personalCredentials` permission. Managing
 service accounts requires `settings.api.serviceAccounts.manage`. An administrator with both
 permissions can create a personal token first and then use the Developer Center, CLI, SDK, or API
@@ -49,10 +55,25 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Bearer requests are not redirected to another region.
 - Revocation takes effect without changing other credentials.
 - The secret cannot be revealed again after creation.
-- Existing credentials remain visible by name and metadata so administrators can revoke them.
+- Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
+- Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
 - The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
   before the service is ready.
+
+`teamgrid auth logout` deletes only the local CLI profile and keychain entry. Revoke the credential
+in Developer Center when server-side access must stop. Expired or revoked credentials are replaced,
+not restored.
+
+## API v0 legacy tokens
+
+API v0 workspace tokens are separate legacy credentials and are accepted only by the v0 contract.
+They are not personal credentials, service accounts, browser-login results, or valid API v1 bearer
+credentials. Existing v0 integrations can continue during migration, but new automation should use
+API v1 with a personal credential for local work or a service account for unattended workloads.
+
+See [authentication by environment](/resources/authentication-by-environment/) for the exact local
+desktop, remote terminal, container, MCP, SDK, and CI choices.
 
 ## Scopes
 

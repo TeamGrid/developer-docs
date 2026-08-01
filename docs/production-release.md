@@ -13,6 +13,13 @@ contract, content, HTML, browser, and visual regression checks.
 5. CI deploys the preserved verified artifact atomically to Cloudflare Pages.
 6. The workflow runs public smoke requests against the canonical domain.
 
+Authentication documentation has an additional ordering rule. Do not publish browser-login,
+Windows Credential Manager, or `TeamGrid CLI` lifecycle guidance merely because its portal change
+is ready. First verify that the pinned CLI package exists on npm and that the exact App candidate
+with browser authorization and structured credential metadata is healthy in both active production
+cells. Publish the portal only after DE and US expose the same behavior; otherwise keep the previous
+portal revision live. This prevents documentation from becoming an accidental feature flag.
+
 The custom domain does not need a DNS change for routine releases.
 
 ## Rollback

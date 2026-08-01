@@ -2,7 +2,7 @@
 title: CLI automation
 description: Use TeamGrid CLI output modes, pagination, idempotency, and exit codes safely in scripts and CI.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Prefer structured output
@@ -82,6 +82,7 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 
 ## CI checklist
 
+- Create a dedicated service account; never use `teamgrid auth login` or a personal credential in CI.
 - Store `TEAMGRID_API_TOKEN` in the CI secret store and mask it in logs.
 - Grant only the scopes the job needs.
 - Use JSON or JSONL output.

@@ -2,13 +2,13 @@
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.1
+npm install @teamgrid/api-client@1.0.2
 ```
 
 ## Create a client
@@ -22,6 +22,9 @@ const client = new TeamGridClient({
 ```
 
 The client derives the regional API endpoint from the credential. Do not hard-code the German endpoint in a multi-region service.
+The SDK never starts browser authentication and does not read CLI profiles. Use a personal
+credential from the process environment for a local developer-owned script. Use a service-account
+credential from a secret manager for every deployed, scheduled, or shared process.
 
 ## Read a page
 
@@ -103,3 +106,5 @@ options; always read their current revision first. See
 [resource concurrency](/api/v1/resource-concurrency/).
 
 Keep the credential in a secret manager and inject it through the process environment. Never bundle it into browser code.
+See [authentication by environment](/resources/authentication-by-environment/) for lifecycle and
+revocation guidance.

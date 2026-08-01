@@ -2,7 +2,7 @@
 title: Request troubleshooting
 description: Diagnose TeamGrid API failures from authentication and scopes through concurrency, routing, and rate limits.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-07-31
 ---
 
 Start with the HTTP status, structured error code, and `meta.requestId`. Never include a bearer
@@ -34,6 +34,13 @@ send German credentials to `https://api.de.teamgrid.app/v1` and United States cr
 3. Remove optional filters and retry one bounded read.
 4. For a write, obtain the latest resource revision and keep the same idempotency key.
 5. Record the response status, error code, request ID, time, and regional endpoint.
+
+For CLI authentication, run `teamgrid auth status --check`. A support report may include the
+profile name, region, cell, credential ID, authentication source, scopes, expiry, CLI version,
+Node.js version, operating system, structured error code, and request ID. It must not include a
+credential, environment dump, browser approval URL, authorization code, PKCE verifier, keychain
+export, customer response body, or unredacted terminal transcript. See
+[authentication by environment](/resources/authentication-by-environment/).
 
 The [errors and rate limits guide](/api/v1/errors/) defines retry behavior. For platform-wide
 availability, check [TeamGrid Status](https://status.teamgrid.app/).

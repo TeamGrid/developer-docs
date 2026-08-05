@@ -24,70 +24,17 @@
         "description": "Use the frozen API v0 contract to legacy API discovery redirect. Returns legacy response envelopes and uses page-and-limit pagination where the route supports collection reads. Authentication scopes the request to the workspace that issued the token.",
         "operationId": "v0_get",
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
+          "302": {
+            "description": "Redirects to the TeamGrid Developer documentation.",
+            "headers": {
+              "Location": {
+                "description": "TeamGrid Developer documentation URL.",
                 "schema": {
-                  "$ref": "#/components/schemas/LegacyResponse"
-                },
-                "example": {
-                  "statusCode": 1,
-                  "data": "example",
-                  "info": "example",
-                  "pagination": {}
+                  "format": "uri",
+                  "type": "string"
                 }
               }
-            },
-            "description": "The legacy request to legacy API discovery redirect succeeded and returned the historical v0 response envelope."
-          },
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LegacyResponse"
-                },
-                "example": {
-                  "statusCode": 1,
-                  "data": "example",
-                  "info": "example",
-                  "pagination": {}
-                }
-              }
-            },
-            "description": "The legacy request to legacy API discovery redirect created a resource and returned the v0 response envelope."
-          },
-          "204": {
-            "description": "The request to legacy API discovery redirect completed successfully and returns no response body."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LegacyResponse"
-                }
-              }
-            },
-            "description": "Legacy request failure."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LegacyError"
-                }
-              }
-            },
-            "description": "Authentication failed."
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LegacyError"
-                }
-              }
-            },
-            "description": "Rate limit exceeded."
+            }
           }
         },
         "security": [],
@@ -185,27 +132,6 @@
               "type": "string"
             },
             "description": "Opaque calendar-feed token issued by TeamGrid. Treat this value as a secret."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       }
@@ -690,27 +616,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       }
@@ -1330,27 +1235,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -1857,27 +1741,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -2602,27 +2465,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -3317,27 +3159,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -4022,27 +3843,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -4727,27 +4527,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -5244,27 +5023,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -5989,27 +5747,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -6434,27 +6171,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       }
@@ -6657,27 +6373,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       }
@@ -7257,27 +6952,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -7682,30 +7356,7 @@
           "teams"
         ],
         "x-teamgrid-authenticated": true,
-        "x-teamgrid-contract-status": "supported",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
-          }
-        ]
+        "x-teamgrid-contract-status": "supported"
       }
     },
     "/times": {
@@ -8283,27 +7934,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       },
@@ -9000,27 +8630,6 @@
               "type": "string"
             },
             "description": "Stable id used to identify the target within the authenticated workspace."
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "required": false,
-            "schema": {
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "One-based page number used by this legacy v0 collection endpoint."
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "description": "Maximum number of records to return in this page. The response may contain fewer records."
           }
         ]
       }
@@ -9087,6 +8696,7 @@
       },
       "LegacyWritePayload": {
         "additionalProperties": true,
+        "minProperties": 1,
         "type": "object",
         "description": "Compatibility schema for the legacy legacy write payload payload."
       }

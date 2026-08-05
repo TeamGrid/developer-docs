@@ -1846,7 +1846,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
 - Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
-- The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
+- The API and App cell must negotiate the exact code-owned 208-operation action-policy registry,
+  including all 206 authenticated operations,
   before the service is ready.
 
 `teamgrid auth logout` deletes only the local CLI profile and keychain entry. Revoke the credential
@@ -2314,7 +2315,7 @@ owner: Developer Platform
 reviewedAt: 2026-07-29
 ---
 
-API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 128 paths and 206 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
+API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 130 paths and 208 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
 
 ## Base URL
 
@@ -3289,7 +3290,8 @@ reviewedAt: 2026-07-29
 
 ## Current platform
 
-API v1 and the SDK, CLI, and MCP npm packages are synchronized at stable version `1.0.0`.
+API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
+synchronized at stable version `1.0.3`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -3299,6 +3301,20 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## 2026-08-05
+
+- Published aligned `1.0.3` releases of the TypeScript SDK, CLI, and curated read-only MCP server
+  from one production-qualified source commit.
+- Added secure first-party CLI browser authentication with Authorization Code, PKCE, pairing-phrase
+  confirmation, operating-system credential storage, bounded scope presets, and manual-token
+  fallback for remote or non-interactive environments.
+- Published the final 208-operation API surface, including the anonymous one-time CLI code exchange,
+  while keeping all 206 authenticated operations bound to the action-policy registry.
+- Activated reveal-once Personal Tokens for user-owned workflows and Service Accounts for
+  unattended integrations without enabling delegated OAuth.
+- Refreshed the `fast-uri` and Hono production dependency floors and verified clean package installs
+  on the supported Node.js and operating-system matrix.
 
 ## 2026-07-27
 
@@ -3976,7 +3992,7 @@ reviewedAt: 2026-07-31
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.2
+npm install --global @teamgrid/cli@1.0.3
 teamgrid --version
 ```
 
@@ -4017,7 +4033,7 @@ reviewedAt: 2026-07-31
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.2
+npm install --global @teamgrid/cli@1.0.3
 teamgrid --help
 ```
 
@@ -4190,13 +4206,14 @@ The [project templates guide](/api/v1/project-templates/) documents template sem
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-05
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The stable `1.0.0` API v1 contract contains 128 paths and 206 operations. The TypeScript SDK
-and CLI map all 206 operations. MCP has an explicit decision for every operation: 29 bounded reads
+The stable `1.0.0` API v1 contract contains 130 paths and 208 operations. The CLI maps all 208
+operations. The TypeScript SDK maps the 207 programmatic operations; the one-time anonymous CLI
+code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 29 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
@@ -4219,8 +4236,8 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 206 operations. Exactly one discovery operation is anonymous; all 205 remaining
-operations are bound to their credential scopes, App execution methods, product-permission
+registry for all 208 operations. API discovery and the one-time CLI code exchange are anonymous;
+all 206 remaining operations are bound to their credential scopes, App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families.
 
@@ -4595,7 +4612,7 @@ reviewedAt: 2026-07-31
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
+npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -4679,7 +4696,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
+npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
 teamgrid auth login
 ```
 
@@ -4808,7 +4825,7 @@ MCP tools intentionally cannot create, update, archive, or remove TeamGrid resou
 title: OpenAPI files
 description: Download the exact TeamGrid API v0 and v1 OpenAPI 3.1 contracts used to generate this documentation.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-05
 ---
 
 The API reference is generated from checked-in OpenAPI 3.1 contracts. The same files are available for code generation, validation, or import into an API client:
@@ -4832,7 +4849,7 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The stable `1.0.0` manifest records 128 v1 paths, 206 governed v1 operations, 87 frozen v0
+The stable `1.0.0` manifest records 130 v1 paths, 208 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 87 canonical scopes, and 73 classified TeamGrid product
 capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
 reads, and another 34 domain-specific `If-Match` operations. These counts describe the synchronized
@@ -4841,7 +4858,7 @@ contract; they do not promote planned capabilities into the stable release.
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
 release they tested. The `1.0.0` checkpoint qualifies core project, task, and project-template
 CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
-checkpoint is `1.0.0`. See [resource concurrency](/api/v1/resource-concurrency/).
+checkpoint is `1.0.3`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -5005,16 +5022,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.2` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.2` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.2` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.3` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.3` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.3` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.2
-npm install --global @teamgrid/cli@1.0.2 @teamgrid/mcp-server@1.0.2
+npm install @teamgrid/api-client@1.0.3
+npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent
@@ -5042,13 +5059,13 @@ reviewedAt: 2026-07-31
 
 ## Official packages
 
-The stable public packages share version `1.0.2` and the API v1 contract:
+The stable public packages share version `1.0.3` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.2` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.2` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.2` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.3` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.3` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.3` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.
@@ -5129,7 +5146,7 @@ availability, check [TeamGrid Status](https://status.teamgrid.app/).
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-05
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -5137,7 +5154,7 @@ reviewedAt: 2026-07-31
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.2
+npm install @teamgrid/api-client@1.0.3
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -5188,6 +5205,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
+| `authorization` | Create and inspect bounded CLI browser-authorization requests |
 | `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
 | `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
 | `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
@@ -5196,7 +5214,7 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.2`; pin that exact version in
+The compatible package checkpoint for this contract is `1.0.3`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
@@ -5369,7 +5387,7 @@ reviewedAt: 2026-07-31
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.2
+npm install @teamgrid/api-client@1.0.3
 ```
 
 ## Create a client

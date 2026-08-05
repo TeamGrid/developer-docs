@@ -3,8 +3,10 @@
 The `Developer contract drift` workflow compares this repository with the current `main` commits of
 `TeamGrid/teamgrid-api` and `TeamGrid/developer-platform` every weekday.
 
-Configure the repository secret `TEAMGRID_REPOSITORY_TOKEN` with read-only Contents access to those
-two private repositories. The workflow synchronizes contracts and package manifests in its
+Configure the repository variable `TEAMGRID_REPOSITORY_APP_ID` and secret
+`TEAMGRID_REPOSITORY_APP_PRIVATE_KEY` for a dedicated GitHub App installed only on those
+repositories with read-only Contents access. The workflow mints a short-lived, repository-bounded
+token scoped to the two private repositories. It synchronizes contracts and package manifests in its
 ephemeral runner and fails if the committed OpenAPI files, generated collections, AI-readable
 documentation, or source provenance would change.
 

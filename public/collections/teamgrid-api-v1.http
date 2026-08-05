@@ -8,6 +8,30 @@ GET {{baseUrl}}/
 Authorization: Bearer {{token}}
 Accept: application/json
 
+### Exchange a TeamGrid CLI authorization code
+POST {{baseUrl}}/auth/cli/token
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "authorizationCode": "string",
+  "clientId": "string",
+  "codeVerifier": "string",
+  "grantType": "string",
+  "redirectUri": "string"
+}
+
+### Compensate a failed TeamGrid CLI credential-store write
+POST {{baseUrl}}/auth/cli/storage-compensation
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "grantId": "string"
+}
+
 ### Get the authenticated workspace
 GET {{baseUrl}}/workspace
 Authorization: Bearer {{token}}

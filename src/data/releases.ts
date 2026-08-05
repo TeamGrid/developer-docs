@@ -9,6 +9,18 @@ export type DeveloperRelease = {
 
 export const developerReleases: DeveloperRelease[] = [
   {
+    date: '2026-08-05',
+    description: 'The production-qualified native-credential and secure CLI authentication release.',
+    highlights: [
+      '208 synchronized API operations with Personal and Service Token routing',
+      'Secure browser login with operating-system credential storage and manual-token fallback',
+      'Aligned 1.0.3 SDK, CLI, and curated read-only MCP packages',
+    ],
+    stability: 'stable',
+    title: 'Developer Platform 1.0.3',
+    version: '1.0.3',
+  },
+  {
     date: '2026-07-27',
     description: 'The synchronized stable release of TeamGrid API v1, TypeScript SDK, CLI, and MCP server.',
     highlights: [

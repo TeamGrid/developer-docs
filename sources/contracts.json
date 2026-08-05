@@ -3,19 +3,19 @@
   "contracts": {
     "v0": {
       "operations": 87,
-      "sha256": "929242ab3c5047a2780ff544ca01c939f99c6f613a8e639b51bb78bd47ba3c02"
+      "sha256": "902adb098fa9c7079c4d77b409237549d96399a8da6fc342f95f397f59c2d7ff"
     },
     "v1": {
-      "operations": 206,
-      "sha256": "a9b1b27dad5404a62ea5b77ea62b1666e15973622ba5e4862382299efe695245"
+      "operations": 208,
+      "sha256": "1b37f9bcd62e1ac54f8e8c83bbfff0c06cc733712bff4b79e2e22dc1c9ee705a"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "6224201412e138b760823518d113c1d6fa1600d1",
-  "runtimeCommit": "6224201412e138b760823518d113c1d6fa1600d1",
+  "sourceCommit": "a261111ade6ab778f50dcf239613dfe6b18afafd",
+  "runtimeCommit": "a261111ade6ab778f50dcf239613dfe6b18afafd",
   "scopes": {
     "count": 87,
-    "sha256": "51e858d20bfc6bd4786faad582b0cb168ed187cfe720a61224089c1467c47039"
+    "sha256": "7378a809c9bd9eb507bd310c44aef03212340a299222ab44bbaca42612c3414c"
   },
   "migration": {
     "routes": 87,
@@ -24,29 +24,29 @@
   "canonical": {
     "contractVersion": "1.0.0",
     "bytes": 2359,
-    "sha256": "758f5a259ac19f45b75734cbe1bcce41f050ea5a2c6c4575cd8008b30aebac15"
+    "sha256": "e1d0b06b6fd3a643c30851b11371ccd83c7307f740f02e71813e0b917429b90b"
   },
   "changeFeed": {
     "availability": "released",
     "resourceTypes": 23
   },
   "capabilities": {
-    "operations": 206,
+    "operations": 208,
     "productCapabilities": 73,
-    "sha256": "f8156586681a78cf42e113a494487d82c113d21fe993e5398c8a67cf1d07be4d"
+    "sha256": "167d282d9ff23fed83ba6bcb732dca8c80a3b34f317a01d8ba53524466f6726c"
   },
   "operationBindings": {
-    "operations": 206,
-    "referencedAppMethods": 205,
+    "operations": 208,
+    "referencedAppMethods": 207,
     "remainingDirectCellReads": 0,
-    "sha256": "7e8a646703af99dcfa4cd745abdb0091717f501d8f8747f0894a8bfa6dbeccf7"
+    "sha256": "f50a7a16db740b86b6d996eb4c6d7ecbbb4b0d8bd9ea1574a56192449c222224"
   },
   "actionPolicyRegistry": {
-    "actionPolicies": 206,
-    "authenticatedActionPolicies": 205,
+    "actionPolicies": 208,
+    "authenticatedActionPolicies": 206,
     "policyFamilies": 12,
-    "registrySha256": "24c42e1ed43ceaff33cf35a04264dbd9a8a1f7361ae61517b8d2d4e42c23c837",
+    "registrySha256": "1fc9f58c6ede70164c6da4f2cf28057d4f100ec8d19f2252a418104c6421f274",
     "registryVersion": "developer-action-policy-v5",
-    "sha256": "1882a3f8b55cac16a0680207a3ebf1eef0882dd3366849afeed8680aaf45220f"
+    "sha256": "be5faff0042359e3aa881f57639ba0a03cc95714f02ccc8a6327f810a63278d6"
   }
 }

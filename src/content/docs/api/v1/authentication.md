@@ -58,7 +58,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
 - Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
-- The API and App cell must negotiate the exact code-owned 206-operation action-policy registry
+- The API and App cell must negotiate the exact code-owned 208-operation action-policy registry,
+  including all 206 authenticated operations,
   before the service is ready.
 
 `teamgrid auth logout` deletes only the local CLI profile and keychain entry. Revoke the credential

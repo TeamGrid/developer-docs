@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -25,7 +26,7 @@ jobs:
       - name: Verify generated files are committed
         run: git diff --exit-code
       - name: Preserve the exact verified site
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: developer-docs-${{ github.sha }}
@@ -55,7 +56,7 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs:
       - verify
       - browser
@@ -79,14 +80,30 @@ jobs:
           name: developer-docs-${{ github.sha }}
           path: dist
       - name: Verify the documented packages are public
+        id: packages
         run: |
           set -euo pipefail
           version="$(node -p "require('./sources/packages.json').version")"
-          for package in @teamgrid/api-client @teamgrid/cli @teamgrid/mcp-server; do
-            published="$(npm view "$package@$version" version)"
-            [[ "$published" == "$version" ]]
+          for attempt in {1..12}; do
+            all_public=true
+            for package in @teamgrid/api-client @teamgrid/cli @teamgrid/mcp-server; do
+              published="$(npm view "$package@$version" version 2>/dev/null || true)"
+              [[ "$published" == "$version" ]] || all_public=false
+            done
+            if [[ "$all_public" == "true" ]]; then
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            [[ "$attempt" == "12" ]] || sleep 10
           done
+          echo "available=false" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "Documented packages are not public; refusing an explicit production deployment." >&2
+            exit 1
+          fi
+          echo "Documented packages are not public yet; production deployment is deferred."
       - name: Deploy the verified commit to Cloudflare Pages
+        if: steps.packages.outputs.available == 'true'
         run: >-
           npx wrangler pages deploy dist
           --project-name teamgrid-developer-docs
@@ -98,4 +115,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Verify the canonical production routes
+        if: steps.packages.outputs.available == 'true'
         run: npm run smoke:deployment -- https://developer.teamgridapp.com
+      - name: Record a deferred deployment
+        if: steps.packages.outputs.available != 'true'
+        run: >-
+          echo 'The exact site was verified and preserved, but deployment is deferred until all
+          documented npm packages are public. Re-run this workflow manually from the same main
+          commit after package verification.' >> "$GITHUB_STEP_SUMMARY"

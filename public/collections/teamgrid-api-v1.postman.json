@@ -81,6 +81,109 @@
     {
       "item": [
         {
+          "name": "Exchange a TeamGrid CLI authorization code",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Exchanges a short-lived, single-use authorization code for a cell-local TeamGrid CLI personal credential. This is a fixed first-party public-client protocol operation: it requires PKCE S256, the exact IPv4 loopback redirect used during browser approval, and no bearer credential. Send the request only to the regional API host returned by the browser callback. The response is reveal-once and must never be logged or cached.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "cli",
+                "token"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/auth/cli/token"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"authorizationCode\": \"string\",\n  \"clientId\": \"string\",\n  \"codeVerifier\": \"string\",\n  \"grantType\": \"string\",\n  \"redirectUri\": \"string\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Compensate a failed TeamGrid CLI credential-store write",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Revokes the exact personal credential issued by a recently consumed TeamGrid CLI browser-authorization grant when the operating-system credential store rejects that credential. The just-issued credential authenticates this request; the grant ID is not an independent authority and cannot select any other credential. The recovery window is short and the operation is intended only for automatic CLI cleanup.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "cli",
+                "storage-compensation"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/auth/cli/storage-compensation"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"grantId\": \"string\"\n}"
+            }
+          },
+          "response": []
+        }
+      ],
+      "name": "Authentication"
+    },
+    {
+      "item": [
+        {
           "name": "Get the authenticated workspace",
           "request": {
             "auth": {

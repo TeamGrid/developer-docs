@@ -7,7 +7,8 @@ reviewedAt: 2026-07-29
 
 ## Current platform
 
-API v1 and the SDK, CLI, and MCP npm packages are synchronized at stable version `1.0.0`.
+API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
+synchronized at stable version `1.0.3`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -17,6 +18,20 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## 2026-08-05
+
+- Published aligned `1.0.3` releases of the TypeScript SDK, CLI, and curated read-only MCP server
+  from one production-qualified source commit.
+- Added secure first-party CLI browser authentication with Authorization Code, PKCE, pairing-phrase
+  confirmation, operating-system credential storage, bounded scope presets, and manual-token
+  fallback for remote or non-interactive environments.
+- Published the final 208-operation API surface, including the anonymous one-time CLI code exchange,
+  while keeping all 206 authenticated operations bound to the action-policy registry.
+- Activated reveal-once Personal Tokens for user-owned workflows and Service Accounts for
+  unattended integrations without enabling delegated OAuth.
+- Refreshed the `fast-uri` and Hono production dependency floors and verified clean package installs
+  on the supported Node.js and operating-system matrix.
 
 ## 2026-07-27
 

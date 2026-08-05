@@ -595,7 +595,10 @@ const sdkDocumentation = await readFile(
   'utf8',
 )
 for (const resource of new Set(
-  capabilities.operationPolicy.map((operation) => operation.sdk.split('.')[0]),
+  capabilities.operationPolicy
+    .map((operation) => operation.sdk)
+    .filter((sdk) => typeof sdk === 'string' && sdk.length > 0)
+    .map((sdk) => sdk.split('.')[0]),
 )) {
   if (!sdkDocumentation.includes(`\`${resource}\``)) {
     fail(`SDK documentation is missing the ${resource} client.`)

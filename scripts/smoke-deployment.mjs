@@ -1,9 +1,24 @@
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+
 const baseUrl = (process.argv[2] || process.env.DEVELOPER_PORTAL_URL || '').replace(/\/+$/, '')
 if (!baseUrl) throw new Error('Provide the deployed portal URL.')
+
+const root = path.resolve(import.meta.dirname, '..')
+const packageManifest = JSON.parse(
+  await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
+)
+const stableVersion = packageManifest.version
 
 const checks = [
   ['/', 'Build dependable integrations with TeamGrid API v1'],
   ['/guides/get-started/', 'Create a developer credential'],
+  ['/cli/', `@teamgrid/cli@${stableVersion}`],
+  ['/cli/browser-login/', 'The CLI performs this sequence'],
+  ['/cli/browser-login/', 'Windows Credential Manager'],
+  ['/cli/commands/', 'This reference covers every command group in CLI'],
+  ['/resources/compatibility/', `@teamgrid/mcp-server@${stableVersion}`],
+  ['/changelog/', `Developer Platform ${stableVersion}`],
   ['/api/v1/reference/operations/getworkspace/', 'Interactive request builder'],
   ['/openapi/v1.json', '"openapi": "3.1.0"'],
   ['/api/status', '"overallStatus"'],

@@ -2,7 +2,7 @@
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Global options
@@ -16,6 +16,19 @@ Global options can be placed before a command group.
 | `--base-url <url>` | Override the derived regional URL for controlled staging or loopback use |
 | `--timeout <milliseconds>` | Set the request timeout; default is 30 seconds |
 | `--retries <0–5>` | Set bounded safe-request retries; default is 2 |
+
+This reference covers every command group in CLI `1.0.5`. The CLI itself is the authoritative
+source for the exact arguments and options of an installed patch release:
+
+```bash
+teamgrid --help
+teamgrid <group> --help
+teamgrid <group> <command> --help
+```
+
+Run `teamgrid --version` before comparing terminal output with this reference. Commands map to API
+v1 operations and never bypass the credential's workspace, scopes, resource grants, or regional
+routing. A command that is absent from `--help` is not supported by the installed version.
 
 ## Authentication and workspace
 
@@ -65,6 +78,7 @@ Browser login is the default authentication path. `--no-browser` prints the priv
 but still requires the loopback callback to reach the CLI host. `--manual` prompts for an existing
 personal or service credential; `--token-stdin` reads it without placing it in process arguments.
 `auth logout` is local only, so revoke the server credential separately when access must stop.
+The complete flow and recovery guidance are documented under [browser login](/cli/browser-login/).
 
 ## Projects and lifecycle operations
 

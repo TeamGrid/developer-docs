@@ -2,7 +2,7 @@
 title: Install and authenticate
 description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Requirements
@@ -17,7 +17,7 @@ reviewedAt: 2026-07-31
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.3
+npm install --global @teamgrid/cli@1.0.5
 teamgrid --help
 ```
 
@@ -36,6 +36,9 @@ Authorization Code with PKCE loopback flow.
 The reveal-once secret is written to the operating-system credential store. The CLI profile contains
 only non-secret region, cell, credential ID, scopes, expiry, origin, and timestamps. TeamGrid never
 writes the browser session, authorization code, or credential secret to that file.
+
+See [browser login](/cli/browser-login/) for the complete approval sequence, scope presets,
+remote-terminal behavior, credential lifecycle, and troubleshooting.
 
 Use the bounded `daily-work` preset only when the CLI needs ordinary task writes:
 

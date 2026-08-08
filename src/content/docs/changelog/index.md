@@ -2,13 +2,13 @@
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-08
 ---
 
 ## Current platform
 
 API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
-synchronized at stable version `1.0.3`.
+synchronized at stable version `1.0.5`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -18,6 +18,18 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Developer Platform 1.0.5 · 2026-08-08
+
+- Published aligned `1.0.5` releases of the TypeScript SDK, CLI, and curated read-only MCP server.
+- Hardened CLI credential-store handling so secrets remain outside process arguments while
+  preserving native macOS Keychain, Linux Secret Service, and Windows Credential Manager support.
+- Kept the API v1 contract stable at 208 total operations and 206 authenticated operations; patch
+  releases `1.0.4` and `1.0.5` do not add authority or change API semantics.
+- Completed public documentation for browser login, workspace selection, pairing phrases, scope
+  presets, PKCE loopback, remote terminals, named profiles, logout, revocation, and troubleshooting.
+- Updated installation, compatibility, SDK, CLI, MCP, OpenAPI, search, and machine-readable release
+  material to the same stable package checkpoint.
 
 ## 2026-08-05
 

@@ -2,7 +2,7 @@
 title: OpenAPI files
 description: Download the exact TeamGrid API v0 and v1 OpenAPI 3.1 contracts used to generate this documentation.
 owner: Developer Platform
-reviewedAt: 2026-08-05
+reviewedAt: 2026-08-08
 ---
 
 The API reference is generated from checked-in OpenAPI 3.1 contracts. The same files are available for code generation, validation, or import into an API client:
@@ -35,7 +35,7 @@ contract; they do not promote planned capabilities into the stable release.
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
 release they tested. The `1.0.0` checkpoint qualifies core project, task, and project-template
 CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
-checkpoint is `1.0.3`. See [resource concurrency](/api/v1/resource-concurrency/).
+checkpoint is `1.0.5`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 

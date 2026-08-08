@@ -97,11 +97,8 @@ jobs:
             [[ "$attempt" == "12" ]] || sleep 10
           done
           echo "available=false" >> "$GITHUB_OUTPUT"
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            echo "Documented packages are not public; refusing an explicit production deployment." >&2
-            exit 1
-          fi
-          echo "Documented packages are not public yet; production deployment is deferred."
+          echo "Documented packages are not public; refusing production deployment." >&2
+          exit 1
       - name: Deploy the verified commit to Cloudflare Pages
         if: steps.packages.outputs.available == 'true'
         run: >-
@@ -117,9 +114,3 @@ jobs:
       - name: Verify the canonical production routes
         if: steps.packages.outputs.available == 'true'
         run: npm run smoke:deployment -- https://developer.teamgridapp.com
-      - name: Record a deferred deployment
-        if: steps.packages.outputs.available != 'true'
-        run: >-
-          echo 'The exact site was verified and preserved, but deployment is deferred until all
-          documented npm packages are public. Re-run this workflow manually from the same main
-          commit after package verification.' >> "$GITHUB_STEP_SUMMARY"

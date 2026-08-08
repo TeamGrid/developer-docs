@@ -3285,13 +3285,13 @@ Use delivery history for bounded troubleshooting, not as a durable event store o
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-08
 ---
 
 ## Current platform
 
 API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
-synchronized at stable version `1.0.3`.
+synchronized at stable version `1.0.5`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -3301,6 +3301,18 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Developer Platform 1.0.5 · 2026-08-08
+
+- Published aligned `1.0.5` releases of the TypeScript SDK, CLI, and curated read-only MCP server.
+- Hardened CLI credential-store handling so secrets remain outside process arguments while
+  preserving native macOS Keychain, Linux Secret Service, and Windows Credential Manager support.
+- Kept the API v1 contract stable at 208 total operations and 206 authenticated operations; patch
+  releases `1.0.4` and `1.0.5` do not add authority or change API semantics.
+- Completed public documentation for browser login, workspace selection, pairing phrases, scope
+  presets, PKCE loopback, remote terminals, named profiles, logout, revocation, and troubleshooting.
+- Updated installation, compatibility, SDK, CLI, MCP, OpenAPI, search, and machine-readable release
+  material to the same stable package checkpoint.
 
 ## 2026-08-05
 
@@ -3542,12 +3554,171 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 - Set explicit timeout, retries, and pagination bounds for long-running jobs.
 - Add `--yes` only to reviewed archive, remove, clear, or full-replacement steps.
 
+<!-- cli/browser-login.md -->
+---
+title: CLI browser login
+description: Sign in to the TeamGrid CLI through the browser, choose a workspace and scopes, and manage the resulting local credential safely.
+owner: Developer Experience
+reviewedAt: 2026-08-08
+---
+
+Browser login is the default interactive authentication flow for the TeamGrid CLI when it is
+enabled in the selected workspace's regional cell. It creates a scoped personal credential and
+stores the reveal-once secret in the operating-system credential store. Passwords and TeamGrid
+browser sessions never enter the CLI. If the cell has temporarily disabled new browser
+authorizations, the flow fails closed; existing API credentials, `--manual`, SDK, CLI commands, and
+MCP traffic remain independent of that rollout gate.
+
+## Start the login
+
+```bash
+teamgrid auth login
+```
+
+The CLI performs this sequence:
+
+1. It creates a short-lived authorization request and an exact IPv4 loopback callback.
+2. It opens TeamGrid in the system browser.
+3. You sign in with the normal TeamGrid login if no browser session exists.
+4. You select one eligible workspace.
+5. You compare the pairing phrase shown in the browser and terminal.
+6. You review the requested scopes and approve or deny the request.
+7. The owning regional cell issues an authorization code bound to the CLI's PKCE verifier.
+8. The CLI exchanges the code once and stores the resulting personal credential.
+
+After approval, verify both the local profile and the server credential:
+
+```bash
+teamgrid auth status --check
+teamgrid workspace --output json
+```
+
+The workspace ID, name, region, and cell must match the workspace you selected in the browser.
+
+## Scope presets
+
+The default `read-only` preset is appropriate for inspection and reporting:
+
+```bash
+teamgrid auth login --preset read-only
+```
+
+Use `daily-work` only when ordinary task and time-entry writes are required:
+
+```bash
+teamgrid auth login --preset daily-work
+```
+
+Request additional non-sensitive scopes explicitly when a reviewed local workflow needs them:
+
+```bash
+teamgrid auth login --scope projects:read --scope tasks:read
+```
+
+Browser login rejects sensitive administration, finance, credential-management, and PII scopes.
+Create a narrowly scoped Personal Token in **Settings → Team → Developer Center → Access**
+and import it with `--manual` for those cases. This restriction prevents a normal browser session
+from silently becoming a highly privileged developer credential.
+
+## When the browser does not open
+
+Print the private approval URL instead of launching the browser:
+
+```bash
+teamgrid auth login --no-browser
+```
+
+`--no-browser` is not a device-code flow. The callback must still reach the exact loopback address
+on the machine running the CLI. Do not share the approval URL or place it in chat, tickets, shell
+history, logs, or screen recordings.
+
+For a remote host without a safe loopback path, create a Personal Token in Developer Center and use:
+
+```bash
+teamgrid auth login --manual
+```
+
+An existing token can be delivered without placing it in process arguments:
+
+```bash
+printf '%s' "$TEAMGRID_API_TOKEN" | teamgrid auth login --token-stdin
+```
+
+Device authorization is not part of this release.
+
+## Credential storage
+
+Persistent profiles use the native credential store:
+
+| Operating system | Secret storage |
+| --- | --- |
+| macOS | Keychain |
+| Linux | Secret Service through the desktop keyring |
+| Windows | Windows Credential Manager |
+
+The profile file contains only non-secret metadata: profile name, credential ID, region, cell,
+scopes, expiry, authentication source, optional controlled base URL, and timestamps. It never
+contains the bearer credential, password, browser session, authorization code, or PKCE verifier.
+
+`TEAMGRID_API_TOKEN` overrides a saved profile for the current process. Use that mode for ephemeral
+containers and controlled local scripts. CI, servers, and scheduled jobs must use a Service Account
+credential from their secret manager rather than a personal browser credential.
+
+## Named profiles and replacement
+
+Use named profiles for separate workspaces or environments:
+
+```bash
+teamgrid --profile customer-a auth login
+teamgrid --profile customer-a auth status --check
+teamgrid --profile customer-a projects list
+teamgrid auth profiles
+```
+
+The CLI never overwrites an existing profile implicitly. Choose another name or replace it only
+after deciding whether the previous server credential must also be revoked:
+
+```bash
+teamgrid --profile customer-a auth login --replace
+```
+
+## Logout, expiry, and revocation
+
+```bash
+teamgrid --profile customer-a auth logout
+```
+
+Logout is local only. It removes the profile and operating-system credential-store entry but does
+not revoke the credential on the server. Revoke the exact **TeamGrid CLI** credential in Developer
+Center when access must stop. Expired or revoked credentials cannot be renewed in place; sign in
+again or create a replacement. Removing or disabling the TeamGrid member immediately affects their
+personal credentials.
+
+## Troubleshooting
+
+| Symptom | Safe action |
+| --- | --- |
+| Browser does not open | Retry with `--no-browser`; keep the approval URL private |
+| Browser waits or terminal times out | Confirm the callback can reach the CLI host's IPv4 loopback address, then start a new login |
+| Pairing phrases differ | Deny the request and start again; never approve mismatched phrases |
+| Workspace is missing | Confirm membership, Developer entitlement, workspace status, and regional availability |
+| Requested scope is rejected | Use a smaller preset or create a reviewed Personal Token for sensitive scopes |
+| Profile already exists | Use another profile or deliberately retry with `--replace` |
+| Credential store is unavailable | Restore the native store; the CLI never falls back to plaintext storage |
+| `auth status --check` returns unauthorized | Revoke stale credentials if necessary and run browser login again |
+| Wrong workspace or region is returned | Stop using the profile, revoke the credential, and authenticate against the intended workspace |
+
+For support, record only the CLI version, Node.js and operating-system versions, profile name,
+non-secret credential ID, region, cell, scopes, expiry, structured error code, request ID, and
+timestamp. Never send the credential, approval URL, authorization code, PKCE verifier, keychain
+export, environment dump, or an unredacted terminal transcript.
+
 <!-- cli/commands.md -->
 ---
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Global options
@@ -3561,6 +3732,19 @@ Global options can be placed before a command group.
 | `--base-url <url>` | Override the derived regional URL for controlled staging or loopback use |
 | `--timeout <milliseconds>` | Set the request timeout; default is 30 seconds |
 | `--retries <0–5>` | Set bounded safe-request retries; default is 2 |
+
+This reference covers every command group in CLI `1.0.5`. The CLI itself is the authoritative
+source for the exact arguments and options of an installed patch release:
+
+```bash
+teamgrid --help
+teamgrid <group> --help
+teamgrid <group> <command> --help
+```
+
+Run `teamgrid --version` before comparing terminal output with this reference. Commands map to API
+v1 operations and never bypass the credential's workspace, scopes, resource grants, or regional
+routing. A command that is absent from `--help` is not supported by the installed version.
 
 ## Authentication and workspace
 
@@ -3610,6 +3794,7 @@ Browser login is the default authentication path. `--no-browser` prints the priv
 but still requires the loopback callback to reach the CLI host. `--manual` prompts for an existing
 personal or service credential; `--token-stdin` reads it without placing it in process arguments.
 `auth logout` is local only, so revoke the server credential separately when access must stop.
+The complete flow and recovery guidance are documented under [browser login](/cli/browser-login/).
 
 ## Projects and lifecycle operations
 
@@ -3984,7 +4169,7 @@ workflow.
 title: TeamGrid CLI
 description: Inspect and automate TeamGrid API v1 from a terminal or CI job with structured output and stable exit codes.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
@@ -3992,7 +4177,7 @@ reviewedAt: 2026-07-31
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.3
+npm install --global @teamgrid/cli@1.0.5
 teamgrid --version
 ```
 
@@ -4011,14 +4196,15 @@ teamgrid --version
 
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 
-[Install and authenticate](/cli/install-and-authenticate/) or [browse all commands](/cli/commands/).
+[Install and authenticate](/cli/install-and-authenticate/), follow the complete
+[browser-login flow](/cli/browser-login/), or [browse all commands](/cli/commands/).
 
 <!-- cli/install-and-authenticate.md -->
 ---
 title: Install and authenticate
 description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Requirements
@@ -4033,7 +4219,7 @@ reviewedAt: 2026-07-31
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.3
+npm install --global @teamgrid/cli@1.0.5
 teamgrid --help
 ```
 
@@ -4052,6 +4238,9 @@ Authorization Code with PKCE loopback flow.
 The reveal-once secret is written to the operating-system credential store. The CLI profile contains
 only non-secret region, cell, credential ID, scopes, expiry, origin, and timestamps. TeamGrid never
 writes the browser session, authorization code, or credential secret to that file.
+
+See [browser login](/cli/browser-login/) for the complete approval sequence, scope presets,
+remote-terminal behavior, credential lifecycle, and troubleshooting.
 
 Use the bounded `daily-work` preset only when the CLI needs ordinary task writes:
 
@@ -4606,13 +4795,13 @@ operations.
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
+npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -4688,7 +4877,7 @@ an authorization boundary in addition to the scopes held by the credential.
 title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
 owner: Developer Platform
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 `@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
@@ -4696,7 +4885,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
+npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
 teamgrid auth login
 ```
 
@@ -4825,7 +5014,7 @@ MCP tools intentionally cannot create, update, archive, or remove TeamGrid resou
 title: OpenAPI files
 description: Download the exact TeamGrid API v0 and v1 OpenAPI 3.1 contracts used to generate this documentation.
 owner: Developer Platform
-reviewedAt: 2026-08-05
+reviewedAt: 2026-08-08
 ---
 
 The API reference is generated from checked-in OpenAPI 3.1 contracts. The same files are available for code generation, validation, or import into an API client:
@@ -4858,7 +5047,7 @@ contract; they do not promote planned capabilities into the stable release.
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
 release they tested. The `1.0.0` checkpoint qualifies core project, task, and project-template
 CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
-checkpoint is `1.0.3`. See [resource concurrency](/api/v1/resource-concurrency/).
+checkpoint is `1.0.5`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -5013,7 +5202,7 @@ bounded `teamgrid workspace --output json` request before collecting broader log
 title: Versions and compatibility
 description: Match the stable TeamGrid API contract with supported SDK, CLI, MCP, and Node.js versions.
 owner: Developer Platform
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 The stable Developer Platform is released as one synchronized compatibility checkpoint. Pin the
@@ -5022,16 +5211,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.3` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.3` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.3` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.5` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.5` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.5` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.3
-npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
+npm install @teamgrid/api-client@1.0.5
+npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent
@@ -5054,18 +5243,18 @@ from the same verified contract used by this documentation.
 title: Developer tooling and downloads
 description: Official TeamGrid packages, API contracts and importable client collections in one place.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Official packages
 
-The stable public packages share version `1.0.3` and the API v1 contract:
+The stable public packages share version `1.0.5` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.3` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.3` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.3` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.5` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.5` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.5` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.
@@ -5146,7 +5335,7 @@ availability, check [TeamGrid Status](https://status.teamgrid.app/).
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-05
+reviewedAt: 2026-08-08
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -5154,7 +5343,7 @@ reviewedAt: 2026-08-05
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.3
+npm install @teamgrid/api-client@1.0.5
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -5214,7 +5403,7 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.3`; pin that exact version in
+The compatible package checkpoint for this contract is `1.0.5`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
@@ -5381,13 +5570,13 @@ CLI `--wait` supplies the acceptance binding automatically.
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.3
+npm install @teamgrid/api-client@1.0.5
 ```
 
 ## Create a client

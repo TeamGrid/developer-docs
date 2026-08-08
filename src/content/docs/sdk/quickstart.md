@@ -2,13 +2,13 @@
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
 owner: Developer Experience
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.3
+npm install @teamgrid/api-client@1.0.5
 ```
 
 ## Create a client

@@ -2,7 +2,7 @@
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-05
+reviewedAt: 2026-08-08
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -10,7 +10,7 @@ reviewedAt: 2026-08-05
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.3
+npm install @teamgrid/api-client@1.0.5
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -70,7 +70,7 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.3`; pin that exact version in
+The compatible package checkpoint for this contract is `1.0.5`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable

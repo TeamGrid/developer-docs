@@ -2,7 +2,7 @@
 title: Versions and compatibility
 description: Match the stable TeamGrid API contract with supported SDK, CLI, MCP, and Node.js versions.
 owner: Developer Platform
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-08
 ---
 
 The stable Developer Platform is released as one synchronized compatibility checkpoint. Pin the
@@ -11,16 +11,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.3` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.3` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.3` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.5` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.5` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.5` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.3
-npm install --global @teamgrid/cli@1.0.3 @teamgrid/mcp-server@1.0.3
+npm install @teamgrid/api-client@1.0.5
+npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent

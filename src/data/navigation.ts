@@ -84,6 +84,7 @@ export const navigation: NavigationGroup[] = [
     items: [
       { label: 'Overview', href: '/cli/' },
       { label: 'Install and authenticate', href: '/cli/install-and-authenticate/' },
+      { label: 'Browser login', href: '/cli/browser-login/' },
       { label: 'Commands', href: '/cli/commands/' },
       { label: 'Automation', href: '/cli/automation/' },
     ],

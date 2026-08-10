@@ -72,6 +72,13 @@ for (const relativePath of [
     fail(`${relativePath} must name the exact verified package version.`)
   }
 }
+const starterPackage = JSON.parse(await readFile(
+  path.join(root, 'public', 'examples', 'teamgrid-task-workflow.package.json'),
+  'utf8',
+))
+if (starterPackage.dependencies?.['@teamgrid/api-client'] !== packageManifest.version) {
+  fail('The downloadable SDK starter must pin the exact verified API client version.')
+}
 const canonicalManifestFile = path.join(
   root,
   'public',

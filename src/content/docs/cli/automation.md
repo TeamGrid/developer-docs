@@ -89,3 +89,8 @@ Do not parse human-readable error messages to decide control flow. Use the exit 
 - Use stable idempotency keys for creates.
 - Set explicit timeout, retries, and pagination bounds for long-running jobs.
 - Add `--yes` only to reviewed archive, remove, clear, or full-replacement steps.
+
+For shell-specific input, private certificate authorities, debug output, and recovery by exit code,
+continue with [CLI maintenance and troubleshooting](/cli/maintenance-and-troubleshooting/). For
+the exact options and API scope of every command, use the generated
+[CLI command reference](/cli/reference/).

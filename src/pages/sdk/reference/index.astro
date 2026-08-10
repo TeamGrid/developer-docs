@@ -1,0 +1,169 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sdkClientHref, sdkReference } from '../../../lib/sdk-reference'
+
+const { summary } = sdkReference
+const headings = [
+  { depth: 2, slug: 'resource-clients', text: 'Resource clients' },
+  { depth: 2, slug: 'how-this-reference-is-built', text: 'How this reference is built' },
+]
+---
+
+<DocsLayout
+  title="SDK resource reference"
+  description={`Exact public surface of @teamgrid/api-client@${sdkReference.package.version}: ${summary.clientCount} resource clients, ${summary.operationCount} API methods, and ${summary.helperCount} convenience helpers.`}
+  headings={headings}
+  source="sources/sdk-reference.json"
+  owner="Developer Platform"
+  reviewedAt={new Date('2026-08-10T00:00:00Z')}
+>
+  <div class="sdk-facts" aria-label="SDK reference totals">
+    <div><strong>{summary.clientCount}</strong><span>resource clients</span></div>
+    <div><strong>{summary.operationCount}</strong><span>mapped operations</span></div>
+    <div><strong>{summary.helperCount}</strong><span>SDK helpers</span></div>
+    <div><strong>{sdkReference.package.version}</strong><span>package version</span></div>
+  </div>
+
+  <p>
+    Start with <a href="/sdk/quickstart/">the quickstart</a> if you have not created a client yet.
+    Use this reference when you need the exact method name, parameter types, required scopes,
+    HTTP operation, response contract, or API-level error set. Constructor and runtime controls
+    are covered in <a href="/sdk/configuration/">client configuration</a>.
+  </p>
+
+  <h2 id="resource-clients">Resource clients</h2>
+  <label class="sdk-search">
+    <span>Filter clients and methods</span>
+    <input
+      type="search"
+      placeholder="Try tasks.update or service accounts"
+      data-sdk-reference-search
+    />
+  </label>
+  <div class="sdk-client-grid" data-sdk-client-grid>
+    {
+      sdkReference.clients.map((client) => (
+        <a
+          class="sdk-client-card"
+          href={sdkClientHref(client)}
+          data-sdk-client={`${client.name} ${client.title} ${client.tags.join(' ')} ${client.operations.map(({ name, operationId }) => `${name} ${operationId}`).join(' ')}`.toLowerCase()}
+        >
+          <div>
+            <code>client.{client.name}</code>
+            <span>{client.tags.join(' · ')}</span>
+          </div>
+          <p>{client.operations.slice(0, 6).map(({ name }) => `${name}()`).join(', ')}{client.operations.length > 6 ? ', …' : ''}</p>
+          <footer>
+            <span>{client.operationCount} {client.operationCount === 1 ? 'operation' : 'operations'}</span>
+            {client.helpers.length > 0 && <span>{client.helpers.length} {client.helpers.length === 1 ? 'helper' : 'helpers'}</span>}
+            <strong aria-hidden="true">→</strong>
+          </footer>
+        </a>
+      ))
+    }
+  </div>
+  <p class="sdk-empty" data-sdk-empty hidden>No SDK clients or methods match this filter.</p>
+
+  <h2 id="how-this-reference-is-built">How this reference is built</h2>
+  <p>
+    This is not a manually maintained method list. It is generated from the TypeScript source at
+    the exact package commit pinned by this portal, then joined with the API capability policy,
+    operation bindings, and OpenAPI v1 contract. Generation fails when a mapped method, path,
+    scope, or operation cannot be reconciled.
+  </p>
+  <p>
+    The 207 operation methods have a one-to-one API mapping. Helpers such as <code>pages()</code>,
+    <code>wait()</code>, and <code>snapshotThenCatchUp()</code> compose those operations without
+    adding credential authority.
+  </p>
+</DocsLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-sdk-reference-search]')
+  const empty = document.querySelector<HTMLElement>('[data-sdk-empty]')
+  input?.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase()
+    let visible = 0
+    document.querySelectorAll<HTMLElement>('[data-sdk-client]').forEach((card) => {
+      const matches = !query || card.dataset.sdkClient?.includes(query)
+      card.hidden = !matches
+      if (matches) visible += 1
+    })
+    if (empty) empty.hidden = visible > 0
+  })
+</script>
+
+<style>
+  .sdk-facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1.5rem;
+  }
+
+  .sdk-facts div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    background: var(--gray-25);
+  }
+
+  .sdk-facts strong { font-size: 1.35rem; }
+  .sdk-facts span { color: var(--ink-500); font-size: 0.78rem; }
+
+  .sdk-search {
+    display: grid;
+    gap: 0.45rem;
+    margin: 1rem 0;
+    font-size: 0.82rem;
+    color: var(--ink-500);
+  }
+
+  .sdk-search input {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.65rem;
+    background: var(--gray-25);
+    color: inherit;
+    font: inherit;
+  }
+
+  .sdk-client-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .sdk-client-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .sdk-client-card:hover { border-color: var(--blue-600); }
+  .sdk-client-card[hidden] { display: none; }
+  .sdk-client-card > div, .sdk-client-card footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .sdk-client-card > div { justify-content: space-between; }
+  .sdk-client-card > div span, .sdk-client-card footer { color: var(--ink-500); font-size: 0.76rem; }
+  .sdk-client-card p { margin: 0; color: var(--ink-500); font-size: 0.86rem; }
+  .sdk-client-card footer { margin-top: auto; }
+  .sdk-client-card footer strong { margin-left: auto; color: var(--blue-600); }
+  .sdk-empty { color: var(--ink-500); }
+
+  @media (max-width: 760px) {
+    .sdk-facts, .sdk-client-grid { grid-template-columns: 1fr; }
+  }
+</style>

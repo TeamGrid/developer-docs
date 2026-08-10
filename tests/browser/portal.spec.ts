@@ -62,6 +62,65 @@ test('search filters every documented surface', async ({ page }) => {
   }
 })
 
+test('search finds exact SDK, CLI, and MCP symbols', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Search documentation' }).click()
+  const search = page.getByRole('searchbox', { name: 'Search guides, endpoints, SDK, CLI' })
+
+  await page.getByRole('button', { name: 'SDK', exact: true }).click()
+  await search.fill('TeamGridClientOptions')
+  await expect(page.locator('[data-search-result]').first()).toContainText('SDK client configuration')
+
+  await page.getByRole('button', { name: 'CLI', exact: true }).click()
+  await search.fill('teamgrid tasks update')
+  await expect(page.locator('[data-search-result]').first()).toContainText('teamgrid tasks')
+
+  await page.getByRole('button', { name: 'MCP', exact: true }).click()
+  await search.fill('teamgrid_tasks_list')
+  await expect(page.locator('[data-search-result]').first()).toContainText('teamgrid_tasks_list')
+})
+
+test('scope helper builds a local least-privilege union', async ({ page }) => {
+  await page.goto('/guides/scope-recipes/')
+  await page.getByLabel('Connection check').check()
+  await page.getByLabel('Task synchronization').check()
+  await expect(page.locator('[data-scope-count]')).toHaveText('7 scopes')
+  await expect(page.locator('[data-scope-output]')).toContainText('changes:read')
+  await expect(page.locator('[data-scope-output]')).toContainText('workspace:read')
+  await expect(page.locator('[data-scope-copy]')).toBeEnabled()
+})
+
+test('v0 migration matrix filters every frozen route', async ({ page }) => {
+  await page.goto('/api/v0/migration-matrix/')
+  await expect(page.locator('[data-migration-row]')).toHaveCount(87)
+  await expect(page.locator('[data-migration-controls]')).toHaveAttribute('data-ready', 'true')
+  await page.getByLabel('Classification').selectOption('retained-v0')
+  await expect(page.locator('[data-migration-count]')).not.toHaveText('87 routes shown')
+  await page.getByLabel('Filter routes').fill('calendar')
+  await expect(page.locator('[data-migration-row]:visible')).toHaveCount(1)
+  await expect(page.locator('[data-migration-row]:visible')).toContainText('/calendar/{token}.ics')
+})
+
+test('generated client references expose exact contracts', async ({ page }) => {
+  await page.goto('/sdk/reference/tasks/')
+  await expect(page.getByRole('heading', { name: 'tasks.update' })).toBeVisible()
+  await expect(page.getByText('tasks.update(id: string, data: TaskUpdate, options: TaskMutationOptions)')).toBeVisible()
+
+  await page.goto('/cli/reference/tasks/')
+  await expect(page.getByRole('heading', { name: 'teamgrid tasks update' })).toBeVisible()
+  await expect(page.getByText('--if-match <revision|etag>', { exact: true }).first()).toBeVisible()
+
+  await page.goto('/mcp/reference/teamgrid_tasks_list/')
+  await expect(page.getByRole('heading', { name: 'Input schema' })).toBeVisible()
+  await expect(page.getByText('"additionalProperties": false', { exact: true }).first()).toBeVisible()
+})
+
+test('German entry declares its document language', async ({ page }) => {
+  await page.goto('/de/')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('deutscher Einstieg')
+})
+
 test('onboarding progress is local and persistent', async ({ page }) => {
   await page.goto('/guides/get-started/')
   await page.getByLabel('Workspace slug').fill('acme-inc')
@@ -77,10 +136,11 @@ test('onboarding progress is local and persistent', async ({ page }) => {
 test('page feedback is anonymous and acknowledged locally', async ({ page }) => {
   await page.goto('/resources/troubleshooting/')
   await page.getByRole('button', { name: 'Yes', exact: true }).click()
-  await expect(page.getByText('Thank you. Your answer contains no account or customer data.')).toBeVisible()
+  await expect(page.getByText('Thank you. The rating contains no account or customer data.')).toBeVisible()
+  await expect(page.getByLabel('Optional detail')).toBeVisible()
   await page.reload()
   await expect(page.getByRole('button', { name: 'Yes', exact: true })).toBeHidden()
-  await expect(page.getByText('Thank you. Your answer contains no account or customer data.')).toBeVisible()
+  await expect(page.getByText('Thank you. The rating contains no account or customer data.')).toBeVisible()
 })
 
 test('request builder generates a regional request without sending it', async ({ page }) => {

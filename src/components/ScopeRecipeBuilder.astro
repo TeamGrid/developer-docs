@@ -1,0 +1,89 @@
+---
+const recipes = [
+  { label: 'Connection check', scopes: ['workspace:read'] },
+  { label: 'Project and task reporting', scopes: ['workspace:read', 'projects:read', 'tasks:read', 'users:read', 'lists:read', 'tags:read'] },
+  { label: 'Task synchronization', scopes: ['workspace:read', 'projects:read', 'tasks:read', 'tasks:write', 'lists:read', 'users:read', 'changes:read'] },
+  { label: 'Time-entry export', scopes: ['workspace:read', 'time-entries:read', 'projects:read', 'tasks:read', 'users:read', 'services:read'] },
+  { label: 'Project setup automation', scopes: ['workspace:read', 'projects:read', 'projects:write', 'project-templates:read', 'project-templates:write', 'lists:read', 'tasks:read', 'tasks:write', 'users:read'] },
+  { label: 'File integration', scopes: ['workspace:read', 'files:read', 'files:write'] },
+  { label: 'Webhook management', scopes: ['workspace:read', 'webhooks:read', 'webhooks:write', 'events:read'] },
+  { label: 'Workspace access review', scopes: ['workspace:read', 'members:read', 'roles:read', 'groups:read', 'service-accounts:read', 'credentials:read', 'resource-grants:read', 'audit:read'] },
+]
+---
+
+<section class="scope-builder" data-scope-builder>
+  <div class="scope-builder__head">
+    <div>
+      <span>Least-privilege helper</span>
+      <h2>Combine reviewed starting points</h2>
+      <p>Select only the workflows one credential performs. Review the resulting union against the exact operation reference.</p>
+    </div>
+    <strong data-scope-count>0 scopes</strong>
+  </div>
+  <div class="scope-builder__recipes">
+    {recipes.map((recipe) => (
+      <label>
+        <input type="checkbox" data-scope-recipe data-scopes={recipe.scopes.join(' ')} />
+        <span>{recipe.label}</span>
+      </label>
+    ))}
+  </div>
+  <div class="scope-builder__result">
+    <pre><code data-scope-output>Select a workflow to build a scope set.</code></pre>
+    <button type="button" data-scope-copy disabled>Copy scopes</button>
+  </div>
+  <p>This helper never creates a credential and sends no selection to TeamGrid.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-scope-builder]').forEach((builder) => {
+    const choices = [...builder.querySelectorAll<HTMLInputElement>('[data-scope-recipe]')]
+    const output = builder.querySelector<HTMLElement>('[data-scope-output]')
+    const count = builder.querySelector<HTMLElement>('[data-scope-count]')
+    const copy = builder.querySelector<HTMLButtonElement>('[data-scope-copy]')
+    let current = ''
+
+    function render() {
+      const scopes = [...new Set(choices
+        .filter((choice) => choice.checked)
+        .flatMap((choice) => (choice.dataset.scopes || '').split(' ').filter(Boolean)))]
+        .sort()
+      current = scopes.join('\n')
+      if (output) output.textContent = current || 'Select a workflow to build a scope set.'
+      if (count) count.textContent = `${scopes.length} ${scopes.length === 1 ? 'scope' : 'scopes'}`
+      if (copy) copy.disabled = scopes.length === 0
+    }
+
+    choices.forEach((choice) => choice.addEventListener('change', render))
+    copy?.addEventListener('click', async () => {
+      if (!current) return
+      await navigator.clipboard.writeText(current)
+      copy.textContent = 'Copied'
+      window.setTimeout(() => { copy.textContent = 'Copy scopes' }, 1_500)
+    })
+  })
+</script>
+
+<style>
+  .scope-builder {
+    margin: 26px 0 42px;
+    padding: 24px;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    background: var(--gray-25);
+  }
+  .scope-builder__head { display: flex; justify-content: space-between; gap: 20px; }
+  .scope-builder__head span { color: var(--blue-600); font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .scope-builder__head h2 { margin: 5px 0 6px; padding: 0; border: 0; font-size: 20px; }
+  .scope-builder__head p, .scope-builder > p { margin: 0; color: var(--ink-500); font-size: 11px; }
+  .scope-builder__head strong { color: var(--ink-500); font-family: var(--font-mono); font-size: 10px; white-space: nowrap; }
+  .scope-builder__recipes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 20px 0; }
+  .scope-builder__recipes label { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--gray-200); border-radius: 7px; background: white; font-size: 11px; }
+  .scope-builder__result { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 8px; }
+  .scope-builder__result pre { min-height: 58px; max-height: 240px; margin: 0 0 8px; }
+  .scope-builder__result button { min-height: 34px; padding: 0 12px; border: 0; border-radius: 7px; color: white; background: var(--blue-600); font-size: 11px; }
+  .scope-builder__result button:disabled { color: var(--ink-400); background: var(--gray-200); }
+  @media (max-width: 680px) {
+    .scope-builder__recipes, .scope-builder__result { grid-template-columns: 1fr; }
+  }
+</style>

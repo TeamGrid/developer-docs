@@ -36,4 +36,7 @@ Task and project reads include their developer revision. The MCP server remains 
 accepts an ETag, invokes a protected mutation, or polls project-template operation
 resources.
 
-[Configure an MCP host](/mcp/configuration/) or [review the tools and security model](/mcp/tools-and-security/).
+[Run your first MCP query](/mcp/first-query/), [configure an MCP host](/mcp/configuration/), browse
+the [complete 29-tool reference](/mcp/reference/), or [review the tools and security
+model](/mcp/tools-and-security/). If a connection or tool call fails, use the [MCP troubleshooting
+matrix](/mcp/troubleshooting/).

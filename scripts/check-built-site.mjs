@@ -19,12 +19,24 @@ const required = [
   'index.html',
   'api/v0/index.html',
   'api/v0/reference/index.html',
+  'api/v0/migration-matrix/index.html',
   'api/v1/index.html',
   'api/v1/resource-concurrency/index.html',
   'api/v1/reference/index.html',
   'sdk/index.html',
+  'sdk/reference/index.html',
   'cli/index.html',
+  'cli/reference/index.html',
   'mcp/index.html',
+  'mcp/first-query/index.html',
+  'mcp/reference/index.html',
+  'mcp/troubleshooting/index.html',
+  'de/index.html',
+  'guides/learning-paths/index.html',
+  'guides/end-to-end-task-workflow/index.html',
+  'guides/scope-recipes/index.html',
+  'guides/production-go-live/index.html',
+  'guides/http-language-examples/index.html',
   'openapi/v0.json',
   'openapi/v1.json',
   'collections/teamgrid-api-v1.postman.json',
@@ -37,6 +49,8 @@ const required = [
   'robots.txt',
   '_headers',
   '_redirects',
+  'examples/teamgrid-task-workflow.mjs',
+  'examples/teamgrid-task-workflow.package.json',
 ]
 for (const file of required) {
   if (!(await exists(path.join(dist, file)))) failures.push(`Missing built file: ${file}`)
@@ -117,6 +131,22 @@ if (html.length < minimumExpectedPages) {
   )
 }
 
+const sdkReference = JSON.parse(await readFile(path.join(root, 'sources', 'sdk-reference.json'), 'utf8'))
+for (const client of sdkReference.clients || []) {
+  const page = path.join(dist, 'sdk', 'reference', client.slug, 'index.html')
+  if (!(await exists(page))) failures.push(`Missing built SDK reference page for ${client.name}.`)
+}
+const cliReference = JSON.parse(await readFile(path.join(root, 'sources', 'cli-reference.json'), 'utf8'))
+for (const group of cliReference.groups || []) {
+  const page = path.join(dist, 'cli', 'reference', group.slug, 'index.html')
+  if (!(await exists(page))) failures.push(`Missing built CLI reference page for ${group.name}.`)
+}
+const mcpReference = JSON.parse(await readFile(path.join(root, 'sources', 'mcp-reference.json'), 'utf8'))
+for (const tool of mcpReference.tools || []) {
+  const page = path.join(dist, 'mcp', 'reference', tool.name, 'index.html')
+  if (!(await exists(page))) failures.push(`Missing built MCP reference page for ${tool.name}.`)
+}
+
 function builtPageForUrl(url) {
   const pathname = url.split(/[?#]/, 1)[0]
   if (!pathname || pathname === '/') return path.join(dist, 'index.html')
@@ -131,7 +161,10 @@ function hasBuiltPageWithExactCase(url) {
 for (const file of html) {
   const content = await readFile(file, 'utf8')
   const relative = path.relative(dist, file)
-  if (!/<html\b[^>]*\blang="en"/.test(content)) failures.push(`${relative} does not declare an English document language.`)
+  const expectedLanguage = relative === 'de/index.html' || relative.startsWith(`de${path.sep}`) ? 'de' : 'en'
+  if (!new RegExp(`<html\\b[^>]*\\blang="${expectedLanguage}"`).test(content)) {
+    failures.push(`${relative} does not declare the expected ${expectedLanguage} document language.`)
+  }
   if (!/<meta\b[^>]*\bname="description"/.test(content)) failures.push(`${relative} has no meta description.`)
   if (!/<link\b[^>]*\brel="canonical"/.test(content)) failures.push(`${relative} has no canonical URL.`)
   if (!content.includes('property="og:image"')) failures.push(`${relative} has no Open Graph image.`)
@@ -169,6 +202,14 @@ for (const file of ['sitemap-index.xml', 'llms.txt', 'llms-full.txt']) {
 const releaseFeed = await readFile(path.join(dist, 'changelog', 'feed.xml'), 'utf8')
 if (!releaseFeed.includes('<feed xmlns="http://www.w3.org/2005/Atom">')) {
   failures.push('The changelog Atom feed is invalid.')
+}
+
+const searchIndex = JSON.parse(await readFile(path.join(dist, 'search-index.json'), 'utf8'))
+for (const term of ['TeamGridClientOptions', 'tasks.update', 'teamgrid tasks update', 'teamgrid_tasks_list', 'PowerShell', 'If-Match']) {
+  const normalized = term.toLowerCase()
+  if (!searchIndex.some((entry) => JSON.stringify(entry).toLowerCase().includes(normalized))) {
+    failures.push(`Search index cannot find required technical term: ${term}.`)
+  }
 }
 const releaseJson = JSON.parse(
   await readFile(path.join(dist, 'changelog', 'releases.json'), 'utf8'),

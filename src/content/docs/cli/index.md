@@ -30,4 +30,7 @@ teamgrid --version
 The CLI is a client of API v1. It does not create another API surface or bypass TeamGrid scopes, tenant isolation, or regional routing.
 
 [Install and authenticate](/cli/install-and-authenticate/), follow the complete
-[browser-login flow](/cli/browser-login/), or [browse all commands](/cli/commands/).
+[browser-login flow](/cli/browser-login/), browse the workflow-oriented
+[command guide](/cli/commands/), or use the generated [exact command reference](/cli/reference/).
+For upgrades, removal, shell behavior, private certificate authorities, and recovery, see
+[maintenance and troubleshooting](/cli/maintenance-and-troubleshooting/).

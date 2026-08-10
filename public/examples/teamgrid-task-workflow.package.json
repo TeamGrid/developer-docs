@@ -1,0 +1,11 @@
+{
+  "name": "teamgrid-task-workflow-example",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.14 <25"
+  },
+  "dependencies": {
+    "@teamgrid/api-client": "1.0.5"
+  }
+}

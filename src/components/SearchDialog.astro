@@ -31,7 +31,7 @@
 </dialog>
 
 <script>
-  type SearchEntry = { title: string; description: string; href: string; area: string; category: string; method?: string }
+  type SearchEntry = { title: string; description: string; href: string; area: string; category: string; keywords?: string; method?: string }
   const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]')
   const input = dialog?.querySelector<HTMLInputElement>('[data-search-input]')
   const results = dialog?.querySelector<HTMLElement>('[data-search-results]')
@@ -99,7 +99,7 @@
         entry,
         score: tokens.reduce((score, token) => {
           const title = entry.title.toLowerCase()
-          const haystack = `${title} ${entry.description} ${entry.area} ${entry.method || ''}`.toLowerCase()
+          const haystack = `${title} ${entry.description} ${entry.area} ${entry.method || ''} ${entry.keywords || ''}`.toLowerCase()
           if (title === token) return score + 20
           if (title.startsWith(token)) return score + 12
           if (title.includes(token)) return score + 8
@@ -113,17 +113,28 @@
     window.clearTimeout(telemetryTimer)
     telemetryTimer = window.setTimeout(() => {
       if (window.location.hostname !== 'developer.teamgridapp.com') return
-      void fetch('/api/docs-events', {
-        body: JSON.stringify({
-          event: 'search_performed',
+      void (async () => {
+        const event: Record<string, string | number> = {
+          event: matches.length === 0 ? 'search_no_results' : 'search_performed',
           filter: activeFilter,
           path: window.location.pathname,
           value: matches.length,
-        }),
-        headers: { 'Content-Type': 'application/json' },
-        keepalive: true,
-        method: 'POST',
-      }).catch(() => undefined)
+        }
+        if (matches.length === 0 && globalThis.crypto?.subtle) {
+          const bytes = new TextEncoder().encode(`${activeFilter}:${query}`)
+          const digest = await crypto.subtle.digest('SHA-256', bytes)
+          event.queryHash = [...new Uint8Array(digest)]
+            .slice(0, 12)
+            .map((byte) => byte.toString(16).padStart(2, '0'))
+            .join('')
+        }
+        await fetch('/api/docs-events', {
+          body: JSON.stringify(event),
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          method: 'POST',
+        })
+      })().catch(() => undefined)
     }, 700)
     selected = Math.min(selected, Math.max(matches.length - 1, 0))
     if (matches.length === 0) {
@@ -154,11 +165,14 @@
   }
 
   async function openSearch() {
-    await loadIndex()
     selected = 0
-    render()
     dialog?.showModal()
     requestAnimationFrame(() => input?.focus())
+    if (results && index.length === 0) {
+      results.innerHTML = `<div class="search-dialog__empty"><p>Loading search…</p><span>Preparing the complete API and client reference.</span></div>`
+    }
+    await loadIndex()
+    render()
   }
 
   document.querySelectorAll('[data-search-open]').forEach((button) => button.addEventListener('click', openSearch))

@@ -1,0 +1,274 @@
+---
+import type { MarkdownHeading } from 'astro'
+import migration from '../../../../public/openapi/v0-to-v1-migration.json'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { operationHref } from '../../../lib/openapi'
+
+const headings: MarkdownHeading[] = [
+  { depth: 2, slug: 'route-matrix', text: 'Route matrix' },
+  { depth: 2, slug: 'how-to-use-the-result', text: 'How to use the result' },
+]
+const counts = Object.fromEntries(
+  Object.keys(migration.classifications).map((classification) => [
+    classification,
+    migration.routes.filter((route) => route.classification === classification).length,
+  ]),
+)
+const routeSearch = (route: (typeof migration.routes)[number]) => [
+  route.classification,
+  route.v0.method,
+  route.v0.path,
+  route.v0.operationId,
+  route.v0.contractStatus,
+  route.v1?.method,
+  route.v1?.path,
+  route.v1?.operationId,
+  ...route.migration.requestChanges,
+  ...route.migration.responseChanges,
+  ...route.migration.semanticChanges,
+].filter(Boolean).join(' ').toLowerCase()
+---
+
+<DocsLayout
+  title="API v0 to v1 route matrix"
+  description="Filter all 87 frozen API v0 runtime routes by migration class and open the exact API v1 replacement where one exists."
+  headings={headings}
+  source="src/pages/api/v0/migration-matrix.astro"
+  owner="Developer Platform"
+  reviewedAt={new Date('2026-08-10')}
+>
+  <div class="migration-summary" aria-label="Route totals">
+    <span><strong>{migration.routes.length}</strong> frozen v0 routes</span>
+    <span><strong>{counts.equivalent}</strong> equivalent</span>
+    <span><strong>{counts['adaptation-required']}</strong> adaptation required</span>
+    <span><strong>{counts['retained-v0']}</strong> retained on v0</span>
+  </div>
+
+  <h2 id="route-matrix">Route matrix</h2>
+  <p>
+    Search by method, path, operation ID, or migration change. A replacement is “equivalent” only
+    at the product-capability level; v1 authentication, regional routing, envelopes, and errors
+    still apply exactly as documented.
+  </p>
+
+  <div class="migration-controls" data-migration-controls>
+    <label>
+      <span>Filter routes</span>
+      <input type="search" placeholder="For example: tasks, DELETE, pagination…" data-migration-search />
+    </label>
+    <label>
+      <span>Classification</span>
+      <select data-migration-classification>
+        <option value="all">All classifications</option>
+        <option value="equivalent">Equivalent</option>
+        <option value="adaptation-required">Adaptation required</option>
+        <option value="retained-v0">Retained on v0</option>
+      </select>
+    </label>
+  </div>
+
+  <p class="migration-result-count" data-migration-count>{migration.routes.length} routes shown</p>
+
+  <div class="migration-table-wrap">
+    <table class="migration-table">
+      <thead>
+        <tr>
+          <th>API v0 route</th>
+          <th>Classification</th>
+          <th>API v1 replacement</th>
+          <th>Required changes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {migration.routes.map((route) => {
+          const changes = [
+            ...route.migration.requestChanges,
+            ...route.migration.responseChanges,
+            ...route.migration.semanticChanges,
+          ]
+          return (
+            <tr
+              data-migration-row
+              data-classification={route.classification}
+              data-search={routeSearch(route)}
+            >
+              <td>
+                <code>{route.v0.method} {route.v0.path}</code>
+                <small>{route.v0.operationId} · {route.v0.contractStatus}</small>
+              </td>
+              <td><span class={`migration-class migration-class--${route.classification}`}>{route.classification}</span></td>
+              <td>
+                {route.v1 ? (
+                  <>
+                    <a href={operationHref({ version: 'v1', operationId: route.v1.operationId })}>
+                      <code>{route.v1.method} {route.v1.path}</code>
+                    </a>
+                    <small>{route.v1.operationId}</small>
+                  </>
+                ) : <span>No public v1 replacement</span>}
+              </td>
+              <td>
+                {changes.length > 0 ? (
+                  <details>
+                    <summary>{changes.length} documented {changes.length === 1 ? 'change' : 'changes'}</summary>
+                    <ul>{changes.map((change) => <li>{change}</li>)}</ul>
+                  </details>
+                ) : <span>No route-specific change</span>}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  </div>
+  <p class="migration-no-results" hidden data-migration-empty>No routes match this filter.</p>
+
+  <h2 id="how-to-use-the-result">How to use the result</h2>
+  <ol>
+    <li>Inventory the v0 method and path actually called by the integration.</li>
+    <li>Open its v1 operation and implement the documented scopes, request, response, and errors.</li>
+    <li>Apply every route-specific request, response, and semantic change from this matrix.</li>
+    <li>Compare bounded reads before enabling writes.</li>
+    <li>Keep the v0 credential active until the migrated workflow and rollback path are verified.</li>
+    <li>Revoke and remove the v0 credential after the observation window passes.</li>
+  </ol>
+  <p>
+    Read the <a href="/api/v0/migration/">migration guide</a> for the platform-wide sequence and
+    the <a href="/guides/production-go-live/">production checklist</a> before switching traffic.
+  </p>
+</DocsLayout>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>('[data-migration-search]')
+  const classification = document.querySelector<HTMLSelectElement>('[data-migration-classification]')
+  const rows = [...document.querySelectorAll<HTMLTableRowElement>('[data-migration-row]')]
+  const count = document.querySelector<HTMLElement>('[data-migration-count]')
+  const empty = document.querySelector<HTMLElement>('[data-migration-empty]')
+
+  function filterRows() {
+    const query = search?.value.trim().toLowerCase() || ''
+    const selected = classification?.value || 'all'
+    let visible = 0
+    for (const row of rows) {
+      const matchesQuery = !query || (row.dataset.search || '').includes(query)
+      const matchesClass = selected === 'all' || row.dataset.classification === selected
+      row.hidden = !(matchesQuery && matchesClass)
+      if (!row.hidden) visible += 1
+    }
+    if (count) count.textContent = `${visible} ${visible === 1 ? 'route' : 'routes'} shown`
+    if (empty) empty.hidden = visible !== 0
+  }
+
+  search?.addEventListener('input', filterRows)
+  classification?.addEventListener('change', filterRows)
+  document.querySelector('[data-migration-controls]')?.setAttribute('data-ready', 'true')
+</script>
+
+<style>
+  .migration-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .migration-summary span {
+    padding: 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    background: var(--gray-50);
+    font-size: 12px;
+  }
+
+  .migration-summary strong {
+    display: block;
+    color: var(--ink-950);
+    font-size: 22px;
+  }
+
+  .migration-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    margin: 22px 0 10px;
+  }
+
+  .migration-controls label,
+  .migration-table td {
+    min-width: 0;
+  }
+
+  .migration-controls span,
+  .migration-table small {
+    display: block;
+    margin-top: 4px;
+    color: var(--ink-500);
+    font-size: 11px;
+  }
+
+  .migration-controls input,
+  .migration-controls select {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 5px;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 7px;
+    background: white;
+    font: inherit;
+  }
+
+  .migration-result-count {
+    color: var(--ink-500);
+    font-size: 12px;
+  }
+
+  .migration-table-wrap {
+    overflow-x: auto;
+  }
+
+  .migration-table {
+    min-width: 900px;
+  }
+
+  .migration-table td {
+    vertical-align: top;
+  }
+
+  .migration-table td:nth-child(1),
+  .migration-table td:nth-child(3) {
+    width: 25%;
+  }
+
+  .migration-table td:nth-child(2) {
+    width: 15%;
+  }
+
+  .migration-table code {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .migration-table details ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+  }
+
+  .migration-class {
+    display: inline-block;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--gray-100);
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .migration-class--equivalent { color: #18794e; background: #e9f9ef; }
+  .migration-class--adaptation-required { color: #8a5d00; background: #fff6d6; }
+  .migration-class--retained-v0 { color: #a13c32; background: #fff0ee; }
+
+  @media (max-width: 760px) {
+    .migration-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .migration-controls { grid-template-columns: 1fr; }
+  }
+</style>

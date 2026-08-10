@@ -1,9 +1,11 @@
 ---
 import { primaryNavigation } from '../data/navigation'
+import { developerReleases } from '../data/releases'
 import Brand from './Brand.astro'
 
 const pathname = Astro.url.pathname
 const section = pathname.split('/').filter(Boolean)[0]
+const currentRelease = developerReleases[0]
 
 function isActive(href: string) {
   if (href.startsWith('/api/')) return section === 'api'
@@ -25,6 +27,9 @@ function isActive(href: string) {
       }
     </nav>
     <div class="site-header__actions">
+      <a class="version-link" href="/resources/compatibility/" aria-label={`Developer Platform ${currentRelease.version} compatibility`}>
+        v{currentRelease.version}
+      </a>
       <button class="search-trigger" type="button" data-search-open aria-label="Search documentation">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5"></circle>

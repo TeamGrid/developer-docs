@@ -1,0 +1,2636 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "731a662287038a57bb464d325287b48fd4f73724",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.0.5"
+  },
+  "profiles": {
+    "core": [
+      "teamgrid_list_get",
+      "teamgrid_lists_list",
+      "teamgrid_product_get",
+      "teamgrid_product_group_get",
+      "teamgrid_product_groups_list",
+      "teamgrid_products_list",
+      "teamgrid_project_get",
+      "teamgrid_projects_list",
+      "teamgrid_tag_get",
+      "teamgrid_tags_list",
+      "teamgrid_task_get",
+      "teamgrid_tasks_list",
+      "teamgrid_time_entries_list",
+      "teamgrid_time_entry_get",
+      "teamgrid_workspace_get"
+    ],
+    "collaboration": [
+      "teamgrid_call_note_get",
+      "teamgrid_call_notes_list",
+      "teamgrid_contact_get",
+      "teamgrid_contact_group_get",
+      "teamgrid_contact_groups_list",
+      "teamgrid_contacts_list",
+      "teamgrid_list_get",
+      "teamgrid_lists_list",
+      "teamgrid_product_get",
+      "teamgrid_product_group_get",
+      "teamgrid_product_groups_list",
+      "teamgrid_products_list",
+      "teamgrid_project_get",
+      "teamgrid_projects_list",
+      "teamgrid_tag_get",
+      "teamgrid_tags_list",
+      "teamgrid_task_get",
+      "teamgrid_tasks_list",
+      "teamgrid_time_entries_list",
+      "teamgrid_time_entry_get",
+      "teamgrid_users_list",
+      "teamgrid_workspace_get"
+    ],
+    "governance": [
+      "teamgrid_custom_field_definition_get",
+      "teamgrid_custom_field_definitions_list",
+      "teamgrid_list_get",
+      "teamgrid_lists_list",
+      "teamgrid_product_get",
+      "teamgrid_product_group_get",
+      "teamgrid_product_groups_list",
+      "teamgrid_products_list",
+      "teamgrid_project_get",
+      "teamgrid_projects_list",
+      "teamgrid_service_get",
+      "teamgrid_services_list",
+      "teamgrid_tag_get",
+      "teamgrid_tags_list",
+      "teamgrid_task_get",
+      "teamgrid_tasks_list",
+      "teamgrid_time_entries_list",
+      "teamgrid_time_entry_get",
+      "teamgrid_webhook_get",
+      "teamgrid_webhooks_list",
+      "teamgrid_workspace_get"
+    ],
+    "all": [
+      "teamgrid_call_note_get",
+      "teamgrid_call_notes_list",
+      "teamgrid_contact_get",
+      "teamgrid_contact_group_get",
+      "teamgrid_contact_groups_list",
+      "teamgrid_contacts_list",
+      "teamgrid_custom_field_definition_get",
+      "teamgrid_custom_field_definitions_list",
+      "teamgrid_list_get",
+      "teamgrid_lists_list",
+      "teamgrid_product_get",
+      "teamgrid_product_group_get",
+      "teamgrid_product_groups_list",
+      "teamgrid_products_list",
+      "teamgrid_project_get",
+      "teamgrid_projects_list",
+      "teamgrid_search",
+      "teamgrid_service_get",
+      "teamgrid_services_list",
+      "teamgrid_tag_get",
+      "teamgrid_tags_list",
+      "teamgrid_task_get",
+      "teamgrid_tasks_list",
+      "teamgrid_time_entries_list",
+      "teamgrid_time_entry_get",
+      "teamgrid_users_list",
+      "teamgrid_webhook_get",
+      "teamgrid_webhooks_list",
+      "teamgrid_workspace_get"
+    ]
+  },
+  "resultContract": {
+    "errorCodes": [
+      "result_too_large",
+      "teamgrid_request_failed"
+    ],
+    "maxSerializedBytes": 262144,
+    "transport": "MCP structuredContent plus equivalent serialized JSON text content"
+  },
+  "tools": [
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getcallnote/",
+          "method": "GET",
+          "operationId": "getCallNote",
+          "path": "/call-notes/{id}"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "Get one TeamGrid call note. The result can contain conversation data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_call_note_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "call-notes:read"
+        ]
+      },
+      "security": {
+        "classification": "conversation-data",
+        "summary": "The response can contain sensitive plain-text conversation data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid call note with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `call-notes:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listcallnotes/",
+          "method": "GET",
+          "operationId": "listCallNotes",
+          "path": "/call-notes"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "List TeamGrid call notes. Results can contain sensitive conversation data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_call_notes_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "call-notes:read"
+        ]
+      },
+      "security": {
+        "classification": "conversation-data",
+        "summary": "The response can contain sensitive plain-text conversation data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid call notes. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `call-notes:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getcontact/",
+          "method": "GET",
+          "operationId": "getContact",
+          "path": "/contacts/{id}"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "Get one TeamGrid contact by id. The result can contain personal data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_contact_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "contacts:read"
+        ]
+      },
+      "security": {
+        "classification": "personal-data",
+        "summary": "The response can contain personal or relationship data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid contact with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `contacts:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getcontactgroup/",
+          "method": "GET",
+          "operationId": "getContactGroup",
+          "path": "/contact-groups/{id}"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "Get one TeamGrid contact group by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_contact_group_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "contact-groups:read"
+        ]
+      },
+      "security": {
+        "classification": "personal-data",
+        "summary": "The response can contain personal or relationship data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid contact group with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `contact-groups:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listcontactgroups/",
+          "method": "GET",
+          "operationId": "listContactGroups",
+          "path": "/contact-groups"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "List TeamGrid contact groups with stable cursor pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_contact_groups_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "contact-groups:read"
+        ]
+      },
+      "security": {
+        "classification": "personal-data",
+        "summary": "The response can contain personal or relationship data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid contact groups. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `contact-groups:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listcontacts/",
+          "method": "GET",
+          "operationId": "listContacts",
+          "path": "/contacts"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "List TeamGrid contacts. Results can contain personal data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "supplier",
+              "team"
+            ]
+          },
+          "companyId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "createdById": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "customerId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "groupId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "parentContactId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "person",
+              "company"
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_contacts_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "contacts:read"
+        ]
+      },
+      "security": {
+        "classification": "personal-data",
+        "summary": "The response can contain personal or relationship data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid contacts. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `contacts:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getcustomfielddefinition/",
+          "method": "GET",
+          "operationId": "getCustomFieldDefinition",
+          "path": "/custom-field-definitions/{id}"
+        }
+      ],
+      "availableIn": [
+        "governance",
+        "all"
+      ],
+      "baseProfile": "governance",
+      "description": "Get one canonical TeamGrid custom-field definition without exposing legacy defaults.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_custom_field_definition_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "custom-field-definitions:read"
+        ]
+      },
+      "security": {
+        "classification": "governance-metadata",
+        "summary": "Custom-field definitions describe workspace schema and compatibility, but not per-resource values."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [
+          "The tool exposes canonical definitions, not legacy defaults or per-resource values."
+        ],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid custom field definition with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `governance` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `custom-field-definitions:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listcustomfielddefinitions/",
+          "method": "GET",
+          "operationId": "listCustomFieldDefinitions",
+          "path": "/custom-field-definitions"
+        }
+      ],
+      "availableIn": [
+        "governance",
+        "all"
+      ],
+      "baseProfile": "governance",
+      "description": "List canonical TeamGrid custom-field definitions without exposing defaults.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "defaultEnabled": {
+            "type": "boolean"
+          },
+          "fieldType": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "date",
+              "dropdown",
+              "number",
+              "project",
+              "switcher",
+              "tag",
+              "text",
+              "textarea",
+              "user"
+            ]
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "project",
+              "projectJournalEntry",
+              "task"
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_custom_field_definitions_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "custom-field-definitions:read"
+        ]
+      },
+      "security": {
+        "classification": "governance-metadata",
+        "summary": "Custom-field definitions describe workspace schema and compatibility, but not per-resource values."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [
+          "The tool exposes canonical definitions, not legacy defaults or per-resource values."
+        ],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid custom field definitions. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `governance` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `custom-field-definitions:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getlist/",
+          "method": "GET",
+          "operationId": "getList",
+          "path": "/lists/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid list by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_list_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "lists:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid list with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `lists:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listlists/",
+          "method": "GET",
+          "operationId": "listLists",
+          "path": "/lists"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid task lists.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "parentId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "tasks",
+              "projects",
+              "personal"
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_lists_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "lists:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid lists. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `lists:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getproduct/",
+          "method": "GET",
+          "operationId": "getProduct",
+          "path": "/products/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid product without exposing its purchase price.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_product_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "products:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [
+          "`purchasePrice` is removed even when the credential has a finance overlay."
+        ],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid product with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `products:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getproductgroup/",
+          "method": "GET",
+          "operationId": "getProductGroup",
+          "path": "/product-groups/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid product group by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_product_group_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "product-groups:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid product group with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `product-groups:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listproductgroups/",
+          "method": "GET",
+          "operationId": "listProductGroups",
+          "path": "/product-groups"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid product groups with stable cursor pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "parentId": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_product_groups_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "product-groups:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid product groups. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `product-groups:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listproducts/",
+          "method": "GET",
+          "operationId": "listProducts",
+          "path": "/products"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid products without exposing purchase prices.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "productGroupId": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_products_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "products:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [
+          "`purchasePrice` is removed even when the credential has a finance overlay."
+        ],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid products. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `products:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getproject/",
+          "method": "GET",
+          "operationId": "getProject",
+          "path": "/projects/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid project by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_project_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "projects:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid project with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `projects:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listprojects/",
+          "method": "GET",
+          "operationId": "listProjects",
+          "path": "/projects"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid projects with stable cursor pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_projects_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "projects:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid projects. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `projects:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/searchresources/",
+          "method": "POST",
+          "operationId": "searchResources",
+          "path": "/search"
+        }
+      ],
+      "availableIn": [
+        "all"
+      ],
+      "baseProfile": "all",
+      "description": "Search authorized TeamGrid contacts, projects, and tasks. Returns at most 50 curated metadata-only results; contact matches can contain personal data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "default": 25,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "term": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 160
+          },
+          "types": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "contacts",
+                "projects",
+                "tasks"
+              ]
+            }
+          }
+        },
+        "required": [
+          "term",
+          "types"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_search",
+      "scopes": {
+        "conditional": [
+          "contacts:read",
+          "projects:read",
+          "tasks:read"
+        ],
+        "required": [
+          "search:read"
+        ]
+      },
+      "security": {
+        "classification": "cross-domain-sensitive",
+        "summary": "A single query can cross contacts, projects, and tasks. Contact matches can contain personal data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "bounded-search",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": 50
+      },
+      "examplePrompt": "Search TeamGrid contacts, projects, and tasks for “proposal”. Return at most 10 matches and identify each matching resource type.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `all` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`term` is shorter than 2 or longer than 160 characters, contains control characters, or `types` is empty, duplicated, unsupported, or longer than 3.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `search:read` or an applicable conditional domain scope (`contacts:read`, `projects:read`, `tasks:read`) or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getservice/",
+          "method": "GET",
+          "operationId": "getService",
+          "path": "/services/{id}"
+        }
+      ],
+      "availableIn": [
+        "governance",
+        "all"
+      ],
+      "baseProfile": "governance",
+      "description": "Get one TeamGrid service and its potentially sensitive billing rate.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_service_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "services:read"
+        ]
+      },
+      "security": {
+        "classification": "commercial-data",
+        "summary": "Service responses can contain commercially sensitive billing configuration."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid service with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `governance` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `services:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listservices/",
+          "method": "GET",
+          "operationId": "listServices",
+          "path": "/services"
+        }
+      ],
+      "availableIn": [
+        "governance",
+        "all"
+      ],
+      "baseProfile": "governance",
+      "description": "List TeamGrid services.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_services_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "services:read"
+        ]
+      },
+      "security": {
+        "classification": "commercial-data",
+        "summary": "Service responses can contain commercially sensitive billing configuration."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid services. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `governance` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `services:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/gettag/",
+          "method": "GET",
+          "operationId": "getTag",
+          "path": "/tags/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid tag by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_tag_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "tags:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid tag with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `tags:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listtags/",
+          "method": "GET",
+          "operationId": "listTags",
+          "path": "/tags"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid tags.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_tags_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "tags:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid tags. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `tags:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/gettask/",
+          "method": "GET",
+          "operationId": "getTask",
+          "path": "/tasks/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid task by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid task with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listtasks/",
+          "method": "GET",
+          "operationId": "listTasks",
+          "path": "/tasks"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid tasks with optional project, assignee, and status filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "assigneeId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "projectId": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_tasks_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid tasks. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listtimeentries/",
+          "method": "GET",
+          "operationId": "listTimeEntries",
+          "path": "/time-entries"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List TeamGrid time entries with stable cursor pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "billed": {
+            "type": "boolean"
+          },
+          "createdById": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "from": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "taskId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "to": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_time_entries_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "time-entries:read"
+        ]
+      },
+      "security": {
+        "classification": "work-record-data",
+        "summary": "Time-entry records can expose individual work activity and billing state."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid time entries. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `time-entries:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/gettimeentry/",
+          "method": "GET",
+          "operationId": "getTimeEntry",
+          "path": "/time-entries/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one TeamGrid time entry by id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_time_entry_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "time-entries:read"
+        ]
+      },
+      "security": {
+        "classification": "work-record-data",
+        "summary": "Time-entry records can expose individual work activity and billing state."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid time entry with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `time-entries:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listusers/",
+          "method": "GET",
+          "operationId": "listUsers",
+          "path": "/users"
+        }
+      ],
+      "availableIn": [
+        "collaboration",
+        "all"
+      ],
+      "baseProfile": "collaboration",
+      "description": "List users in the authenticated TeamGrid workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_users_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "users:read"
+        ]
+      },
+      "security": {
+        "classification": "personal-data",
+        "summary": "The response can contain personal or relationship data."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid users. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `collaboration` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `users:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getwebhook/",
+          "method": "GET",
+          "operationId": "getWebhook",
+          "path": "/webhooks/{id}"
+        }
+      ],
+      "availableIn": [
+        "governance",
+        "all"
+      ],
+      "baseProfile": "governance",
+      "description": "Get one TeamGrid webhook without exposing its signing secret.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_webhook_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "webhooks:read"
+        ]
+      },
+      "security": {
+        "classification": "security-configuration",
+        "summary": "Webhook configuration is security-sensitive. Read responses do not expose the signing secret."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [
+          "Webhook read responses do not contain the reveal-once signing secret."
+        ],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid webhook with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `governance` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `webhooks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listwebhooks/",
+          "method": "GET",
+          "operationId": "listWebhooks",
+          "path": "/webhooks"
+        }
+      ],
+      "availableIn": [
+        "governance",
+        "all"
+      ],
+      "baseProfile": "governance",
+      "description": "List configured TeamGrid webhooks without modifying them.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_webhooks_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "webhooks:read"
+        ]
+      },
+      "security": {
+        "classification": "security-configuration",
+        "summary": "Webhook configuration is security-sensitive. Read responses do not expose the signing secret."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [
+          "Webhook read responses do not contain the reveal-once signing secret."
+        ],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid webhooks. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "The host uses a tool profile that does not include `governance` access.",
+          "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+        },
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `webhooks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/getworkspace/",
+          "method": "GET",
+          "operationId": "getWorkspace",
+          "path": "/workspace"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get the authenticated TeamGrid workspace and its region/cell metadata.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_workspace_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "workspace:read"
+        ]
+      },
+      "security": {
+        "classification": "tenant-metadata",
+        "summary": "The response identifies the authenticated workspace, region, and cell."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Use TeamGrid to show the authenticated workspace and its region. Do not call any write-capable tool.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `workspace:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    }
+  ]
+}

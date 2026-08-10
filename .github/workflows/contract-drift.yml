@@ -49,15 +49,27 @@ jobs:
           cache-dependency-path: developer-docs/package-lock.json
       - run: npm ci
         working-directory: developer-docs
+      - name: Install the exact official-client workspace
+        run: npm ci
+        working-directory: developer-platform/developer-platform
+      - name: Build the official client surfaces for reference extraction
+        run: npm run build
+        working-directory: developer-platform/developer-platform
       - name: Synchronize the latest governed contracts
         run: npm run sync:contracts -- ../teamgrid-api HEAD HEAD
         working-directory: developer-docs
       - name: Synchronize the latest official client versions
         run: npm run sync:packages -- ../developer-platform HEAD
         working-directory: developer-docs
+      - name: Verify SDK, CLI, and MCP reference surfaces
+        run: npm run check:reference-drift
+        working-directory: developer-docs
       - name: Regenerate derived developer assets
         run: npm run generate
         working-directory: developer-docs
       - name: Fail when published documentation is behind
-        run: git diff --exit-code -- public/openapi public/collections public/llms.txt public/llms-full.txt sources
+        run: >-
+          git diff --exit-code --
+          public/openapi public/collections public/llms.txt public/llms-full.txt sources
+          src/content/docs/sdk src/content/docs/cli/reference src/content/docs/mcp/reference
         working-directory: developer-docs

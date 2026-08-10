@@ -22,10 +22,17 @@ npm run verify
 - The checked-in `public/openapi/v1.json` contract drives the API v1 reference.
 - The checked-in `public/openapi/v0.json` contract describes the frozen v0 runtime.
 - `sources/contracts.json` records contract provenance and SHA-256 digests.
-- SDK, CLI, and MCP behavior follows the public `TeamGrid/developer-platform` packages.
+- `sources/sdk-reference.json`, `sources/cli-reference.json`, and
+  `sources/mcp-reference.json` pin the exact public client surfaces to the recorded
+  `TeamGrid/developer-platform` commit.
 - Historical v0 prose was migrated from ReadMe and retains source attribution in frontmatter.
 
 `scripts/sync-contracts.mjs` and `scripts/import-readme-v0.mjs` are maintainer tools. They require the canonical local source repositories and are not part of a normal CI build. Synchronize contracts with `npm run sync:contracts -- /path/to/teamgrid-api <full-contract-source-sha> <full-runtime-sha>`; the command reads immutable Git objects rather than the API working tree. If the runtime SHA is omitted, it defaults to the contract source SHA for single-commit releases.
+
+After building the pinned sibling `developer-platform/developer-platform` workspace, run
+`npm run sync:packages` and `npm run sync:references` to refresh the SDK, CLI, and MCP snapshots.
+Normal documentation CI runs `npm run check:client-references` without requiring sibling
+repositories; the scheduled drift workflow additionally reconstructs the references from source.
 
 ## Deployment model
 

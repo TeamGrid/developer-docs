@@ -7,7 +7,19 @@
     <button type="button" data-feedback-value="1">Yes</button>
     <button type="button" data-feedback-value="0">Not yet</button>
   </div>
-  <p hidden data-feedback-thanks>Thank you. Your answer contains no account or customer data.</p>
+  <p hidden data-feedback-thanks>Thank you. The rating contains no account or customer data.</p>
+  <form hidden data-feedback-detail>
+    <label>
+      <span>Optional detail</span>
+      <textarea
+        maxlength="280"
+        placeholder="What was missing or especially useful? Do not include credentials, personal data, or customer content."
+        data-feedback-message
+      ></textarea>
+    </label>
+    <button type="submit">Send detail</button>
+    <span hidden data-feedback-detail-thanks>Detail sent. Thank you.</span>
+  </form>
 </section>
 
 <script>
@@ -15,15 +27,20 @@
     const key = `teamgrid-developer-feedback:${window.location.pathname}`
     const actions = component.querySelector<HTMLElement>('[data-feedback-actions]')
     const thanks = component.querySelector<HTMLElement>('[data-feedback-thanks]')
+    const detail = component.querySelector<HTMLFormElement>('[data-feedback-detail]')
+    const message = component.querySelector<HTMLTextAreaElement>('[data-feedback-message]')
+    let selectedValue = 0
     if (localStorage.getItem(key)) {
       if (actions) actions.hidden = true
       if (thanks) thanks.hidden = false
     }
     component.querySelectorAll<HTMLButtonElement>('[data-feedback-value]').forEach((button) => {
       button.addEventListener('click', () => {
-        localStorage.setItem(key, button.dataset.feedbackValue || '0')
+        selectedValue = Number(button.dataset.feedbackValue || 0)
+        localStorage.setItem(key, String(selectedValue))
         if (actions) actions.hidden = true
         if (thanks) thanks.hidden = false
+        if (detail) detail.hidden = false
         if (window.location.hostname !== 'developer.teamgridapp.com') return
         void fetch('/api/docs-events', {
           body: JSON.stringify({
@@ -35,6 +52,34 @@
           keepalive: true,
           method: 'POST',
         }).catch(() => undefined)
+      })
+    })
+    detail?.addEventListener('submit', (event) => {
+      event.preventDefault()
+      const feedback = message?.value.trim() || ''
+      if (!feedback) return
+      const detailThanks = detail.querySelector<HTMLElement>('[data-feedback-detail-thanks]')
+      const submit = detail.querySelector<HTMLButtonElement>('button[type="submit"]')
+      if (submit) submit.disabled = true
+      if (window.location.hostname !== 'developer.teamgridapp.com') {
+        if (detailThanks) detailThanks.hidden = false
+        return
+      }
+      void fetch('/api/docs-events', {
+        body: JSON.stringify({
+          event: 'page_feedback_detail',
+          feedback,
+          path: window.location.pathname,
+          value: selectedValue,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      }).then((response) => {
+        if (!response.ok) throw new Error('Feedback was rejected')
+        if (detailThanks) detailThanks.hidden = false
+        if (message) message.disabled = true
+      }).catch(() => {
+        if (submit) submit.disabled = false
       })
     })
   })

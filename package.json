@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.9",
-    "@playwright/test": "^1.55.1",
+    "@playwright/test": "^1.62.1",
     "typescript": "6.0.3",
     "wrangler": "4.114.0"
   },

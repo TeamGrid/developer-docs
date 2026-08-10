@@ -9,6 +9,11 @@ const packageManifest = JSON.parse(
   await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
 )
 const stableVersion = packageManifest.version
+const smokeRun = (
+  process.env.GITHUB_SHA ||
+  process.env.CF_PAGES_COMMIT_SHA ||
+  Date.now().toString(36)
+).slice(0, 12)
 
 const checks = [
   ['/', 'Build dependable integrations with TeamGrid API v1'],
@@ -21,7 +26,7 @@ const checks = [
   ['/cli/', `@teamgrid/cli@${stableVersion}`],
   ['/cli/browser-login/', 'The CLI performs this sequence'],
   ['/cli/browser-login/', 'Windows Credential Manager'],
-  ['/cli/commands/', 'This reference covers every command group in CLI'],
+  ['/cli/commands/', 'This workflow guide covers every command group in CLI'],
   ['/cli/reference/', '214 executable commands'],
   ['/cli/reference/tasks/', 'teamgrid tasks update'],
   ['/mcp/reference/', '29 read-only tools'],
@@ -37,10 +42,18 @@ const checks = [
 
 async function check(path, expected) {
   let lastError
-  for (let attempt = 1; attempt <= 6; attempt += 1) {
+  for (let attempt = 1; attempt <= 10; attempt += 1) {
     try {
-      const response = await fetch(`${baseUrl}${path}`, {
-        headers: { 'User-Agent': 'TeamGrid-Developer-Portal-Smoke/1.0' },
+      const url = new URL(path, `${baseUrl}/`)
+      // Pages can finish the upload before every canonical-domain edge has
+      // switched to the deployment. A unique query prevents one transient
+      // 404 from being served from cache throughout the whole retry window.
+      url.searchParams.set('__teamgrid_smoke', `${smokeRun}-${attempt}`)
+      const response = await fetch(url, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'User-Agent': 'TeamGrid-Developer-Portal-Smoke/1.0',
+        },
         redirect: 'error',
         signal: AbortSignal.timeout(10_000),
       })
@@ -50,7 +63,9 @@ async function check(path, expected) {
     } catch (error) {
       lastError = error
     }
-    await new Promise((resolve) => setTimeout(resolve, attempt * 2_000))
+    if (attempt < 10) {
+      await new Promise((resolve) => setTimeout(resolve, Math.min(attempt * 3_000, 15_000)))
+    }
   }
   throw lastError
 }

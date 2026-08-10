@@ -92,3 +92,7 @@ The host can read every object allowed by the selected API credential. The local
 - Inspect API v1 audit events for access history.
 
 MCP tools intentionally cannot create, update, archive, or remove TeamGrid resources. Use the API, SDK, or CLI for an explicitly controlled write workflow.
+
+For the exact JSON Schema, scopes, API operation, result behavior, data classification, example
+prompt, and failure modes of each registered tool, use the [complete MCP tool
+reference](/mcp/reference/).

@@ -115,3 +115,9 @@ Remove-Item Env:TEAMGRID_API_TOKEN
 Never commit credentials, place them in command-line arguments, or print them for debugging.
 See [authentication by environment](/resources/authentication-by-environment/) for remote shells,
 containers, SDK, MCP, CI, expiry, revocation, and safe support data.
+
+## Upgrade, remove, or troubleshoot
+
+The [maintenance and troubleshooting guide](/cli/maintenance-and-troubleshooting/) covers exact
+version upgrades, uninstalling without leaving unintended credentials, shell-safe JSON input,
+private certificate authorities, network constraints, debug output, and automation recovery.

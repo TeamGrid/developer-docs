@@ -1,0 +1,244 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import {
+  sdkClientHref,
+  sdkMethodAnchor,
+  sdkReference,
+  type SdkReferenceClient,
+} from '../../../lib/sdk-reference'
+
+export function getStaticPaths() {
+  return sdkReference.clients.map((client) => ({
+    params: { client: client.slug },
+    props: { client },
+  }))
+}
+
+const { client } = Astro.props as { client: SdkReferenceClient }
+const clientIndex = sdkReference.clients.findIndex(({ name }) => name === client.name)
+const previousClient = clientIndex > 0 ? sdkReference.clients[clientIndex - 1] : undefined
+const nextClient = clientIndex < sdkReference.clients.length - 1 ? sdkReference.clients[clientIndex + 1] : undefined
+const headings = [
+  { depth: 2, slug: 'methods', text: 'Operation methods' },
+  ...client.operations.map((operation) => ({
+    depth: 3,
+    slug: sdkMethodAnchor(operation),
+    text: `${client.name}.${operation.name}`,
+  })),
+  ...(client.helpers.length
+    ? [
+        { depth: 2, slug: 'helpers', text: 'Convenience helpers' },
+        ...client.helpers.map((helper) => ({
+          depth: 3,
+          slug: `helper-${helper.name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}`,
+          text: `${client.name}.${helper.name}`,
+        })),
+      ]
+    : []),
+  { depth: 2, slug: 'errors-and-transport', text: 'Errors and transport metadata' },
+]
+---
+
+<DocsLayout
+  title={`${client.name} SDK client`}
+  description={`${client.operationCount} typed @teamgrid/api-client methods for ${client.tags.join(', ')}${client.helpers.length ? `, plus ${client.helpers.length} convenience ${client.helpers.length === 1 ? 'helper' : 'helpers'}` : ''}.`}
+  headings={headings}
+  source="sources/sdk-reference.json"
+  owner="Developer Platform"
+  reviewedAt={new Date('2026-08-10T00:00:00Z')}
+>
+  <nav class="sdk-breadcrumbs" aria-label="Breadcrumb">
+    <a href="/sdk/">SDK</a><span>/</span><a href="/sdk/reference/">Reference</a><span>/</span><code>{client.name}</code>
+  </nav>
+
+  <div class="sdk-client-summary">
+    <div><span>Client property</span><code>client.{client.name}</code></div>
+    <div><span>Mapped operations</span><strong>{client.operationCount}</strong></div>
+    <div><span>API groups</span><strong>{client.tags.join(', ')}</strong></div>
+  </div>
+
+  {
+    client.scopes.length > 0 && (
+      <aside class="sdk-scope-overview">
+        <strong>Scopes used by this client</strong>
+        <div>{client.scopes.map((scope) => <code>{scope}</code>)}</div>
+        {client.conditionalScopes.length > 0 && (
+          <p>Some requests conditionally require: {client.conditionalScopes.map((scope) => <code>{scope}</code>)}</p>
+        )}
+      </aside>
+    )
+  }
+
+  <h2 id="methods">Operation methods</h2>
+  <p>
+    Parameter declarations below are taken from the pinned TypeScript source. Request fields and
+    responses are summarized from the matching OpenAPI operation; follow the API link for every
+    field, constraint, example, and error description.
+  </p>
+
+  <div class="sdk-methods">
+    {
+      client.operations.map((operation) => {
+        const requestGroups = ['path', 'query', 'header'].map((location) => ({
+          location,
+          parameters: operation.request.parameters.filter((parameter) => parameter.location === location),
+        })).filter(({ parameters }) => parameters.length > 0)
+        return (
+          <section class="sdk-method" id={sdkMethodAnchor(operation)}>
+            <header>
+              <div>
+                <span class={`method method--${operation.httpMethod.toLowerCase()}`}>{operation.httpMethod}</span>
+                <code>{operation.path}</code>
+              </div>
+              <a href={operation.apiHref}>Full API operation →</a>
+            </header>
+            <h3><code>{client.name}.{operation.name}</code></h3>
+            <p>{operation.description || operation.summary}</p>
+            <pre><code>{`client.${operation.signature}`}</code></pre>
+            <dl class="sdk-contract">
+              <div>
+                <dt>Return form</dt>
+                <dd><code>{operation.returnForm}</code></dd>
+              </div>
+              <div>
+                <dt>Operation ID</dt>
+                <dd><code>{operation.operationId}</code></dd>
+              </div>
+              <div>
+                <dt>Required scopes</dt>
+                <dd>{operation.requiredScopes.length ? operation.requiredScopes.map((scope) => <code>{scope}</code>) : <span>None</span>}</dd>
+              </div>
+              {
+                operation.conditionalScopes.length > 0 && (
+                  <div>
+                    <dt>Conditional scopes</dt>
+                    <dd>{operation.conditionalScopes.map((scope) => <code>{scope}</code>)}</dd>
+                  </div>
+                )
+              }
+              {
+                operation.parameters.length > 0 && (
+                  <div>
+                    <dt>SDK parameters</dt>
+                    <dd>{operation.parameters.map((parameter) => <code>{parameter.name}: {parameter.type}</code>)}</dd>
+                  </div>
+                )
+              }
+              {
+                requestGroups.map(({ location, parameters }) => (
+                  <div>
+                    <dt>{location[0].toUpperCase() + location.slice(1)} request fields</dt>
+                    <dd>{parameters.map((parameter) => <code>{parameter.name}{parameter.required ? '' : '?'}: {parameter.type || 'unknown'}</code>)}</dd>
+                  </div>
+                ))
+              }
+              {
+                operation.request.body && (
+                  <div>
+                    <dt>Request body</dt>
+                    <dd><code>{operation.request.body.schema || 'body'}</code><span>{operation.request.body.mediaType}</span></dd>
+                  </div>
+                )
+              }
+              <div>
+                <dt>Success</dt>
+                <dd>{operation.successResponses.map((response) => <code>{response.status}{response.schema ? ` ${response.schema}` : ''}</code>)}</dd>
+              </div>
+              <div>
+                <dt>Declared API errors</dt>
+                <dd>{operation.errorResponses.map((response) => <a href={operation.apiHref} title={response.description || undefined}><code>{response.status}</code></a>)}</dd>
+              </div>
+            </dl>
+          </section>
+        )
+      })
+    }
+  </div>
+
+  {
+    client.helpers.length > 0 && (
+      <>
+        <h2 id="helpers">Convenience helpers</h2>
+        <p>These typed helpers compose mapped operations. They do not grant scopes or bypass API limits.</p>
+        <div class="sdk-helpers">
+          {client.helpers.map((helper) => (
+            <section id={`helper-${helper.name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}`}>
+              <h3><code>{client.name}.{helper.name}</code></h3>
+              <p>{helper.description}</p>
+              <pre><code>{`client.${helper.signature}`}</code></pre>
+              <span>Returns <code>{helper.returnForm}</code></span>
+            </section>
+          ))}
+        </div>
+      </>
+    )
+  }
+
+  <h2 id="errors-and-transport">Errors and transport metadata</h2>
+  <p>
+    HTTP failures reject with <code>TeamGridApiError</code>, including the status, stable error
+    documents, request ID, optional retry delay, and transport metadata. Local validation,
+    routing, timeout, response-size, and pagination failures reject with
+    <code>TeamGridClientError</code> and a stable client error code. Successful envelopes expose
+    non-enumerable <code>transport</code> metadata.
+  </p>
+  <p>
+    See <a href="/sdk/pagination-and-errors/">pagination and errors</a> and
+    <a href="/sdk/configuration/">client configuration</a> for handling guidance.
+  </p>
+
+  <nav class="sdk-client-pagination" aria-label="SDK resource clients">
+    {previousClient ? <a href={sdkClientHref(previousClient)}>← <code>{previousClient.name}</code></a> : <span />}
+    {nextClient ? <a href={sdkClientHref(nextClient)}><code>{nextClient.name}</code> →</a> : <span />}
+  </nav>
+</DocsLayout>
+
+<style>
+  .sdk-breadcrumbs, .sdk-client-summary, .sdk-method header, .sdk-client-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .sdk-breadcrumbs { margin: 0 0 1.25rem; color: var(--ink-500); font-size: 0.82rem; }
+  .sdk-client-summary {
+    align-items: stretch;
+    margin: 0 0 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+  .sdk-client-summary > div { flex: 1; display: grid; gap: 0.3rem; padding: 0.9rem; }
+  .sdk-client-summary > div + div { border-left: 1px solid var(--gray-200); }
+  .sdk-client-summary span, .sdk-contract dt { color: var(--ink-500); font-size: 0.75rem; }
+  .sdk-scope-overview { padding: 1rem; border: 1px solid var(--gray-200); border-radius: 0.75rem; }
+  .sdk-scope-overview > div, .sdk-contract dd { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .sdk-scope-overview p { margin-bottom: 0; }
+  .sdk-methods { display: grid; gap: 1rem; }
+  .sdk-method {
+    scroll-margin-top: 6rem;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+  }
+  .sdk-method:target { border-color: var(--blue-600); }
+  .sdk-method header { justify-content: space-between; }
+  .sdk-method header > div { display: flex; align-items: center; gap: 0.55rem; }
+  .sdk-method header > a { font-size: 0.78rem; }
+  .sdk-method h3 { margin-top: 1rem; }
+  .sdk-method pre, .sdk-helpers pre { overflow-x: auto; font-size: 0.78rem; }
+  .sdk-contract { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 1rem 0 0; border-top: 1px solid var(--gray-200); }
+  .sdk-contract > div { display: grid; align-content: start; gap: 0.35rem; padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--gray-200); }
+  .sdk-contract dt, .sdk-contract dd { margin: 0; }
+  .sdk-contract dd > span { color: var(--ink-500); font-size: 0.78rem; }
+  .sdk-helpers { display: grid; gap: 0.75rem; }
+  .sdk-helpers section { scroll-margin-top: 6rem; padding: 1rem; border-left: 3px solid var(--gray-200); }
+  .sdk-helpers h3 { margin-top: 0; }
+  .sdk-client-pagination { justify-content: space-between; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--gray-200); }
+
+  @media (max-width: 760px) {
+    .sdk-client-summary { display: grid; }
+    .sdk-client-summary > div + div { border-left: 0; border-top: 1px solid var(--gray-200); }
+    .sdk-contract { grid-template-columns: 1fr; }
+    .sdk-method header { align-items: flex-start; flex-direction: column; }
+  }
+</style>

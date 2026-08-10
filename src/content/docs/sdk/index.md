@@ -7,6 +7,10 @@ reviewedAt: 2026-08-08
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
 
+Use the [complete SDK reference](/sdk/reference/) for every public method, exact parameter type,
+scope, HTTP operation, and response contract. The reference is generated from the pinned package
+source and reconciled with the capability policy and OpenAPI v1 contract.
+
 Install the exact verified stable package version:
 
 ```bash
@@ -61,7 +65,7 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
-| `authorization` | Create and inspect bounded CLI browser-authorization requests |
+| `authorization` | Compensate a failed local CLI credential-storage handoff through the narrowly bound public-client protocol |
 | `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
 | `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
 | `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
@@ -116,4 +120,10 @@ headers, secrets, and tenant-routing internals.
 Transport metadata is non-enumerable on success envelopes. Existing JSON output and CLI
 pipelines therefore stay stable while application code can inspect `response.transport`.
 
-[Start with the SDK quickstart](/sdk/quickstart/).
+[Start with the SDK quickstart](/sdk/quickstart/), then use:
+
+- [SDK resource and method reference](/sdk/reference/)
+- [Client configuration](/sdk/configuration/)
+- [Testing and mocking](/sdk/testing-and-mocking/)
+- [Runtimes and upgrades](/sdk/runtimes-and-upgrades/)
+- [Production-oriented SDK recipes](/sdk/recipes/)

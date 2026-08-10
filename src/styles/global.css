@@ -208,6 +208,24 @@ button {
   margin-left: auto;
 }
 
+.version-link {
+  padding: 4px 7px;
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  color: var(--ink-500);
+  background: var(--gray-25);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.version-link:hover {
+  border-color: var(--blue-200);
+  color: var(--blue-700);
+  background: var(--blue-50);
+}
+
 .search-trigger {
   display: inline-flex;
   align-items: center;
@@ -1243,6 +1261,7 @@ button {
 
 .page-feedback {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
@@ -1293,6 +1312,56 @@ button {
 
 .page-feedback > p {
   margin: 0;
+  color: var(--green-600);
+  font-size: 11px;
+}
+
+.page-feedback form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  width: 100%;
+}
+
+.page-feedback form label {
+  display: grid;
+  gap: 4px;
+}
+
+.page-feedback form label > span {
+  color: var(--ink-500);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.page-feedback textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 10px;
+  resize: vertical;
+  border: 1px solid var(--gray-300);
+  border-radius: 7px;
+  color: var(--ink-900);
+  background: var(--white);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.page-feedback form button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--blue-600);
+  border-radius: 7px;
+  color: var(--white);
+  background: var(--blue-600);
+  font-size: 11px;
+}
+
+.page-feedback form > span {
+  grid-column: 1 / -1;
   color: var(--green-600);
   font-size: 11px;
 }
@@ -2769,6 +2838,10 @@ button {
     width: calc(100% - 28px);
   }
 
+  .version-link {
+    display: none;
+  }
+
   .search-trigger {
     width: 36px;
     justify-content: center;
@@ -3044,6 +3117,10 @@ button {
   .page-feedback {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .page-feedback form {
+    grid-template-columns: 1fr;
   }
 }
 

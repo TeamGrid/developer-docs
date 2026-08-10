@@ -1,0 +1,174 @@
+---
+title: Scope recipes
+description: Start from a reviewed least-privilege TeamGrid scope set for common integrations, then verify every operation against the API reference.
+owner: Security
+reviewedAt: 2026-08-10
+---
+
+import ScopeRecipeBuilder from '../../../components/ScopeRecipeBuilder.astro'
+
+Scope recipes are starting points, not permission bundles. Remove operations your integration does
+not perform and verify the exact required and conditional scopes on every API reference page.
+Workspace roles, plans, sharing, resource grants, and object visibility continue to apply after a
+scope check succeeds.
+
+<ScopeRecipeBuilder />
+
+## Connection check
+
+Use this for deployment health checks that only confirm the intended workspace and cell.
+
+```text
+workspace:read
+```
+
+Call only `GET /workspace`, system capabilities, or workspace entitlements. Do not reuse a broader
+business-data credential for a health endpoint.
+
+## Read-only project and task reporting
+
+```text
+workspace:read
+projects:read
+tasks:read
+users:read
+lists:read
+tags:read
+```
+
+Remove `users:read`, `lists:read`, or `tags:read` when the report does not resolve those references.
+Add `time-entries:read` only when time data is part of the report.
+
+## Task synchronization
+
+```text
+workspace:read
+projects:read
+tasks:read
+tasks:write
+lists:read
+users:read
+changes:read
+```
+
+Add `tags:read`, `contacts:read`, or `custom-field-values:read/write` only when the synchronized
+fields actually use those domains. A change-feed cursor is a signal to re-read an authorized
+resource; it does not broaden read access.
+
+## Time-entry export
+
+```text
+workspace:read
+time-entries:read
+projects:read
+tasks:read
+users:read
+services:read
+```
+
+For an asynchronous export job, add `exports:read` and `exports:write`. Add
+`time-entries:billing` only when the workflow reads or changes the separate billing-lock state.
+Ordinary time-entry access does not imply billing authority.
+
+## Project setup automation
+
+```text
+workspace:read
+projects:read
+projects:write
+project-templates:read
+project-templates:write
+lists:read
+tasks:read
+tasks:write
+users:read
+```
+
+Template instantiation requires both template and project authority. Add `projects:lifecycle` only
+when the automation completes, reopens, archives, or restores projects. Add `projects:sharing` only
+when it reads or replaces the complete sharing set.
+
+## File integration
+
+```text
+workspace:read
+files:read
+files:write
+```
+
+Also grant the target-domain read scope required to verify the attachment target. Upload and
+download intents are short-lived capabilities and must never be logged or persisted as public
+URLs.
+
+## Webhook receiver management
+
+```text
+workspace:read
+webhooks:read
+webhooks:write
+events:read
+```
+
+The signing secret is reveal-once. Runtime webhook verification does not require an API credential;
+keep the signing secret separate from the credential used to manage webhook configuration.
+
+## Workspace access review
+
+```text
+workspace:read
+members:read
+roles:read
+groups:read
+service-accounts:read
+credentials:read
+resource-grants:read
+audit:read
+```
+
+`members:pii:read` is a conditional overlay for protected member fields. Do not add it to a general
+inventory unless the exported fields are explicitly required and governed.
+
+## Finance overlays
+
+Finance scopes never follow automatically from their ordinary resource scopes:
+
+```text
+products:finance:read
+products:finance:write
+project-statements:finance:read
+project-statements:finance:write
+```
+
+Add only the relevant overlay after confirming the workspace entitlement and downstream storage,
+retention, and access controls. Missing finance fields can mean the credential lacks the overlay;
+do not interpret an omitted value as zero.
+
+## Credential administration
+
+Credential-management scopes are not normal application scopes:
+
+```text
+credentials:read
+credentials:write
+service-accounts:read
+service-accounts:write
+resource-grants:read
+resource-grants:write
+```
+
+Keep these in a separate administrative workflow. A service should not be able to mint or broaden
+its own authority. Resource grants can narrow a service account below its scope ceiling, but never
+grant an operation absent from that ceiling.
+
+## Verification checklist
+
+For each final scope set:
+
+1. Map every used SDK method, CLI command, or API operation to the operation reference.
+2. Record required and conditional scopes in the integration inventory.
+3. Exercise one expected operation.
+4. Exercise one intentionally forbidden operation and confirm it fails closed.
+5. Remove an apparently unused scope and rerun the integration tests.
+6. Review the set again during every credential rotation.
+
+The complete canonical list remains under [credentials and scopes](/api/v1/authentication/).

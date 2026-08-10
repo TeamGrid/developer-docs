@@ -18,6 +18,7 @@ const {
   layout = 'default',
 } = Astro.props
 const canonical = new URL(Astro.url.pathname, Astro.site)
+const language = Astro.url.pathname.startsWith('/de/') ? 'de' : 'en'
 const pageTitle = title === 'TeamGrid Developer' ? title : `${title} · TeamGrid Developer`
 const schema = {
   '@context': 'https://schema.org',
@@ -30,7 +31,7 @@ const schema = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={language}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -38,6 +39,8 @@ const schema = {
     <meta name="theme-color" content="#ffffff" />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    {Astro.url.pathname === '/' && <link rel="alternate" hreflang="de" href="https://developer.teamgridapp.com/de/" />}
+    {Astro.url.pathname === '/de/' && <link rel="alternate" hreflang="en" href="https://developer.teamgridapp.com/" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/atom+xml" title="TeamGrid Developer Platform changelog" href="/changelog/feed.xml" />
     <meta property="og:type" content="website" />

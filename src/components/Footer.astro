@@ -1,3 +1,9 @@
+---
+import { developerReleases } from '../data/releases'
+
+const currentRelease = developerReleases[0]
+---
+
 <footer class="site-footer">
   <div class="site-footer__inner">
     <div class="site-footer__brand">
@@ -32,6 +38,6 @@
   </div>
   <div class="site-footer__legal">
     <span>© {new Date().getFullYear()} TeamGrid Deutschland GmbH</span>
-    <span>Developer Platform 1.0</span>
+    <span>Developer Platform {currentRelease.version}</span>
   </div>
 </footer>

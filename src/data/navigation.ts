@@ -15,8 +15,10 @@ export const navigation: NavigationGroup[] = [
     items: [
       { label: 'Developer home', href: '/', description: 'Choose the right TeamGrid interface.' },
       { label: 'Start building', href: '/guides/get-started/' },
+      { label: 'Learning paths', href: '/guides/learning-paths/' },
       { label: 'Choose an interface', href: '/guides/choose-an-interface/' },
       { label: 'Capability coverage', href: '/guides/capability-coverage/' },
+      { label: 'Deutscher Einstieg', href: '/de/' },
     ],
   },
   {
@@ -29,6 +31,10 @@ export const navigation: NavigationGroup[] = [
       { label: 'Audit users and access', href: '/guides/audit-users-and-access/' },
       { label: 'Upload a file safely', href: '/guides/upload-a-file/' },
       { label: 'Roll out a service account', href: '/guides/service-account-rollout/' },
+      { label: 'End-to-end task workflow', href: '/guides/end-to-end-task-workflow/' },
+      { label: 'Scope recipes', href: '/guides/scope-recipes/' },
+      { label: 'Production go-live', href: '/guides/production-go-live/' },
+      { label: 'HTTP language examples', href: '/guides/http-language-examples/' },
     ],
   },
   {
@@ -68,6 +74,7 @@ export const navigation: NavigationGroup[] = [
       { label: 'Recipes', href: '/api/v0/recipes/' },
       { label: 'API reference', href: '/api/v0/reference/' },
       { label: 'Migrate to v1', href: '/api/v0/migration/' },
+      { label: 'Route migration matrix', href: '/api/v0/migration-matrix/' },
     ],
   },
   {
@@ -75,8 +82,13 @@ export const navigation: NavigationGroup[] = [
     items: [
       { label: 'Overview', href: '/sdk/' },
       { label: 'Quickstart', href: '/sdk/quickstart/' },
+      { label: 'SDK reference', href: '/sdk/reference/' },
+      { label: 'Client configuration', href: '/sdk/configuration/' },
       { label: 'Pagination and errors', href: '/sdk/pagination-and-errors/' },
       { label: 'Webhook verification', href: '/sdk/webhook-verification/' },
+      { label: 'SDK recipes', href: '/sdk/recipes/' },
+      { label: 'Testing and mocking', href: '/sdk/testing-and-mocking/' },
+      { label: 'Runtimes and upgrades', href: '/sdk/runtimes-and-upgrades/' },
     ],
   },
   {
@@ -86,7 +98,9 @@ export const navigation: NavigationGroup[] = [
       { label: 'Install and authenticate', href: '/cli/install-and-authenticate/' },
       { label: 'Browser login', href: '/cli/browser-login/' },
       { label: 'Commands', href: '/cli/commands/' },
+      { label: 'Command reference', href: '/cli/reference/' },
       { label: 'Automation', href: '/cli/automation/' },
+      { label: 'CLI maintenance', href: '/cli/maintenance-and-troubleshooting/' },
     ],
   },
   {
@@ -94,6 +108,9 @@ export const navigation: NavigationGroup[] = [
     items: [
       { label: 'Overview', href: '/mcp/' },
       { label: 'Configure a host', href: '/mcp/configuration/' },
+      { label: 'First MCP query', href: '/mcp/first-query/' },
+      { label: 'Tool reference', href: '/mcp/reference/' },
+      { label: 'MCP troubleshooting', href: '/mcp/troubleshooting/' },
       { label: 'Tools and security', href: '/mcp/tools-and-security/' },
     ],
   },

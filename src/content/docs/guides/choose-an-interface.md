@@ -2,7 +2,7 @@
 title: Choose an interface
 description: Decide whether a TeamGrid integration should use API v1, the TypeScript SDK, the CLI, or the read-only MCP server.
 owner: Developer Experience
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-10
 ---
 
 API v1 is the source of truth. The SDK, CLI, and MCP server are clients of that API rather than independent integration surfaces.
@@ -25,3 +25,7 @@ For durable mirrors, create a cell-local checkpoint before the initial snapshot,
 low-latency delivery signals, but they are not a replayable history.
 
 MCP does not introduce a second TeamGrid API, a remote TeamGrid session, or MCP-specific credentials. Every MCP request still passes through the API v1 authentication, scope, tenant, and region checks.
+
+Continue with the [customer learning path](/guides/learning-paths/) for the chosen interface and
+complete the [production go-live checklist](/guides/production-go-live/) before enabling customer
+data.

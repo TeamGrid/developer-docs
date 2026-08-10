@@ -78,3 +78,7 @@ Node.js satisfies the supported range in [versions and compatibility](/resources
 
 Do not select a broader tool profile merely to diagnose a connection problem. Tool availability is
 an authorization boundary in addition to the scopes held by the credential.
+
+Continue with the [first MCP query](/mcp/first-query/), look up the exact contract in the [MCP tool
+reference](/mcp/reference/), or diagnose a failure with the [MCP troubleshooting
+matrix](/mcp/troubleshooting/).

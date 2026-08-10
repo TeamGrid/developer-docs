@@ -2,7 +2,7 @@
 title: Migrate from API v0 to v1
 description: Map TeamGrid API v0 authentication, pagination, writes, errors, endpoints, and webhooks to API v1.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-10
 ---
 
 Migrate one bounded integration at a time. Keep its v0 token active until the equivalent v1 reads and writes have been verified, then revoke the old token.
@@ -11,6 +11,9 @@ The machine-readable [v0-to-v1 migration map](/openapi/v0-to-v1-migration.json) 
 of the 87 frozen v0 runtime routes as equivalent, adaptation-required, or retained-v0 and records
 request, response, and semantic changes. Use it as an inventory gate; the guidance below explains
 the platform-wide changes.
+
+Use the [filterable route migration matrix](/api/v0/migration-matrix/) for a human-readable view of
+all 87 routes, their exact v1 replacement, and every route-specific change.
 
 | Concern | API v0 | API v1 |
 | --- | --- | --- |

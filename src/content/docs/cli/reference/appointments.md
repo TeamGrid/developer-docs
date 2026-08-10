@@ -5,7 +5,7 @@ owner: Developer Experience
 reviewedAt: 2026-08-10
 ---
 
-> Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `c813667fdaf9`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `e6f6b47fa223`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage appointments.
 

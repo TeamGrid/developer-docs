@@ -318,8 +318,8 @@ const helperCount = clients.reduce((total, client) => total + client.helpers.len
 if (operationCount !== mappedPolicies.length) {
   throw new Error(`Generated ${operationCount} SDK operations; expected ${mappedPolicies.length}.`)
 }
-if (operationCount !== 207) {
-  throw new Error(`Stable @teamgrid/api-client@${packageVersion} must expose 207 mapped operations, found ${operationCount}.`)
+if (operationCount !== 210) {
+  throw new Error(`Stable @teamgrid/api-client@${packageVersion} must expose 210 mapped operations, found ${operationCount}.`)
 }
 
 const reference = {

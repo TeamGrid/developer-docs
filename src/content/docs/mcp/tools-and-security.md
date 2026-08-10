@@ -2,7 +2,7 @@
 title: MCP tools and security
 description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-10
 ---
 
 ## Available tools
@@ -25,7 +25,7 @@ commercially sensitive billing rates.
 | `teamgrid_project_get` | Core | Read one project by ID |
 | `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
 | `teamgrid_task_get` | Core | Read one task by ID |
-| `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, creator, billable, and billed filters |
+| `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, and creator filters; billing fields and filters are removed |
 | `teamgrid_time_entry_get` | Core | Read one time entry by ID |
 | `teamgrid_lists_list` | Core | List task lists |
 | `teamgrid_list_get` | Core | Read one list by ID |
@@ -53,6 +53,12 @@ request a smaller page if the server returns `result_too_large`. Call-note, cont
 webhook tools can expose personal, commercial, or security-sensitive information and should use
 dedicated least-privilege credentials.
 
+Every advertised tool also carries a human-readable title, strict input and output schemas, and
+read-only/idempotent annotations. Stable API failures become bounded structured errors containing
+only the public error code and, when available, HTTP status, request ID, and retry delay.
+Authorization headers, bearer credentials, transport headers, raw causes, and unexpected exception
+text are never projected into the model conversation.
+
 Project and task results include the same developer revision as API v1. The local server does not
 register mutation tools or accept `If-Match`, even for protected resource families. Use the SDK or
 CLI for controlled writes.
@@ -67,6 +73,11 @@ forbidden because they expose sensitive per-resource workflow or workload data. 
 cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.
 Custom-field **definition** reads are the only custom-field exception and remain confined to the
 `governance` profile.
+
+Time-entry tools remove `billable`, `billed`, and `billedAt` from every result, even when the
+credential has `time-entries:billing`. Their schemas do not accept `billable` or `billed` filters.
+Current-credential inspection and revocation, webhook test delivery, and export streaming remain
+SDK/CLI capabilities and are forbidden through MCP.
 
 Federated search is the only additional curated tool. It requires `search:read` plus every matching
 domain read scope, accepts at most three resource types and 50 results, and is marked sensitive
@@ -90,6 +101,10 @@ The host can read every object allowed by the selected API credential. The local
 - Review tool calls and results before using them in consequential decisions.
 - Revoke the TeamGrid credential to terminate access.
 - Inspect API v1 audit events for access history.
+
+Treat every TeamGrid field as untrusted customer-controlled content. Text or links returned from a
+task, project, contact, or another tool are data, not instructions: they must not cause the host to
+reveal secrets, broaden scopes or tool filters, execute another tool, or follow another cursor.
 
 MCP tools intentionally cannot create, update, archive, or remove TeamGrid resources. Use the API, SDK, or CLI for an explicitly controlled write workflow.
 

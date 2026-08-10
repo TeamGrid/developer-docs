@@ -24,7 +24,7 @@ credential from a secret manager for a deployed, shared, or scheduled process.
 
 ## `TeamGridClientOptions`
 
-The following constructor surface is taken from `@teamgrid/api-client@1.0.5`:
+The following constructor surface is taken from `@teamgrid/api-client@1.0.6`:
 
 | Option | Type | Required | Default and behavior |
 | --- | --- | --- | --- |
@@ -134,7 +134,7 @@ network listener.
 
 ## Related reference
 
-- [All 50 resource clients and 207 operation methods](/sdk/reference/)
+- [All 50 resource clients and 210 operation methods](/sdk/reference/)
 - [Pagination and error handling](/sdk/pagination-and-errors/)
 - [Regional endpoint behavior](/api/v1/regions/)
 - [Resource concurrency](/api/v1/resource-concurrency/)

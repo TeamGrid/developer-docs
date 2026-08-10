@@ -10,7 +10,7 @@ official API v1 client. The default `core` profile exposes 15 operational read t
 profile exposes 29. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
+npm install --global @teamgrid/cli@1.0.6 @teamgrid/mcp-server@1.0.6
 teamgrid auth login
 ```
 

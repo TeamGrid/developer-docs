@@ -2,13 +2,13 @@
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
+npm install --global @teamgrid/cli@1.0.6 @teamgrid/mcp-server@1.0.6
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -60,6 +60,22 @@ credential into it.
 The server communicates over standard input/output. It does not listen on a TCP port.
 It does not open a browser. Complete `teamgrid auth login` in a terminal first. An unattended MCP
 process must use a service-account credential rather than a personal browser credential.
+
+## Narrow the advertised tools
+
+The selected profile is an upper bound. Repeat `--allow-tool` to keep only exact registered names,
+or `--deny-tool` to remove exact names. Comma-separated values are accepted. An allow list cannot
+enable a tool outside the profile, unknown names fail startup, and overlapping allow/deny entries
+are rejected.
+
+```bash
+teamgrid-mcp --profile default --tool-profile core \
+  --allow-tool teamgrid_workspace_get,teamgrid_projects_list
+```
+
+For isolated process environments, `TEAMGRID_MCP_ALLOW_TOOLS` and
+`TEAMGRID_MCP_DENY_TOOLS` provide the same narrowing controls. Tool filters do not grant API scopes
+and cannot register a write or secret-bearing operation.
 
 ## Verify the connection
 

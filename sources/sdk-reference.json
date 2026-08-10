@@ -3,20 +3,20 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "731a662287038a57bb464d325287b48fd4f73724",
-    "version": "1.0.5"
+    "sourceCommit": "c813667fdaf954e6060f64e52b9fcd5b1819f847",
+    "version": "1.0.6"
   },
   "sources": {
-    "capabilityPolicySha256": "167d282d9ff23fed83ba6bcb732dca8c80a3b34f317a01d8ba53524466f6726c",
+    "capabilityPolicySha256": "e63fa6e679122f5efae20313e8d3599c0675e4ab02cd8b7d3bde9148ebbef4b2",
     "clientDeclaration": "developer-platform/packages/api-client/src/client.ts",
-    "clientDeclarationSha256": "aa2b9054c935b1ddbcd1a74b879c379a48c94ef2846c505cd1bae522ef566755",
-    "operationBindingsSha256": "f50a7a16db740b86b6d996eb4c6d7ecbbb4b0d8bd9ea1574a56192449c222224",
-    "openApiSha256": "1b37f9bcd62e1ac54f8e8c83bbfff0c06cc733712bff4b79e2e22dc1c9ee705a"
+    "clientDeclarationSha256": "c5c55b07734b75e20b365b1527f3a50c5095c7613ea1c94c02ae6ffa6c9cdabf",
+    "operationBindingsSha256": "1f5307b78f96b2fa24b0b6b0657a62f65b657f5086e4b0382b2129c28b023567",
+    "openApiSha256": "8ad925c53dba32ccccd1b47d084c573a3867a4f7371473c637a9cdd6f2f35c6c"
   },
   "summary": {
     "clientCount": 50,
-    "helperCount": 40,
-    "operationCount": 207
+    "helperCount": 41,
+    "operationCount": 210
   },
   "clientOptions": [
     {
@@ -234,7 +234,7 @@
       "conditionalScopes": [],
       "helpers": [],
       "name": "authorization",
-      "operationCount": 1,
+      "operationCount": 3,
       "operations": [
         {
           "name": "compensateCliStorage",
@@ -313,6 +313,154 @@
             }
           ],
           "summary": "Compensate a failed TeamGrid CLI credential-store write",
+          "tag": "Authentication"
+        },
+        {
+          "name": "getContext",
+          "parameters": [
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "authorization.getContext(options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/getcurrentcredentialcontext/",
+          "conditionalScopes": [],
+          "description": "Returns only the safe metadata of the credential authenticating this request. This operation deliberately requires no additional scope so even a least-privilege credential can diagnose its own routing and expiry.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "getCurrentCredentialContext",
+          "path": "/auth/context",
+          "request": {
+            "body": null,
+            "parameters": []
+          },
+          "requiredScopes": [],
+          "successResponses": [
+            {
+              "description": "The current credential context.",
+              "mediaType": "application/json",
+              "schema": "CredentialContext envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Inspect the current credential",
+          "tag": "Authentication"
+        },
+        {
+          "name": "revokeCurrentCredential",
+          "parameters": [
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "authorization.revokeCurrentCredential(options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/revokecurrentcredential/",
+          "conditionalScopes": [],
+          "description": "Permanently revokes exactly the credential authenticating this request. A retry after a confirmed response is expected to receive 401 because the bearer credential is no longer valid.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "DELETE",
+          "operationId": "revokeCurrentCredential",
+          "path": "/auth/context",
+          "request": {
+            "body": null,
+            "parameters": []
+          },
+          "requiredScopes": [],
+          "successResponses": [
+            {
+              "description": "The current credential was permanently revoked.",
+              "status": "204"
+            }
+          ],
+          "summary": "Revoke the current credential",
           "tag": "Authentication"
         }
       ],
@@ -8610,7 +8758,28 @@
         "tasks:read",
         "time-entries:read"
       ],
-      "helpers": [],
+      "helpers": [
+        {
+          "name": "downloadStream",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: ExportDownloadOptions",
+              "name": "options",
+              "optional": false,
+              "type": "ExportDownloadOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "exports.downloadStream(id: string, options: ExportDownloadOptions)",
+          "description": "SDK convenience helper without a one-to-one public API operation."
+        }
+      ],
       "name": "exports",
       "operationCount": 4,
       "operations": [
@@ -23243,7 +23412,7 @@
         }
       ],
       "name": "webhooks",
-      "operationCount": 6,
+      "operationCount": 7,
       "operations": [
         {
           "name": "list",
@@ -23777,6 +23946,119 @@
             }
           ],
           "summary": "Rotate a credential-owned webhook signing secret",
+          "tag": "Webhooks"
+        },
+        {
+          "name": "testDelivery",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: MutationOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "MutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "webhooks.testDelivery(id: string, options: MutationOptions = {})",
+          "apiHref": "/api/v1/reference/operations/testwebhookdelivery/",
+          "conditionalScopes": [],
+          "description": "Queues a synthetic webhook.test event through the same cell-local worker, HTTPS, signing, retry, and delivery-history pipeline as a real event. The App re-authenticates the exact credential and verifies current workspace, principal, and credential ownership before the worker sends. Test outcomes never change webhook failCount, lastStatus, or disabled state.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "testWebhookDelivery",
+          "path": "/webhooks/{id}/test-delivery",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Unique request key retained for seven days. Within that window, reuse with different data is rejected.",
+                "location": "header",
+                "name": "Idempotency-Key",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "webhooks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "An exact replay of the previously queued test delivery.",
+              "mediaType": "application/json",
+              "schema": "WebhookTestDelivery envelope",
+              "status": "200"
+            },
+            {
+              "description": "A newly queued signed test delivery.",
+              "mediaType": "application/json",
+              "schema": "WebhookTestDelivery envelope",
+              "status": "201"
+            }
+          ],
+          "summary": "Send a signed test webhook delivery",
           "tag": "Webhooks"
         },
         {

@@ -2,7 +2,7 @@
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
 ## Global options
@@ -17,7 +17,7 @@ Global options can be placed before a command group.
 | `--timeout <milliseconds>` | Set the request timeout; default is 30 seconds |
 | `--retries <0–5>` | Set bounded safe-request retries; default is 2 |
 
-This workflow guide covers every command group in CLI `1.0.5`. For exact syntax, arguments,
+This workflow guide covers every command group in CLI `1.0.6`. For exact syntax, arguments,
 options, defaults, choices, API operations, scopes, output behavior, confirmations, examples, and
 exit codes, use the generated [CLI command reference](/cli/reference/). It is derived from the same
 Commander tree as the released package and checked against the API capability manifest.
@@ -39,9 +39,10 @@ routing. A command that is absent from `--help` is not supported by the installe
 ```text
 teamgrid auth login [--preset read-only|daily-work] [--scope SCOPE]
   [--no-browser|--manual|--token-stdin] [--replace]
-teamgrid auth logout
+teamgrid auth logout [--revoke]
 teamgrid auth profiles
 teamgrid auth status [--check]
+teamgrid doctor
 teamgrid api-version
 teamgrid workspace
 teamgrid system capabilities
@@ -81,8 +82,18 @@ replacing it.
 Browser login is the default authentication path. `--no-browser` prints the private approval URL
 but still requires the loopback callback to reach the CLI host. `--manual` prompts for an existing
 personal or service credential; `--token-stdin` reads it without placing it in process arguments.
-`auth logout` is local only, so revoke the server credential separately when access must stop.
+`auth status --check` retrieves the exact server-side context of the active credential without
+requiring an extra scope. `auth logout` is local only. `auth logout --revoke` first revokes exactly
+the selected saved credential, then removes its keychain entry and profile; if revocation fails,
+local access is preserved so the operation can be diagnosed and retried. Unset
+`TEAMGRID_API_TOKEN` before using `--revoke` because an environment override makes the target
+ambiguous.
 The complete flow and recovery guidance are documented under [browser login](/cli/browser-login/).
+
+`teamgrid doctor` performs only read operations and checks local configuration, credential and
+routing metadata, the resolved regional endpoint, network reachability, CLI/API compatibility,
+and authenticated capability discovery. Use `teamgrid --output json doctor` for a stable,
+redacted support or automation report.
 
 ## Projects and lifecycle operations
 

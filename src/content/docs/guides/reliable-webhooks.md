@@ -2,7 +2,7 @@
 title: Process webhooks reliably
 description: Verify, acknowledge and process TeamGrid webhook deliveries without losing events.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-10
 ---
 
 ## Verify the raw request
@@ -20,6 +20,24 @@ response. Do not perform slow third-party calls while TeamGrid is waiting for ac
 
 Use the delivery ID as a deduplication key. Delivery is at least once, so a receiver must treat a
 repeat as normal.
+
+## Exercise the real delivery path safely
+
+After configuring the receiver, queue a synthetic `webhook.test` through the same worker, signing,
+HTTPS, retry, and history path as production events:
+
+```ts
+const test = await client.webhooks.testDelivery('webhook-id', {
+  idempotencyKey: 'receiver-smoke-2026-08-10',
+})
+
+console.log(test.data.id, test.data.attributes.replayed)
+```
+
+The test uses `webhooks:write`. Reusing the same idempotency key recovers the same logical request;
+choose a new key for another test. A failed test never increments the webhook failure counter,
+changes its last production status, or disables it automatically. Inspect the credential-owned
+delivery history for the test outcome.
 
 ## Re-read important resources
 

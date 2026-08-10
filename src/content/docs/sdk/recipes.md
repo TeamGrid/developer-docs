@@ -34,6 +34,34 @@ for await (const page of client.tasks.pages(
 This read-only job needs `tasks:read` plus access to the selected project. Set `maxPages` from a
 documented workload bound; do not silently turn an unexpectedly broad query into an unbounded job.
 
+## Verify or revoke the exact current credential
+
+Credential context needs no additional scope, so even a narrowly scoped integration can verify its
+own immutable routing and lifecycle metadata:
+
+```ts
+const context = await client.authorization.getContext()
+
+console.log({
+  credentialId: context.data.id,
+  kind: context.data.attributes.kind,
+  region: context.data.attributes.region,
+  cellId: context.data.attributes.cellId,
+  expiresAt: context.data.attributes.expiresAt,
+})
+```
+
+At an explicit decommissioning boundary, permanently revoke exactly the bearer credential used by
+the client:
+
+```ts
+await client.authorization.revokeCurrentCredential()
+```
+
+After the confirmed `204`, the same client credential is invalid and a retry is expected to receive
+`401`. Do not delete the secret-manager record before TeamGrid confirms revocation; otherwise a
+network failure can leave a valid credential whose identity is no longer recoverable locally.
+
 ## Bootstrap and catch up a task mirror
 
 Take a change-feed checkpoint immediately before the snapshot. The returned catch-up iterator
@@ -76,7 +104,8 @@ Large reports use an asynchronous export job followed by a reveal-once download 
 sends that intent in a header and returns bounded CSV bytes; it does not expose a storage URL.
 
 ```ts
-import { writeFile } from 'node:fs/promises'
+import { createWriteStream } from 'node:fs'
+import { Writable } from 'node:stream'
 
 const created = await client.exports.create({
   resourceType: 'timeEntries',
@@ -100,17 +129,23 @@ if (job.data.attributes.state !== 'succeeded') {
 }
 
 const intent = await client.exports.createDownloadIntent(job.data.id)
-const csv = await client.exports.download(job.data.id, {
+const csv = await client.exports.downloadStream(job.data.id, {
   intentToken: intent.data.attributes.token,
   maxBytes: 20 * 1024 * 1024,
 })
 
-await writeFile('time-entries-2026-07.csv', csv.data, { mode: 0o600 })
+await csv.data.pipeTo(Writable.toWeb(createWriteStream(
+  'time-entries-2026-07.csv',
+  { flags: 'wx', mode: 0o600 },
+)))
 ```
 
 Keep the download intent out of logs and queues. Check `job.data.attributes.truncated` before
 publishing a report, and place exported personal or commercial data in access-controlled storage
-with an explicit retention period.
+with an explicit retention period. `downloadStream` verifies safe response headers, bounds both an
+advertised `Content-Length` and bytes actually received, and cancels upstream work when the caller
+cancels the one-shot stream. Always consume or cancel it. Use `exports.download` only when the
+selected ceiling is small enough to buffer safely in memory.
 
 ## Complete a project and wait safely
 

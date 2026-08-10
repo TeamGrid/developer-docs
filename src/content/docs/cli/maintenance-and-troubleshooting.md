@@ -16,9 +16,9 @@ npm list --global @teamgrid/cli --depth=0
 
 On macOS or Linux, `command -v teamgrid` shows the executable selected by `PATH`. In PowerShell,
 use `Get-Command teamgrid`. If those commands point to an old Node installation or package prefix,
-remove that stale path before reinstalling. CLI `1.0.5` requires Node.js 22.14 through 24.
+remove that stale path before reinstalling. CLI `1.0.6` requires Node.js 22.14 through 24.
 
-The CLI does not provide a shell-completion generator in `1.0.5`. Use the exact generated
+The CLI does not provide a shell-completion generator in `1.0.6`. Use the exact generated
 [command reference](/cli/reference/) or the nested help available at every level:
 
 ```bash
@@ -32,7 +32,7 @@ teamgrid tasks update --help
 Install the exact stable version again to upgrade or repair a global installation:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.5
+npm install --global @teamgrid/cli@1.0.6
 teamgrid --version
 teamgrid auth status --check
 ```
@@ -48,13 +48,15 @@ credentials:
 
 ```bash
 teamgrid auth profiles
-teamgrid --profile default auth logout
+teamgrid --profile default auth logout --revoke
 npm uninstall --global @teamgrid/cli
 ```
 
-Repeat `auth logout` for every named profile. Logout removes the local profile metadata and the
-credential from the operating-system credential store, but it does **not** revoke the server-side
-credential. Revoke the corresponding credential in Developer Center when access must stop.
+Repeat the command for every named profile. `--revoke` stops server access first and removes local
+state only after TeamGrid confirms the revocation. Unset `TEAMGRID_API_TOKEN` while doing this so
+the selected saved profile is unambiguous. Use plain `auth logout` only when local cleanup without a
+network call is intentional; then revoke the corresponding credential in Developer Center if
+server access must stop.
 
 Removing only the npm package deliberately leaves profiles and OS credential-store entries in
 place. If the CLI was already removed, reinstall the same version temporarily and use
@@ -103,7 +105,7 @@ interactive confirmation gets exit code `0` and no mutation.
 
 ## Corporate networks, proxies, and private CAs
 
-CLI `1.0.5` has no dedicated proxy option. `--base-url` changes the API endpoint and is not a
+CLI `1.0.6` has no dedicated proxy option. `--base-url` changes the API endpoint and is not a
 forward-proxy setting. A machine must have an approved HTTPS path to the credential's regional
 TeamGrid cell; verify that path with:
 
@@ -133,6 +135,24 @@ approved by the responsible administrator. Never work around certificate validat
 
 ## Diagnose a failed command
 
+Start with the read-only diagnostic:
+
+```bash
+teamgrid doctor
+teamgrid --output json doctor
+```
+
+Doctor validates local configuration, the selected credential and its routing metadata, the
+resolved regional base URL, HTTPS reachability, API/CLI compatibility, and authenticated capability
+discovery. Later checks are marked `skipped` when an earlier prerequisite fails. The report never
+contains the credential, authorization header, credential-store contents, raw API body, or raw
+exception text.
+
+Exit `0` means every required check passed. Invalid local configuration or routing uses `2`; a
+missing, invalid, or expired credential uses `3`; authorization uses `4`; rate limiting uses `7`;
+network, server, protocol, or compatibility failures use `1`. An expiring-soon credential is a
+warning and does not fail an otherwise healthy diagnosis.
+
 Start with the structured exit code and the request ID printed for API errors. The stable meanings
 are listed under [CLI automation](/cli/automation/#exit-codes). Then check:
 
@@ -140,7 +160,7 @@ are listed under [CLI automation](/cli/automation/#exit-codes). Then check:
 | --- | --- | --- |
 | `teamgrid` not found | `command -v teamgrid` or `Get-Command teamgrid` | Fix the npm global executable path or reinstall the pinned version |
 | Exit `2` | Arguments, JSON input, required `--if-match`, confirmation, profile configuration | Run the exact command with `--help`; do not retry a rejected mutation blindly |
-| Exit `3` | Expiry, revocation, selected profile | Run `auth status --check`; renew or replace the credential |
+| Exit `3` | Expiry, revocation, selected profile | Run `doctor` or `auth status --check`; renew or replace the credential |
 | Exit `4` | Token scopes, user permission, service-account resource grants | Grant only the missing access or select the correct credential |
 | Exit `5` | Resource ID, workspace, archive state | Confirm that the ID belongs to the selected workspace and is visible to the credential |
 | Exit `6` | `409` conflict or `412` stale revision | Read the resource again, reconcile, and use its latest revision or ETag |

@@ -14,7 +14,7 @@ search tools.
 Use the same stable release for the CLI and MCP server:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
+npm install --global @teamgrid/cli@1.0.6 @teamgrid/mcp-server@1.0.6
 teamgrid --version
 npm list --global @teamgrid/mcp-server --depth=0
 ```

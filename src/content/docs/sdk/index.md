@@ -2,7 +2,7 @@
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -14,7 +14,7 @@ source and reconciled with the capability policy and OpenAPI v1 contract.
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.5
+npm install @teamgrid/api-client@1.0.6
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -54,18 +54,18 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `productGroups` | List, get, create, update, archive |
 | `projectStatements` | List, get, create, update, archive, restore |
 | `auditEvents` | List credential and mutation audit events with actor, time, credential, event, outcome, request, source, and target filters |
-| `webhooks` | List, get, create, remove, and reveal a replay-safe signing-secret rotation |
+| `webhooks` | List, get, create, remove, reveal a replay-safe signing-secret rotation, and queue real-pipeline test deliveries |
 | `webhookDeliveries` | List and get credential-owned delivery metadata |
 | `members` | List, get, change role, and remove workspace members |
 | `invitations` | List, get, create, resend, and cancel invitations |
 | `roles`, `groups` | List, get, create, compare-and-set update, and remove administration resources |
 | `search` | Federated search across explicitly authorized resource types |
-| `exports` | Create and inspect bounded jobs, create download intents, and download through the header-only capability |
+| `exports` | Create and inspect bounded jobs, create download intents, and download buffered or streamed data through the header-only capability |
 | `automationActions` | Read the public automation action catalog |
 | `automationDefinitions`, `automationDefinitionVersions` | Manage versioned automation definitions and inspect immutable versions |
 | `automationRuns` | List and get runs, or abort one with a strong revision |
 | `integrationInstallations` | Read redacted provider-installation status |
-| `authorization` | Compensate a failed local CLI credential-storage handoff through the narrowly bound public-client protocol |
+| `authorization` | Inspect or permanently revoke exactly the current credential, and compensate a failed local CLI credential-storage handoff |
 | `personalAccessTokens` | List, create, rotate, and revoke reveal-once personal credentials |
 | `serviceAccounts` | Manage principals, credentials, and compare-and-set resource grants |
 | `changes` | Create checkpoints, list/pages catch-up, and run snapshot-then-catch-up |
@@ -74,7 +74,7 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.5`; pin that exact version in
+The compatible package checkpoint for this contract is `1.0.6`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
@@ -102,6 +102,13 @@ headers, secrets, and tenant-routing internals.
 - `exports.download(id, { intentToken, maxBytes })` carries the opaque intent only in
   `X-TeamGrid-Export-Download-Intent`, never in a URL, and returns bounded binary data without
   exposing a private-storage URL.
+- `exports.downloadStream(id, { intentToken, maxBytes })` returns a one-shot Web
+  `ReadableStream`, verifies any advertised content length, and cancels the upstream response on
+  caller cancellation or a byte-ceiling breach.
+- `authorization.getContext()` returns only the exact current credential's safe no-store metadata;
+  `authorization.revokeCurrentCredential()` permanently revokes that bearer credential.
+- `webhooks.testDelivery(id, { idempotencyKey })` validates the no-store replay receipt for a
+  synthetic delivery sent through the production queue, worker, signing, HTTPS, and history path.
 - API and local client failures use separate error classes.
 - Every success envelope and error exposes immutable transport metadata for request IDs,
   attempts, status, response headers, rate limits, retry timing, and idempotency replays.

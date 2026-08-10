@@ -1,11 +1,11 @@
 ---
 title: "teamgrid webhooks"
-description: "6 executable @teamgrid/cli commands in the webhooks group, generated from CLI 1.0.5."
+description: "7 executable @teamgrid/cli commands in the webhooks group, generated from CLI 1.0.6."
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
-> Generated from `@teamgrid/cli@1.0.5` at Developer Platform commit `731a66228703`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `c813667fdaf9`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage webhooks.
 
@@ -30,6 +30,7 @@ Global options can be placed before the command group.
 - [`teamgrid webhooks update`](#teamgrid-webhooks-update) — Update or reactivate a webhook.
 - [`teamgrid webhooks remove`](#teamgrid-webhooks-remove) — Remove a webhook.
 - [`teamgrid webhooks rotate-secret`](#teamgrid-webhooks-rotate-secret) — rotate and reveal a v2 webhook signing secret exactly once.
+- [`teamgrid webhooks test`](#teamgrid-webhooks-test) — queue a signed synthetic delivery through the real webhook pipeline.
 
 ## teamgrid webhooks list
 
@@ -296,6 +297,50 @@ This command can change or remove data and asks for confirmation by default. In 
 
 ```bash
 teamgrid webhooks rotate-secret ID --if-match REVISION --secret-file ./teamgrid-secret.txt
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid webhooks test
+
+queue a signed synthetic delivery through the real webhook pipeline.
+
+### Syntax
+
+```bash
+teamgrid webhooks test [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `testWebhookDelivery` | `POST /webhooks/{id}/test-delivery` | `webhooks:write` | [Send a signed test webhook delivery](/api/v1/reference/operations/testwebhookdelivery/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--idempotency-key <key>` | stable retry key | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid webhooks test ID
 ```
 
 ### Exit codes

@@ -2,7 +2,7 @@
 title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
 owner: Security
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-10
 ---
 
 Webhook registrations created through API v1 use signed delivery version 2. The create response
@@ -49,6 +49,27 @@ teamgrid webhooks rotate-secret WEBHOOK_ID \
 The file path is created with mode `0600` and is never overwritten. Use `--secret-stdout` only for a
 controlled pipe into a secret manager; it writes the raw secret and no other output, and refuses an
 interactive terminal.
+
+## Send a real-pipeline test delivery
+
+Use `POST /v1/webhooks/{id}/test-delivery` with `webhooks:write` and a stable
+`Idempotency-Key` to queue a synthetic `webhook.test` event. The operation uses the same
+cell-local queue, worker, signing, HTTPS, retry, and delivery-history path as a real event. The
+worker revalidates the exact current credential, principal, workspace, region, cell, and
+credential-owned v2 webhook before sending.
+
+```bash
+teamgrid webhooks test WEBHOOK_ID \
+  --idempotency-key webhook-smoke-2026-08-10 \
+  --output json
+```
+
+The safe no-store receipt identifies the queued delivery and whether an identical request was
+replayed. It never contains the destination URL, payload, signing secret, request headers, or
+credential data. A test attempt is visible in delivery history but never changes the webhook's
+production health state: `failCount`, `lastStatus`, and automatic disablement remain untouched.
+Use a new logical idempotency key for a new test; reuse the original key only to recover the same
+request. Test delivery is intentionally unavailable through MCP.
 
 ## Delivery headers
 

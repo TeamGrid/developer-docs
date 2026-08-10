@@ -1,11 +1,11 @@
 ---
 title: "teamgrid file-upload-intents"
-description: "3 executable @teamgrid/cli commands in the file-upload-intents group, generated from CLI 1.0.5."
+description: "3 executable @teamgrid/cli commands in the file-upload-intents group, generated from CLI 1.0.6."
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
-> Generated from `@teamgrid/cli@1.0.5` at Developer Platform commit `731a66228703`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `c813667fdaf9`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 create and complete direct file uploads.
 

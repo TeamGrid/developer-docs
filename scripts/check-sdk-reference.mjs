@@ -63,7 +63,7 @@ if (clients.length !== reference.summary?.clientCount) failures.push('SDK client
 if (operations.length !== reference.summary?.operationCount) failures.push('SDK operation summary is stale.')
 if (helpers.length !== reference.summary?.helperCount) failures.push('SDK helper summary is stale.')
 if (clients.length !== 50) failures.push(`Expected 50 SDK clients, found ${clients.length}.`)
-if (operations.length !== 207) failures.push(`Expected 207 SDK operations, found ${operations.length}.`)
+if (operations.length !== 210) failures.push(`Expected 210 SDK operations, found ${operations.length}.`)
 
 const policies = capabilities.operationPolicy.filter((operation) => operation.sdk)
 const policiesByOperation = new Map(policies.map((operation) => [operation.operationId, operation]))

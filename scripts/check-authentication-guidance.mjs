@@ -33,7 +33,8 @@ for (const requiredEnvironment of [
 
 for (const requiredLifecycleStatement of [
   'local profile and its operating-system credential-store',
-  'does not revoke the server-side credential',
+  'auth logout --revoke',
+  'only after',
   'Settings → Team → Developer Center → Access',
   'macOS Keychain, Linux Secret Service, or Windows Credential Manager',
   'Device authorization is not part of this release',

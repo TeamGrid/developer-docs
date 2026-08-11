@@ -11,16 +11,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.5` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.5` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.5` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.0.6` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.0.6` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.0.6` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.5
-npm install --global @teamgrid/cli@1.0.5 @teamgrid/mcp-server@1.0.5
+npm install @teamgrid/api-client@1.0.6
+npm install --global @teamgrid/cli@1.0.6 @teamgrid/mcp-server@1.0.6
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent

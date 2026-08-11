@@ -1,13 +1,13 @@
 ---
-title: "teamgrid api-version"
-description: "1 executable @teamgrid/cli commands in the api-version group, generated from CLI 1.0.6."
+title: "teamgrid doctor"
+description: "1 executable @teamgrid/cli commands in the doctor group, generated from CLI 1.0.6."
 owner: Developer Experience
 reviewedAt: 2026-08-10
 ---
 
 > Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `e6f6b47fa223`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
-discover the TeamGrid API version.
+run read-only configuration, credential, routing, network, and API checks.
 
 ## Global options
 
@@ -24,23 +24,21 @@ Global options can be placed before the command group.
 
 ## Commands
 
-- [`teamgrid api-version`](#teamgrid-api-version) — discover the TeamGrid API version.
+- [`teamgrid doctor`](#teamgrid-doctor) — run read-only configuration, credential, routing, network, and API checks.
 
-## teamgrid api-version
+## teamgrid doctor
 
-discover the TeamGrid API version.
+run read-only configuration, credential, routing, network, and API checks.
 
 ### Syntax
 
 ```bash
-teamgrid api-version [options]
+teamgrid doctor [options]
 ```
 
 ### API operation and scope
 
-| Operation | HTTP | Scope | API reference |
-| --- | --- | --- | --- |
-| `getApiVersion` | `GET /` | Anonymous protocol | [Discover API v1](/api/v1/reference/operations/getapiversion/) |
+The public capability manifest does not assign a dedicated API operation to this local CLI command.
 
 
 ### Command options
@@ -56,7 +54,7 @@ The command uses the global output mode: human-readable `table` by default, or m
 ### Example
 
 ```bash
-teamgrid api-version
+teamgrid doctor
 ```
 
 ### Exit codes

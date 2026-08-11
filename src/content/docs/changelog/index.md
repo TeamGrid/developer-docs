@@ -2,13 +2,13 @@
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
 ## Current platform
 
 API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
-synchronized at stable version `1.0.5`.
+synchronized at stable version `1.0.6`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -18,6 +18,26 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Developer Platform 1.0.6 · 2026-08-10
+
+- Added scope-free, credential-authenticated self-inspection and exact self-revocation. CLI
+  `auth status --check` now verifies the server context, while `auth logout --revoke` removes local
+  state only after TeamGrid confirms permanent revocation.
+- Added signed webhook test delivery through the same cell-local queue, worker, HTTPS, signing,
+  retry, and history path as production events without changing webhook health counters or
+  automatic disablement.
+- Added bounded streaming export downloads to the TypeScript SDK and a read-only, redacted
+  `teamgrid doctor` report for configuration, credential, routing, network, compatibility, and
+  capability diagnostics.
+- Hardened the MCP server with exact allow/deny tool filters, strict output schemas, bounded
+  structured errors, prompt-injection guidance, and unconditional removal of finance-sensitive
+  product and time-entry fields.
+- Expanded the synchronized stable contract to 132 paths and 211 operations, with 210 SDK methods,
+  complete CLI mappings, and an explicit MCP exposure decision for every operation. API v0 remains
+  frozen at all 87 compatibility operations.
+- Added edge-runtime qualification and recoverable positive mutation certification with exact
+  inventory coverage, idempotent intent journaling, reverse-order cleanup, and fail-closed recovery.
 
 ## Developer Platform 1.0.5 · 2026-08-08
 

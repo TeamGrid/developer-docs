@@ -1,26 +1,25 @@
 {
   "schemaVersion": 1,
   "package": "@teamgrid/cli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "sourceRepository": "TeamGrid/developer-platform",
-  "sourceCommit": "731a662287038a57bb464d325287b48fd4f73724",
-  "sourceProgramSha256": "ac4efa86a738c02229d76469fdd6fe18d3ca7b8bcd5836fa6dc37c2130325489",
-  "apiContractSourceCommit": "aedd3437dc68172aef7927179fc548e1b40ef2be",
-  "reviewedAt": "2026-08-08",
+  "sourceCommit": "e6f6b47fa22325dbc10ef79dcfb91daf3a61264a",
+  "sourceProgramSha256": "eb53f967d27176504af74bae16ee711b4753a096742c7c3234d558cc395a85af",
+  "apiContractSourceCommit": "8bf7abd09f9083238450f961b1b08f09e8e56be4",
+  "reviewedAt": "2026-08-10",
   "commanderVersion": "15.0.0",
-  "groupCount": 51,
-  "commandNodeCount": 265,
-  "executableCommandCount": 214,
-  "mappedCliPathCount": 207,
-  "apiBackedExecutableCommandCount": 211,
-  "apiOperationCount": 208,
-  "argumentDefinitionCount": 142,
-  "commandOptionDefinitionCount": 518,
+  "groupCount": 52,
+  "commandNodeCount": 267,
+  "executableCommandCount": 216,
+  "mappedCliPathCount": 210,
+  "apiBackedExecutableCommandCount": 214,
+  "apiOperationCount": 211,
+  "argumentDefinitionCount": 143,
+  "commandOptionDefinitionCount": 520,
   "confirmationCommandCount": 36,
   "localCommands": [
-    "auth logout",
-    "auth profiles",
-    "auth status"
+    "doctor",
+    "auth profiles"
   ],
   "globalOptions": [
     {
@@ -86,6 +85,27 @@
     }
   ],
   "groups": [
+    {
+      "name": "doctor",
+      "slug": "doctor",
+      "description": "run read-only configuration, credential, routing, network, and API checks.",
+      "aliases": [],
+      "commands": [
+        {
+          "path": "doctor",
+          "fullPath": "teamgrid doctor",
+          "parentPath": "",
+          "syntax": "teamgrid doctor [options]",
+          "description": "run read-only configuration, credential, routing, network, and API checks.",
+          "aliases": [],
+          "arguments": [],
+          "options": [],
+          "requiresConfirmation": false,
+          "canonicalCliPath": null,
+          "apiOperations": []
+        }
+      ]
+    },
     {
       "name": "auth",
       "slug": "auth",
@@ -185,13 +205,31 @@
           "fullPath": "teamgrid auth logout",
           "parentPath": "auth",
           "syntax": "teamgrid auth logout [options]",
-          "description": "remove a profile credential from the OS keychain.",
+          "description": "remove a profile credential locally and optionally revoke it in TeamGrid.",
           "aliases": [],
           "arguments": [],
-          "options": [],
+          "options": [
+            {
+              "flags": "--revoke",
+              "short": null,
+              "long": "--revoke",
+              "description": "revoke the current credential before removing the local profile",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
           "requiresConfirmation": false,
-          "canonicalCliPath": null,
-          "apiOperations": []
+          "canonicalCliPath": "auth logout",
+          "apiOperations": [
+            {
+              "method": "DELETE",
+              "path": "/auth/context",
+              "operationId": "revokeCurrentCredential",
+              "summary": "Revoke the current credential",
+              "scope": null
+            }
+          ]
         },
         {
           "path": "auth profiles",
@@ -211,7 +249,7 @@
           "fullPath": "teamgrid auth status",
           "parentPath": "auth",
           "syntax": "teamgrid auth status [options]",
-          "description": "show the active credential location and optionally verify it.",
+          "description": "show the active credential location and optionally verify its server context.",
           "aliases": [],
           "arguments": [],
           "options": [
@@ -219,15 +257,23 @@
               "flags": "--check",
               "short": null,
               "long": "--check",
-              "description": "call the workspace endpoint",
+              "description": "retrieve the authenticated credential context from TeamGrid",
               "mandatory": false,
               "variadic": false,
               "choices": null
             }
           ],
           "requiresConfirmation": false,
-          "canonicalCliPath": null,
-          "apiOperations": []
+          "canonicalCliPath": "auth status",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/auth/context",
+              "operationId": "getCurrentCredentialContext",
+              "summary": "Inspect the current credential",
+              "scope": null
+            }
+          ]
         }
       ]
     },
@@ -11060,62 +11106,102 @@
               "scope": "webhooks:write"
             }
           ]
+        },
+        {
+          "path": "webhooks test",
+          "fullPath": "teamgrid webhooks test",
+          "parentPath": "webhooks",
+          "syntax": "teamgrid webhooks test [options] <id>",
+          "description": "queue a signed synthetic delivery through the real webhook pipeline.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--idempotency-key <key>",
+              "short": null,
+              "long": "--idempotency-key",
+              "description": "stable retry key",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "webhooks test",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/webhooks/{id}/test-delivery",
+              "operationId": "testWebhookDelivery",
+              "summary": "Send a signed test webhook delivery",
+              "scope": "webhooks:write"
+            }
+          ]
         }
       ]
     }
   ],
   "generatedPages": {
-    "src/content/docs/cli/reference/index.md": "51d09af44dec482a34b7357c7c2631fe0175e9e6113f125e28bcc6e830c9f7dc",
-    "src/content/docs/cli/reference/auth.md": "f6134dfc7fb3c179eab209bffe8662f3cdf8d351b67313b4be654b17f5c6761c",
-    "src/content/docs/cli/reference/api-version.md": "7e7d406e2ae2660601ee5b0391e0ed51fb61c5e9047545381a9561913a74e488",
-    "src/content/docs/cli/reference/workspace.md": "8dc0cd35dfa276a5f3558c6ad7df76069b5b5efcfbe97afcc01ab677cf01c9dd",
-    "src/content/docs/cli/reference/system.md": "663ac67dbeb981ae6cda3dbfb703ef40844f4fb4a6cd5bf4f02d44a2f2bb5809",
-    "src/content/docs/cli/reference/workspace-settings.md": "095e1c855ce4b5e81afa6321a2ea4c7e136d9a6e3d7092931eae44d1e3a8f488",
-    "src/content/docs/cli/reference/credentials.md": "aafdb9a4c48a1195956b9ac0c35da3f477c042cd718aea9eb14005ad1d1c1a59",
-    "src/content/docs/cli/reference/service-accounts.md": "cceb76f569dfdf4bb774a0c170171ad1f02a3d9c7c121575945fe45a514d6102",
-    "src/content/docs/cli/reference/events.md": "20dccb7bca417a08775af34d524f50cd9c1cf8c381ca4b2e031d580b1eb76eff",
-    "src/content/docs/cli/reference/projects.md": "198ce2260d1acbc46e13c64192eda04e60b76d9ece09c46c573d3d9247dfa139",
-    "src/content/docs/cli/reference/project-lifecycle-operations.md": "79eadcdbff234c692bf16053184f8dbe5fc2b73ab31eeabd175769e60986e886",
-    "src/content/docs/cli/reference/products.md": "929cf5cf976791ecaf0c73d1b3ebabe259f06cc7224f039774bcd4e67de86e0f",
-    "src/content/docs/cli/reference/product-groups.md": "e009a17760cfaf61d217d41ec3d0374849e885d8b59b33bf0a6b6977fd4e1a0a",
-    "src/content/docs/cli/reference/project-statements.md": "b33847bff258bc1e77c26f2655a239d4e5a88e9627aca2181adbe92e09faeed6",
-    "src/content/docs/cli/reference/tasks.md": "d2da0c51548ea74624b0b62959f41cb9afe2144e971cfd56733ca5ceda550acc",
-    "src/content/docs/cli/reference/time-entries.md": "38ee84de4e8d26d82b38d8d24bbc524c249bc245749de471b92ad1a60b929ff0",
-    "src/content/docs/cli/reference/call-notes.md": "e7a89be01e985fce9262c777240bde026ad022c742201580a43f29f8a9d046d6",
-    "src/content/docs/cli/reference/contacts.md": "2cb2cc0459d92309603dd52cd921c0ae55f18293d0824fcf927b621e2a7371c3",
-    "src/content/docs/cli/reference/contact-groups.md": "217aed33894206eb0e7cf3d69d826713caf85f744a921b4ff228744a859f04e1",
-    "src/content/docs/cli/reference/users.md": "9dff6ea187140e859cbc046e77f407b0fe95eaab2ba8f75a0e63dae7233c5cc6",
-    "src/content/docs/cli/reference/lists.md": "f14d96b33a47d7cec0703e1f42b82a51b526cbd911c5edcfe93f765428254814",
-    "src/content/docs/cli/reference/services.md": "15da8a661d3eaf2c9700228533723857f8837c76685c6b4d83558cc78f3d3696",
-    "src/content/docs/cli/reference/tags.md": "6e3a4b3afaf48eb28455b5872962310864779d4ed38e0b63fd7fafb5b3ad2ac6",
-    "src/content/docs/cli/reference/custom-field-definitions.md": "e2e7c790e9fc7c79a87f7c19b887c1371736672be0b8f195aace36a3ab1b5615",
-    "src/content/docs/cli/reference/custom-field-values.md": "d694f9fbb32f6085bb8badeee4b4088d02c7c895e39f41aeaf5bafee06048da4",
-    "src/content/docs/cli/reference/project-templates.md": "36f45291bd70d87e25f496a368bf3440c42d4915c26015930c0a488fb828fa19",
-    "src/content/docs/cli/reference/project-template-instantiations.md": "932cce0df9ae0f9e775f0f33bf16c25b9701433e45d74403e128ceb1bd04b3c7",
-    "src/content/docs/cli/reference/planned-work.md": "390c784517b38c878d7ad339582fe60151422f43a63adff4e4ca41e1ccb6bd9b",
-    "src/content/docs/cli/reference/planned-work-operations.md": "b388ad7522f1f806c38a6a781dd72431a2883015f7a06290f7fbc7f2e22af7c6",
-    "src/content/docs/cli/reference/changes.md": "bd276d3c76ad5fa12d7a53b2325c9bd49bc33c9470671510d9858438422b2386",
-    "src/content/docs/cli/reference/audit-events.md": "689618f86ab7fc098cc9d75e35994fc6ef3efb130ef3b4aea7eaba0a3f86fdb3",
-    "src/content/docs/cli/reference/webhook-deliveries.md": "9bee255d7339d32fd37d94d1d9aeca9f905d64884cbd96283324d9574d6f9ece",
-    "src/content/docs/cli/reference/appointments.md": "8d190571bd53dda2704a9ce06c94e4086f1bfc9179e6412779d8f8ca6b1f8ae6",
-    "src/content/docs/cli/reference/absences.md": "c0e3d392b11a27e0d68fe88aa4f28dcf050b0439fdd3ddff0bc192452391d210",
-    "src/content/docs/cli/reference/availability.md": "567f63ef7100ad7a7f15c30d36e4d46894e09ad9909eacc31ab720c994a6a16f",
-    "src/content/docs/cli/reference/activity.md": "fb205f5bedf01d60b19476bf8fe853d458aa4e8b8f54f22ca8963eedbf4455a0",
-    "src/content/docs/cli/reference/comments.md": "33198bd42112a61af12a995c9f328f199df8a0302025d823acf1e389d30866e5",
-    "src/content/docs/cli/reference/documents.md": "b300b52c0d26910557215bec3768247ac69c2046d8bcc5a4ed3016ba475d18e9",
-    "src/content/docs/cli/reference/files.md": "80c4c8f049014b39f29a3a20f872991cc81b385f92eb7b20fdd9c826e63d22ea",
-    "src/content/docs/cli/reference/file-upload-intents.md": "300ef83a230de0be703432cd613b9db7e998387acaf290165aef19be7f8dbd43",
-    "src/content/docs/cli/reference/members.md": "4448d06fabb9769015d01535533819a88a90473c8287f6548bed4abc1886d2cc",
-    "src/content/docs/cli/reference/invitations.md": "735e51f80bd37d13a6f47c0344d2e0a37ea659d154bc9efac03f50ee8cae5518",
-    "src/content/docs/cli/reference/roles.md": "11c2c53f375a6cefb9e1e9e7e29a3cf3f65f60077478b916cdeb54d776329173",
-    "src/content/docs/cli/reference/groups.md": "455a426c06a15f3ef4d7837f4e38da5f664c987724162a67c2a56c17b3278752",
-    "src/content/docs/cli/reference/search.md": "994dd223155f48b597ffc8aa2e8dfcc8f4bcf265a60e3c02db3922fe4bd1c02a",
-    "src/content/docs/cli/reference/exports.md": "5a0dbb50ee251dcabb6a03ee0a59ea7d74fda160fa142d6687811bbec64633af",
-    "src/content/docs/cli/reference/automation-actions.md": "a05cb7280c1c168ce9093f8943a64686f19ed42bf512a1e5f81d3b02da2e0f1a",
-    "src/content/docs/cli/reference/automation-definitions.md": "5c89fb133e81d908a0619be8980628b8ca976ad93d91d6c02c4c471e17f92915",
-    "src/content/docs/cli/reference/automation-definition-versions.md": "416d82be4df4a7349213ba96a1a7e0d45edf5b433f3a0385bc3441d5f520401f",
-    "src/content/docs/cli/reference/automation-runs.md": "6d70a10b14cbbea038168cae60091721eec5303698ae9fd6326d4ea3835ee481",
-    "src/content/docs/cli/reference/integration-installations.md": "592eaaa906574a95b6c90027fc79b985dc3cda34702ed377e1a2dd50ef9b7c04",
-    "src/content/docs/cli/reference/webhooks.md": "50fca268fbb530a64e34916d6a6a4ebc219fbc1e4a4f1ef4101302fd2d1b3e8d"
+    "src/content/docs/cli/reference/index.md": "fd73e75c52f14ed95c0da628f9f1095886a21f4561b56853837fd76916c564ae",
+    "src/content/docs/cli/reference/doctor.md": "ac4f0cde3ad4bf1929fbfcfd53a8af01a74dfd8b2c38e9efc13288c9534b884d",
+    "src/content/docs/cli/reference/auth.md": "b7890756831e7aa5076289a80dd576471c10ff1451a22746ee1974c4dd050ed7",
+    "src/content/docs/cli/reference/api-version.md": "1e836cb48eed871f3628a3a05400eca81503767977c53588583e8a2ff85e41b9",
+    "src/content/docs/cli/reference/workspace.md": "82cae35b701efa3b6ee1e76c1e2503cdce247ac35b444ba2766e3324289a5cba",
+    "src/content/docs/cli/reference/system.md": "f29cb31933474d6cf158bc98a92727fa0880c44e58a8163fdd8c24201680f01a",
+    "src/content/docs/cli/reference/workspace-settings.md": "e3e7e9a77680760a386bb0a3b285dcc589576a5475edfb252478bb5677c68be3",
+    "src/content/docs/cli/reference/credentials.md": "c07a3cca7d3fed5395abe5c4b504eddc918ceb4a8338b9fee1c0b7b62eb42c84",
+    "src/content/docs/cli/reference/service-accounts.md": "a46dbef5c5fc454627b762f4aef80243cdac087525b53ee8be276f51a51e56d4",
+    "src/content/docs/cli/reference/events.md": "68dcd80eae7f9cfae207b183c6dcd4a3dd1355dba83e95f745b108937167f863",
+    "src/content/docs/cli/reference/projects.md": "355ed40c7c7baa5ca587f97682ee940d1ccb7b83d69b0ebbe4ce880d02aeeb4a",
+    "src/content/docs/cli/reference/project-lifecycle-operations.md": "30daf86a915b5eb6474271e067d6331294daa38edaeb836ea6a97a1bb5c05e2f",
+    "src/content/docs/cli/reference/products.md": "16e4d8484c8ac0d1259078684daac37fb1c334567ab23cf9ec328931cd141936",
+    "src/content/docs/cli/reference/product-groups.md": "a9c8b0f97ae6f3f61bf73d8296b9b9093e03a06cf442b66cde7735d57dc53354",
+    "src/content/docs/cli/reference/project-statements.md": "105281bdf8be67250e33d92924e5e8f96ea654fb1bd03dc8e4cf3cc38d94c83d",
+    "src/content/docs/cli/reference/tasks.md": "04f8560692345e727affd2863c23f6f6f19f051f36977f521fb4dfc7a26c4852",
+    "src/content/docs/cli/reference/time-entries.md": "a06175ef49e85567d23dd7e69ca1db20c07c02e34118fc9a73a5a5e313afe840",
+    "src/content/docs/cli/reference/call-notes.md": "ace0f2d5f5e8e9125342f3ba70d667456d82d66eb1ce3892ef2de95d9b7a3c21",
+    "src/content/docs/cli/reference/contacts.md": "6e68c6e0007df311c50a23db51661ec76b86b28a5bb9b95909fc51316afea739",
+    "src/content/docs/cli/reference/contact-groups.md": "96a887bcd145980aa548998a328ffe6ab5bdd908cdff4cfad17f3e7f54cb07d7",
+    "src/content/docs/cli/reference/users.md": "41b12e4651c6457ffa80f2d107f54a22f6a5d3a31ee5e7e6e1f12a739d304a25",
+    "src/content/docs/cli/reference/lists.md": "3b058b907842f0f1af701a729249bbd573a4eeb3acb9b824d3b2902b9b782d35",
+    "src/content/docs/cli/reference/services.md": "5d782ab14bba6676aea9d3605e12fbaf6126cc83f237462a3e12c3d422f6c0f4",
+    "src/content/docs/cli/reference/tags.md": "c49ca44d9736cfd692de2c91c64d25043a361a462dbe407b73be4bd65a99a397",
+    "src/content/docs/cli/reference/custom-field-definitions.md": "fd1faa01693169127f3b0cc7fa9c52b62c2d4b517719f09d9a06626067f1b5b7",
+    "src/content/docs/cli/reference/custom-field-values.md": "26495931244b2a84b89bec936644bb7459fe76a816abfa88dfef71be27e705d3",
+    "src/content/docs/cli/reference/project-templates.md": "8dda250fd54b92c960c3a529b3bb8c732cbbd97fd7c8726755e01990eefe5759",
+    "src/content/docs/cli/reference/project-template-instantiations.md": "d913ba299149fae1875468c79ebf398f5d733503cc2f792bd4757f8afff47872",
+    "src/content/docs/cli/reference/planned-work.md": "b1694b8a8d1f95ec1cdce035c5d91e91af3a4778f8d6d9cc18a5c89eb99211f8",
+    "src/content/docs/cli/reference/planned-work-operations.md": "d84e63138bc1282898ce616007d4fc1fee4ae247be00f5ce253f314f5a4b6504",
+    "src/content/docs/cli/reference/changes.md": "78f2af276c1a924f55c5ceb96886ccf2c1fb04d8058df5becc8a728a431dff93",
+    "src/content/docs/cli/reference/audit-events.md": "4e7d871d088459f9cf0724f69893ea7c47482c6d2cdb1e7575ca010921c4fd1d",
+    "src/content/docs/cli/reference/webhook-deliveries.md": "ca4facda8777935645918fd91d77001c1c5b7b67da02723f4a2922eaacfe02de",
+    "src/content/docs/cli/reference/appointments.md": "389816fb93357249f75646cfa1fa6ea7118db88e6f3b93a6cc5a0e0e13984f05",
+    "src/content/docs/cli/reference/absences.md": "b6aed589440bd5ddf689c61cac6bbd8bf5b4367e9c60899814dcfc5335ff2bbd",
+    "src/content/docs/cli/reference/availability.md": "6e860f79006a9439a2005c50df0b0f50c980d5575895474753fff238497069f7",
+    "src/content/docs/cli/reference/activity.md": "d26d0fee4b178954fbfbeb20e04f47dd5ed0912dc07f365a2461d36bda068f8f",
+    "src/content/docs/cli/reference/comments.md": "7a85cc6d6f7c48852ef0a04fac2a8f8a81473cf8c50dd5ddfdb5e0beced05a73",
+    "src/content/docs/cli/reference/documents.md": "f4634869fbae4b6a7d5a06516e6578c6c103da41669ce04a297a37d3d3e410ab",
+    "src/content/docs/cli/reference/files.md": "6a3eba2aa3f3f916c45ad71a0146a92ec8454b305a56c1addf0aa194418e7a8e",
+    "src/content/docs/cli/reference/file-upload-intents.md": "c92242d758b15a207dd0ca7471ada6b3755a59e590643b597457b3e22564c645",
+    "src/content/docs/cli/reference/members.md": "acf2d5be770e3096bb837840aef888b80211febcb94d7d0625b4d6362c50847c",
+    "src/content/docs/cli/reference/invitations.md": "dad3c041ec363b7cfb8680de8d170fcf3dde09bca6f20884a54060437eb492ca",
+    "src/content/docs/cli/reference/roles.md": "a3aa2f62c9487d7b9d031413d3a4c73266b541b4fda9494069e666f109dc61cf",
+    "src/content/docs/cli/reference/groups.md": "565bd1c4fa75684f365901a494e7493cf04926086d57ca04909128116a062363",
+    "src/content/docs/cli/reference/search.md": "0059bd7f0f9c2c7de82f943cc50c29e6727fb483d97d9feeacb771c73180dc01",
+    "src/content/docs/cli/reference/exports.md": "400513f6df42f97eacf60651fa437e3ac795fc31ce3e35d1acdd42c905e098ac",
+    "src/content/docs/cli/reference/automation-actions.md": "f4e66cc2ba5a008ff77b498d3b4e5066e9e1d1ddaaeca7d95c444fa446f076da",
+    "src/content/docs/cli/reference/automation-definitions.md": "081116e26e52f0083412eea0eaea87581a38f4bd0451cd967798b27a0c533fd4",
+    "src/content/docs/cli/reference/automation-definition-versions.md": "767a0e90b2ac549b542098786926dfd15668718c30280f9cec6234028d173ebd",
+    "src/content/docs/cli/reference/automation-runs.md": "6fd9e941b107e1af84692fbc912b108ba463102c0b97895bc0309f1f2b779af7",
+    "src/content/docs/cli/reference/integration-installations.md": "bf21689bb79b92ae6e974d64cf88fb7f696f91b37359dd2e1846005dcf6d6706",
+    "src/content/docs/cli/reference/webhooks.md": "b46a78ed8bf2e745c15cd9b56405e2fc37b2689bd53ba0058d0732b1e166e70d"
   }
 }

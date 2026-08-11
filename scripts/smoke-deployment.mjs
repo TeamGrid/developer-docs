@@ -21,7 +21,7 @@ const checks = [
   ['/guides/production-go-live/', 'Production go-live checklist'],
   ['/de/', 'deutscher Einstieg'],
   ['/api/v0/migration-matrix/', '87 frozen API v0 runtime routes'],
-  ['/sdk/reference/', '207 API methods'],
+  ['/sdk/reference/', '210 API methods'],
   ['/sdk/reference/tasks/', 'tasks.update'],
   ['/cli/', `@teamgrid/cli@${stableVersion}`],
   ['/cli/browser-login/', 'The CLI performs this sequence'],

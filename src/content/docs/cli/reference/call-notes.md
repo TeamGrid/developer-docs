@@ -1,11 +1,11 @@
 ---
 title: "teamgrid call-notes"
-description: "5 executable @teamgrid/cli commands in the call-notes group, generated from CLI 1.0.5."
+description: "5 executable @teamgrid/cli commands in the call-notes group, generated from CLI 1.0.6."
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
-> Generated from `@teamgrid/cli@1.0.5` at Developer Platform commit `731a66228703`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `e6f6b47fa223`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage call notes.
 

@@ -9,6 +9,18 @@ export type DeveloperRelease = {
 
 export const developerReleases: DeveloperRelease[] = [
   {
+    date: '2026-08-10',
+    description: 'The hardened credential, webhook, diagnostics, streaming, and MCP release.',
+    highlights: [
+      '211 synchronized API operations with exact current-credential self-service',
+      'Real-pipeline webhook test delivery and bounded SDK export streaming',
+      'Aligned 1.0.6 SDK, CLI, and hardened read-only MCP packages',
+    ],
+    stability: 'stable',
+    title: 'Developer Platform 1.0.6',
+    version: '1.0.6',
+  },
+  {
     date: '2026-08-08',
     description: 'The current stable package checkpoint with hardened CLI credential handling.',
     highlights: [

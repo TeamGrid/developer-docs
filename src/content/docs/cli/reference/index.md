@@ -2,10 +2,10 @@
 title: CLI command reference
 description: Exact syntax, arguments, options, API operations, scopes, output behavior, safety notes, examples, and exit codes for every TeamGrid CLI command.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
-This reference is generated from the real `@teamgrid/cli@1.0.5` Commander tree and the public API capability manifest. It covers all 214 executable commands in 51 top-level groups, including 142 argument and 518 command-option definitions plus 6 global options. Its 207 canonical CLI paths map to all 208 API v1 operations.
+This reference is generated from the real `@teamgrid/cli@1.0.6` Commander tree and the public API capability manifest. It covers all 216 executable commands in 52 top-level groups, including 143 argument and 520 command-option definitions plus 6 global options. Its 210 canonical CLI paths map to all 211 API v1 operations.
 
 Use [CLI commands](/cli/commands/) for workflow-oriented guidance and this reference when you need exact terminal syntax. Run `teamgrid --version` before comparing an installed CLI with this release.
 
@@ -37,6 +37,7 @@ See [CLI automation](/cli/automation/) for pagination and exit-code handling and
 
 | Command group | Executable commands | Description |
 | --- | ---: | --- |
+| [`teamgrid doctor`](/cli/reference/doctor/) | 1 | run read-only configuration, credential, routing, network, and API checks. |
 | [`teamgrid auth`](/cli/reference/auth/) | 4 | manage local credential profiles. |
 | [`teamgrid api-version`](/cli/reference/api-version/) | 1 | discover the TeamGrid API version. |
 | [`teamgrid workspace`](/cli/reference/workspace/) | 2 | inspect the authenticated workspace. |
@@ -87,7 +88,7 @@ See [CLI automation](/cli/automation/) for pagination and exit-code handling and
 | [`teamgrid automation-definition-versions`](/cli/reference/automation-definition-versions/) | 1 | inspect immutable automation definition versions. |
 | [`teamgrid automation-runs`](/cli/reference/automation-runs/) | 3 | inspect and control automation runs. |
 | [`teamgrid integration-installations`](/cli/reference/integration-installations/) | 1 | inspect redacted integration installation metadata. |
-| [`teamgrid webhooks`](/cli/reference/webhooks/) | 6 | read and manage webhooks. |
+| [`teamgrid webhooks`](/cli/reference/webhooks/) | 7 | read and manage webhooks. |
 
 ## Synchronization contract
 

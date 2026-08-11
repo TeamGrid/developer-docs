@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "package": {
     "name": "@teamgrid/mcp-server",
-    "sourceCommit": "731a662287038a57bb464d325287b48fd4f73724",
+    "sourceCommit": "e6f6b47fa22325dbc10ef79dcfb91daf3a61264a",
     "sourceRepository": "TeamGrid/developer-platform",
-    "version": "1.0.5"
+    "version": "1.0.6"
   },
   "profiles": {
     "core": [
@@ -2159,12 +2159,6 @@
             "maximum": 100
           },
           "archived": {
-            "type": "boolean"
-          },
-          "billable": {
-            "type": "boolean"
-          },
-          "billed": {
             "type": "boolean"
           },
           "createdById": {

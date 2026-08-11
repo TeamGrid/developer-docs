@@ -111,10 +111,12 @@ new generation, and then revoking the predecessor after the intended grace perio
 ## Logout, expiry, and revocation
 
 `teamgrid auth logout` removes only the local profile and its operating-system credential-store
-entry. It does not contact TeamGrid and does not revoke the server-side credential. This makes local
-cleanup reliable while offline, but the credential remains usable wherever else it was copied.
+entry. It does not contact TeamGrid. `teamgrid auth logout --revoke` instead revokes the exact
+selected saved credential first and deletes local state only after confirmation. Unset
+`TEAMGRID_API_TOKEN` for this operation; otherwise the CLI refuses to guess which credential should
+be revoked. Developer Center remains the fallback when the credential is no longer stored locally.
 
-To stop access, revoke the exact credential in **Developer Center → Access**. Expired or revoked
+Expired or revoked
 credentials cannot be renewed in place; run browser login again or issue a replacement service
 credential. Disabling or removing a TeamGrid member immediately affects their personal credentials.
 

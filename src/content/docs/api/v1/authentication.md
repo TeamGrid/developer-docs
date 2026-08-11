@@ -2,7 +2,7 @@
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-07-31
+reviewedAt: 2026-08-10
 ---
 
 API v1 accepts three reveal-once bearer credential formats:
@@ -58,13 +58,22 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
 - Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
-- The API and App cell must negotiate the exact code-owned 208-operation action-policy registry,
-  including all 206 authenticated operations,
+- The API and App cell must negotiate the exact code-owned 211-operation action-policy registry,
+  including all 209 credential-authenticated operations,
   before the service is ready.
 
-`teamgrid auth logout` deletes only the local CLI profile and keychain entry. Revoke the credential
-in Developer Center when server-side access must stop. Expired or revoked credentials are replaced,
-not restored.
+Every valid credential can inspect only its own safe metadata through `GET /v1/auth/context`. This
+operation requires no additional scope and returns the exact credential ID, kind, status, scopes,
+expiry, region, and cell; it never returns a verifier, secret fragment, owner PII, or unrelated
+credential. `DELETE /v1/auth/context` permanently revokes exactly the authenticating credential.
+Both responses use `Cache-Control: private, no-store`.
+
+`teamgrid auth status --check` uses this endpoint to verify the server-side identity. Plain
+`teamgrid auth logout` remains an offline-capable local cleanup. Use
+`teamgrid auth logout --revoke` to revoke the selected credential first and remove its local
+profile only after TeamGrid confirms revocation. The CLI refuses that mode while
+`TEAMGRID_API_TOKEN` is set because an environment token would make the target ambiguous. Expired
+or revoked credentials are replaced, not restored.
 
 ## API v0 legacy tokens
 

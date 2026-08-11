@@ -1,11 +1,11 @@
 ---
 title: "teamgrid auth"
-description: "4 executable @teamgrid/cli commands in the auth group, generated from CLI 1.0.5."
+description: "4 executable @teamgrid/cli commands in the auth group, generated from CLI 1.0.6."
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
-> Generated from `@teamgrid/cli@1.0.5` at Developer Platform commit `731a66228703`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.0.6` at Developer Platform commit `e6f6b47fa223`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 manage local credential profiles.
 
@@ -25,9 +25,9 @@ Global options can be placed before the command group.
 ## Commands
 
 - [`teamgrid auth login`](#teamgrid-auth-login) — sign in with your browser and store the credential in the OS keychain.
-- [`teamgrid auth logout`](#teamgrid-auth-logout) — remove a profile credential from the OS keychain.
+- [`teamgrid auth logout`](#teamgrid-auth-logout) — remove a profile credential locally and optionally revoke it in TeamGrid.
 - [`teamgrid auth profiles`](#teamgrid-auth-profiles) — list non-secret profile metadata.
-- [`teamgrid auth status`](#teamgrid-auth-status) — show the active credential location and optionally verify it.
+- [`teamgrid auth status`](#teamgrid-auth-status) — show the active credential location and optionally verify its server context.
 
 ## teamgrid auth login
 
@@ -76,7 +76,7 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 
 ## teamgrid auth logout
 
-remove a profile credential from the OS keychain.
+remove a profile credential locally and optionally revoke it in TeamGrid.
 
 ### Syntax
 
@@ -86,12 +86,16 @@ teamgrid auth logout [options]
 
 ### API operation and scope
 
-The public capability manifest does not assign a dedicated API operation to this local CLI command.
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `revokeCurrentCredential` | `DELETE /auth/context` | Anonymous protocol | [Revoke the current credential](/api/v1/reference/operations/revokecurrentcredential/) |
 
 
 ### Command options
 
-This command defines no additional options.
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--revoke` | revoke the current credential before removing the local profile | No | — | — |
 
 The [global options](#global-options) and implicit `-h, --help` option also apply.
 
@@ -146,7 +150,7 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 
 ## teamgrid auth status
 
-show the active credential location and optionally verify it.
+show the active credential location and optionally verify its server context.
 
 ### Syntax
 
@@ -156,14 +160,16 @@ teamgrid auth status [options]
 
 ### API operation and scope
 
-The public capability manifest does not assign a dedicated API operation to this local CLI command.
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `getCurrentCredentialContext` | `GET /auth/context` | Anonymous protocol | [Inspect the current credential](/api/v1/reference/operations/getcurrentcredentialcontext/) |
 
 
 ### Command options
 
 | Option | Description | Required | Choices | Default |
 | --- | --- | --- | --- | --- |
-| `--check` | call the workspace endpoint | No | — | — |
+| `--check` | retrieve the authenticated credential context from TeamGrid | No | — | — |
 
 The [global options](#global-options) and implicit `-h, --help` option also apply.
 

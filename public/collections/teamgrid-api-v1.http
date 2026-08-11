@@ -1662,6 +1662,21 @@ POST {{baseUrl}}/webhooks/{id}/secret-rotation
 Authorization: Bearer {{token}}
 Accept: application/json
 
+### Send a signed test webhook delivery
+POST {{baseUrl}}/webhooks/{id}/test-delivery
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Inspect the current credential
+GET {{baseUrl}}/auth/context
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Revoke the current credential
+DELETE {{baseUrl}}/auth/context
+Authorization: Bearer {{token}}
+Accept: application/json
+
 ### List personal access tokens owned by the current user
 GET {{baseUrl}}/me/personal-access-tokens?cursor={{cursor}}&limit={{limit}}
 Authorization: Bearer {{token}}

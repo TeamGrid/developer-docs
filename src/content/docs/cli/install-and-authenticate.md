@@ -2,7 +2,7 @@
 title: Install and authenticate
 description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
 ## Requirements
@@ -17,7 +17,7 @@ reviewedAt: 2026-08-08
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.5
+npm install --global @teamgrid/cli@1.0.6
 teamgrid --help
 ```
 
@@ -88,9 +88,17 @@ Remove a stored profile and its credential with:
 teamgrid --profile production auth logout
 ```
 
-This logout is local only. It removes the profile and operating-system credential-store entry but
-does not revoke the server credential. Revoke **TeamGrid CLI** under **Settings → Team → Developer
-Center → Access** when access must stop. An existing profile is never overwritten implicitly; use a
+This logout is local only. To stop server access and then clean up locally in one fail-safe command,
+use:
+
+```bash
+teamgrid --profile production auth logout --revoke
+```
+
+The CLI removes the keychain entry and profile only after the API confirms revocation. If the
+request fails, the local profile remains available for diagnosis and retry. Unset
+`TEAMGRID_API_TOKEN` first; its process-wide override makes it ambiguous whether the environment or
+saved credential should be revoked. An existing profile is never overwritten implicitly; use a
 different profile or `--replace` only after deciding whether the prior credential must be revoked.
 
 ## Ephemeral credentials

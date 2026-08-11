@@ -2,7 +2,7 @@
 title: TeamGrid CLI
 description: Inspect and automate TeamGrid API v1 from a terminal or CI job with structured output and stable exit codes.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-10
 ---
 
 `@teamgrid/cli` provides the `teamgrid` command for API v1. It is suited to interactive operator workflows, shell scripts, and CI jobs. The CLI derives the regional API endpoint from the credential and shares its profiles with the optional MCP server.
@@ -10,7 +10,7 @@ reviewedAt: 2026-08-08
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.5
+npm install --global @teamgrid/cli@1.0.6
 teamgrid --version
 ```
 
@@ -22,6 +22,8 @@ teamgrid --version
 - Human-readable tables and machine-readable JSON or JSONL
 - Cursor pagination with bounded `--all` traversal
 - Stable exit codes for automation
+- A read-only, redacted `doctor` report for configuration, credential, routing, network, and API checks
+- Server-verified credential status and optional fail-safe self-revocation during logout
 - Confirmation before destructive archive or remove operations
 - Bounded resource pagination and structured output for reconciliation scripts
 - Required `--if-match` guards and actionable stale-revision errors for all 52 protected

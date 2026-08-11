@@ -129,13 +129,17 @@ teamgrid --profile customer-a auth login --replace
 
 ```bash
 teamgrid --profile customer-a auth logout
+# Or revoke the exact server credential first, then remove it locally:
+teamgrid --profile customer-a auth logout --revoke
 ```
 
-Logout is local only. It removes the profile and operating-system credential-store entry but does
-not revoke the credential on the server. Revoke the exact **TeamGrid CLI** credential in Developer
-Center when access must stop. Expired or revoked credentials cannot be renewed in place; sign in
-again or create a replacement. Removing or disabling the TeamGrid member immediately affects their
-personal credentials.
+Plain logout is local only. With `--revoke`, the CLI calls TeamGrid with the selected keychain
+credential and removes local state only after permanent revocation succeeds. If the request fails,
+the profile stays intact for a safe retry. Unset `TEAMGRID_API_TOKEN` before using `--revoke`; the
+environment override would make the target credential ambiguous. Developer Center remains the
+fallback for revoking credentials that are no longer available locally. Expired or revoked
+credentials cannot be renewed in place; sign in again or create a replacement. Removing or
+disabling the TeamGrid member immediately affects their personal credentials.
 
 ## Troubleshooting
 

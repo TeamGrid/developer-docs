@@ -177,6 +177,76 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Inspect the current credential",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Returns only the safe metadata of the credential authenticating this request. This operation deliberately requires no additional scope so even a least-privilege credential can diagnose its own routing and expiry.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "context"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/auth/context"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke the current credential",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Permanently revokes exactly the credential authenticating this request. A retry after a confirmed response is expected to receive 401 because the bearer credential is no longer valid.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "context"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/auth/context"
+            }
+          },
+          "response": []
         }
       ],
       "name": "Authentication"
@@ -6978,6 +7048,42 @@
               ],
               "query": [],
               "raw": "{{baseUrl}}/webhooks/{id}/secret-rotation"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send a signed test webhook delivery",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Queues a synthetic webhook.test event through the same cell-local worker, HTTPS, signing, retry, and delivery-history pipeline as a real event. The App re-authenticates the exact credential and verifies current workspace, principal, and credential ownership before the worker sends. Test outcomes never change webhook failCount, lastStatus, or disabled state.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                "{id}",
+                "test-delivery"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/webhooks/{id}/test-delivery"
             }
           },
           "response": []

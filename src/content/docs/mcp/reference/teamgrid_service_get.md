@@ -10,7 +10,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.5`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.6`:
 
 ```json
 {

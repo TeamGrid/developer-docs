@@ -3837,7 +3837,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"assigneeId\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null,\n  \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\",\n  \"projectId\": null\n}"
+              "raw": "{\n  \"assigneeId\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"descriptionFormat\": \"plain-text\",\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null,\n  \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\"\n}"
             }
           },
           "response": []
@@ -3885,7 +3885,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"items\": [\n    {\n      \"data\": {\n        \"billable\": null,\n        \"contactId\": null,\n        \"description\": null,\n        \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n        \"name\": \"string\",\n        \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n        \"plannedMinutes\": null,\n        \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\",\n        \"serviceId\": null,\n        \"subscriberIds\": null,\n        \"tagIds\": null\n      },\n      \"id\": \"string\",\n      \"revision\": \"string\"\n    }\n  ]\n}"
+              "raw": "{\n  \"items\": [\n    {\n      \"data\": {\n        \"billable\": null,\n        \"contactId\": null,\n        \"description\": null,\n        \"descriptionFormat\": \"plain-text\",\n        \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n        \"name\": \"string\",\n        \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n        \"plannedMinutes\": null,\n        \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\",\n        \"serviceId\": null,\n        \"subscriberIds\": null,\n        \"tagIds\": null\n      },\n      \"id\": \"string\",\n      \"revision\": \"string\"\n    }\n  ]\n}"
             }
           },
           "response": []
@@ -3968,7 +3968,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"assigneeId\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null,\n  \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\",\n  \"projectId\": null\n}"
+              "raw": "{\n  \"assigneeId\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"descriptionFormat\": \"plain-text\",\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null,\n  \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\"\n}"
             }
           },
           "response": []

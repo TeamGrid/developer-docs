@@ -2,10 +2,10 @@
 title: CLI command reference
 description: Exact syntax, arguments, options, API operations, scopes, output behavior, safety notes, examples, and exit codes for every TeamGrid CLI command.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-16
 ---
 
-This reference is generated from the real `@teamgrid/cli@1.0.6` Commander tree and the public API capability manifest. It covers all 216 executable commands in 52 top-level groups, including 143 argument and 520 command-option definitions plus 6 global options. Its 210 canonical CLI paths map to all 211 API v1 operations.
+This reference is generated from the real `@teamgrid/cli@1.0.7` Commander tree and the public API capability manifest. It covers all 216 executable commands in 52 top-level groups, including 143 argument and 520 command-option definitions plus 6 global options. Its 210 canonical CLI paths map to all 211 API v1 operations.
 
 Use [CLI commands](/cli/commands/) for workflow-oriented guidance and this reference when you need exact terminal syntax. Run `teamgrid --version` before comparing an installed CLI with this release.
 

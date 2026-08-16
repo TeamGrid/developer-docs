@@ -667,14 +667,14 @@ Content-Type: application/json
   "billable": null,
   "contactId": null,
   "description": null,
+  "descriptionFormat": "plain-text",
   "dueAt": "2026-07-29T09:00:00.000Z",
   "groupId": null,
   "listId": null,
   "name": "string",
   "plannedEndAt": "2026-07-29T09:00:00.000Z",
   "plannedMinutes": null,
-  "plannedStartAt": "2026-07-29T09:00:00.000Z",
-  "projectId": null
+  "plannedStartAt": "2026-07-29T09:00:00.000Z"
 }
 
 ### Update multiple tasks safely
@@ -690,6 +690,7 @@ Content-Type: application/json
         "billable": null,
         "contactId": null,
         "description": null,
+        "descriptionFormat": "plain-text",
         "dueAt": "2026-07-29T09:00:00.000Z",
         "name": "string",
         "plannedEndAt": "2026-07-29T09:00:00.000Z",
@@ -721,14 +722,14 @@ Content-Type: application/json
   "billable": null,
   "contactId": null,
   "description": null,
+  "descriptionFormat": "plain-text",
   "dueAt": "2026-07-29T09:00:00.000Z",
   "groupId": null,
   "listId": null,
   "name": "string",
   "plannedEndAt": "2026-07-29T09:00:00.000Z",
   "plannedMinutes": null,
-  "plannedStartAt": "2026-07-29T09:00:00.000Z",
-  "projectId": null
+  "plannedStartAt": "2026-07-29T09:00:00.000Z"
 }
 
 ### Archive a task

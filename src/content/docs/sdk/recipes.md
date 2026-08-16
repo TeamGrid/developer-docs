@@ -2,7 +2,7 @@
 title: SDK integration recipes
 description: Build production-oriented TeamGrid SDK flows for service jobs, task synchronization, exports, and asynchronous lifecycle operations.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-16
 ---
 
 These recipes show complete control flow around the SDK methods. Replace placeholder IDs and
@@ -33,6 +33,30 @@ for await (const page of client.tasks.pages(
 
 This read-only job needs `tasks:read` plus access to the selected project. Set `maxPages` from a
 documented workload bound; do not silently turn an unexpectedly broad query into an unbounded job.
+
+## Create a Markdown task description safely
+
+Task descriptions are dual-format. Existing and unmarked descriptions are literal `plain-text`;
+Markdown is enabled only by sending `descriptionFormat: 'markdown-v1'` with the description. The
+SDK transports the value without rewriting it:
+
+```ts
+const created = await client.tasks.create(
+  {
+    name: 'Prepare release',
+    description: '# Acceptance criteria\n\n- Staging verified\n- Release notes ready',
+    descriptionFormat: 'markdown-v1',
+  },
+  { idempotencyKey: 'prepare-release-2026-08-16' },
+)
+
+console.log(created.data.attributes.descriptionFormat) // markdown-v1
+```
+
+Omit `descriptionFormat` when sending literal text; TeamGrid stores it as `plain-text`. For an
+update, read the task first and pass its strong ETag as `ifMatch`. Send `description` and
+`descriptionFormat` together, and do not promote existing plain text to Markdown merely because it
+contains Markdown-like punctuation.
 
 ## Verify or revoke the exact current credential
 

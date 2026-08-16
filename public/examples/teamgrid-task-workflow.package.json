@@ -6,6 +6,6 @@
     "node": ">=22.14 <25"
   },
   "dependencies": {
-    "@teamgrid/api-client": "1.0.6"
+    "@teamgrid/api-client": "1.0.7"
   }
 }

@@ -20,6 +20,7 @@ const smokeRun = (
 
 const checks = [
   ['/', 'Build dependable integrations with TeamGrid API v1'],
+  ['/', `aria-label="Developer Platform ${stableVersion} compatibility"`],
   ['/guides/get-started/', 'Create a developer credential'],
   ['/guides/production-go-live/', 'Production go-live checklist'],
   ['/de/', 'deutscher Einstieg'],
@@ -41,6 +42,8 @@ const checks = [
   ['/api/status', '"overallStatus"'],
   ['/search-index.json', '"category":"API v1"'],
   ['/changelog/feed.xml', '<feed xmlns="http://www.w3.org/2005/Atom">'],
+  ['/changelog/feed.xml', `<title>Developer Platform ${stableVersion}</title>`],
+  ['/changelog/releases.json', `"version":"${stableVersion}"`],
 ]
 
 async function check(path, expected) {

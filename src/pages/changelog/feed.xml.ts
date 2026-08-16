@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { developerReleases } from '../../data/releases'
+import { currentDeveloperRelease, developerReleases } from '../../data/releases'
 
 export const prerender = true
 
@@ -26,7 +26,7 @@ export const GET: APIRoute = () => {
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>https://developer.teamgridapp.com/changelog/</id>
   <title>TeamGrid Developer Platform changelog</title>
-  <updated>${developerReleases[0].date}T00:00:00Z</updated>
+  <updated>${currentDeveloperRelease.date}T00:00:00Z</updated>
   <link href="https://developer.teamgridapp.com/changelog/feed.xml" rel="self" />
   <link href="https://developer.teamgridapp.com/changelog/" />
   <author><name>TeamGrid</name></author>${items}

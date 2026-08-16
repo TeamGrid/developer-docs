@@ -1,11 +1,11 @@
 ---
 import { primaryNavigation } from '../data/navigation'
-import { developerReleases } from '../data/releases'
+import { currentDeveloperRelease } from '../data/releases'
 import Brand from './Brand.astro'
 
 const pathname = Astro.url.pathname
 const section = pathname.split('/').filter(Boolean)[0]
-const currentRelease = developerReleases[0]
+const currentRelease = currentDeveloperRelease
 
 function isActive(href: string) {
   if (href.startsWith('/api/')) return section === 'api'

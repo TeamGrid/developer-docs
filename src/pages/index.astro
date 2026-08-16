@@ -1,11 +1,13 @@
 ---
 import type { MarkdownHeading } from 'astro'
+import contractManifest from '../../sources/contracts.json'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { developerReleases } from '../data/releases'
+import { currentDeveloperRelease } from '../data/releases'
 import { apiOperations } from '../lib/openapi'
 
 const stableOperationCount = apiOperations('v1').length
-const latestRelease = developerReleases[0]
+const stableContractVersion = contractManifest.canonical.contractVersion
+const latestRelease = currentDeveloperRelease
 const headings: MarkdownHeading[] = [
   { depth: 2, slug: 'choose-an-interface', text: 'Choose an interface' },
   { depth: 2, slug: 'make-the-first-request', text: 'Make the first request' },
@@ -88,7 +90,7 @@ const workflows = [
     <dl class="welcome-summary">
       <div>
         <dt>Stable contract</dt>
-        <dd>API v1 · {latestRelease.version}</dd>
+        <dd>API v1 · {stableContractVersion}</dd>
       </div>
       <div>
         <dt>Reference</dt>

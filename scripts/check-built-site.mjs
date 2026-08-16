@@ -5,6 +5,10 @@ const root = path.resolve(import.meta.dirname, '..')
 const dist = path.join(root, 'dist')
 const contentRoot = path.join(root, 'src', 'content', 'docs')
 const failures = []
+const packageManifest = JSON.parse(
+  await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
+)
+const stableVersion = packageManifest.version
 
 async function exists(file) {
   try {
@@ -203,6 +207,9 @@ const releaseFeed = await readFile(path.join(dist, 'changelog', 'feed.xml'), 'ut
 if (!releaseFeed.includes('<feed xmlns="http://www.w3.org/2005/Atom">')) {
   failures.push('The changelog Atom feed is invalid.')
 }
+if (!releaseFeed.includes(`<title>Developer Platform ${stableVersion}</title>`)) {
+  failures.push(`The changelog Atom feed does not start with Developer Platform ${stableVersion}.`)
+}
 
 const searchIndex = JSON.parse(await readFile(path.join(dist, 'search-index.json'), 'utf8'))
 for (const term of ['TeamGridClientOptions', 'tasks.update', 'teamgrid tasks update', 'teamgrid_tasks_list', 'PowerShell', 'If-Match']) {
@@ -217,6 +224,9 @@ const releaseJson = JSON.parse(
 if (releaseJson.schemaVersion !== 1 || !Array.isArray(releaseJson.releases)) {
   failures.push('The machine-readable changelog is invalid.')
 }
+if (releaseJson.releases[0]?.version !== stableVersion) {
+  failures.push(`The machine-readable changelog does not start with version ${stableVersion}.`)
+}
 
 const redirects = await readFile(path.join(dist, '_redirects'), 'utf8')
 if (redirects.includes('/changelog/:slug ')) {
@@ -224,6 +234,12 @@ if (redirects.includes('/changelog/:slug ')) {
 }
 
 const builtHome = await readFile(path.join(dist, 'index.html'), 'utf8')
+if (!builtHome.includes(`aria-label="Developer Platform ${stableVersion} compatibility"`)) {
+  failures.push(`The production header does not advertise Developer Platform ${stableVersion}.`)
+}
+if (!builtHome.includes(`Developer Platform ${stableVersion}</span>`)) {
+  failures.push(`The production footer does not advertise Developer Platform ${stableVersion}.`)
+}
 if (!builtHome.includes('fetch(`/api/status`')) {
   failures.push('The production header does not use the same-origin status endpoint.')
 }

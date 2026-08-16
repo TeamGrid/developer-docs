@@ -2,7 +2,7 @@
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-16
 ---
 
 ## Current platform

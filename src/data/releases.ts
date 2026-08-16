@@ -1,3 +1,5 @@
+import packageManifest from '../../sources/packages.json'
+
 export type DeveloperRelease = {
   date: string
   description: string
@@ -7,7 +9,21 @@ export type DeveloperRelease = {
   version: string
 }
 
+const currentPackageVersion = packageManifest.version
+
 export const developerReleases: DeveloperRelease[] = [
+  {
+    date: '2026-08-16',
+    description: 'The backward-compatible task-description format and synchronized client release.',
+    highlights: [
+      'Explicit task description formats without rewriting existing customer content',
+      'Backward-compatible API, SDK, CLI, and MCP description handling',
+      `Synchronized ${currentPackageVersion} SDK, CLI, MCP, examples, and references`,
+    ],
+    stability: 'stable',
+    title: `Developer Platform ${currentPackageVersion}`,
+    version: currentPackageVersion,
+  },
   {
     date: '2026-08-10',
     description: 'The hardened credential, webhook, diagnostics, streaming, and MCP release.',
@@ -69,3 +85,5 @@ export const developerReleases: DeveloperRelease[] = [
     version: '1.0.0-beta.2',
   },
 ]
+
+export const currentDeveloperRelease = developerReleases[0]

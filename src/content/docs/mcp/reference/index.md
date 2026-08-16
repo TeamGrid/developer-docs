@@ -6,7 +6,7 @@ reviewedAt: 2026-08-10
 ---
 
 This reference is generated from the tool registry shipped in
-`@teamgrid/mcp-server@1.0.6` and joined with the pinned API v1 capability
+`@teamgrid/mcp-server@1.0.7` and joined with the pinned API v1 capability
 contract. It contains 29 read-only tools. Unknown input properties are
 rejected by every tool schema.
 

@@ -8,7 +8,7 @@ reviewedAt: 2026-08-10
 ## Current platform
 
 API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
-synchronized at stable version `1.0.6`.
+synchronized at stable version `1.0.7`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -18,6 +18,15 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Developer Platform 1.0.7 · 2026-08-16
+
+- Added an explicit `descriptionFormat` field for task descriptions so clients can distinguish
+  legacy HTML from Markdown without guessing or silently rewriting existing customer content.
+- Kept task description reads and writes backward compatible while exposing the format in the
+  API, TypeScript SDK, CLI, and MCP metadata.
+- Synchronized the generated SDK, CLI, MCP, downloadable examples, and machine-readable
+  references with the exact 1.0.7 package source.
 
 ## Developer Platform 1.0.6 · 2026-08-10
 

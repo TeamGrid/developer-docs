@@ -8,6 +8,9 @@ const root = path.resolve(import.meta.dirname, '..')
 const packageManifest = JSON.parse(
   await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
 )
+const cliReference = JSON.parse(
+  await readFile(path.join(root, 'sources', 'cli-reference.json'), 'utf8'),
+)
 const stableVersion = packageManifest.version
 const smokeRun = (
   process.env.GITHUB_SHA ||
@@ -27,7 +30,7 @@ const checks = [
   ['/cli/browser-login/', 'The CLI performs this sequence'],
   ['/cli/browser-login/', 'Windows Credential Manager'],
   ['/cli/commands/', 'This workflow guide covers every command group in CLI'],
-  ['/cli/reference/', '214 executable commands'],
+  ['/cli/reference/', `${cliReference.executableCommandCount} executable commands`],
   ['/cli/reference/tasks/', 'teamgrid tasks update'],
   ['/mcp/reference/', '29 read-only tools'],
   ['/mcp/reference/teamgrid_tasks_list/', 'exact JSON Schema'],

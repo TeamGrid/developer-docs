@@ -2,7 +2,7 @@
 title: Resources and semantics
 description: Understand TeamGrid API v1 lifecycle, finance, ownership, hierarchy, and privacy guarantees before building an integration.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-16
 ---
 
 API v1 exposes bounded resource DTOs and explicit domain commands. It does not mirror TeamGrid's
@@ -69,6 +69,12 @@ Project, task, and project-template responses include developer revision fields.
 require a strong `If-Match` precondition; another 31 operations retain resource-specific
 compare-and-set contracts. See [resource concurrency](/api/v1/resource-concurrency/) for the exact
 boundary.
+
+Task descriptions additionally expose `descriptionFormat`. Legacy and unmarked content is
+normalized to `plain-text`; only content explicitly marked `markdown-v1` is interpreted as
+Markdown. The marker is preserved by task duplication and project-template instantiation. See
+[task description formats](/api/v1/task-workflows/#description-formats-and-existing-tasks) before
+importing or rewriting descriptions.
 
 ## Project lifecycle operations
 

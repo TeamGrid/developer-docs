@@ -2,7 +2,7 @@
 title: Task workflows
 description: Duplicate, place, reorder, and replace TeamGrid task checklists without lost updates.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-16
 ---
 
 Task workflow operations model TeamGrid behavior directly instead of exposing storage fields. Every
@@ -32,6 +32,35 @@ Task create and update accept the stable editable field set, including an option
 supplied, TeamGrid inherits the project's contact; an explicit task contact intentionally
 overrides that inheritance. Planning dates are validated as one interval even when an update sends
 only one boundary, so a partial patch cannot leave the task with a start after its end.
+
+## Description formats and existing tasks
+
+Every task response carries both `description` and `descriptionFormat`. The format is explicit so a
+client never has to guess whether customer-authored characters such as `#`, `*`, `_`, brackets, or
+single line breaks are formatting instructions.
+
+| `descriptionFormat` | Meaning | Intended use |
+| --- | --- | --- |
+| `plain-text` | Literal text; punctuation and every line break are content | Existing descriptions, API v0, imports, and clients that do not need formatting |
+| `markdown-v1` | TeamGrid's first versioned Markdown task-description profile | The TeamGrid editor and v1 clients that intentionally create formatted descriptions |
+
+Tasks created before the format field existed are normalized to `plain-text` when read. They are
+not migrated or reinterpreted in place. A v1 create, update, or bulk-update request that sends a
+`description` without `descriptionFormat` also defaults to `plain-text`; this keeps older v1 clients
+safe. To opt in to Markdown, send the two fields together:
+
+```json
+{
+  "description": "# Release checklist\n\n- Verify staging\n- Publish notes",
+  "descriptionFormat": "markdown-v1"
+}
+```
+
+`descriptionFormat` is not an independent setting: it is rejected when the same request does not
+contain a non-null `description`. To clear a description, send `"description": null` and omit the
+format. To change only the interpretation of existing content, first read the task, deliberately
+convert or verify the text, and update both fields with the latest `If-Match` value. Never infer a
+format from the content.
 
 ## Duplicate a task
 

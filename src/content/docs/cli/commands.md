@@ -2,7 +2,7 @@
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-16
 ---
 
 ## Global options
@@ -234,6 +234,22 @@ Use the explicit `complete` and `reopen` commands for task state transitions. Ti
 
 Task mutations require `--if-match` from the latest task read. Do not synthesize a revision from
 `updatedAt` or another task field.
+
+Task descriptions have an explicit format. Existing and unmarked content remains literal
+`plain-text`. To create intentionally formatted content, put both fields in the request file:
+
+```json title="task.json"
+{
+  "name": "Prepare release",
+  "description": "# Acceptance criteria\n\n- Verify staging\n- Publish notes",
+  "descriptionFormat": "markdown-v1"
+}
+```
+
+Then run `teamgrid tasks create --data @task.json --idempotency-key prepare-release-1`. An update
+uses the same paired fields plus `--if-match` from `teamgrid tasks get TASK_ID --output json`.
+Omitting `descriptionFormat` deliberately creates plain text; sending the format without a non-null
+description is rejected.
 
 ## Time entries
 

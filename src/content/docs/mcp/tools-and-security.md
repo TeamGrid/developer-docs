@@ -2,7 +2,7 @@
 title: MCP tools and security
 description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
 owner: Security
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-16
 ---
 
 ## Available tools
@@ -62,6 +62,10 @@ text are never projected into the model conversation.
 Project and task results include the same developer revision as API v1. The local server does not
 register mutation tools or accept `If-Match`, even for protected resource families. Use the SDK or
 CLI for controlled writes.
+
+Task results also include `descriptionFormat`. Treat `plain-text` as literal customer content and
+interpret Markdown only when the API explicitly returns `markdown-v1`; do not infer formatting from
+punctuation in a task. MCP remains read-only and cannot convert, promote, or rewrite a description.
 
 Product tools deliberately remove `purchasePrice` even if the selected API credential also has
 `products:finance:read`. Project statements are forbidden in every MCP profile because they contain

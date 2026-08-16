@@ -2,7 +2,7 @@
 title: Migrate from API v0 to v1
 description: Map TeamGrid API v0 authentication, pagination, writes, errors, endpoints, and webhooks to API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-16
 ---
 
 Migrate one bounded integration at a time. Keep its v0 token active until the equivalent v1 reads and writes have been verified, then revoke the old token.
@@ -22,6 +22,7 @@ all 87 routes, their exact v1 replacement, and every route-specific change.
 | Pagination | Page and limit | Opaque cursor and limit |
 | Create retries | Generally unsafe | Required idempotency key |
 | Concurrent project/task/template writes | No uniform public precondition | Strong resource ETags and required `If-Match` |
+| Task descriptions | Literal plain text | Explicit `plain-text` or opt-in `markdown-v1` |
 | Errors | Historical response formats | Versioned error envelope with request id |
 | Webhooks | Legacy unsigned delivery | HMAC-signed delivery v2 |
 | Audit | General operational logging | Credential and mutation audit events |
@@ -65,6 +66,11 @@ exports, and the durable change feed. The remaining planned public workflows are
 telephony, file sharing, commerce orders, report jobs, and imports. Keep only those bounded parts on
 v0 until an explicit v1 domain operation exists; do not emulate missing behavior through audit
 data, unrelated resources, or generic database mutations.
+
+API v0 task-description writes always remain `plain-text`, including text containing Markdown-like
+characters. Migrating to v1 does not reinterpret historical content. A v1 reader receives the
+normalized `descriptionFormat`; opt in to `markdown-v1` only when the integration intentionally
+creates formatted content and sends the description and marker together.
 
 ## Legacy reference differences
 

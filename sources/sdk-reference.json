@@ -3,7 +3,7 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "e6f6b47fa22325dbc10ef79dcfb91daf3a61264a",
+    "sourceCommit": "0c7c3a56ea9961a496529598bfaca855356907fc",
     "version": "1.0.6"
   },
   "sources": {
@@ -11,7 +11,7 @@
     "clientDeclaration": "developer-platform/packages/api-client/src/client.ts",
     "clientDeclarationSha256": "c5c55b07734b75e20b365b1527f3a50c5095c7613ea1c94c02ae6ffa6c9cdabf",
     "operationBindingsSha256": "1f5307b78f96b2fa24b0b6b0657a62f65b657f5086e4b0382b2129c28b023567",
-    "openApiSha256": "4f46b47e28cafe0bf578d06d43bea6a4fd83569be74f0d14109af48c4025cb73"
+    "openApiSha256": "ddd8dd9d09f7feff3d708413eaf456c808ee1ba84fe3fa3451e862b204b17f8c"
   },
   "summary": {
     "clientCount": 50,

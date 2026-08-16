@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "package": {
     "name": "@teamgrid/mcp-server",
-    "sourceCommit": "e6f6b47fa22325dbc10ef79dcfb91daf3a61264a",
+    "sourceCommit": "0c7c3a56ea9961a496529598bfaca855356907fc",
     "sourceRepository": "TeamGrid/developer-platform",
     "version": "1.0.6"
   },

@@ -1,11 +1,11 @@
 ---
 title: "teamgrid custom-field-values"
-description: "4 executable @teamgrid/cli commands in the custom-field-values group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the custom-field-values group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-18
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `bd139c5ebb3f`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and compare-and-set custom-field values.
 

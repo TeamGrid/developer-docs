@@ -7,7 +7,7 @@ reviewedAt: 2026-07-29
 
 `GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
 `changes:read` plus the read scopes and resource grants for every requested domain. The contract
-covers 23 resource types and reports created, updated, archived, restored, or deleted identities
+covers 24 resource types and reports created, updated, archived, restored, or deleted identities
 without embedding a private resource snapshot.
 
 Each page returns an opaque `nextCursor` and a `caughtUp` flag. Persist the cursor only after the

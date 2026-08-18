@@ -17,7 +17,7 @@ reviewedAt: 2026-08-10
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7
+npm install --global @teamgrid/cli@1.1.0
 teamgrid --help
 ```
 

@@ -6,47 +6,47 @@
       "sha256": "902adb098fa9c7079c4d77b409237549d96399a8da6fc342f95f397f59c2d7ff"
     },
     "v1": {
-      "operations": 211,
-      "sha256": "ddd8dd9d09f7feff3d708413eaf456c808ee1ba84fe3fa3451e862b204b17f8c"
+      "operations": 236,
+      "sha256": "cf26d41b9125cecbd65c1a2fd88b1006ca3441d195abba86370c2755098bc373"
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "f8c102935a07248e672c1389673f192fa9bad458",
-  "runtimeCommit": "f8c102935a07248e672c1389673f192fa9bad458",
+  "sourceCommit": "01e3e60ce85b0fb585a4b7aac7382f5978079419",
+  "runtimeCommit": "01e3e60ce85b0fb585a4b7aac7382f5978079419",
   "scopes": {
-    "count": 87,
-    "sha256": "7378a809c9bd9eb507bd310c44aef03212340a299222ab44bbaca42612c3414c"
+    "count": 90,
+    "sha256": "bf7c5cd3a50c0ba8881285e562f0602d9b67122a9dfeeff0e58cd346c2e063d7"
   },
   "migration": {
     "routes": 87,
     "sha256": "313ab009498a200421a87ac3bd5b46b4453f8c81addea69be58699525b2a0567"
   },
   "canonical": {
-    "contractVersion": "1.0.0",
-    "bytes": 2359,
-    "sha256": "2e451bfba9e2d029c2d6e135e0c0fae161a94057280edc8694b4c8f6b0ddaf99"
+    "contractVersion": "1.1.0",
+    "bytes": 2360,
+    "sha256": "774febf053c7338ba2a75a56aec369b2fb24fed0eb7b4632a5dcbd087b18e648"
   },
   "changeFeed": {
     "availability": "released",
-    "resourceTypes": 23
+    "resourceTypes": 24
   },
   "capabilities": {
-    "operations": 211,
-    "productCapabilities": 73,
-    "sha256": "e63fa6e679122f5efae20313e8d3599c0675e4ab02cd8b7d3bde9148ebbef4b2"
+    "operations": 236,
+    "productCapabilities": 74,
+    "sha256": "bcc853bcd6b141efb2ffbbd22c42c9a008cb24997a0e2a75594286cf50091e3b"
   },
   "operationBindings": {
-    "operations": 211,
-    "referencedAppMethods": 210,
+    "operations": 236,
+    "referencedAppMethods": 231,
     "remainingDirectCellReads": 0,
-    "sha256": "1f5307b78f96b2fa24b0b6b0657a62f65b657f5086e4b0382b2129c28b023567"
+    "sha256": "aaeb6273d02436e5a30e68ba4d46d62e28708d655c29c222537a44d977e42215"
   },
   "actionPolicyRegistry": {
-    "actionPolicies": 211,
-    "authenticatedActionPolicies": 209,
+    "actionPolicies": 236,
+    "authenticatedActionPolicies": 234,
     "policyFamilies": 12,
-    "registrySha256": "b9e0f3fe0fbab1afd8362f47b49e496133235ce0f1830462b6c848d7d289f566",
-    "registryVersion": "developer-action-policy-v5",
-    "sha256": "ad76fdd749980a3953a686a87692c197099fb1eaf696b651efb0b4129926e7f9"
+    "registrySha256": "cd37ce1dccf37979572074010efc8c809e40a8c10744fd47af686d0151de8cc0",
+    "registryVersion": "developer-action-policy-v7",
+    "sha256": "357d66979da48ae60697fbe4c467d2ee01a579107a82ec9254136f2c322556e3"
   }
 }

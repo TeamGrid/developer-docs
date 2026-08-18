@@ -6,18 +6,18 @@ reviewedAt: 2026-08-10
 ---
 
 This reference is generated from the tool registry shipped in
-`@teamgrid/mcp-server@1.0.7` and joined with the pinned API v1 capability
-contract. It contains 29 read-only tools. Unknown input properties are
+`@teamgrid/mcp-server@1.1.0` and joined with the pinned API v1 capability
+contract. It contains 36 read-only tools. Unknown input properties are
 rejected by every tool schema.
 
 ## Profiles at a glance
 
 | Selected profile | Advertised tools | Adds beyond `core` |
 | --- | ---: | --- |
-| `core` | 15 | Operational workspace, project, task, time-entry, list, tag, product, and product-group reads |
-| `collaboration` | 22 | Contacts, contact groups, call notes, and users |
-| `governance` | 21 | Custom-field definitions, services, and webhook configuration |
-| `all` | 29 | Union of both broader profiles plus curated federated search |
+| `core` | 22 | Operational workspace, project, task, time-entry, list, tag, product, and product-group reads |
+| `collaboration` | 29 | Contacts, contact groups, call notes, and users |
+| `governance` | 28 | Custom-field definitions, services, and webhook configuration |
+| `all` | 36 | Union of both broader profiles plus curated federated search |
 
 Select the narrowest profile your workflow needs. A profile controls which tools are advertised;
 the API credential scopes and resource grants still control which data each advertised tool can
@@ -38,6 +38,13 @@ read.
 | [`teamgrid_tag_get`](/mcp/reference/teamgrid_tag_get/) | Get one TeamGrid tag by id. | `tags:read` | operational-data |
 | [`teamgrid_tags_list`](/mcp/reference/teamgrid_tags_list/) | List TeamGrid tags. | `tags:read` | operational-data |
 | [`teamgrid_task_get`](/mcp/reference/teamgrid_task_get/) | Get one TeamGrid task by id. | `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_get`](/mcp/reference/teamgrid_task_recurrence_get/) | Get one recurring TeamGrid task definition, including its current immutable policy version. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_occurrence_get`](/mcp/reference/teamgrid_task_recurrence_occurrence_get/) | Get one occurrence-ledger entry for a TeamGrid task recurrence. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_occurrences_list`](/mcp/reference/teamgrid_task_recurrence_occurrences_list/) | List the immutable occurrence ledger for one TeamGrid task recurrence with stable cursor pagination. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_preview`](/mcp/reference/teamgrid_task_recurrence_preview/) | Preview bounded future occurrences from a saved TeamGrid task recurrence without changing state. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_version_get`](/mcp/reference/teamgrid_task_recurrence_version_get/) | Get one immutable TeamGrid task recurrence definition version. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_versions_list`](/mcp/reference/teamgrid_task_recurrence_versions_list/) | List immutable definition versions for one TeamGrid task recurrence. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrences_list`](/mcp/reference/teamgrid_task_recurrences_list/) | List recurring TeamGrid task definitions with stable cursor pagination and optional project or lifecycle filters. | `task-recurrences:read`, `tasks:read` | operational-data |
 | [`teamgrid_tasks_list`](/mcp/reference/teamgrid_tasks_list/) | List TeamGrid tasks with optional project, assignee, and status filters. | `tasks:read` | operational-data |
 | [`teamgrid_time_entries_list`](/mcp/reference/teamgrid_time_entries_list/) | List TeamGrid time entries with stable cursor pagination. | `time-entries:read` | work-record-data |
 | [`teamgrid_time_entry_get`](/mcp/reference/teamgrid_time_entry_get/) | Get one TeamGrid time entry by id. | `time-entries:read` | work-record-data |

@@ -16,9 +16,9 @@ npm list --global @teamgrid/cli --depth=0
 
 On macOS or Linux, `command -v teamgrid` shows the executable selected by `PATH`. In PowerShell,
 use `Get-Command teamgrid`. If those commands point to an old Node installation or package prefix,
-remove that stale path before reinstalling. CLI `1.0.7` requires Node.js 22.14 through 24.
+remove that stale path before reinstalling. CLI `1.1.0` requires Node.js 22.14 through 24.
 
-The CLI does not provide a shell-completion generator in `1.0.7`. Use the exact generated
+The CLI does not provide a shell-completion generator in `1.1.0`. Use the exact generated
 [command reference](/cli/reference/) or the nested help available at every level:
 
 ```bash
@@ -32,7 +32,7 @@ teamgrid tasks update --help
 Install the exact stable version again to upgrade or repair a global installation:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7
+npm install --global @teamgrid/cli@1.1.0
 teamgrid --version
 teamgrid auth status --check
 ```
@@ -105,7 +105,7 @@ interactive confirmation gets exit code `0` and no mutation.
 
 ## Corporate networks, proxies, and private CAs
 
-CLI `1.0.7` has no dedicated proxy option. `--base-url` changes the API endpoint and is not a
+CLI `1.1.0` has no dedicated proxy option. `--base-url` changes the API endpoint and is not a
 forward-proxy setting. A machine must have an approved HTTPS path to the credential's regional
 TeamGrid cell; verify that path with:
 

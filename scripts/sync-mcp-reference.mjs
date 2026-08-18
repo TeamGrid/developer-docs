@@ -429,7 +429,7 @@ const profiles = Object.fromEntries(
     tools.map((tool) => tool.name).sort(),
   ]),
 )
-if (profiles.all.length !== 29) fail(`expected 29 tools in 'all', found ${profiles.all.length}.`)
+if (profiles.all.length !== 36) fail(`expected 36 tools in 'all', found ${profiles.all.length}.`)
 
 const capabilities = JSON.parse(await readFile(capabilitiesPath, 'utf8'))
 const openApi = JSON.parse(await readFile(openApiPath, 'utf8'))

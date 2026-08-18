@@ -17,7 +17,7 @@ test('homepage remains structurally stable', async ({ page }, testInfo) => {
   )
   await expect(page.locator('.docs-sidebar')).toBeVisible()
   await expect(page.locator('.docs-sidebar a.is-current')).toHaveText('Developer home')
-  await expect(page.getByText('211 operations')).toBeVisible()
+  await expect(page.getByText('236 operations')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Choose an interface' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Make the first request' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Prepare for production' })).toBeVisible()

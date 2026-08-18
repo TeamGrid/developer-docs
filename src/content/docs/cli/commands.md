@@ -17,7 +17,7 @@ Global options can be placed before a command group.
 | `--timeout <milliseconds>` | Set the request timeout; default is 30 seconds |
 | `--retries <0–5>` | Set bounded safe-request retries; default is 2 |
 
-This workflow guide covers every command group in CLI `1.0.7`. For exact syntax, arguments,
+This workflow guide covers every command group in CLI `1.1.0`. For exact syntax, arguments,
 options, defaults, choices, API operations, scopes, output behavior, confirmations, examples, and
 exit codes, use the generated [CLI command reference](/cli/reference/). It is derived from the same
 Commander tree as the released package and checked against the API capability manifest.
@@ -117,6 +117,28 @@ teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' --if-match REVI
 teamgrid projects complete PROJECT_ID \
   --if-match REVISION --idempotency-key close-42 --wait
 ```
+
+## Recurring tasks
+
+```text
+teamgrid task-recurrences list|get|create|preview|update
+teamgrid task-recurrences pause|resume|end|archive|restore SERIES_ID --if-match REVISION
+teamgrid task-recurrences preview-stored SERIES_ID
+teamgrid task-recurrences owner SERIES_ID --data <json|@file|-> --if-match REVISION
+teamgrid task-recurrences template-from-task SERIES_ID --data <json|@file|-> --if-match REVISION
+teamgrid task-recurrences versions list|get|restore
+teamgrid task-recurrences occurrences list|get|override|clear-override|retry
+teamgrid task-recurrences recheck SERIES_ID [--wait]
+teamgrid task-recurrences events submit SERIES_ID --data <json|@file|->
+teamgrid task-recurrence-operations get|wait|cancel OPERATION_ID
+```
+
+Series and existing occurrence mutations use separate strong revisions. A future occurrence from
+`preview-stored` uses `occurrences override --create-if-missing` plus the opaque
+`placeholderToken` in its JSON; this flag is mutually exclusive with `--if-match`. Archive, end
+and operation cancel also require `--yes` in non-interactive use. An unsaved high-cost preview returns an operation;
+pass its ID to `task-recurrence-operations wait`. See [Recurring tasks](/api/v1/recurring-tasks/)
+for immutable-version, occurrence identity, trigger idempotency and recovery semantics.
 
 Project lists support `--archived`, `--completed`, `--contact-id`, `--created-by-id`,
 `--individual-id`, `--list-id`, `--manager-id`, and `--subscriber-id`. Multiple filters are

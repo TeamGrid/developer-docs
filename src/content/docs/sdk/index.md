@@ -2,7 +2,7 @@
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-18
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -14,7 +14,7 @@ source and reconciled with the capability policy and OpenAPI v1 contract.
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.7
+npm install @teamgrid/api-client@1.1.0
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -31,6 +31,10 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `projects` | List, get, create, update, read/replace sharing, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
 | `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
+| `taskRecurrences` | Preview, list, get, create, update, lifecycle, owner, template, event-ingress, and recheck workflows |
+| `taskRecurrenceVersions` | List, get, and restore immutable recurring-task definition versions |
+| `taskRecurrenceOccurrences` | List, get, override, clear, and retry occurrence-ledger entries with explicit preconditions |
+| `taskRecurrenceOperations` | Get, wait for, and cancel bounded asynchronous recurrence operations |
 | `timeEntries` | List, get, create, update, read/update billing, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
@@ -74,11 +78,11 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.7`; pin that exact version in
+The compatible package checkpoint for this contract is `1.1.0`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
-idempotency key. Another 34 protected operations retain domain-specific revision types.
+idempotency key. Another 46 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require

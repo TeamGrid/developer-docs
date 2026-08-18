@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "package": {
     "name": "@teamgrid/mcp-server",
-    "sourceCommit": "31706a2278ce8c9471d225c64266cdbef395474a",
+    "sourceCommit": "bd139c5ebb3fdccfb734e8cd4719dec5547e6002",
     "sourceRepository": "TeamGrid/developer-platform",
-    "version": "1.0.7"
+    "version": "1.1.0"
   },
   "profiles": {
     "core": [
@@ -19,6 +19,13 @@
       "teamgrid_tag_get",
       "teamgrid_tags_list",
       "teamgrid_task_get",
+      "teamgrid_task_recurrence_get",
+      "teamgrid_task_recurrence_occurrence_get",
+      "teamgrid_task_recurrence_occurrences_list",
+      "teamgrid_task_recurrence_preview",
+      "teamgrid_task_recurrence_version_get",
+      "teamgrid_task_recurrence_versions_list",
+      "teamgrid_task_recurrences_list",
       "teamgrid_tasks_list",
       "teamgrid_time_entries_list",
       "teamgrid_time_entry_get",
@@ -42,6 +49,13 @@
       "teamgrid_tag_get",
       "teamgrid_tags_list",
       "teamgrid_task_get",
+      "teamgrid_task_recurrence_get",
+      "teamgrid_task_recurrence_occurrence_get",
+      "teamgrid_task_recurrence_occurrences_list",
+      "teamgrid_task_recurrence_preview",
+      "teamgrid_task_recurrence_version_get",
+      "teamgrid_task_recurrence_versions_list",
+      "teamgrid_task_recurrences_list",
       "teamgrid_tasks_list",
       "teamgrid_time_entries_list",
       "teamgrid_time_entry_get",
@@ -64,6 +78,13 @@
       "teamgrid_tag_get",
       "teamgrid_tags_list",
       "teamgrid_task_get",
+      "teamgrid_task_recurrence_get",
+      "teamgrid_task_recurrence_occurrence_get",
+      "teamgrid_task_recurrence_occurrences_list",
+      "teamgrid_task_recurrence_preview",
+      "teamgrid_task_recurrence_version_get",
+      "teamgrid_task_recurrence_versions_list",
+      "teamgrid_task_recurrences_list",
       "teamgrid_tasks_list",
       "teamgrid_time_entries_list",
       "teamgrid_time_entry_get",
@@ -94,6 +115,13 @@
       "teamgrid_tag_get",
       "teamgrid_tags_list",
       "teamgrid_task_get",
+      "teamgrid_task_recurrence_get",
+      "teamgrid_task_recurrence_occurrence_get",
+      "teamgrid_task_recurrence_occurrences_list",
+      "teamgrid_task_recurrence_preview",
+      "teamgrid_task_recurrence_version_get",
+      "teamgrid_task_recurrence_versions_list",
+      "teamgrid_task_recurrences_list",
       "teamgrid_tasks_list",
       "teamgrid_time_entries_list",
       "teamgrid_time_entry_get",
@@ -2020,6 +2048,617 @@
         {
           "condition": "The serialized result exceeds 256 KiB.",
           "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/gettaskrecurrence/",
+          "method": "GET",
+          "operationId": "getTaskRecurrence",
+          "path": "/task-recurrences/{id}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one recurring TeamGrid task definition, including its current immutable policy version.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrence_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid task recurrence with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/gettaskrecurrenceoccurrence/",
+          "method": "GET",
+          "operationId": "getTaskRecurrenceOccurrence",
+          "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one occurrence-ledger entry for a TeamGrid task recurrence.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "occurrenceKey": {
+            "type": "string",
+            "pattern": "^(?:occ1-[a-f0-9]{64}|seed:[A-Za-z0-9_-]{1,128})$"
+          },
+          "seriesId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          }
+        },
+        "required": [
+          "occurrenceKey",
+          "seriesId"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrence_occurrence_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid task recurrence occurrence. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listtaskrecurrenceoccurrences/",
+          "method": "GET",
+          "operationId": "listTaskRecurrenceOccurrences",
+          "path": "/task-recurrences/{id}/occurrences"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List the immutable occurrence ledger for one TeamGrid task recurrence with stable cursor pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "seriesId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          }
+        },
+        "required": [
+          "seriesId"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrence_occurrences_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid task recurrence occurrences. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/previewstoredtaskrecurrence/",
+          "method": "GET",
+          "operationId": "previewStoredTaskRecurrence",
+          "path": "/task-recurrences/{id}/preview"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Preview bounded future occurrences from a saved TeamGrid task recurrence without changing state.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "from": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          },
+          "until": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrence_preview",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "Read the TeamGrid task recurrence preview with ID `<id>` and summarize only the fields returned by TeamGrid.",
+      "typicalErrors": [
+        {
+          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/gettaskrecurrenceversion/",
+          "method": "GET",
+          "operationId": "getTaskRecurrenceVersion",
+          "path": "/task-recurrences/{id}/versions/{versionId}"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "Get one immutable TeamGrid task recurrence definition version.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "seriesId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          },
+          "versionId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          }
+        },
+        "required": [
+          "seriesId",
+          "versionId"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrence_version_get",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "single-resource",
+        "maxSerializedBytes": 262144,
+        "pagination": null,
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid task recurrence version. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listtaskrecurrenceversions/",
+          "method": "GET",
+          "operationId": "listTaskRecurrenceVersions",
+          "path": "/task-recurrences/{id}/versions"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List immutable definition versions for one TeamGrid task recurrence.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "seriesId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          }
+        },
+        "required": [
+          "seriesId"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrence_versions_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid task recurrence versions. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+        },
+        {
+          "condition": "An unknown input property is supplied.",
+          "result": "The strict input schema rejects the call before an API request is made."
+        }
+      ]
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "apiOperations": [
+        {
+          "href": "/api/v1/reference/operations/listtaskrecurrences/",
+          "method": "GET",
+          "operationId": "listTaskRecurrences",
+          "path": "/task-recurrences"
+        }
+      ],
+      "availableIn": [
+        "core",
+        "collaboration",
+        "governance",
+        "all"
+      ],
+      "baseProfile": "core",
+      "description": "List recurring TeamGrid task definitions with stable cursor pagination and optional project or lifecycle filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "projectId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "suspended",
+              "needs_attention",
+              "ended",
+              "archived"
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "name": "teamgrid_task_recurrences_list",
+      "scopes": {
+        "conditional": [],
+        "required": [
+          "task-recurrences:read",
+          "tasks:read"
+        ]
+      },
+      "security": {
+        "classification": "operational-data",
+        "summary": "The response contains operational workspace data visible to the credential."
+      },
+      "output": {
+        "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
+        "kind": "cursor-page",
+        "maxSerializedBytes": 262144,
+        "pagination": {
+          "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+          "maxPageSize": 100,
+          "nextCursor": "meta.page.nextCursor"
+        },
+        "redactions": [],
+        "searchLimit": null
+      },
+      "examplePrompt": "List the first 20 TeamGrid task recurrences. Do not request another page; tell me whether another cursor is available.",
+      "typicalErrors": [
+        {
+          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "result": "MCP input validation rejects the call before an API request is made."
+        },
+        {
+          "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
+          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+        },
+        {
+          "condition": "The serialized result exceeds 256 KiB.",
+          "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
         },
         {
           "condition": "An unknown input property is supplied.",

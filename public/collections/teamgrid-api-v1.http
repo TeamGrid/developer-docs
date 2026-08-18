@@ -1467,7 +1467,7 @@ Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Create an export download intent
-POST {{baseUrl}}/exports/{id}/download-intent
+POST {{baseUrl}}/exports/{id}/download-intent?cursor={{cursor}}&limit={{limit}}
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -1817,3 +1817,359 @@ Content-Type: application/json
     }
   ]
 }
+
+### List task recurrences
+GET {{baseUrl}}/task-recurrences?cursor={{cursor}}&limit={{limit}}&projectId={{projectId}}&status={{status}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Create a task recurrence
+POST {{baseUrl}}/task-recurrences
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "changeReason": "string",
+  "name": "string",
+  "policy": {
+    "candidates": null,
+    "conditions": [
+      null
+    ],
+    "engineVersion": "string",
+    "limits": {
+      "maxOccurrences": null,
+      "until": null
+    },
+    "materialization": {
+      "catchUp": "all",
+      "catchUpLimit": 1,
+      "lead": null,
+      "overlap": "allow"
+    },
+    "schemaVersion": 0,
+    "timeBasis": {
+      "disambiguation": "compatible",
+      "mode": "elapsed",
+      "timeZone": "string"
+    },
+    "transforms": [
+      null
+    ]
+  },
+  "sourceTaskId": "string",
+  "template": {
+    "billable": false,
+    "contactId": "string",
+    "customFieldValues": null,
+    "description": "string",
+    "descriptionFormat": "markdown-v1",
+    "groupId": "string",
+    "listId": "string",
+    "name": "string",
+    "personalListId": "string",
+    "plannedTime": 0,
+    "projectId": "string",
+    "serviceId": "string"
+  },
+  "templatePatch": {
+    "billable": false,
+    "contactId": "string",
+    "customFieldValues": null,
+    "description": "string",
+    "descriptionFormat": "markdown-v1",
+    "groupId": "string",
+    "listId": "string",
+    "name": "string",
+    "personalListId": "string",
+    "plannedTime": 0,
+    "projectId": "string",
+    "serviceId": "string"
+  }
+}
+
+### Preview a draft task recurrence
+POST {{baseUrl}}/task-recurrences/preview
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "context": null,
+  "count": 20,
+  "from": "2026-07-29T09:00:00.000Z",
+  "policy": {
+    "candidates": null,
+    "conditions": [
+      null
+    ],
+    "engineVersion": "string",
+    "limits": {
+      "maxOccurrences": null,
+      "until": null
+    },
+    "materialization": {
+      "catchUp": "all",
+      "catchUpLimit": 1,
+      "lead": null,
+      "overlap": "allow"
+    },
+    "schemaVersion": 0,
+    "timeBasis": {
+      "disambiguation": "compatible",
+      "mode": "elapsed",
+      "timeZone": "string"
+    },
+    "transforms": [
+      null
+    ]
+  },
+  "template": {
+    "billable": false,
+    "contactId": "string",
+    "customFieldValues": null,
+    "description": "string",
+    "descriptionFormat": "markdown-v1",
+    "groupId": "string",
+    "listId": "string",
+    "name": "string",
+    "personalListId": "string",
+    "plannedTime": 0,
+    "projectId": "string",
+    "serviceId": "string"
+  },
+  "until": "2026-07-29T09:00:00.000Z"
+}
+
+### Get a task recurrence
+GET {{baseUrl}}/task-recurrences/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Update a task recurrence
+PATCH {{baseUrl}}/task-recurrences/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "changeReason": "string",
+  "name": "string",
+  "policy": {
+    "candidates": null,
+    "conditions": [
+      null
+    ],
+    "engineVersion": "string",
+    "limits": {
+      "maxOccurrences": null,
+      "until": null
+    },
+    "materialization": {
+      "catchUp": "all",
+      "catchUpLimit": 1,
+      "lead": null,
+      "overlap": "allow"
+    },
+    "schemaVersion": 0,
+    "timeBasis": {
+      "disambiguation": "compatible",
+      "mode": "elapsed",
+      "timeZone": "string"
+    },
+    "transforms": [
+      null
+    ]
+  },
+  "template": {
+    "billable": false,
+    "contactId": "string",
+    "customFieldValues": null,
+    "description": "string",
+    "descriptionFormat": "markdown-v1",
+    "groupId": "string",
+    "listId": "string",
+    "name": "string",
+    "personalListId": "string",
+    "plannedTime": 0,
+    "projectId": "string",
+    "serviceId": "string"
+  }
+}
+
+### Archive a task recurrence
+DELETE {{baseUrl}}/task-recurrences/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Preview a stored task recurrence
+GET {{baseUrl}}/task-recurrences/{id}/preview?from={{from}}&until={{until}}&count={{count}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a task recurrence
+POST {{baseUrl}}/task-recurrences/{id}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Pause a task recurrence
+POST {{baseUrl}}/task-recurrences/{id}/pause
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Resume a task recurrence
+POST {{baseUrl}}/task-recurrences/{id}/resume
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### End a task recurrence
+POST {{baseUrl}}/task-recurrences/{id}/end
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Transfer task recurrence ownership
+POST {{baseUrl}}/task-recurrences/{id}/owner
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "string",
+  "kind": "developerPrincipal"
+}
+
+### Replace a recurrence template from a task
+POST {{baseUrl}}/task-recurrences/{id}/definition-from-task
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "changeReason": "string",
+  "policy": {
+    "candidates": null,
+    "conditions": [
+      null
+    ],
+    "engineVersion": "string",
+    "limits": {
+      "maxOccurrences": null,
+      "until": null
+    },
+    "materialization": {
+      "catchUp": "all",
+      "catchUpLimit": 1,
+      "lead": null,
+      "overlap": "allow"
+    },
+    "schemaVersion": 0,
+    "timeBasis": {
+      "disambiguation": "compatible",
+      "mode": "elapsed",
+      "timeZone": "string"
+    },
+    "transforms": [
+      null
+    ]
+  },
+  "taskId": "string"
+}
+
+### List task recurrence versions
+GET {{baseUrl}}/task-recurrences/{id}/versions
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a task recurrence version
+GET {{baseUrl}}/task-recurrences/{id}/versions/{versionId}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Restore a task recurrence version
+POST {{baseUrl}}/task-recurrences/{id}/versions/{versionId}/restore
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "changeReason": "string"
+}
+
+### List task recurrence occurrences
+GET {{baseUrl}}/task-recurrences/{id}/occurrences?cursor={{cursor}}&limit={{limit}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get a task recurrence occurrence
+GET {{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Override a task recurrence occurrence
+PUT {{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}/override
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "action": "materialize",
+  "placeholderToken": "string",
+  "scheduledForLocal": "string",
+  "templatePatch": {
+    "billable": false,
+    "contactId": "string",
+    "customFieldValues": null,
+    "description": "string",
+    "descriptionFormat": "markdown-v1",
+    "groupId": "string",
+    "listId": "string",
+    "name": "string",
+    "personalListId": "string",
+    "plannedTime": 0,
+    "projectId": "string",
+    "serviceId": "string"
+  }
+}
+
+### Clear a task recurrence occurrence override
+DELETE {{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}/override
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Retry a failed task recurrence occurrence
+POST {{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}/retry
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Recheck a task recurrence asynchronously
+POST {{baseUrl}}/task-recurrences/{id}/recheck
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Submit an event to a task recurrence
+POST {{baseUrl}}/task-recurrences/{id}/events
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "causationId": "string",
+  "correlationId": "string",
+  "eventId": "string",
+  "eventType": "string",
+  "occurredAt": "2026-07-29T09:00:00.000Z",
+  "payload": null,
+  "schemaVersion": 0,
+  "sourceId": "string"
+}
+
+### Get a task recurrence operation
+GET {{baseUrl}}/task-recurrence-operations/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Cancel a task recurrence operation
+POST {{baseUrl}}/task-recurrence-operations/{id}/cancel
+Authorization: Bearer {{token}}
+Accept: application/json

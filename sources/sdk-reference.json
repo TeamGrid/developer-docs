@@ -3,20 +3,20 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "31706a2278ce8c9471d225c64266cdbef395474a",
-    "version": "1.0.7"
+    "sourceCommit": "bd139c5ebb3fdccfb734e8cd4719dec5547e6002",
+    "version": "1.1.0"
   },
   "sources": {
-    "capabilityPolicySha256": "e63fa6e679122f5efae20313e8d3599c0675e4ab02cd8b7d3bde9148ebbef4b2",
+    "capabilityPolicySha256": "bcc853bcd6b141efb2ffbbd22c42c9a008cb24997a0e2a75594286cf50091e3b",
     "clientDeclaration": "developer-platform/packages/api-client/src/client.ts",
-    "clientDeclarationSha256": "c5c55b07734b75e20b365b1527f3a50c5095c7613ea1c94c02ae6ffa6c9cdabf",
-    "operationBindingsSha256": "1f5307b78f96b2fa24b0b6b0657a62f65b657f5086e4b0382b2129c28b023567",
-    "openApiSha256": "ddd8dd9d09f7feff3d708413eaf456c808ee1ba84fe3fa3451e862b204b17f8c"
+    "clientDeclarationSha256": "de441784c838d1c2b5d5b5d26f1056eca82a5a0b0ee830cb2f663b0fec7f3eb1",
+    "operationBindingsSha256": "aaeb6273d02436e5a30e68ba4d46d62e28708d655c29c222537a44d977e42215",
+    "openApiSha256": "cf26d41b9125cecbd65c1a2fd88b1006ca3441d195abba86370c2755098bc373"
   },
   "summary": {
-    "clientCount": 50,
-    "helperCount": 41,
-    "operationCount": 210
+    "clientCount": 54,
+    "helperCount": 45,
+    "operationCount": 235
   },
   "clientOptions": [
     {
@@ -8755,6 +8755,7 @@
       "conditionalScopes": [
         "contacts:read",
         "projects:read",
+        "task-recurrences:read",
         "tasks:read",
         "time-entries:read"
       ],
@@ -8805,6 +8806,7 @@
           "conditionalScopes": [
             "contacts:read",
             "projects:read",
+            "task-recurrences:read",
             "tasks:read",
             "time-entries:read"
           ],
@@ -8907,6 +8909,7 @@
           "conditionalScopes": [
             "contacts:read",
             "projects:read",
+            "task-recurrences:read",
             "tasks:read",
             "time-entries:read"
           ],
@@ -9006,6 +9009,7 @@
           "conditionalScopes": [
             "contacts:read",
             "projects:read",
+            "task-recurrences:read",
             "tasks:read",
             "time-entries:read"
           ],
@@ -9072,6 +9076,20 @@
                 "name": "id",
                 "required": true,
                 "type": "string"
+              },
+              {
+                "description": "Opaque cursor returned in meta.page.nextCursor.",
+                "location": "query",
+                "name": "cursor",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Maximum number of records to return in this page. The response may contain fewer records.",
+                "location": "query",
+                "name": "limit",
+                "required": false,
+                "type": "integer"
               }
             ]
           },
@@ -9111,6 +9129,7 @@
           "conditionalScopes": [
             "contacts:read",
             "projects:read",
+            "task-recurrences:read",
             "tasks:read",
             "time-entries:read"
           ],
@@ -10838,6 +10857,3051 @@
         "Changes"
       ],
       "title": "Changes"
+    },
+    {
+      "conditionalScopes": [],
+      "helpers": [
+        {
+          "name": "pages",
+          "parameters": [
+            {
+              "display": "options: TaskRecurrenceListOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "TaskRecurrenceListOptions"
+            },
+            {
+              "display": "pagination?: PaginationOptions",
+              "name": "pagination",
+              "optional": true,
+              "type": "PaginationOptions"
+            }
+          ],
+          "returnForm": "AsyncGenerator",
+          "signature": "taskRecurrences.pages(options: TaskRecurrenceListOptions = {}, pagination?: PaginationOptions)",
+          "description": "Iterate cursor pages with a bounded PaginationOptions policy."
+        }
+      ],
+      "name": "taskRecurrences",
+      "operationCount": 15,
+      "operations": [
+        {
+          "name": "list",
+          "parameters": [
+            {
+              "display": "options: TaskRecurrenceListOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "TaskRecurrenceListOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.list(options: TaskRecurrenceListOptions = {})",
+          "apiHref": "/api/v1/reference/operations/listtaskrecurrences/",
+          "conditionalScopes": [],
+          "description": "Use this operation to list task recurrences. It returns only resources visible to the credential and applies the documented filters before producing a bounded, stable page. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "listTaskRecurrences",
+          "path": "/task-recurrences",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Opaque cursor returned in meta.page.nextCursor.",
+                "location": "query",
+                "name": "cursor",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Maximum number of records to return in this page. The response may contain fewer records.",
+                "location": "query",
+                "name": "limit",
+                "required": false,
+                "type": "integer"
+              },
+              {
+                "description": "Filter by project context.",
+                "location": "query",
+                "name": "projectId",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Filter by recurrence lifecycle state.",
+                "location": "query",
+                "name": "status",
+                "required": false,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "A bounded page of resources visible to the credential, with request metadata and an opaque cursor when another page is available.",
+              "mediaType": "application/json",
+              "schema": "Array<TaskRecurrence> envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "List task recurrences",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "create",
+          "parameters": [
+            {
+              "display": "data: TaskRecurrenceCreate",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrenceCreate"
+            },
+            {
+              "display": "options: MutationOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "MutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.create(data: TaskRecurrenceCreate, options: MutationOptions = {})",
+          "apiHref": "/api/v1/reference/operations/createtaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to create a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Use a stable Idempotency-Key when retrying so a transport timeout cannot create duplicate work.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "createTaskRecurrence",
+          "path": "/task-recurrences",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceCreate"
+            },
+            "parameters": [
+              {
+                "description": "Unique request key retained for seven days. Within that window, reuse with different data is rejected.",
+                "location": "header",
+                "name": "Idempotency-Key",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "An idempotent replay of an existing resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            },
+            {
+              "description": "The request to create a task recurrence created the resource. The response contains its canonical public representation and request metadata.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "201"
+            }
+          ],
+          "summary": "Create a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "preview",
+          "parameters": [
+            {
+              "display": "data: TaskRecurrencePreviewInput",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrencePreviewInput"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.preview(data: TaskRecurrencePreviewInput, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/previewtaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to preview a draft task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The policy exceeds the synchronous preview complexity budget.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "413"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "previewTaskRecurrence",
+          "path": "/task-recurrences/preview",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrencePreviewInput"
+            },
+            "parameters": []
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "A deterministic, bounded draft preview with no persisted side effects.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrencePreview envelope",
+              "status": "200"
+            },
+            {
+              "description": "An encrypted, recoverable asynchronous preview operation.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOperation envelope",
+              "status": "202"
+            }
+          ],
+          "summary": "Preview a draft task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "get",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.get(id: string, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/gettaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to get a task recurrence. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "getTaskRecurrence",
+          "path": "/task-recurrences/{id}",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Get a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "update",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: TaskRecurrenceUpdate",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrenceUpdate"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.update(id: string, data: TaskRecurrenceUpdate, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/updatetaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to update a task recurrence. Only documented mutable fields are accepted; omitted fields retain their current values unless the request schema states replacement semantics. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "PATCH",
+          "operationId": "updateTaskRecurrence",
+          "path": "/task-recurrences/{id}",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceUpdate"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Update a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "archive",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.archive(id: string, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/archivetaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to archive a task recurrence. The operation preserves TeamGrid lifecycle and permission rules instead of bypassing them with a direct data deletion. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "DELETE",
+          "operationId": "archiveTaskRecurrence",
+          "path": "/task-recurrences/{id}",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Archive a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "previewStored",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceStoredPreviewOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "TaskRecurrenceStoredPreviewOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.previewStored(id: string, options: TaskRecurrenceStoredPreviewOptions = {})",
+          "apiHref": "/api/v1/reference/operations/previewstoredtaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to preview a stored task recurrence. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "previewStoredTaskRecurrence",
+          "path": "/task-recurrences/{id}/preview",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Preview lower time boundary.",
+                "location": "query",
+                "name": "from",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Preview upper time boundary.",
+                "location": "query",
+                "name": "until",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Maximum preview occurrences.",
+                "location": "query",
+                "name": "count",
+                "required": false,
+                "type": "integer"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrencePreview envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Preview a stored task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "restore",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.restore(id: string, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/restoretaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to restore a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "restoreTaskRecurrence",
+          "path": "/task-recurrences/{id}/restore",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Restore a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "pause",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.pause(id: string, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/pausetaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to pause a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "pauseTaskRecurrence",
+          "path": "/task-recurrences/{id}/pause",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Pause a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "resume",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.resume(id: string, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/resumetaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to resume a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "resumeTaskRecurrence",
+          "path": "/task-recurrences/{id}/resume",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Resume a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "end",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.end(id: string, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/endtaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to end a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "endTaskRecurrence",
+          "path": "/task-recurrences/{id}/end",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "End a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "transferOwner",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: TaskRecurrenceOwnerUpdate",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrenceOwnerUpdate"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.transferOwner(id: string, data: TaskRecurrenceOwnerUpdate, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/transfertaskrecurrenceowner/",
+          "conditionalScopes": [],
+          "description": "Use this operation to transfer task recurrence ownership. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "transferTaskRecurrenceOwner",
+          "path": "/task-recurrences/{id}/owner",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOwnerUpdate"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Transfer task recurrence ownership",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "applyTaskTemplate",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: TaskRecurrenceTaskTemplateUpdate",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrenceTaskTemplateUpdate"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.applyTaskTemplate(id: string, data: TaskRecurrenceTaskTemplateUpdate, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/applytaskastaskrecurrencetemplate/",
+          "conditionalScopes": [],
+          "description": "Use this operation to replace a recurrence template from a task. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "applyTaskAsTaskRecurrenceTemplate",
+          "path": "/task-recurrences/{id}/definition-from-task",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceTaskTemplateUpdate"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Replace a recurrence template from a task",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "recheck",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.recheck(id: string, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/rechecktaskrecurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to recheck a task recurrence asynchronously. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "recheckTaskRecurrence",
+          "path": "/task-recurrences/{id}/recheck",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The credential-owned asynchronous recheck was accepted.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOperation envelope",
+              "status": "202"
+            }
+          ],
+          "summary": "Recheck a task recurrence asynchronously",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "submitEvent",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: TaskRecurrenceEventSubmit",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrenceEventSubmit"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.submitEvent(id: string, data: TaskRecurrenceEventSubmit, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/submittaskrecurrenceevent/",
+          "conditionalScopes": [],
+          "description": "Use this operation to submit an event to a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The external event payload exceeds the 64 KiB boundary.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "413"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "submitTaskRecurrenceEvent",
+          "path": "/task-recurrences/{id}/events",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceEventSubmit"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:run",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The idempotent external event was accepted for recurrence evaluation.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceEvent envelope",
+              "status": "202"
+            }
+          ],
+          "summary": "Submit an event to a task recurrence",
+          "tag": "Task Recurrences"
+        }
+      ],
+      "scopes": [
+        "task-recurrences:read",
+        "task-recurrences:run",
+        "task-recurrences:write",
+        "tasks:read",
+        "tasks:write"
+      ],
+      "slug": "task-recurrences",
+      "tags": [
+        "Task Recurrences"
+      ],
+      "title": "Task Recurrences"
+    },
+    {
+      "conditionalScopes": [],
+      "helpers": [
+        {
+          "name": "pages",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: ListOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "ListOptions"
+            },
+            {
+              "display": "pagination?: PaginationOptions",
+              "name": "pagination",
+              "optional": true,
+              "type": "PaginationOptions"
+            }
+          ],
+          "returnForm": "AsyncGenerator",
+          "signature": "taskRecurrenceVersions.pages(seriesId: string, options: ListOptions = {}, pagination?: PaginationOptions)",
+          "description": "Iterate cursor pages with a bounded PaginationOptions policy."
+        }
+      ],
+      "name": "taskRecurrenceVersions",
+      "operationCount": 3,
+      "operations": [
+        {
+          "name": "list",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: ListOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "ListOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceVersions.list(seriesId: string, options: ListOptions = {})",
+          "apiHref": "/api/v1/reference/operations/listtaskrecurrenceversions/",
+          "conditionalScopes": [],
+          "description": "Use this operation to list task recurrence versions. It returns only resources visible to the credential and applies the documented filters before producing a bounded, stable page. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "listTaskRecurrenceVersions",
+          "path": "/task-recurrences/{id}/versions",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "A bounded page of resources visible to the credential, with request metadata and an opaque cursor when another page is available.",
+              "mediaType": "application/json",
+              "schema": "Array<TaskRecurrenceVersion> envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "List task recurrence versions",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "get",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "versionId: string",
+              "name": "versionId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceVersions.get(seriesId: string, versionId: string, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/gettaskrecurrenceversion/",
+          "conditionalScopes": [],
+          "description": "Use this operation to get a task recurrence version. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "getTaskRecurrenceVersion",
+          "path": "/task-recurrences/{id}/versions/{versionId}",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Stable version Id used to identify the target within the authenticated workspace.",
+                "location": "path",
+                "name": "versionId",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "The immutable recurrence definition version.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceVersion envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Get a task recurrence version",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "restore",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "versionId: string",
+              "name": "versionId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: TaskRecurrenceVersionRestore = {}",
+              "name": "data",
+              "optional": true,
+              "type": "TaskRecurrenceVersionRestore"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceVersions.restore(seriesId: string, versionId: string, data: TaskRecurrenceVersionRestore = {}, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/restoretaskrecurrenceversion/",
+          "conditionalScopes": [],
+          "description": "Use this operation to restore a task recurrence version. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "restoreTaskRecurrenceVersion",
+          "path": "/task-recurrences/{id}/versions/{versionId}/restore",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceVersionRestore"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Stable version Id used to identify the target within the authenticated workspace.",
+                "location": "path",
+                "name": "versionId",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Restore a task recurrence version",
+          "tag": "Task Recurrences"
+        }
+      ],
+      "scopes": [
+        "task-recurrences:read",
+        "task-recurrences:write",
+        "tasks:read",
+        "tasks:write"
+      ],
+      "slug": "task-recurrence-versions",
+      "tags": [
+        "Task Recurrences"
+      ],
+      "title": "Task Recurrence Versions"
+    },
+    {
+      "conditionalScopes": [],
+      "helpers": [
+        {
+          "name": "pages",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: ListOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "ListOptions"
+            },
+            {
+              "display": "pagination?: PaginationOptions",
+              "name": "pagination",
+              "optional": true,
+              "type": "PaginationOptions"
+            }
+          ],
+          "returnForm": "AsyncGenerator",
+          "signature": "taskRecurrenceOccurrences.pages(seriesId: string, options: ListOptions = {}, pagination?: PaginationOptions)",
+          "description": "Iterate cursor pages with a bounded PaginationOptions policy."
+        }
+      ],
+      "name": "taskRecurrenceOccurrences",
+      "operationCount": 5,
+      "operations": [
+        {
+          "name": "list",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: ListOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "ListOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOccurrences.list(seriesId: string, options: ListOptions = {})",
+          "apiHref": "/api/v1/reference/operations/listtaskrecurrenceoccurrences/",
+          "conditionalScopes": [],
+          "description": "Use this operation to list task recurrence occurrences. It returns only resources visible to the credential and applies the documented filters before producing a bounded, stable page. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "listTaskRecurrenceOccurrences",
+          "path": "/task-recurrences/{id}/occurrences",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Opaque cursor returned in meta.page.nextCursor.",
+                "location": "query",
+                "name": "cursor",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Maximum number of records to return in this page. The response may contain fewer records.",
+                "location": "query",
+                "name": "limit",
+                "required": false,
+                "type": "integer"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "A bounded page of resources visible to the credential, with request metadata and an opaque cursor when another page is available.",
+              "mediaType": "application/json",
+              "schema": "Array<TaskRecurrenceOccurrence> envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "List task recurrence occurrences",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "get",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "occurrenceKey: string",
+              "name": "occurrenceKey",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOccurrences.get(seriesId: string, occurrenceKey: string, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/gettaskrecurrenceoccurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to get a task recurrence occurrence. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "getTaskRecurrenceOccurrence",
+          "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Stable occurrence Key used to identify the target within the authenticated workspace.",
+                "location": "path",
+                "name": "occurrenceKey",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOccurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Get a task recurrence occurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "override",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "occurrenceKey: string",
+              "name": "occurrenceKey",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: TaskRecurrenceOccurrenceOverride",
+              "name": "data",
+              "optional": false,
+              "type": "TaskRecurrenceOccurrenceOverride"
+            },
+            {
+              "display": "options: TaskRecurrenceOccurrenceOverrideOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceOccurrenceOverrideOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOccurrences.override(seriesId: string, occurrenceKey: string, data: TaskRecurrenceOccurrenceOverride, options: TaskRecurrenceOccurrenceOverrideOptions)",
+          "apiHref": "/api/v1/reference/operations/overridetaskrecurrenceoccurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to override a task recurrence occurrence. Only documented mutable fields are accepted; omitted fields retain their current values unless the request schema states replacement semantics. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "PUT",
+          "operationId": "overrideTaskRecurrenceOccurrence",
+          "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}/override",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOccurrenceOverride"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Stable occurrence Key used to identify the target within the authenticated workspace.",
+                "location": "path",
+                "name": "occurrenceKey",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Latest strong occurrence ETag. For placeholder creation omit this header and send If-None-Match: * instead.",
+                "location": "header",
+                "name": "If-Match",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "description": "Send exactly * to atomically create a future ledger placeholder from a valid stored-preview token. It is mutually exclusive with If-Match.",
+                "location": "header",
+                "name": "If-None-Match",
+                "required": false,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOccurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Override a task recurrence occurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "clearOverride",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "occurrenceKey: string",
+              "name": "occurrenceKey",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceOccurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceOccurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOccurrences.clearOverride(seriesId: string, occurrenceKey: string, options: TaskRecurrenceOccurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/cleartaskrecurrenceoccurrenceoverride/",
+          "conditionalScopes": [],
+          "description": "Use this operation to clear a task recurrence occurrence override. The operation preserves TeamGrid lifecycle and permission rules instead of bypassing them with a direct data deletion. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "DELETE",
+          "operationId": "clearTaskRecurrenceOccurrenceOverride",
+          "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}/override",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Stable occurrence Key used to identify the target within the authenticated workspace.",
+                "location": "path",
+                "name": "occurrenceKey",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence occurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOccurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Clear a task recurrence occurrence override",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "retry",
+          "parameters": [
+            {
+              "display": "seriesId: string",
+              "name": "seriesId",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "occurrenceKey: string",
+              "name": "occurrenceKey",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceOccurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceOccurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOccurrences.retry(seriesId: string, occurrenceKey: string, options: TaskRecurrenceOccurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/retrytaskrecurrenceoccurrence/",
+          "conditionalScopes": [],
+          "description": "Use this operation to retry a failed task recurrence occurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "retryTaskRecurrenceOccurrence",
+          "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}/retry",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Stable occurrence Key used to identify the target within the authenticated workspace.",
+                "location": "path",
+                "name": "occurrenceKey",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence occurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOccurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Retry a failed task recurrence occurrence",
+          "tag": "Task Recurrences"
+        }
+      ],
+      "scopes": [
+        "task-recurrences:read",
+        "task-recurrences:write",
+        "tasks:read",
+        "tasks:write"
+      ],
+      "slug": "task-recurrence-occurrences",
+      "tags": [
+        "Task Recurrences"
+      ],
+      "title": "Task Recurrence Occurrences"
+    },
+    {
+      "conditionalScopes": [],
+      "helpers": [
+        {
+          "name": "wait",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceOperationWaitOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "TaskRecurrenceOperationWaitOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOperations.wait(id: string, options: TaskRecurrenceOperationWaitOptions = {})",
+          "description": "Poll a credential-owned asynchronous operation with bounded wait options."
+        }
+      ],
+      "name": "taskRecurrenceOperations",
+      "operationCount": 2,
+      "operations": [
+        {
+          "name": "get",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOperations.get(id: string, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/gettaskrecurrenceoperation/",
+          "conditionalScopes": [],
+          "description": "Use this operation to get a task recurrence operation. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "GET",
+          "operationId": "getTaskRecurrenceOperation",
+          "path": "/task-recurrence-operations/{id}",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:read",
+            "tasks:read"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOperation envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Get a task recurrence operation",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "cancel",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: RequestOptions = {}",
+              "name": "options",
+              "optional": true,
+              "type": "RequestOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrenceOperations.cancel(id: string, options: RequestOptions = {})",
+          "apiHref": "/api/v1/reference/operations/canceltaskrecurrenceoperation/",
+          "conditionalScopes": [],
+          "description": "Use this operation to cancel a task recurrence operation. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "cancelTaskRecurrenceOperation",
+          "path": "/task-recurrence-operations/{id}/cancel",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrenceOperation envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Cancel a task recurrence operation",
+          "tag": "Task Recurrences"
+        }
+      ],
+      "scopes": [
+        "task-recurrences:read",
+        "task-recurrences:write",
+        "tasks:read",
+        "tasks:write"
+      ],
+      "slug": "task-recurrence-operations",
+      "tags": [
+        "Task Recurrences"
+      ],
+      "title": "Task Recurrence Operations"
     },
     {
       "conditionalScopes": [],

@@ -2,14 +2,14 @@
 title: MCP tools and security
 description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
 owner: Security
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-18
 ---
 
 ## Available tools
 
-The default `core` profile exposes 15 operational tools. `collaboration` adds seven contact,
+The default `core` profile exposes 22 operational tools. `collaboration` adds seven contact,
 call-note, and user tools. `governance` adds six custom-field-definition, service, and webhook tools.
-`all` exposes those 28 tools plus the separately curated `teamgrid_search` tool, for a total of 29.
+`all` exposes those 35 tools plus the separately curated `teamgrid_search` tool, for a total of 36.
 Select a broader profile only when the host
 and workflow require it. Service reads are not in `core` because service objects can include
 commercially sensitive billing rates.
@@ -25,6 +25,13 @@ commercially sensitive billing rates.
 | `teamgrid_project_get` | Core | Read one project by ID |
 | `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
 | `teamgrid_task_get` | Core | Read one task by ID |
+| `teamgrid_task_recurrences_list` | Core | List recurring-task series |
+| `teamgrid_task_recurrence_get` | Core | Read one recurring-task series and its active definition |
+| `teamgrid_task_recurrence_preview` | Core | Preview a saved recurring-task definition |
+| `teamgrid_task_recurrence_versions_list` | Core | List immutable definition versions |
+| `teamgrid_task_recurrence_version_get` | Core | Read one immutable definition version |
+| `teamgrid_task_recurrence_occurrences_list` | Core | List bounded occurrence-ledger entries |
+| `teamgrid_task_recurrence_occurrence_get` | Core | Read one occurrence-ledger entry |
 | `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, and creator filters; billing fields and filters are removed |
 | `teamgrid_time_entry_get` | Core | Read one time entry by ID |
 | `teamgrid_lists_list` | Core | List task lists |
@@ -82,6 +89,10 @@ Time-entry tools remove `billable`, `billed`, and `billedAt` from every result, 
 credential has `time-entries:billing`. Their schemas do not accept `billable` or `billed` filters.
 Current-credential inspection and revocation, webhook test delivery, and export streaming remain
 SDK/CLI capabilities and are forbidden through MCP.
+
+Recurring-task tools expose only saved series, versions, stored previews, and occurrence-ledger
+reads. Draft preview, create/update/lifecycle actions, overrides, retries, event submission, and
+operation control remain API/SDK/CLI-only.
 
 Federated search is the only additional curated tool. It requires `search:read` plus every matching
 domain read scope, accepts at most three resource types and 50 results, and is marked sensitive

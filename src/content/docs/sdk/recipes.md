@@ -122,6 +122,32 @@ can no longer be resumed: take a new checkpoint and rebuild the snapshot.
 Change events are synchronization signals, not permanent copies of task content. Re-read current
 resources and apply an explicit deletion/tombstone policy.
 
+## Preview and recover a recurring-task policy
+
+A draft preview is synchronous for bounded policies and asynchronous for high-cost policies. The
+SDK validates both response shapes and the operation's exact polling location:
+
+```ts
+const accepted = await client.taskRecurrences.preview({
+  count: 20,
+  policy: recurrencePolicy,
+  template: { name: 'Weekly review', projectId: 'project-id' },
+})
+
+const result = accepted.data.type === 'taskRecurrenceOperation'
+  ? await client.taskRecurrenceOperations.wait(accepted.data.id, {
+    maxWaitMs: 300_000,
+    pollIntervalMs: 1_000,
+  })
+  : accepted
+
+await persistRecurrencePreview(result.data)
+```
+
+Do not retry a failed operation by inventing a new occurrence identity. Correct its stable error,
+then use the documented recheck or occurrence retry boundary. The complete policy and lifecycle
+model is in [Recurring tasks](/api/v1/recurring-tasks/).
+
 ## Create and download a bounded time-entry export
 
 Large reports use an asynchronous export job followed by a reveal-once download intent. The SDK

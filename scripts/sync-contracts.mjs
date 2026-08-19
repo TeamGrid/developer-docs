@@ -194,12 +194,12 @@ const changeEventResourceTypes = v1Document.components?.schemas?.ChangeEvent
   ?.properties?.attributes?.properties?.resourceType?.enum
 if (
   !Array.isArray(changeResourceTypes)
-  || changeResourceTypes.length !== 23
+  || changeResourceTypes.length !== 24
   || new Set(changeResourceTypes).size !== changeResourceTypes.length
   || JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
   || !scopeDocument.scopes.some((scope) => scope.name === 'changes:read')
 ) {
-  throw new Error('The public contract must contain the qualified 23-resource change feed.')
+  throw new Error('The public contract must contain the qualified 24-resource change feed.')
 }
 manifest.changeFeed = {
   availability: 'released',
@@ -244,7 +244,7 @@ const actionPolicyContent = await readSourceFile(actionPolicySource)
 const actionPolicyDocument = JSON.parse(actionPolicyContent.toString('utf8'))
 if (
   actionPolicyDocument.schemaVersion !== 1
-  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v5'
+  || actionPolicyDocument.registryVersion !== 'developer-action-policy-v7'
   || !/^[a-f0-9]{64}$/.test(actionPolicyDocument.registrySha256 || '')
   || actionPolicyDocument.actionPolicyCount !== operationBindingDocument.operations.length
   || actionPolicyDocument.authenticatedActionPolicyCount

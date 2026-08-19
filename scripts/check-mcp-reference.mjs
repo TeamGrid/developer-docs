@@ -21,11 +21,11 @@ if (reference.package?.sourceCommit !== packages.sourceCommit) {
 const tools = reference.tools || []
 const toolNames = tools.map((tool) => tool.name)
 const uniqueToolNames = new Set(toolNames)
-if (tools.length !== 29 || uniqueToolNames.size !== 29) {
-  failures.push(`Expected 29 unique MCP tools, found ${tools.length}/${uniqueToolNames.size}.`)
+if (tools.length !== 36 || uniqueToolNames.size !== 36) {
+  failures.push(`Expected 36 unique MCP tools, found ${tools.length}/${uniqueToolNames.size}.`)
 }
 
-for (const [profile, expected] of Object.entries({ core: 15, collaboration: 22, governance: 21, all: 29 })) {
+for (const [profile, expected] of Object.entries({ core: 22, collaboration: 29, governance: 28, all: 36 })) {
   const names = reference.profiles?.[profile] || []
   if (names.length !== expected || new Set(names).size !== expected) {
     failures.push(`MCP ${profile} profile must contain ${expected} unique tools.`)
@@ -39,7 +39,7 @@ if (JSON.stringify([...reference.profiles.all].sort()) !== JSON.stringify([...to
 }
 
 const policies = capabilities.operationPolicy.filter((operation) => operation.mcp?.exposure === 'read')
-if (policies.length !== 29) failures.push(`Expected 29 MCP-exposed policies, found ${policies.length}.`)
+if (policies.length !== 36) failures.push(`Expected 36 MCP-exposed policies, found ${policies.length}.`)
 const toolsByName = new Map(tools.map((tool) => [tool.name, tool]))
 for (const policy of policies) {
   const tool = toolsByName.get(policy.mcp.tool)
@@ -57,8 +57,8 @@ for (const policy of policies) {
 
 const referenceDirectory = path.join(root, 'src', 'content', 'docs', 'mcp', 'reference')
 const pages = (await readdir(referenceDirectory)).filter((file) => file.endsWith('.md')).sort()
-if (pages.length !== 30 || !pages.includes('index.md')) {
-  failures.push(`Expected MCP index plus 29 tool pages, found ${pages.length} Markdown pages.`)
+if (pages.length !== 37 || !pages.includes('index.md')) {
+  failures.push(`Expected MCP index plus 36 tool pages, found ${pages.length} Markdown pages.`)
 }
 for (const tool of tools) {
   if (tool.inputSchema?.additionalProperties !== false) {
@@ -101,4 +101,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('MCP reference integrity passed: 29 tools, strict schemas, exact profiles, API mappings, and 30 generated pages.')
+console.log('MCP reference integrity passed: 36 tools, strict schemas, exact profiles, API mappings, and 37 generated pages.')

@@ -1,11 +1,11 @@
 ---
 title: "teamgrid changes"
-description: "2 executable @teamgrid/cli commands in the changes group, generated from CLI 1.0.7."
+description: "2 executable @teamgrid/cli commands in the changes group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 create checkpoints and read the cell-local change feed.
 

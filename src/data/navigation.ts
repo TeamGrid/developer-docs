@@ -25,6 +25,7 @@ export const navigation: NavigationGroup[] = [
     label: 'Integration guides',
     items: [
       { label: 'Synchronize tasks', href: '/guides/sync-tasks/' },
+      { label: 'Build recurring tasks', href: '/api/v1/recurring-tasks/' },
       { label: 'Export time entries', href: '/guides/export-time-entries/' },
       { label: 'Process webhooks reliably', href: '/guides/reliable-webhooks/' },
       { label: 'Automate project setup', href: '/guides/automate-project-setup/' },
@@ -52,6 +53,7 @@ export const navigation: NavigationGroup[] = [
       { label: 'Change feed', href: '/api/v1/change-feed/' },
       { label: 'Custom fields', href: '/api/v1/custom-fields/' },
       { label: 'Task workflows', href: '/api/v1/task-workflows/' },
+      { label: 'Recurring tasks', href: '/api/v1/recurring-tasks/' },
       { label: 'Project templates', href: '/api/v1/project-templates/' },
       { label: 'Calendar and availability', href: '/api/v1/calendar-and-availability/' },
       { label: 'Planned work', href: '/api/v1/planned-work/' },

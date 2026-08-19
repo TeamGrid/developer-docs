@@ -250,13 +250,13 @@ const changeEventResourceTypes = v1.components?.schemas?.ChangeEvent
   ?.properties?.attributes?.properties?.resourceType?.enum
 if (
   !Array.isArray(changeResourceTypes)
-  || changeResourceTypes.length !== 23
+  || changeResourceTypes.length !== 24
   || new Set(changeResourceTypes).size !== changeResourceTypes.length
   || JSON.stringify(changeResourceTypes) !== JSON.stringify(changeEventResourceTypes)
   || manifest.changeFeed?.availability !== 'released'
   || manifest.changeFeed?.resourceTypes !== changeResourceTypes.length
 ) {
-  fail('The public contract must record the qualified 23-resource change feed.')
+  fail('The public contract must record the qualified 24-resource change feed.')
 }
 const contractOperations = []
 for (const [operationPath, pathItem] of Object.entries(v1.paths || {})) {
@@ -353,18 +353,25 @@ const expectedCoreCasOperationIds = [
 ]
 const expectedIndependentIfMatchOperationIds = [
   'abortAutomationRun',
+  'applyTaskAsTaskRecurrenceTemplate',
   'archiveAbsence',
   'archiveAppointment',
   'archiveAutomationDefinition',
   'archiveComment',
   'archiveDocument',
   'archiveFile',
+  'archiveTaskRecurrence',
   'cancelInvitation',
   'clearCustomFieldValue',
+  'clearTaskRecurrenceOccurrenceOverride',
   'deleteGroup',
   'deleteRole',
+  'endTaskRecurrence',
   'removeMember',
+  'removeTaskRecurrenceFromTasks',
   'renameFile',
+  'overrideTaskRecurrenceOccurrence',
+  'pauseTaskRecurrence',
   'replaceServiceAccountResourceGrants',
   'replaceTaskPlannedWork',
   'resendInvitation',
@@ -374,8 +381,13 @@ const expectedIndependentIfMatchOperationIds = [
   'restoreComment',
   'restoreDocument',
   'restoreFile',
+  'restoreTaskRecurrence',
+  'restoreTaskRecurrenceVersion',
+  'resumeTaskRecurrence',
+  'retryTaskRecurrenceOccurrence',
   'rotateWebhookSecret',
   'setCustomFieldValue',
+  'transferTaskRecurrenceOwner',
   'updateAbsence',
   'updateAppointment',
   'updateAutomationDefinition',
@@ -383,6 +395,7 @@ const expectedIndependentIfMatchOperationIds = [
   'updateGroup',
   'updateMemberRole',
   'updateRole',
+  'updateTaskRecurrence',
   'updateTimeEntryBilling',
   'updateWebhook',
   'updateWorkspaceSettings',
@@ -427,7 +440,7 @@ if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
   !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('The stable contract must preserve exactly 52 qualified If-Match operations.')
+  fail('The stable contract must preserve exactly 65 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -476,7 +489,7 @@ const resourceConcurrencyDocumentation = await readFile(
 )
 for (const marker of [
   'Exactly 18 core mutations require `If-Match`',
-  'Another 34 operations retain their domain-specific compare-and-set contracts',
+  'Another 47 operations retain their domain-specific compare-and-set contracts',
   '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',
   '`412 precondition_failed`',
@@ -524,7 +537,7 @@ const changeFeedDocumentation = await readFile(
 for (const marker of [
   '`GET /v1/changes`',
   '`changes:read`',
-  '23 resource types',
+  '24 resource types',
   'snapshot-then-catch-up',
 ]) {
   if (!changeFeedDocumentation.includes(marker)) {
@@ -636,7 +649,7 @@ for (const marker of [
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
   `${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutations`,
-  '34 domain-specific `If-Match` operations',
+  '47 domain-specific `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)

@@ -2,7 +2,7 @@
 title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
 owner: Security
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-19
 ---
 
 Webhook registrations created through API v1 use signed delivery version 2. The create response
@@ -90,6 +90,34 @@ request. Test delivery is intentionally unavailable through MCP.
 Do not parse and re-serialize JSON before verification. Whitespace and byte encoding are part of the signed input.
 
 Legacy UI-created webhook v1 registrations remain unsigned during migration. TeamGrid does not silently downgrade a v2 registration when signing is unavailable.
+
+## Recurring-task events
+
+Recurring tasks publish an explicit, finite event catalog:
+
+| Event | Emitted when | Required subscription scopes |
+| --- | --- | --- |
+| `task_recurrence_created` | A series is created | `task-recurrences:read` |
+| `task_recurrence_updated` | Its definition, owner or same-status metadata changes | `task-recurrences:read` |
+| `task_recurrence_paused`, `task_recurrence_resumed` | The lifecycle enters paused or active | `task-recurrences:read` |
+| `task_recurrence_ended`, `task_recurrence_archived` | The lifecycle enters its corresponding terminal/archive state | `task-recurrences:read` |
+| `task_recurrence_suspended`, `task_recurrence_needs_attention` | Runtime validation blocks safe execution | `task-recurrences:read` |
+| `task_recurrence_occurrence_materialized` | An occurrence creates its ordinary task | `task-recurrences:read`, `tasks:read` |
+| `task_recurrence_occurrence_skipped` | An occurrence is deliberately skipped | `task-recurrences:read` |
+| `task_recurrence_occurrence_failed` | An occurrence enters failed; blocked work uses the same failure notification family | `task-recurrences:read` |
+
+Series payloads contain only the series ID, lifecycle/attention state, current definition version
+ID, developer revision, name, owner, resource context, workspace ID and update time. They do not
+embed the complete policy or task template. Occurrence payloads contain the occurrence and series
+IDs, stable occurrence key, definition version, state, scheduled time, sanitized error code,
+linked task identity when available, workspace ID and update time. After an explicit detachment,
+the historical task identity may be carried with `detachedAt` and `detachedBy`; follow-up reads use
+the public occurrence projection where `cardId` is null and `detachedCardId` is explicit.
+
+`POST /task-recurrences/{id}/remove-from-tasks` emits the normal
+`task_recurrence_ended` series event. It does not synthesize task-deletion events because the tasks
+remain in TeamGrid. Use `resourceTypes=taskRecurrence` plus `resourceTypes=task` in the durable
+change feed when a mirror must reconcile both series state and ordinary task projections.
 
 ## Delivery history
 

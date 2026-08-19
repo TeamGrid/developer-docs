@@ -7,13 +7,13 @@ reviewedAt: 2026-08-08
 
 ## Official packages
 
-The stable public packages share version `1.0.7` and the API v1 contract:
+The stable public packages share version `1.1.0` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.7` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.7` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.7` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.1.0` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.1.0` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.1.0` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.

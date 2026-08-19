@@ -1,25 +1,26 @@
 {
   "schemaVersion": 1,
   "package": "@teamgrid/cli",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "sourceRepository": "TeamGrid/developer-platform",
-  "sourceCommit": "31706a2278ce8c9471d225c64266cdbef395474a",
-  "sourceProgramSha256": "eb53f967d27176504af74bae16ee711b4753a096742c7c3234d558cc395a85af",
-  "apiContractSourceCommit": "f8c102935a07248e672c1389673f192fa9bad458",
-  "reviewedAt": "2026-08-16",
+  "sourceCommit": "884fa0807e6cb157a672e79b10830aff435ce140",
+  "sourceProgramSha256": "4e227c149e7cf9a304375b6181ed501cbe0f18b0651e2d95d27234eebfbf2e6a",
+  "apiContractSourceCommit": "c1bb146762c52c80f51f9bc3695fce0b5008b4a9",
+  "reviewedAt": "2026-08-19",
   "commanderVersion": "15.0.0",
-  "groupCount": 52,
-  "commandNodeCount": 267,
-  "executableCommandCount": 216,
-  "mappedCliPathCount": 210,
-  "apiBackedExecutableCommandCount": 214,
-  "apiOperationCount": 211,
-  "argumentDefinitionCount": 143,
-  "commandOptionDefinitionCount": 520,
-  "confirmationCommandCount": 36,
+  "groupCount": 54,
+  "commandNodeCount": 299,
+  "executableCommandCount": 243,
+  "mappedCliPathCount": 236,
+  "apiBackedExecutableCommandCount": 240,
+  "apiOperationCount": 237,
+  "argumentDefinitionCount": 173,
+  "commandOptionDefinitionCount": 569,
+  "confirmationCommandCount": 40,
   "localCommands": [
     "doctor",
-    "auth profiles"
+    "auth profiles",
+    "task-recurrence-operations wait"
   ],
   "globalOptions": [
     {
@@ -3464,6 +3465,1293 @@
               "operationId": "stopTaskTimer",
               "summary": "Stop task time tracking",
               "scope": "tasks:write"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-recurrences",
+      "slug": "task-recurrences",
+      "description": "define, inspect, and operate recurring tasks.",
+      "aliases": [],
+      "commands": [
+        {
+          "path": "task-recurrences list",
+          "fullPath": "teamgrid task-recurrences list",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences list [options]",
+          "description": "List task recurrences.",
+          "aliases": [],
+          "arguments": [],
+          "options": [
+            {
+              "flags": "--all",
+              "short": null,
+              "long": "--all",
+              "description": "read every page",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--cursor <cursor>",
+              "short": null,
+              "long": "--cursor",
+              "description": "resume from an opaque cursor",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--limit <number>",
+              "short": null,
+              "long": "--limit",
+              "description": "resources per page (1–100)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--max-pages <number>",
+              "short": null,
+              "long": "--max-pages",
+              "description": "safety limit for --all (1–10000)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 10000
+            },
+            {
+              "flags": "--project-id <id>",
+              "short": null,
+              "long": "--project-id",
+              "description": "filter by target project",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--status <status>",
+              "short": null,
+              "long": "--status",
+              "description": "filter lifecycle status",
+              "mandatory": false,
+              "variadic": false,
+              "choices": [
+                "active",
+                "paused",
+                "suspended",
+                "needs_attention",
+                "ended",
+                "archived"
+              ]
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences list",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences",
+              "operationId": "listTaskRecurrences",
+              "summary": "List task recurrences",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences get",
+          "fullPath": "teamgrid task-recurrences get",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences get [options] <id>",
+          "description": "Get a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences get",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences/{id}",
+              "operationId": "getTaskRecurrence",
+              "summary": "Get a task recurrence",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences create",
+          "fullPath": "teamgrid task-recurrences create",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences create [options]",
+          "description": "Create a task recurrence.",
+          "aliases": [],
+          "arguments": [],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "task recurrence definition JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--idempotency-key <key>",
+              "short": null,
+              "long": "--idempotency-key",
+              "description": "stable retry key",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences create",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences",
+              "operationId": "createTaskRecurrence",
+              "summary": "Create a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences preview",
+          "fullPath": "teamgrid task-recurrences preview",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences preview [options]",
+          "description": "evaluate an unsaved recurrence definition without changing state.",
+          "aliases": [],
+          "arguments": [],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "task recurrence preview JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences preview",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/preview",
+              "operationId": "previewTaskRecurrence",
+              "summary": "Preview a draft task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences update",
+          "fullPath": "teamgrid task-recurrences update",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences update [options] <id>",
+          "description": "Update a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "task recurrence patch JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences update",
+          "apiOperations": [
+            {
+              "method": "PATCH",
+              "path": "/task-recurrences/{id}",
+              "operationId": "updateTaskRecurrence",
+              "summary": "Update a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences archive",
+          "fullPath": "teamgrid task-recurrences archive",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences archive [options] <id>",
+          "description": "Archive a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "-y, --yes",
+              "short": "-y",
+              "long": "--yes",
+              "description": "skip the destructive-operation confirmation",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": true,
+          "canonicalCliPath": "task-recurrences archive",
+          "apiOperations": [
+            {
+              "method": "DELETE",
+              "path": "/task-recurrences/{id}",
+              "operationId": "archiveTaskRecurrence",
+              "summary": "Archive a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences preview-stored",
+          "fullPath": "teamgrid task-recurrences preview-stored",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences preview-stored [options] <id>",
+          "description": "preview occurrences from the current saved definition.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--count <number>",
+              "short": null,
+              "long": "--count",
+              "description": "number of occurrences (1–100)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--from <date>",
+              "short": null,
+              "long": "--from",
+              "description": "preview window start",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--until <date>",
+              "short": null,
+              "long": "--until",
+              "description": "preview window end",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences preview-stored",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences/{id}/preview",
+              "operationId": "previewStoredTaskRecurrence",
+              "summary": "Preview a stored task recurrence",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences restore",
+          "fullPath": "teamgrid task-recurrences restore",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences restore [options] <id>",
+          "description": "Restore a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences restore",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/restore",
+              "operationId": "restoreTaskRecurrence",
+              "summary": "Restore a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences pause",
+          "fullPath": "teamgrid task-recurrences pause",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences pause [options] <id>",
+          "description": "Pause a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences pause",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/pause",
+              "operationId": "pauseTaskRecurrence",
+              "summary": "Pause a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences resume",
+          "fullPath": "teamgrid task-recurrences resume",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences resume [options] <id>",
+          "description": "Resume a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences resume",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/resume",
+              "operationId": "resumeTaskRecurrence",
+              "summary": "Resume a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences end",
+          "fullPath": "teamgrid task-recurrences end",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences end [options] <id>",
+          "description": "End a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "-y, --yes",
+              "short": "-y",
+              "long": "--yes",
+              "description": "skip the destructive-operation confirmation",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": true,
+          "canonicalCliPath": "task-recurrences end",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/end",
+              "operationId": "endTaskRecurrence",
+              "summary": "End a task recurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences remove-from-tasks",
+          "fullPath": "teamgrid task-recurrences remove-from-tasks",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences remove-from-tasks [options] <id>",
+          "description": "end the series and remove recurrence links from its tasks while preserving history.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "-y, --yes",
+              "short": "-y",
+              "long": "--yes",
+              "description": "skip the destructive-operation confirmation",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": true,
+          "canonicalCliPath": "task-recurrences remove-from-tasks",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/remove-from-tasks",
+              "operationId": "removeTaskRecurrenceFromTasks",
+              "summary": "Remove a task recurrence from its tasks",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences owner",
+          "fullPath": "teamgrid task-recurrences owner",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences owner [options] <id>",
+          "description": "transfer task recurrence ownership.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "new owner JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences owner",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/owner",
+              "operationId": "transferTaskRecurrenceOwner",
+              "summary": "Transfer task recurrence ownership",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences template-from-task",
+          "fullPath": "teamgrid task-recurrences template-from-task",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences template-from-task [options] <id>",
+          "description": "replace the recurrence task template from an existing task.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "source task and copy policy JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences template-from-task",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/definition-from-task",
+              "operationId": "applyTaskAsTaskRecurrenceTemplate",
+              "summary": "Replace a recurrence template from a task",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences versions list",
+          "fullPath": "teamgrid task-recurrences versions list",
+          "parentPath": "task-recurrences versions",
+          "syntax": "teamgrid task-recurrences versions list [options] <series-id>",
+          "description": "List task recurrence versions.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--all",
+              "short": null,
+              "long": "--all",
+              "description": "read every page",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--cursor <cursor>",
+              "short": null,
+              "long": "--cursor",
+              "description": "resume from an opaque cursor",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--limit <number>",
+              "short": null,
+              "long": "--limit",
+              "description": "resources per page (1–100)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--max-pages <number>",
+              "short": null,
+              "long": "--max-pages",
+              "description": "safety limit for --all (1–10000)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 10000
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences versions list",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences/{id}/versions",
+              "operationId": "listTaskRecurrenceVersions",
+              "summary": "List task recurrence versions",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences versions get",
+          "fullPath": "teamgrid task-recurrences versions get",
+          "parentPath": "task-recurrences versions",
+          "syntax": "teamgrid task-recurrences versions get [options] <series-id> <version-id>",
+          "description": "Get a task recurrence version.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "name": "version-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences versions get",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences/{id}/versions/{versionId}",
+              "operationId": "getTaskRecurrenceVersion",
+              "summary": "Get a task recurrence version",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences versions restore",
+          "fullPath": "teamgrid task-recurrences versions restore",
+          "parentPath": "task-recurrences versions",
+          "syntax": "teamgrid task-recurrences versions restore [options] <series-id> <version-id>",
+          "description": "Restore a task recurrence version.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "name": "version-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "optional restore reason JSON",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences versions restore",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/versions/{versionId}/restore",
+              "operationId": "restoreTaskRecurrenceVersion",
+              "summary": "Restore a task recurrence version",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences occurrences list",
+          "fullPath": "teamgrid task-recurrences occurrences list",
+          "parentPath": "task-recurrences occurrences",
+          "syntax": "teamgrid task-recurrences occurrences list [options] <series-id>",
+          "description": "List task recurrence occurrences.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--all",
+              "short": null,
+              "long": "--all",
+              "description": "read every page",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--cursor <cursor>",
+              "short": null,
+              "long": "--cursor",
+              "description": "resume from an opaque cursor",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--limit <number>",
+              "short": null,
+              "long": "--limit",
+              "description": "resources per page (1–100)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--max-pages <number>",
+              "short": null,
+              "long": "--max-pages",
+              "description": "safety limit for --all (1–10000)",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 10000
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences occurrences list",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences/{id}/occurrences",
+              "operationId": "listTaskRecurrenceOccurrences",
+              "summary": "List task recurrence occurrences",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences occurrences get",
+          "fullPath": "teamgrid task-recurrences occurrences get",
+          "parentPath": "task-recurrences occurrences",
+          "syntax": "teamgrid task-recurrences occurrences get [options] <series-id> <occurrence-key>",
+          "description": "Get a task recurrence occurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "name": "occurrence-key",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences occurrences get",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}",
+              "operationId": "getTaskRecurrenceOccurrence",
+              "summary": "Get a task recurrence occurrence",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences occurrences override",
+          "fullPath": "teamgrid task-recurrences occurrences override",
+          "parentPath": "task-recurrences occurrences",
+          "syntax": "teamgrid task-recurrences occurrences override [options] <series-id> <occurrence-key>",
+          "description": "Override a task recurrence occurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "name": "occurrence-key",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "occurrence override JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence occurrence revision or strong ETag",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--create-if-missing",
+              "short": null,
+              "long": "--create-if-missing",
+              "description": "create a ledger placeholder using placeholderToken from stored preview",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences occurrences override",
+          "apiOperations": [
+            {
+              "method": "PUT",
+              "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}/override",
+              "operationId": "overrideTaskRecurrenceOccurrence",
+              "summary": "Override a task recurrence occurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences occurrences clear-override",
+          "fullPath": "teamgrid task-recurrences occurrences clear-override",
+          "parentPath": "task-recurrences occurrences",
+          "syntax": "teamgrid task-recurrences occurrences clear-override [options] <series-id> <occurrence-key>",
+          "description": "Clear a task recurrence occurrence override.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "name": "occurrence-key",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence occurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences occurrences clear-override",
+          "apiOperations": [
+            {
+              "method": "DELETE",
+              "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}/override",
+              "operationId": "clearTaskRecurrenceOccurrenceOverride",
+              "summary": "Clear a task recurrence occurrence override",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences occurrences retry",
+          "fullPath": "teamgrid task-recurrences occurrences retry",
+          "parentPath": "task-recurrences occurrences",
+          "syntax": "teamgrid task-recurrences occurrences retry [options] <series-id> <occurrence-key>",
+          "description": "Retry a failed task recurrence occurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "series-id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "name": "occurrence-key",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--if-match <revision|etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "latest task recurrence occurrence revision or strong ETag",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences occurrences retry",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/occurrences/{occurrenceKey}/retry",
+              "operationId": "retryTaskRecurrenceOccurrence",
+              "summary": "Retry a failed task recurrence occurrence",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences recheck",
+          "fullPath": "teamgrid task-recurrences recheck",
+          "parentPath": "task-recurrences",
+          "syntax": "teamgrid task-recurrences recheck [options] <id>",
+          "description": "Recheck a task recurrence asynchronously.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--wait",
+              "short": null,
+              "long": "--wait",
+              "description": "wait until the asynchronous recheck finishes",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--poll-interval <milliseconds>",
+              "short": null,
+              "long": "--poll-interval",
+              "description": "poll interval while waiting",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 1000
+            },
+            {
+              "flags": "--max-wait <milliseconds>",
+              "short": null,
+              "long": "--max-wait",
+              "description": "maximum wait time",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 300000
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences recheck",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/recheck",
+              "operationId": "recheckTaskRecurrence",
+              "summary": "Recheck a task recurrence asynchronously",
+              "scope": "task-recurrences:write"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrences events submit",
+          "fullPath": "teamgrid task-recurrences events submit",
+          "parentPath": "task-recurrences events",
+          "syntax": "teamgrid task-recurrences events submit [options] <id>",
+          "description": "Submit an event to a task recurrence.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json|@file|->",
+              "short": null,
+              "long": "--data",
+              "description": "event envelope JSON",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrences events submit",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrences/{id}/events",
+              "operationId": "submitTaskRecurrenceEvent",
+              "summary": "Submit an event to a task recurrence",
+              "scope": "task-recurrences:run"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-recurrence-operations",
+      "slug": "task-recurrence-operations",
+      "description": "inspect and cancel asynchronous recurrence operations.",
+      "aliases": [],
+      "commands": [
+        {
+          "path": "task-recurrence-operations get",
+          "fullPath": "teamgrid task-recurrence-operations get",
+          "parentPath": "task-recurrence-operations",
+          "syntax": "teamgrid task-recurrence-operations get [options] <id>",
+          "description": "Get a task recurrence operation.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "task-recurrence-operations get",
+          "apiOperations": [
+            {
+              "method": "GET",
+              "path": "/task-recurrence-operations/{id}",
+              "operationId": "getTaskRecurrenceOperation",
+              "summary": "Get a task recurrence operation",
+              "scope": "task-recurrences:read"
+            }
+          ]
+        },
+        {
+          "path": "task-recurrence-operations wait",
+          "fullPath": "teamgrid task-recurrence-operations wait",
+          "parentPath": "task-recurrence-operations",
+          "syntax": "teamgrid task-recurrence-operations wait [options] <id>",
+          "description": "Performs a local TeamGrid CLI operation.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--poll-interval <milliseconds>",
+              "short": null,
+              "long": "--poll-interval",
+              "description": "poll interval while waiting",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 1000
+            },
+            {
+              "flags": "--max-wait <milliseconds>",
+              "short": null,
+              "long": "--max-wait",
+              "description": "maximum wait time",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 300000
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": null,
+          "apiOperations": []
+        },
+        {
+          "path": "task-recurrence-operations cancel",
+          "fullPath": "teamgrid task-recurrence-operations cancel",
+          "parentPath": "task-recurrence-operations",
+          "syntax": "teamgrid task-recurrence-operations cancel [options] <id>",
+          "description": "Cancel a task recurrence operation.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "-y, --yes",
+              "short": "-y",
+              "long": "--yes",
+              "description": "skip the destructive-operation confirmation",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": true,
+          "canonicalCliPath": "task-recurrence-operations cancel",
+          "apiOperations": [
+            {
+              "method": "POST",
+              "path": "/task-recurrence-operations/{id}/cancel",
+              "operationId": "cancelTaskRecurrenceOperation",
+              "summary": "Cancel a task recurrence operation",
+              "scope": "task-recurrences:write"
             }
           ]
         }
@@ -11150,58 +12438,60 @@
     }
   ],
   "generatedPages": {
-    "src/content/docs/cli/reference/index.md": "ffeafbc2cf5982a813fcd077a8ef548f2dbdf92db621e5e5cd377cd330a04ba0",
-    "src/content/docs/cli/reference/doctor.md": "c19a85b6b82feff527f02c43ffdc66358e7a2c2e451e9a4dfd14f466bd94ed52",
-    "src/content/docs/cli/reference/auth.md": "22e2a27039eaf04e37d391009c84d56da2d410dec4bdd28414e27a3330d5aff2",
-    "src/content/docs/cli/reference/api-version.md": "7f5bed85d90d6626830d3a0ff78d7123357327a3151f1ae24693c940e40e5402",
-    "src/content/docs/cli/reference/workspace.md": "075eb5b0fd2e2584e817b33a688732b0d5728cdaae8aa134483095b08c977664",
-    "src/content/docs/cli/reference/system.md": "fad0af9ffd3ee86ea696cb86c0bbc13a6a1ba4cc17af2886e7f2fe7583ad162e",
-    "src/content/docs/cli/reference/workspace-settings.md": "07da01f94e147d8e12e9f8c4b56f186ed1296fefb4693db466a1e3e9761bc622",
-    "src/content/docs/cli/reference/credentials.md": "8707092b9b3a36456e336be75602fc481524d2c3d33cc64265854ee5430f3f6e",
-    "src/content/docs/cli/reference/service-accounts.md": "20def6ed8a18b0c38dd7ce7eb48f812c261e626d0f40e9ae188f7b7f7ea478a5",
-    "src/content/docs/cli/reference/events.md": "a03a251e9360db29575037855830abbd72d5db936784e64bc7caa77dacf59f57",
-    "src/content/docs/cli/reference/projects.md": "fb8cd08595c7d951659cf7125ccaed006c6e789b712798a5ac45a89891fab6e4",
-    "src/content/docs/cli/reference/project-lifecycle-operations.md": "5981d5de07b03a97bca1172201b7aef24a3f21209347ac77372db316b163d448",
-    "src/content/docs/cli/reference/products.md": "9289596cf41222a8cfef7f280d4901301db7876f04f366078cd39ee33356422d",
-    "src/content/docs/cli/reference/product-groups.md": "d6d92acee2ef52f38b37b5c34b4ecf163fa4cee1d08f551559a1aad61062a8c3",
-    "src/content/docs/cli/reference/project-statements.md": "7a3e891408c2f395e03225df86335b201e8df26cd6e4773a9d5cc4db35a4d914",
-    "src/content/docs/cli/reference/tasks.md": "6d8343d5da39ba1123e4cd6645e89582a976624afadbee19d3349ef87ab7f8f7",
-    "src/content/docs/cli/reference/time-entries.md": "41e4f13dfd8198e1dd7c8eeb183f7069170cd4272e3e83c1604a93c8be7eaa43",
-    "src/content/docs/cli/reference/call-notes.md": "35f6c8f9c6ccb0fcf7c41227bb547363e9529f2eb870c13d2163a7e17f560c87",
-    "src/content/docs/cli/reference/contacts.md": "4caaf17a0f6e2d5f7562f55aba207f30f84e67764b097cd99086c13ec8d2420c",
-    "src/content/docs/cli/reference/contact-groups.md": "99547a547dc03e806f05a6b6121748c9f895b5a34625f67774c783f7801c05f4",
-    "src/content/docs/cli/reference/users.md": "88c3795ecdd089b5cf494f96f721681a9b67c8b071bfd204117e809e8a4eb913",
-    "src/content/docs/cli/reference/lists.md": "94c32d38f60735b145b8c49dfbf8ff1937415e0c14b7189cb0b155b5725d86e4",
-    "src/content/docs/cli/reference/services.md": "b8305ab83f166285abd3ba4c03a8677bf0d49e314ac9112145084552f9c6e732",
-    "src/content/docs/cli/reference/tags.md": "ad4c556ca87f746a07ebc04b8b7b164e70fb34c052088d8ee88836f820d8f8fc",
-    "src/content/docs/cli/reference/custom-field-definitions.md": "9a893959bf7835c90ac6dbbe34fa96a88fdc8246275b7e04c8d40b2816f71715",
-    "src/content/docs/cli/reference/custom-field-values.md": "97201513788d648b73507c6f1403ac8badafcdb76e35e8e510d8d33a074fe957",
-    "src/content/docs/cli/reference/project-templates.md": "69f0730f74f79cd9d4a83432992eef62c6beef46dd01ecb8c3a2c49540414469",
-    "src/content/docs/cli/reference/project-template-instantiations.md": "a25662f8f19f96285bf036fb535e34087b8d749158844540f505b349ac49e028",
-    "src/content/docs/cli/reference/planned-work.md": "1c40b8a4dabe71111e57d20bdcc674630af98c2b05537f071b5f3937df42deac",
-    "src/content/docs/cli/reference/planned-work-operations.md": "9e77aa7b945e4bf8ee4523ea32842e36c9a43192ecd2b2b66166fd90e31a20b8",
-    "src/content/docs/cli/reference/changes.md": "e569275202b4dd560e9fbd486c03e188445644ca414d3dbcaa5fcd47ff9da5e6",
-    "src/content/docs/cli/reference/audit-events.md": "388396276439029b350244ea939fd6b0713002a4991373d20601a9b7bae6e40f",
-    "src/content/docs/cli/reference/webhook-deliveries.md": "4f63237ca417de74bf9a23fffea19ad4f2be89700d62b5e2cefaf14f4815b1a4",
-    "src/content/docs/cli/reference/appointments.md": "ab85b35383dc2a9de616100a40c92c501c6f169aba63763cc2c9a9d49c6a17f1",
-    "src/content/docs/cli/reference/absences.md": "8f788ce47db886cf0ae02fa8aad65f150440118001fd764a6bb5752a40abebe3",
-    "src/content/docs/cli/reference/availability.md": "a10db5df53b11850bb69c2a5edc73d98b099d1d08081c46b6f948e613f0a5119",
-    "src/content/docs/cli/reference/activity.md": "c7dc5f2f8554aba8bf9b17f21c4fa582bc167c65c06990038e3c6594a401866b",
-    "src/content/docs/cli/reference/comments.md": "3a0dccbd79a099d252d2cceb8d97f0450cef78aea454fa3ff859f4cda49a35f7",
-    "src/content/docs/cli/reference/documents.md": "4bcd5a95f5c44aa2077c21c8e6ebfd2386908ca7dd76c1fd31e5ac4c5e24334b",
-    "src/content/docs/cli/reference/files.md": "92f6636763c234e451810e6d21ad20430626d2eb98a0fb8bd5d88d96c342fdb2",
-    "src/content/docs/cli/reference/file-upload-intents.md": "93896f79361f2cc044af385bb723b9d074c708a994c1d1efb024ce87acd478c0",
-    "src/content/docs/cli/reference/members.md": "59fd9b04fb56416a9bc278da651d929d1ea3a54bdb0f808dc6c91dccf384d7a9",
-    "src/content/docs/cli/reference/invitations.md": "0bc918239eea4a8bf1438b2951b9edf06de20454d66fba9b5ec7870f6e8d2be0",
-    "src/content/docs/cli/reference/roles.md": "e9a6a3ecbf5ec828e2ad898ed007dfdd04de4a54d09d92691a77789c4c3f0bd8",
-    "src/content/docs/cli/reference/groups.md": "2af87ea3236337329c2ba88cac5981cc3b875e07427ccaeb8b0b851e2842865f",
-    "src/content/docs/cli/reference/search.md": "e292cbf9286c9a01b637ce01fa0db9d2672fbf9457514d9a71d4d1eb9799f3bc",
-    "src/content/docs/cli/reference/exports.md": "24b683ca67029c930c4e5298790c7908c7bd56caac6e67000dd145adf97bb7bc",
-    "src/content/docs/cli/reference/automation-actions.md": "03dc4ff59d00a147b34fe5c5fe7fbaa7d700da9f90901c46ae3c9ed90abea0c1",
-    "src/content/docs/cli/reference/automation-definitions.md": "b6031f75b0c48a27ef6db9611926d0139b5a40c50cbfbb3c8d92d2917cf353ad",
-    "src/content/docs/cli/reference/automation-definition-versions.md": "f0efd986511e14d948979079de6fca7a1ae0864c48da928a171a81d3a055952d",
-    "src/content/docs/cli/reference/automation-runs.md": "e31dc90d8b0e86f7c007bf772a912249f8beb72f9572fee42c09334ec2152886",
-    "src/content/docs/cli/reference/integration-installations.md": "00e4f81475601d5496af5eb9d0f36a1fa8c9c9edf8b785bd85cf8945f14c8a58",
-    "src/content/docs/cli/reference/webhooks.md": "18056e99d0abdcb4a3daacaaa0be90975011046bd8ee57879c34b421368e356d"
+    "src/content/docs/cli/reference/index.md": "39a678af2bd1f604079f7bb80148dba6bdb92b5b4f9dc9e64c9a154308574c8d",
+    "src/content/docs/cli/reference/doctor.md": "b6167e2b3bf4157262d12b27e05a409fb3cc6c8a982f16bb5ff318b69cd9ebe6",
+    "src/content/docs/cli/reference/auth.md": "df1ea1b36c1030ac62d65736e82d3e13c41a75e2f8fb32481db6f195f16bc3d8",
+    "src/content/docs/cli/reference/api-version.md": "dad471a80eb154c10c52586edd05aa06d1700e6392985d950e0ac266e6c8339d",
+    "src/content/docs/cli/reference/workspace.md": "6e3c63fdb19d4d767686f3cf2cda8142f2f45af3c82d31c17c43ad7159193364",
+    "src/content/docs/cli/reference/system.md": "1e9030f4823acbdc855f8677447d6fd66b4a134586c9d3514be5ff6cc16b9fc6",
+    "src/content/docs/cli/reference/workspace-settings.md": "0cb47e922dd479ac1be9cd96fd7a5182e3631f7fdf31678dd2d067383cabc650",
+    "src/content/docs/cli/reference/credentials.md": "8b0b0bf9cec11398cf6f4d740ef66103e50b805a6529d418290030227f2a62b2",
+    "src/content/docs/cli/reference/service-accounts.md": "aa55344b9c39694b063b6222c88967ccf6ef7480dfe877e761cef17940681843",
+    "src/content/docs/cli/reference/events.md": "162e2f5daf325c0830060df58a231b8c946e730b26d72f0c8c25699bc9cda48c",
+    "src/content/docs/cli/reference/projects.md": "d7d3a671f07f0828a29f12e538021e87cb944340b46fe88b721ab20b92d4186e",
+    "src/content/docs/cli/reference/project-lifecycle-operations.md": "9923d24199f550f005235d9e5a3baefbf20cd944217aca6fc7e4adafefdfbbf7",
+    "src/content/docs/cli/reference/products.md": "0cc9bfb02f0f7a3c41a201435d1054c0f6ea50267b1391bad27e8853b23d9cff",
+    "src/content/docs/cli/reference/product-groups.md": "fd3fee5b43d0a91a9ea806d98789fc60995fe844a766863c9e7369633b1aec6b",
+    "src/content/docs/cli/reference/project-statements.md": "5cef15c8e9b283f291853cef1f2371cc560bca2e830ef90931325ca280e7ea70",
+    "src/content/docs/cli/reference/tasks.md": "e33dd4a1199baab3c5619c80043d5490199e5d46b173a86010f367d94dbc09d8",
+    "src/content/docs/cli/reference/task-recurrences.md": "466c8b21504dffce068c113437ef6405d9a099fc2bb7b1a9250ae4918383e6d5",
+    "src/content/docs/cli/reference/task-recurrence-operations.md": "3d6a9c2624218b6fd3df79598c74830640309f8531819754cba575f15fbb2197",
+    "src/content/docs/cli/reference/time-entries.md": "192bf0535d8b033d78fd6e09e0f5b235cac735370f4604a6b96384ab5373a870",
+    "src/content/docs/cli/reference/call-notes.md": "1f66769ce0152fdff7f16e2f205d7b7b5a55c2b93789802e23633c5fba8d5f9a",
+    "src/content/docs/cli/reference/contacts.md": "7b491057c5c8d54f2ef6056e4e8611694c01ac9f3028c5894681e47d456c0a01",
+    "src/content/docs/cli/reference/contact-groups.md": "b973ceb2d49cdd7090abbecad4f6888b4c950fc3ca16e976b82e9b3634884f1c",
+    "src/content/docs/cli/reference/users.md": "7c4e956d1014071b4f47377834c560810f78e2f49466cac192bbe0dcb3e0d240",
+    "src/content/docs/cli/reference/lists.md": "6383ed53274ce1dac6da3f1239a788767b4fd4b10f302c7116261442aa353ad8",
+    "src/content/docs/cli/reference/services.md": "fbb4a781d5e6e00c9cf16c0f2dd3de86be09219c30074aba502280d4de62e955",
+    "src/content/docs/cli/reference/tags.md": "d717d1531d3b13b821dcf43d0ef84fdd5894c430085558d37dd4d876165d734a",
+    "src/content/docs/cli/reference/custom-field-definitions.md": "85a57d042849c23e8b0c19b3a067cf4bd5cd7e7536f79cf3ab75bbc8fc094ffb",
+    "src/content/docs/cli/reference/custom-field-values.md": "c0576b347086d3e74d5a6969a7a62e3ac27780100be4c20dd1cfcd0992dd4881",
+    "src/content/docs/cli/reference/project-templates.md": "3a17b4e68a0d7ef737e809f8caf237708ca37370180e75ec6f1dec84b2e665e7",
+    "src/content/docs/cli/reference/project-template-instantiations.md": "93360be1dd31ecb824a3bea78d2b4f493767576768c58fea71f6fb98a40094a1",
+    "src/content/docs/cli/reference/planned-work.md": "861eb928bd4b1c538b77b7d00bc42c9576fde4e50d5f3f328d05789a5fc573ea",
+    "src/content/docs/cli/reference/planned-work-operations.md": "e2dbbdea732f81cd46a2e0c9a363964478d429a431a78d53fad1a77bbbac6c37",
+    "src/content/docs/cli/reference/changes.md": "92c38f30309b526a2802e415bece972c847ce85cece4e76b9472024a4008649a",
+    "src/content/docs/cli/reference/audit-events.md": "dfb28569af2ce2272601374d113c1f4ab6af77ac65376cb1ca166e6082cbed23",
+    "src/content/docs/cli/reference/webhook-deliveries.md": "922f956cd2bc0d9c3293dccf065045404d591d53845765ee44f1df33e0445cd4",
+    "src/content/docs/cli/reference/appointments.md": "5df0575d9d3b72038adee42324901862a431328627c824105a8a3fb647f5ab76",
+    "src/content/docs/cli/reference/absences.md": "cbcb2f6300ddda367166587cc4b36d234cdec6138d05c011aea9e1316db7154b",
+    "src/content/docs/cli/reference/availability.md": "7d394e47ae6d653f3f204b76f808119e456d9ce36b2e522dc7562e9f2763051f",
+    "src/content/docs/cli/reference/activity.md": "9ac6ace09a44edc5eb31f20bb3399a41ba8f6b551e569b913823ff40307886be",
+    "src/content/docs/cli/reference/comments.md": "34c05b966c83cf48b380415d2ab02381b325569c353ba0aa0ddcc7a2571c867c",
+    "src/content/docs/cli/reference/documents.md": "2ff31f2291e9c3a9f8b9950d442226835d88e36118c81fe684cb559731c877f1",
+    "src/content/docs/cli/reference/files.md": "b0be7d5f10b878e33a6b4996a05c1600ec8ada2ff049ae63a37d38460cf1db94",
+    "src/content/docs/cli/reference/file-upload-intents.md": "7ce653cb0820332c2519bf0bbfefc14ee9abf261568bb84805f181b98b47326d",
+    "src/content/docs/cli/reference/members.md": "058d13959495331eeec2543577d887dbb7b4b801d8645b86bd305e9389086daf",
+    "src/content/docs/cli/reference/invitations.md": "bd40ac791db38b90d73a57112f167bc980aaa0e3da519fa42a8d35adb3d907d6",
+    "src/content/docs/cli/reference/roles.md": "3896ec8f8dd0526f54af15903de532c06c9369cee029647e92f0024b9bb2e6e2",
+    "src/content/docs/cli/reference/groups.md": "578fb5a73f54ba8f56902954dcc473ebfdd66a929b49004324e5a4801ca83557",
+    "src/content/docs/cli/reference/search.md": "362448551384d59fe66bc46a8b4d78212e97ddc4fa5e975a37155303f220edce",
+    "src/content/docs/cli/reference/exports.md": "ce42d9cc17bb389b3f208b084d4b49871afe07c9fc6ef2dd2461f17886bdff4a",
+    "src/content/docs/cli/reference/automation-actions.md": "abd13600a4ecc31ecc3d679263dc020de44b3181216c904dda58df8d58c5abaa",
+    "src/content/docs/cli/reference/automation-definitions.md": "b75699a5efeed6fbf827314851fd2b85627222ceea9b655b8f160a6b06cd99e1",
+    "src/content/docs/cli/reference/automation-definition-versions.md": "df2548f5f26f93460c0f92793e1fc7d97d5ea9c616bf41e9ffdacab31051bda5",
+    "src/content/docs/cli/reference/automation-runs.md": "3a684d76fbeff329a10d3bf5225e730b2c0bed9d93e49997483db8352f5a9207",
+    "src/content/docs/cli/reference/integration-installations.md": "ba6be4cb4a202a57d717a3b7605218b6008be1669fd49cfaa8cf9909a3730b26",
+    "src/content/docs/cli/reference/webhooks.md": "2dc6c72b9dcaa1a547ac7af4b0e646da30119d0bd82fbc8aa218314f93d61878"
   }
 }

@@ -2,12 +2,12 @@
 title: Change feed
 description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-19
 ---
 
 `GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
 `changes:read` plus the read scopes and resource grants for every requested domain. The contract
-covers 23 resource types and reports created, updated, archived, restored, or deleted identities
+covers 24 resource types and reports created, updated, archived, restored, or deleted identities
 without embedding a private resource snapshot.
 
 Each page returns an opaque `nextCursor` and a `caughtUp` flag. Persist the cursor only after the
@@ -55,6 +55,20 @@ Change events are invalidation metadata. After an update, read the resource thro
 endpoint when the mirror needs the latest authorized fields. A tombstone signals that the
 credential can no longer retrieve the previous state; consumers must remove or re-evaluate their
 local copy.
+
+## Recurring-task reconciliation
+
+Request `resourceTypes=taskRecurrence` with `changes:read`, `task-recurrences:read`, and
+`tasks:read` to reconcile recurrence series. Definition changes, lifecycle transitions, ownership
+changes, rechecks that change series state, and removal from tasks appear as updates to the series
+identity. Follow the event with `GET /v1/task-recurrences/{id}` to obtain the authorized current
+definition and lifecycle state.
+
+Generated tasks remain ordinary `task` resources and must be included separately when the mirror
+needs them. Occurrence-ledger rows, preview results and asynchronous operation resources are not
+change-feed resource types; inspect them through their bounded recurrence endpoints. In
+particular, a remove-from-tasks update tells a consumer to re-read the ended series. Its historical
+occurrences then expose `cardId: null` plus `detachedCardId`, `detachedAt`, and `detachedBy`.
 
 ## Recovery and boundaries
 

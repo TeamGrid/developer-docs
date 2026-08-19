@@ -14,10 +14,11 @@ const currentPackageVersion = packageManifest.version
 export const developerReleases: DeveloperRelease[] = [
   {
     date: '2026-08-16',
-    description: 'The backward-compatible task-description format and synchronized client release.',
+    description: 'The advanced recurring-task and synchronized client release.',
     highlights: [
       'Explicit task description formats without rewriting existing customer content',
-      'Backward-compatible API, SDK, CLI, and MCP description handling',
+      'Advanced recurring tasks with immutable occurrences and deliberate task detachment',
+      'Backward-compatible API, SDK, CLI, and read-only MCP coverage',
       `Synchronized ${currentPackageVersion} SDK, CLI, MCP, examples, and references`,
     ],
     stability: 'stable',

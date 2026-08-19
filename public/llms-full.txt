@@ -1799,7 +1799,7 @@ not a substitute for those checks.
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-19
 ---
 
 API v1 accepts three reveal-once bearer credential formats:
@@ -1855,8 +1855,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
 - Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
-- The API and App cell must negotiate the exact code-owned 211-operation action-policy registry,
-  including all 209 credential-authenticated operations,
+- The API and App cell must negotiate the exact code-owned 237-operation action-policy registry,
+  including all 235 credential-authenticated operations,
   before the service is ready.
 
 Every valid credential can inspect only its own safe metadata through `GET /v1/auth/context`. This
@@ -1892,6 +1892,7 @@ desktop, remote terminal, container, MCP, SDK, and CI choices.
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
 | `projects:sharing` | Read and atomically replace project access-control entries; sensitive scope for human principals |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
+| `task-recurrences:read`, `task-recurrences:write`, `task-recurrences:run` | Read recurring-task state; manage, preview and recheck series; or submit external triggers. Reads also require `tasks:read`; writes and recheck require `tasks:read` plus `tasks:write`; only external event submission uses `task-recurrences:run` plus `tasks:write` |
 | `time-entries:read`, `time-entries:write` | Time entries |
 | `time-entries:billing` | Read and compare-and-set billable state and billing rate; sensitive finance scope |
 | `contacts:read`, `contacts:write` | Contacts |
@@ -2043,12 +2044,12 @@ including the `all` profile.
 title: Change feed
 description: Build durable cell-local mirrors with opaque checkpoints and bounded catch-up reads.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-19
 ---
 
 `GET /v1/changes` is the durable metadata-only synchronization feed for API v1. It requires
 `changes:read` plus the read scopes and resource grants for every requested domain. The contract
-covers 23 resource types and reports created, updated, archived, restored, or deleted identities
+covers 24 resource types and reports created, updated, archived, restored, or deleted identities
 without embedding a private resource snapshot.
 
 Each page returns an opaque `nextCursor` and a `caughtUp` flag. Persist the cursor only after the
@@ -2096,6 +2097,20 @@ Change events are invalidation metadata. After an update, read the resource thro
 endpoint when the mirror needs the latest authorized fields. A tombstone signals that the
 credential can no longer retrieve the previous state; consumers must remove or re-evaluate their
 local copy.
+
+## Recurring-task reconciliation
+
+Request `resourceTypes=taskRecurrence` with `changes:read`, `task-recurrences:read`, and
+`tasks:read` to reconcile recurrence series. Definition changes, lifecycle transitions, ownership
+changes, rechecks that change series state, and removal from tasks appear as updates to the series
+identity. Follow the event with `GET /v1/task-recurrences/{id}` to obtain the authorized current
+definition and lifecycle state.
+
+Generated tasks remain ordinary `task` resources and must be included separately when the mirror
+needs them. Occurrence-ledger rows, preview results and asynchronous operation resources are not
+change-feed resource types; inspect them through their bounded recurrence endpoints. In
+particular, a remove-from-tasks update tells a consumer to re-read the ended series. Its historical
+occurrences then expose `cardId: null` plus `detachedCardId`, `detachedAt`, and `detachedBy`.
 
 ## Recovery and boundaries
 
@@ -2330,10 +2345,10 @@ payloads to support.
 title: API v1 overview
 description: Use TeamGrid API v1 for scoped, cell-aware reads, writes, audit access, and signed webhooks.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-18
 ---
 
-API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.0.0` contains 132 paths and 211 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
+API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.1.0` contains 154 paths and 237 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
 
 ## Base URL
 
@@ -2354,7 +2369,7 @@ Do not send a bearer credential through a cross-region redirect. The target cell
 ## Available resources
 
 API v1 currently provides capability discovery, workspace entitlements and safe workspace settings;
-workspace and administration resources; projects, tasks, time entries,
+workspace and administration resources; projects, tasks, recurring tasks, time entries,
 planned work, appointments, absences, and availability; contacts, comments, activity, documents,
 files, call notes, and contact groups; product and project-statement resources; federated search and
 bounded export jobs; automation definitions, action metadata, runs, and integration-installation
@@ -2364,7 +2379,7 @@ and credential-owned asynchronous-operation resources.
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
 Projects, project sharing, tasks, and project templates expose developer revisions and require strong
-`If-Match` preconditions for their 18 mutating operations. Another 34 protected operations retain
+`If-Match` preconditions for their 18 mutating operations. Another 47 protected operations retain
 domain-specific revision formats. Review [resource concurrency](/api/v1/resource-concurrency/)
 before building a writer.
 
@@ -2757,6 +2772,280 @@ Task, project, and project-template mutations require the latest strong ETag thr
 Other protected resource families retain their own explicit revision formats; see
 [resource concurrency](/api/v1/resource-concurrency/) before adding writes.
 
+<!-- api/v1/recurring-tasks.md -->
+---
+title: Recurring tasks
+description: Create advanced task series, preview schedules, manage immutable versions, override occurrences, and recover asynchronous operations.
+owner: Developer Experience
+reviewedAt: 2026-08-19
+---
+
+Recurring tasks are task automation, not calendar appointments. A recurrence series owns an
+immutable sequence of definition versions. Each definition contains a safe task template and a
+deterministic policy. Evaluating that policy creates occurrence-ledger entries; materialization
+creates ordinary TeamGrid tasks with read-only recurrence provenance.
+
+## Choose scopes and ownership
+
+Read operations require `task-recurrences:read` and `tasks:read`. Preview, definition, lifecycle,
+occurrence, recheck and operation-cancellation writes require all of `task-recurrences:write`,
+`tasks:read`, and `tasks:write`. Only external trigger submission uses `task-recurrences:run` plus
+`tasks:write`. Workspace entitlement, task permissions, sharing, resource grants and series
+ownership are enforced in addition to credential scopes.
+
+| Workflow | Required scopes |
+| --- | --- |
+| List/get series, versions, occurrences, stored previews and operation status | `task-recurrences:read`, `tasks:read` |
+| Create or preview a draft; update, pause, resume, end, archive, restore, transfer, recheck or remove a series from tasks | `task-recurrences:write`, `tasks:read`, `tasks:write` |
+| Restore a version; override, clear or retry an occurrence; cancel an operation | `task-recurrences:write`, `tasks:read`, `tasks:write` |
+| Submit an external event | `task-recurrences:run`, `tasks:write` |
+
+Use a service account for a shared integration and a personal credential for user-owned
+automation. A guessed series or occurrence from another workspace remains indistinguishable from
+a missing resource.
+
+## Preview before creating
+
+`POST /task-recurrences/preview` validates the complete template, references, policy complexity,
+time zone and daylight-saving behavior without creating a series. A small preview returns `200`
+and a `taskRecurrencePreview`. A permitted high-cost policy returns `202`, a
+`taskRecurrenceOperation`, and its exact polling URL in `Location`.
+
+With the SDK, handle both results explicitly:
+
+```ts
+const draft = await client.taskRecurrences.preview({
+  count: 20,
+  policy,
+  template: { name: 'Weekly account review', projectId: 'project-id' },
+})
+
+const preview = draft.data.type === 'taskRecurrenceOperation'
+  ? await client.taskRecurrenceOperations.wait(draft.data.id)
+  : draft
+```
+
+Async draft payloads are encrypted and removed after the operation succeeds, fails or is
+cancelled. Operation status remains available for a bounded retention period. Poll through the
+returned regional client; do not construct a different cell URL.
+
+## Create a series from a task
+
+The safest initial template is an existing task. Supply a stable idempotency key:
+
+```ts
+const created = await client.taskRecurrences.create({
+  name: 'Weekly account review',
+  sourceTaskId: 'task-id',
+  policy: {
+    candidates: {
+      nodeId: 'weekly-review',
+      op: 'calendarRule',
+      rule: {
+        byWeekDay: [1],
+        frequency: 'weekly',
+        interval: 1,
+        startLocal: '2026-08-24T09:00:00',
+      },
+    },
+    conditions: [],
+    engineVersion: 'recurrence-v1',
+    limits: { maxOccurrences: null, until: null },
+    materialization: {
+      catchUp: 'latest',
+      lead: { unit: 'day', value: 0 },
+      overlap: 'defer',
+    },
+    schemaVersion: 1,
+    timeBasis: {
+      disambiguation: 'compatible',
+      mode: 'wall-clock',
+      timeZone: 'Europe/Berlin',
+    },
+    transforms: [],
+  },
+}, { idempotencyKey: 'weekly-account-review-v1' })
+```
+
+Wall-clock rules preserve local time when UTC offset changes. Choose `earlier`, `later` or `reject`
+instead of `compatible` when ambiguous daylight-saving times need an explicit business decision.
+Elapsed-time rules preserve duration instead.
+
+The policy AST also supports date and month sets, sequences, unions, intersections, differences,
+deduplication, occurrence/project/external events, offsets, business calendars, local-time
+mapping, exclusions, limits and conditions. Use the exact OpenAPI schema; unknown fields,
+unbounded nesting, duplicate node IDs and unsupported values fail closed.
+
+Calendar rules with impossible month dates default to `invalidDayHandling: "omit"`. Set
+`previous-valid-day` or `next-valid-day` only when that movement is the intended business rule.
+Duration and offset values are whole numbers. Business-day durations use the referenced working
+calendar, holidays and configured absences rather than elapsed 24-hour blocks.
+
+Materialization policy is explicit:
+
+- `catchUp` can be `none`, `latest`, `all`, or `bounded`; `bounded` requires `catchUpLimit` from
+  1 through 100.
+- `overlap` can be `allow`, `defer`, `skip`, `latest-only`, or `pause-series`.
+- `lead` controls how far before the scheduled occurrence the ordinary task is created.
+
+Paused, suspended and attention-required series retain accepted trigger events but do not enter
+the active materialization batch. Resume applies the selected catch-up rule; ended and archived
+series reject new trigger events. Event ingress/evaluation is bounded to 90 days. The newest-first
+search for `latest` and `bounded` catch-up expands through a five-year engine horizon so a stale
+series cannot trigger an unbounded foreground scan.
+
+For a completion-relative source, omitting `completionMode` is equivalent to
+`first-completion-only`. Reopening and completing the same task does not create another successor.
+Set `completionMode: "every-completion-transition"` only when each distinct reopen/complete cycle
+must create one successor; transport retries of the same transition remain idempotent.
+
+## Update without rewriting history
+
+Read the series and use its strong ETag for every mutation:
+
+```ts
+const current = await client.taskRecurrences.get(created.data.id)
+const updated = await client.taskRecurrences.update(
+  current.data.id,
+  { changeReason: 'Move future reviews to Tuesday', policy: nextPolicy },
+  { ifMatch: current.transport.headers.etag! },
+)
+```
+
+An update creates a new immutable definition. `effectiveFromOccurrenceKey` on version resources
+records the first replaced non-materialized occurrence when one exists. Already generated tasks
+stay unchanged. The runtime supersedes and deterministically replans only non-materialized
+entries. A stale ETag returns `412`; re-read and decide whether to merge.
+
+Use version list/get/restore for audited rollback. Restore creates another new version rather than
+mutating the selected historical definition.
+
+## Change only one occurrence
+
+List or preview occurrences to obtain the stable `occurrenceKey`. The occurrence ETag is separate
+from the series ETag:
+
+```ts
+const occurrence = await client.taskRecurrenceOccurrences.get(seriesId, occurrenceKey)
+await client.taskRecurrenceOccurrences.override(
+  seriesId,
+  occurrenceKey,
+  {
+    action: 'materialize',
+    scheduledForLocal: '2026-09-01T14:30:00',
+    templatePatch: { name: 'Special quarterly review' },
+  },
+  { ifMatch: occurrence.transport.headers.etag! },
+)
+```
+
+An override can move, skip or safely patch one not-yet-materialized occurrence. Clear the override
+to return it to the series plan. Retry only blocked, failed or skipped work after correcting its
+cause. A definition change invalidates a stale occurrence mutation rather than applying a new
+patch to an old template.
+
+For a future item that is visible in `previewStored` but has no ledger resource yet, use its opaque
+`placeholderToken` and the exclusive create precondition. The token is short-lived and bound to
+the workspace, series, occurrence key and active immutable definition:
+
+```ts
+const preview = await client.taskRecurrences.previewStored(seriesId, { count: 20 })
+const future = preview.data.attributes.occurrences[0]
+await client.taskRecurrenceOccurrences.override(
+  seriesId,
+  future.occurrenceKey,
+  { action: 'skip', placeholderToken: future.placeholderToken! },
+  { createIfMissing: true },
+)
+```
+
+HTTP callers send `If-None-Match: *` for this create path. Existing occurrences still require
+exactly one current `If-Match: "tro1-…"`; sending both headers fails before the internal mutation.
+
+## Lifecycle and recovery
+
+Pause prevents new materialization; resume explicitly revalidates current permissions,
+entitlement, owner and references. Archive can be restored only as paused. End is terminal.
+Unavailable users, projects, lists, groups, tags, services or custom fields place a series into
+`suspended` or `needs_attention` instead of silently changing its task destination.
+
+Recheck returns `202`. Poll or wait for its operation:
+
+```ts
+const accepted = await client.taskRecurrences.recheck(seriesId)
+const terminal = await client.taskRecurrenceOperations.wait(accepted.data.id, {
+  maxWaitMs: 300_000,
+  pollIntervalMs: 1_000,
+})
+```
+
+CLI automation can use the same boundary:
+
+```bash
+teamgrid task-recurrences recheck SERIES_ID --wait --output json
+teamgrid task-recurrence-operations wait OPERATION_ID --output json
+```
+
+## Remove a recurrence from its tasks
+
+Ending a series stops future work but leaves recurrence provenance on tasks that were already
+materialized. Use the separate compare-and-set operation when the user explicitly wants those
+tasks to become ordinary tasks again:
+
+```ts
+const current = await client.taskRecurrences.get(seriesId)
+const removed = await client.taskRecurrences.removeFromTasks(seriesId, {
+  ifMatch: current.transport.headers.etag!,
+})
+```
+
+```bash
+teamgrid task-recurrences remove-from-tasks SERIES_ID \
+  --if-match '"tr1-<current revision>"' \
+  --yes \
+  --output json
+```
+
+The matching HTTP operation is
+`POST /v1/task-recurrences/{id}/remove-from-tasks`. It requires the latest strong series ETag and
+returns the ended series with a new ETag. The mutation is atomic across the series, materialized
+tasks and occurrence ledger:
+
+- the series becomes terminal `ended`, so it cannot be resumed or restored;
+- generated tasks are not deleted, archived or otherwise changed, but all server-managed
+  recurrence-link fields are removed;
+- occurrence history remains immutable and auditable;
+- a detached occurrence exposes `cardId: null`, its former task as `detachedCardId`, and the
+  `detachedAt` and `detachedBy` audit fields;
+- the now-ordinary task can seed a different recurrence through the normal create workflow.
+
+A stale ETag returns `412`, a missing one returns `428`, and insufficient access fails without a
+partial detach. The SDK requires `ifMatch`; the CLI additionally requires an interactive
+confirmation or explicit `--yes`. The operation is deliberately unavailable through MCP.
+
+## Event-driven series
+
+An `externalEvent` source subscribes a series to an exact `eventType` and optional `sourceId`.
+Submit a bounded envelope to `POST /task-recurrences/{id}/events`. `eventId` is the idempotency
+identity: replaying the same envelope is safe, while reusing it with different content returns a
+conflict. Event timestamps are bounded by the documented retention and future-skew window.
+
+Use signed webhooks for low-latency output notifications and the change feed with
+`resourceTypes=taskRecurrence` for durable series reconciliation. Generated tasks are ordinary
+`task` resources and therefore use the task feed. Occurrence-ledger rows are read through their
+dedicated endpoints and are not a change-feed resource type. An event acceptance response means
+the trigger is durably queued; it does not promise that its generated task already exists.
+
+## MCP boundary
+
+The MCP server exposes exactly seven bounded read-only recurrence tools:
+`teamgrid_task_recurrences_list`, `teamgrid_task_recurrence_get`,
+`teamgrid_task_recurrence_preview`, `teamgrid_task_recurrence_versions_list`,
+`teamgrid_task_recurrence_version_get`, `teamgrid_task_recurrence_occurrences_list`, and
+`teamgrid_task_recurrence_occurrence_get`. It deliberately excludes unsaved drafts, lifecycle
+writes, detachment, overrides, retries, event ingress and operation control. Use the API, SDK or
+CLI for those actions.
+
 <!-- api/v1/regions.md -->
 ---
 title: Regional endpoints
@@ -2800,7 +3089,7 @@ these validators on their qualified reads and mutations.
 title: Resource concurrency
 description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-19
 ---
 
 API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the
@@ -2809,7 +3098,7 @@ Never derive an ETag from an ID, timestamp, or another resource.
 
 ## Projects, tasks, and project templates
 
-The `1.0.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
+The `1.1.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
@@ -2865,7 +3154,7 @@ reuse the pre-mutation validator.
 
 ## Other protected resources
 
-Another 34 operations retain their domain-specific compare-and-set contracts:
+Another 47 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |
@@ -2874,6 +3163,7 @@ Another 34 operations retain their domain-specific compare-and-set contracts:
 | Documents and files | 6 |
 | Custom-field values | 2 |
 | Planned work | 1 |
+| Recurring-task series, versions, templates, occurrences, and task detachment | 13 |
 | Members, invitations, roles, and groups | 8 |
 | Service-account resource grants | 1 |
 | Time-entry billing | 1 |
@@ -3043,7 +3333,7 @@ See [custom fields](/api/v1/custom-fields/) before writing values.
 title: Search and exports
 description: Search authorized resources and download bounded CSV exports through a header-only capability.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-19
 ---
 
 ## Federated search
@@ -3061,8 +3351,8 @@ tool. Use a dedicated credential and request only the resource types needed for 
 
 ## Bounded asynchronous exports
 
-`POST /exports` creates a CSV export job for `contacts`, `projects`, `tasks`, `timeEntries`, or
-`auditEvents`.
+`POST /exports` creates a CSV export job for `contacts`, `projects`, `taskRecurrences`, `tasks`,
+`timeEntries`, or `auditEvents`.
 Exports are bounded to 10,000 rows and at most 16 selected fields. The request supports archived and
 updated-at filters and must use a stable `Idempotency-Key` when retried.
 
@@ -3070,6 +3360,12 @@ Creating a job requires `exports:write`; status and download operations require 
 matching domain read scope and analytics permission are also enforced. Poll `GET /exports/{id}` until
 the state is `succeeded` or `failed`; a successful job records whether the requested result was
 truncated.
+
+A `taskRecurrences` export requires `task-recurrences:read`, `tasks:read`, and the normal task
+permission. Its allowlisted projection includes series identity, name, lifecycle status, owner,
+project, current definition identity/version/hash and timestamps. Optional fields can include the
+canonical policy, task template and human summary. It exports series state, not occurrence-ledger
+rows or generated task content; export generated tasks separately with `resourceType: "tasks"`.
 
 Audit exports additionally require `audit:read` and an immutable `createdAtTo` snapshot boundary.
 They may use `createdAtFrom`, span at most 366 days, and never accept updated-at or archive filters.
@@ -3251,7 +3547,7 @@ TeamGrid data.
 title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
 owner: Security
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-19
 ---
 
 Webhook registrations created through API v1 use signed delivery version 2. The create response
@@ -3340,6 +3636,34 @@ Do not parse and re-serialize JSON before verification. Whitespace and byte enco
 
 Legacy UI-created webhook v1 registrations remain unsigned during migration. TeamGrid does not silently downgrade a v2 registration when signing is unavailable.
 
+## Recurring-task events
+
+Recurring tasks publish an explicit, finite event catalog:
+
+| Event | Emitted when | Required subscription scopes |
+| --- | --- | --- |
+| `task_recurrence_created` | A series is created | `task-recurrences:read` |
+| `task_recurrence_updated` | Its definition, owner or same-status metadata changes | `task-recurrences:read` |
+| `task_recurrence_paused`, `task_recurrence_resumed` | The lifecycle enters paused or active | `task-recurrences:read` |
+| `task_recurrence_ended`, `task_recurrence_archived` | The lifecycle enters its corresponding terminal/archive state | `task-recurrences:read` |
+| `task_recurrence_suspended`, `task_recurrence_needs_attention` | Runtime validation blocks safe execution | `task-recurrences:read` |
+| `task_recurrence_occurrence_materialized` | An occurrence creates its ordinary task | `task-recurrences:read`, `tasks:read` |
+| `task_recurrence_occurrence_skipped` | An occurrence is deliberately skipped | `task-recurrences:read` |
+| `task_recurrence_occurrence_failed` | An occurrence enters failed; blocked work uses the same failure notification family | `task-recurrences:read` |
+
+Series payloads contain only the series ID, lifecycle/attention state, current definition version
+ID, developer revision, name, owner, resource context, workspace ID and update time. They do not
+embed the complete policy or task template. Occurrence payloads contain the occurrence and series
+IDs, stable occurrence key, definition version, state, scheduled time, sanitized error code,
+linked task identity when available, workspace ID and update time. After an explicit detachment,
+the historical task identity may be carried with `detachedAt` and `detachedBy`; follow-up reads use
+the public occurrence projection where `cardId` is null and `detachedCardId` is explicit.
+
+`POST /task-recurrences/{id}/remove-from-tasks` emits the normal
+`task_recurrence_ended` series event. It does not synthesize task-deletion events because the tasks
+remain in TeamGrid. Use `resourceTypes=taskRecurrence` plus `resourceTypes=task` in the durable
+change feed when a mirror must reconcile both series state and ordinary task projections.
+
 ## Delivery history
 
 API v1 provides cursor-paginated, read-only delivery history through `/v1/webhook-deliveries`. A
@@ -3359,13 +3683,13 @@ Use delivery history for bounded troubleshooting, not as a durable event store o
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
 ## Current platform
 
-API v1 remains on its stable `1.0.0` contract while the SDK, CLI, and MCP npm packages are
-synchronized at stable version `1.0.7`.
+API v1 uses the stable `1.1.0` contract while the SDK, CLI, and MCP npm packages are synchronized
+at stable version `1.1.0`.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -3375,6 +3699,25 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Developer Platform 1.1.0 · 2026-08-18
+
+- Added advanced recurring tasks as task automation with immutable definition versions,
+  deterministic wall-clock or elapsed-time policies, business calendars, lifecycle controls,
+  occurrence overrides, external triggers, recovery operations, and ordinary generated tasks.
+- Added 26 recurrence operations across API v1, TypeScript SDK, and CLI, including the explicit
+  compare-and-set workflow that ends a series and removes recurrence links from its tasks while
+  preserving occurrence audit history. Seven bounded recurrence
+  reads are available in the curated MCP server; mutation, event-ingress, and operation-control
+  tools remain deliberately excluded.
+- Added short-lived, definition-bound placeholder proofs and `If-None-Match: *` so a stored-preview
+  occurrence can be overridden before its immutable ledger row exists. Existing occurrences retain
+  strong ETag and `If-Match` concurrency.
+- Expanded the synchronized contract to 154 paths, 237 governed operations, 90 scopes, and a
+  24-resource durable change feed. The SDK exposes 236 mapped operations through 54 clients; the
+  CLI exposes 243 commands in 54 groups, and MCP exposes 36 curated read-only tools.
+- Qualified aligned 1.1.0 package artifacts with production dependency, edge-runtime, type,
+  conformance, redaction, size-budget, and clean packed-install gates.
 
 ## Developer Platform 1.0.7 · 2026-08-16
 
@@ -3845,7 +4188,7 @@ Global options can be placed before a command group.
 | `--timeout <milliseconds>` | Set the request timeout; default is 30 seconds |
 | `--retries <0–5>` | Set bounded safe-request retries; default is 2 |
 
-This workflow guide covers every command group in CLI `1.0.7`. For exact syntax, arguments,
+This workflow guide covers every command group in CLI `1.1.0`. For exact syntax, arguments,
 options, defaults, choices, API operations, scopes, output behavior, confirmations, examples, and
 exit codes, use the generated [CLI command reference](/cli/reference/). It is derived from the same
 Commander tree as the released package and checked against the API capability manifest.
@@ -3945,6 +4288,28 @@ teamgrid projects update PROJECT_ID --data '{"color":"#3772ff"}' --if-match REVI
 teamgrid projects complete PROJECT_ID \
   --if-match REVISION --idempotency-key close-42 --wait
 ```
+
+## Recurring tasks
+
+```text
+teamgrid task-recurrences list|get|create|preview|update
+teamgrid task-recurrences pause|resume|end|archive|restore SERIES_ID --if-match REVISION
+teamgrid task-recurrences preview-stored SERIES_ID
+teamgrid task-recurrences owner SERIES_ID --data <json|@file|-> --if-match REVISION
+teamgrid task-recurrences template-from-task SERIES_ID --data <json|@file|-> --if-match REVISION
+teamgrid task-recurrences versions list|get|restore
+teamgrid task-recurrences occurrences list|get|override|clear-override|retry
+teamgrid task-recurrences recheck SERIES_ID [--wait]
+teamgrid task-recurrences events submit SERIES_ID --data <json|@file|->
+teamgrid task-recurrence-operations get|wait|cancel OPERATION_ID
+```
+
+Series and existing occurrence mutations use separate strong revisions. A future occurrence from
+`preview-stored` uses `occurrences override --create-if-missing` plus the opaque
+`placeholderToken` in its JSON; this flag is mutually exclusive with `--if-match`. Archive, end
+and operation cancel also require `--yes` in non-interactive use. An unsaved high-cost preview returns an operation;
+pass its ID to `task-recurrence-operations wait`. See [Recurring tasks](/api/v1/recurring-tasks/)
+for immutable-version, occurrence identity, trigger idempotency and recovery semantics.
 
 Project lists support `--archived`, `--completed`, `--contact-id`, `--created-by-id`,
 `--individual-id`, `--list-id`, `--manager-id`, and `--subscriber-id`. Multiple filters are
@@ -4320,7 +4685,7 @@ reviewedAt: 2026-08-10
 Install the exact verified stable package version:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7
+npm install --global @teamgrid/cli@1.1.0
 teamgrid --version
 ```
 
@@ -4367,7 +4732,7 @@ reviewedAt: 2026-08-10
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7
+npm install --global @teamgrid/cli@1.1.0
 teamgrid --help
 ```
 
@@ -4499,9 +4864,9 @@ npm list --global @teamgrid/cli --depth=0
 
 On macOS or Linux, `command -v teamgrid` shows the executable selected by `PATH`. In PowerShell,
 use `Get-Command teamgrid`. If those commands point to an old Node installation or package prefix,
-remove that stale path before reinstalling. CLI `1.0.7` requires Node.js 22.14 through 24.
+remove that stale path before reinstalling. CLI `1.1.0` requires Node.js 22.14 through 24.
 
-The CLI does not provide a shell-completion generator in `1.0.7`. Use the exact generated
+The CLI does not provide a shell-completion generator in `1.1.0`. Use the exact generated
 [command reference](/cli/reference/) or the nested help available at every level:
 
 ```bash
@@ -4515,7 +4880,7 @@ teamgrid tasks update --help
 Install the exact stable version again to upgrade or repair a global installation:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7
+npm install --global @teamgrid/cli@1.1.0
 teamgrid --version
 teamgrid auth status --check
 ```
@@ -4588,7 +4953,7 @@ interactive confirmation gets exit code `0` and no mutation.
 
 ## Corporate networks, proxies, and private CAs
 
-CLI `1.0.7` has no dedicated proxy option. `--base-url` changes the API endpoint and is not a
+CLI `1.1.0` has no dedicated proxy option. `--base-url` changes the API endpoint and is not a
 forward-proxy setting. A machine must have an approved HTTPS path to the credential's regional
 TeamGrid cell; verify that path with:
 
@@ -4675,12 +5040,12 @@ reveal-once output, or raw configuration files.
 <!-- cli/reference/absences.md -->
 ---
 title: "teamgrid absences"
-description: "6 executable @teamgrid/cli commands in the absences group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the absences group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage absences.
 
@@ -4975,12 +5340,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/activity.md -->
 ---
 title: "teamgrid activity"
-description: "1 executable @teamgrid/cli commands in the activity group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the activity group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect target-owned activity.
 
@@ -5048,12 +5413,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/api-version.md -->
 ---
 title: "teamgrid api-version"
-description: "1 executable @teamgrid/cli commands in the api-version group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the api-version group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 discover the TeamGrid API version.
 
@@ -5114,12 +5479,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/appointments.md -->
 ---
 title: "teamgrid appointments"
-description: "6 executable @teamgrid/cli commands in the appointments group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the appointments group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage appointments.
 
@@ -5414,12 +5779,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/audit-events.md -->
 ---
 title: "teamgrid audit-events"
-description: "1 executable @teamgrid/cli commands in the audit-events group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the audit-events group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 list Developer Platform audit events.
 
@@ -5496,12 +5861,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/auth.md -->
 ---
 title: "teamgrid auth"
-description: "4 executable @teamgrid/cli commands in the auth group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the auth group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 manage local credential profiles.
 
@@ -5686,12 +6051,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/automation-actions.md -->
 ---
 title: "teamgrid automation-actions"
-description: "1 executable @teamgrid/cli commands in the automation-actions group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the automation-actions group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect the public automation action catalog.
 
@@ -5752,12 +6117,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/automation-definition-versions.md -->
 ---
 title: "teamgrid automation-definition-versions"
-description: "1 executable @teamgrid/cli commands in the automation-definition-versions group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the automation-definition-versions group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect immutable automation definition versions.
 
@@ -5828,12 +6193,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/automation-definitions.md -->
 ---
 title: "teamgrid automation-definitions"
-description: "6 executable @teamgrid/cli commands in the automation-definitions group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the automation-definitions group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and administer automation definitions.
 
@@ -6125,12 +6490,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/automation-runs.md -->
 ---
 title: "teamgrid automation-runs"
-description: "3 executable @teamgrid/cli commands in the automation-runs group, generated from CLI 1.0.7."
+description: "3 executable @teamgrid/cli commands in the automation-runs group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect and control automation runs.
 
@@ -6293,12 +6658,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/availability.md -->
 ---
 title: "teamgrid availability"
-description: "1 executable @teamgrid/cli commands in the availability group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the availability group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect derived availability.
 
@@ -6364,12 +6729,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/call-notes.md -->
 ---
 title: "teamgrid call-notes"
-description: "5 executable @teamgrid/cli commands in the call-notes group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the call-notes group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage call notes.
 
@@ -6612,12 +6977,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/changes.md -->
 ---
 title: "teamgrid changes"
-description: "2 executable @teamgrid/cli commands in the changes group, generated from CLI 1.0.7."
+description: "2 executable @teamgrid/cli commands in the changes group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 create checkpoints and read the cell-local change feed.
 
@@ -6728,12 +7093,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/comments.md -->
 ---
 title: "teamgrid comments"
-description: "5 executable @teamgrid/cli commands in the comments group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the comments group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage target comments.
 
@@ -6981,12 +7346,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/contact-groups.md -->
 ---
 title: "teamgrid contact-groups"
-description: "6 executable @teamgrid/cli commands in the contact-groups group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the contact-groups group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage contact groups.
 
@@ -7274,12 +7639,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/contacts.md -->
 ---
 title: "teamgrid contacts"
-description: "4 executable @teamgrid/cli commands in the contacts group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the contacts group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and mutate contacts.
 
@@ -7482,12 +7847,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/credentials.md -->
 ---
 title: "teamgrid credentials"
-description: "4 executable @teamgrid/cli commands in the credentials group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the credentials group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 manage native API v1 credentials.
 
@@ -7698,12 +8063,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/custom-field-definitions.md -->
 ---
 title: "teamgrid custom-field-definitions"
-description: "6 executable @teamgrid/cli commands in the custom-field-definitions group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the custom-field-definitions group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage custom-field definitions.
 
@@ -7994,12 +8359,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/custom-field-values.md -->
 ---
 title: "teamgrid custom-field-values"
-description: "4 executable @teamgrid/cli commands in the custom-field-values group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the custom-field-values group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and compare-and-set custom-field values.
 
@@ -8213,12 +8578,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/doctor.md -->
 ---
 title: "teamgrid doctor"
-description: "1 executable @teamgrid/cli commands in the doctor group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the doctor group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 run read-only configuration, credential, routing, network, and API checks.
 
@@ -8277,12 +8642,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/documents.md -->
 ---
 title: "teamgrid documents"
-description: "6 executable @teamgrid/cli commands in the documents group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the documents group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage documents.
 
@@ -8574,12 +8939,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/events.md -->
 ---
 title: "teamgrid events"
-description: "1 executable @teamgrid/cli commands in the events group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the events group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect scoped public events.
 
@@ -8640,12 +9005,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/exports.md -->
 ---
 title: "teamgrid exports"
-description: "4 executable @teamgrid/cli commands in the exports group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the exports group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 create and download bounded exports.
 
@@ -8843,12 +9208,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/file-upload-intents.md -->
 ---
 title: "teamgrid file-upload-intents"
-description: "3 executable @teamgrid/cli commands in the file-upload-intents group, generated from CLI 1.0.7."
+description: "3 executable @teamgrid/cli commands in the file-upload-intents group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 create and complete direct file uploads.
 
@@ -9004,12 +9369,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/files.md -->
 ---
 title: "teamgrid files"
-description: "6 executable @teamgrid/cli commands in the files group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the files group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage file metadata.
 
@@ -9307,12 +9672,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/groups.md -->
 ---
 title: "teamgrid groups"
-description: "5 executable @teamgrid/cli commands in the groups group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the groups group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and administer workspace groups.
 
@@ -9560,10 +9925,10 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 title: CLI command reference
 description: Exact syntax, arguments, options, API operations, scopes, output behavior, safety notes, examples, and exit codes for every TeamGrid CLI command.
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-This reference is generated from the real `@teamgrid/cli@1.0.7` Commander tree and the public API capability manifest. It covers all 216 executable commands in 52 top-level groups, including 143 argument and 520 command-option definitions plus 6 global options. Its 210 canonical CLI paths map to all 211 API v1 operations.
+This reference is generated from the real `@teamgrid/cli@1.1.0` Commander tree and the public API capability manifest. It covers all 243 executable commands in 54 top-level groups, including 173 argument and 569 command-option definitions plus 6 global options. Its 236 canonical CLI paths map to all 237 API v1 operations.
 
 Use [CLI commands](/cli/commands/) for workflow-oriented guidance and this reference when you need exact terminal syntax. Run `teamgrid --version` before comparing an installed CLI with this release.
 
@@ -9610,6 +9975,8 @@ See [CLI automation](/cli/automation/) for pagination and exit-code handling and
 | [`teamgrid product-groups`](/cli/reference/product-groups/) | 5 | read and manage product-groups. |
 | [`teamgrid project-statements`](/cli/reference/project-statements/) | 6 | read and manage project-statements. |
 | [`teamgrid tasks`](/cli/reference/tasks/) | 14 | read and mutate tasks. |
+| [`teamgrid task-recurrences`](/cli/reference/task-recurrences/) | 24 | define, inspect, and operate recurring tasks. |
+| [`teamgrid task-recurrence-operations`](/cli/reference/task-recurrence-operations/) | 3 | inspect and cancel asynchronous recurrence operations. |
 | [`teamgrid time-entries`](/cli/reference/time-entries/) | 8 | read and mutate time entries. |
 | [`teamgrid call-notes`](/cli/reference/call-notes/) | 5 | read and manage call notes. |
 | [`teamgrid contacts`](/cli/reference/contacts/) | 4 | read and mutate contacts. |
@@ -9655,12 +10022,12 @@ The checked-in source is [`sources/cli-reference.json`](https://github.com/TeamG
 <!-- cli/reference/integration-installations.md -->
 ---
 title: "teamgrid integration-installations"
-description: "1 executable @teamgrid/cli commands in the integration-installations group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the integration-installations group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect redacted integration installation metadata.
 
@@ -9721,12 +10088,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/invitations.md -->
 ---
 title: "teamgrid invitations"
-description: "5 executable @teamgrid/cli commands in the invitations group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the invitations group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and administer workspace invitations.
 
@@ -9975,12 +10342,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/lists.md -->
 ---
 title: "teamgrid lists"
-description: "7 executable @teamgrid/cli commands in the lists group, generated from CLI 1.0.7."
+description: "7 executable @teamgrid/cli commands in the lists group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage lists.
 
@@ -10318,12 +10685,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/members.md -->
 ---
 title: "teamgrid members"
-description: "4 executable @teamgrid/cli commands in the members group, generated from CLI 1.0.7."
+description: "4 executable @teamgrid/cli commands in the members group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and administer workspace members.
 
@@ -10531,12 +10898,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/planned-work-operations.md -->
 ---
 title: "teamgrid planned-work-operations"
-description: "1 executable @teamgrid/cli commands in the planned-work-operations group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the planned-work-operations group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect credential-owned planned-work replacements.
 
@@ -10602,12 +10969,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/planned-work.md -->
 ---
 title: "teamgrid planned-work"
-description: "3 executable @teamgrid/cli commands in the planned-work group, generated from CLI 1.0.7."
+description: "3 executable @teamgrid/cli commands in the planned-work group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and atomically replace task planned work.
 
@@ -10776,12 +11143,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/product-groups.md -->
 ---
 title: "teamgrid product-groups"
-description: "5 executable @teamgrid/cli commands in the product-groups group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the product-groups group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage product-groups.
 
@@ -11027,12 +11394,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/products.md -->
 ---
 title: "teamgrid products"
-description: "5 executable @teamgrid/cli commands in the products group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the products group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage products.
 
@@ -11279,12 +11646,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/project-lifecycle-operations.md -->
 ---
 title: "teamgrid project-lifecycle-operations"
-description: "1 executable @teamgrid/cli commands in the project-lifecycle-operations group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the project-lifecycle-operations group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect asynchronous project lifecycle operations.
 
@@ -11350,12 +11717,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/project-statements.md -->
 ---
 title: "teamgrid project-statements"
-description: "6 executable @teamgrid/cli commands in the project-statements group, generated from CLI 1.0.7."
+description: "6 executable @teamgrid/cli commands in the project-statements group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage project-statements.
 
@@ -11651,12 +12018,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/project-template-instantiations.md -->
 ---
 title: "teamgrid project-template-instantiations"
-description: "1 executable @teamgrid/cli commands in the project-template-instantiations group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the project-template-instantiations group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect credential-owned project-template instantiations.
 
@@ -11722,12 +12089,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/project-templates.md -->
 ---
 title: "teamgrid project-templates"
-description: "7 executable @teamgrid/cli commands in the project-templates group, generated from CLI 1.0.7."
+description: "7 executable @teamgrid/cli commands in the project-templates group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage reusable project templates.
 
@@ -12072,12 +12439,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/projects.md -->
 ---
 title: "teamgrid projects"
-description: "10 executable @teamgrid/cli commands in the projects group, generated from CLI 1.0.7."
+description: "10 executable @teamgrid/cli commands in the projects group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and mutate projects.
 
@@ -12571,12 +12938,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/roles.md -->
 ---
 title: "teamgrid roles"
-description: "5 executable @teamgrid/cli commands in the roles group, generated from CLI 1.0.7."
+description: "5 executable @teamgrid/cli commands in the roles group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and administer workspace roles.
 
@@ -12822,12 +13189,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/search.md -->
 ---
 title: "teamgrid search"
-description: "1 executable @teamgrid/cli commands in the search group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the search group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 search permitted TeamGrid resources.
 
@@ -12890,12 +13257,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/service-accounts.md -->
 ---
 title: "teamgrid service-accounts"
-description: "10 executable @teamgrid/cli commands in the service-accounts group, generated from CLI 1.0.7."
+description: "10 executable @teamgrid/cli commands in the service-accounts group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 manage service-account principals and credentials.
 
@@ -13392,12 +13759,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/services.md -->
 ---
 title: "teamgrid services"
-description: "7 executable @teamgrid/cli commands in the services group, generated from CLI 1.0.7."
+description: "7 executable @teamgrid/cli commands in the services group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage services.
 
@@ -13731,12 +14098,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/system.md -->
 ---
 title: "teamgrid system"
-description: "1 executable @teamgrid/cli commands in the system group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the system group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect API and product capabilities.
 
@@ -13797,12 +14164,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/tags.md -->
 ---
 title: "teamgrid tags"
-description: "7 executable @teamgrid/cli commands in the tags group, generated from CLI 1.0.7."
+description: "7 executable @teamgrid/cli commands in the tags group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage tags.
 
@@ -14133,15 +14500,1309 @@ teamgrid tags restore ID
 
 The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
 
+<!-- cli/reference/task-recurrence-operations.md -->
+---
+title: "teamgrid task-recurrence-operations"
+description: "3 executable @teamgrid/cli commands in the task-recurrence-operations group, generated from CLI 1.1.0."
+owner: Developer Experience
+reviewedAt: 2026-08-19
+---
+
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+
+inspect and cancel asynchronous recurrence operations.
+
+## Global options
+
+Global options can be placed before the command group.
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `-V, --version` | output the version number | No | — | — |
+| `-o, --output <format>` | output format | No | `table`, `json`, `jsonl` | `table` |
+| `--profile <name>` | credential profile | No | — | — |
+| `--base-url <url>` | override the regional API v1 base URL | No | — | — |
+| `--timeout <milliseconds>` | request timeout | No | — | `30000` |
+| `--retries <count>` | safe-request retry count (0–5) | No | — | `2` |
+
+## Commands
+
+- [`teamgrid task-recurrence-operations get`](#teamgrid-task-recurrence-operations-get) — Get a task recurrence operation.
+- [`teamgrid task-recurrence-operations wait`](#teamgrid-task-recurrence-operations-wait) — Performs a local TeamGrid CLI operation.
+- [`teamgrid task-recurrence-operations cancel`](#teamgrid-task-recurrence-operations-cancel) — Cancel a task recurrence operation.
+
+## teamgrid task-recurrence-operations get
+
+Get a task recurrence operation.
+
+### Syntax
+
+```bash
+teamgrid task-recurrence-operations get [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `getTaskRecurrenceOperation` | `GET /task-recurrence-operations/{id}` | `task-recurrences:read` | [Get a task recurrence operation](/api/v1/reference/operations/gettaskrecurrenceoperation/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+This command defines no additional options.
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrence-operations get ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrence-operations wait
+
+Performs a local TeamGrid CLI operation.
+
+### Syntax
+
+```bash
+teamgrid task-recurrence-operations wait [options] <id>
+```
+
+### API operation and scope
+
+The public capability manifest does not assign a dedicated API operation to this local CLI command.
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--poll-interval <milliseconds>` | poll interval while waiting | No | — | `1000` |
+| `--max-wait <milliseconds>` | maximum wait time | No | — | `300000` |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrence-operations wait ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrence-operations cancel
+
+Cancel a task recurrence operation.
+
+### Syntax
+
+```bash
+teamgrid task-recurrence-operations cancel [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `cancelTaskRecurrenceOperation` | `POST /task-recurrence-operations/{id}/cancel` | `task-recurrences:write` | [Cancel a task recurrence operation](/api/v1/reference/operations/canceltaskrecurrenceoperation/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `-y, --yes` | skip the destructive-operation confirmation | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Confirmation and automation
+
+This command can change or remove data and asks for confirmation by default. In a reviewed non-interactive job, pass `--yes` or set `TEAMGRID_CLI_ASSUME_YES=1`; otherwise the command exits with code `2`. Cancelling an interactive confirmation exits with code `0`.
+
+### Example
+
+```bash
+teamgrid task-recurrence-operations cancel ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+<!-- cli/reference/task-recurrences.md -->
+---
+title: "teamgrid task-recurrences"
+description: "24 executable @teamgrid/cli commands in the task-recurrences group, generated from CLI 1.1.0."
+owner: Developer Experience
+reviewedAt: 2026-08-19
+---
+
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+
+define, inspect, and operate recurring tasks.
+
+## Global options
+
+Global options can be placed before the command group.
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `-V, --version` | output the version number | No | — | — |
+| `-o, --output <format>` | output format | No | `table`, `json`, `jsonl` | `table` |
+| `--profile <name>` | credential profile | No | — | — |
+| `--base-url <url>` | override the regional API v1 base URL | No | — | — |
+| `--timeout <milliseconds>` | request timeout | No | — | `30000` |
+| `--retries <count>` | safe-request retry count (0–5) | No | — | `2` |
+
+## Commands
+
+- [`teamgrid task-recurrences list`](#teamgrid-task-recurrences-list) — List task recurrences.
+- [`teamgrid task-recurrences get`](#teamgrid-task-recurrences-get) — Get a task recurrence.
+- [`teamgrid task-recurrences create`](#teamgrid-task-recurrences-create) — Create a task recurrence.
+- [`teamgrid task-recurrences preview`](#teamgrid-task-recurrences-preview) — evaluate an unsaved recurrence definition without changing state.
+- [`teamgrid task-recurrences update`](#teamgrid-task-recurrences-update) — Update a task recurrence.
+- [`teamgrid task-recurrences archive`](#teamgrid-task-recurrences-archive) — Archive a task recurrence.
+- [`teamgrid task-recurrences preview-stored`](#teamgrid-task-recurrences-preview-stored) — preview occurrences from the current saved definition.
+- [`teamgrid task-recurrences restore`](#teamgrid-task-recurrences-restore) — Restore a task recurrence.
+- [`teamgrid task-recurrences pause`](#teamgrid-task-recurrences-pause) — Pause a task recurrence.
+- [`teamgrid task-recurrences resume`](#teamgrid-task-recurrences-resume) — Resume a task recurrence.
+- [`teamgrid task-recurrences end`](#teamgrid-task-recurrences-end) — End a task recurrence.
+- [`teamgrid task-recurrences remove-from-tasks`](#teamgrid-task-recurrences-remove-from-tasks) — end the series and remove recurrence links from its tasks while preserving history.
+- [`teamgrid task-recurrences owner`](#teamgrid-task-recurrences-owner) — transfer task recurrence ownership.
+- [`teamgrid task-recurrences template-from-task`](#teamgrid-task-recurrences-template-from-task) — replace the recurrence task template from an existing task.
+- [`teamgrid task-recurrences versions list`](#teamgrid-task-recurrences-versions-list) — List task recurrence versions.
+- [`teamgrid task-recurrences versions get`](#teamgrid-task-recurrences-versions-get) — Get a task recurrence version.
+- [`teamgrid task-recurrences versions restore`](#teamgrid-task-recurrences-versions-restore) — Restore a task recurrence version.
+- [`teamgrid task-recurrences occurrences list`](#teamgrid-task-recurrences-occurrences-list) — List task recurrence occurrences.
+- [`teamgrid task-recurrences occurrences get`](#teamgrid-task-recurrences-occurrences-get) — Get a task recurrence occurrence.
+- [`teamgrid task-recurrences occurrences override`](#teamgrid-task-recurrences-occurrences-override) — Override a task recurrence occurrence.
+- [`teamgrid task-recurrences occurrences clear-override`](#teamgrid-task-recurrences-occurrences-clear-override) — Clear a task recurrence occurrence override.
+- [`teamgrid task-recurrences occurrences retry`](#teamgrid-task-recurrences-occurrences-retry) — Retry a failed task recurrence occurrence.
+- [`teamgrid task-recurrences recheck`](#teamgrid-task-recurrences-recheck) — Recheck a task recurrence asynchronously.
+- [`teamgrid task-recurrences events submit`](#teamgrid-task-recurrences-events-submit) — Submit an event to a task recurrence.
+
+## teamgrid task-recurrences list
+
+List task recurrences.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences list [options]
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `listTaskRecurrences` | `GET /task-recurrences` | `task-recurrences:read` | [List task recurrences](/api/v1/reference/operations/listtaskrecurrences/) |
+
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--all` | read every page | No | — | — |
+| `--cursor <cursor>` | resume from an opaque cursor | No | — | — |
+| `--limit <number>` | resources per page (1–100) | No | — | — |
+| `--max-pages <number>` | safety limit for --all (1–10000) | No | — | `10000` |
+| `--project-id <id>` | filter by target project | No | — | — |
+| `--status <status>` | filter lifecycle status | No | `active`, `paused`, `suspended`, `needs_attention`, `ended`, `archived` | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+Without `--all`, table output renders the page data and JSON preserves the complete page envelope. With `--all`, table and JSON aggregate all traversed resources while JSONL streams one resource per line.
+
+### Example
+
+```bash
+teamgrid task-recurrences list
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences get
+
+Get a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences get [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `getTaskRecurrence` | `GET /task-recurrences/{id}` | `task-recurrences:read` | [Get a task recurrence](/api/v1/reference/operations/gettaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+This command defines no additional options.
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences get ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences create
+
+Create a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences create [options]
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `createTaskRecurrence` | `POST /task-recurrences` | `task-recurrences:write` | [Create a task recurrence](/api/v1/reference/operations/createtaskrecurrence/) |
+
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | task recurrence definition JSON | Yes | — | — |
+| `--idempotency-key <key>` | stable retry key | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences create --data @request.json
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences preview
+
+evaluate an unsaved recurrence definition without changing state.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences preview [options]
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `previewTaskRecurrence` | `POST /task-recurrences/preview` | `task-recurrences:write` | [Preview a draft task recurrence](/api/v1/reference/operations/previewtaskrecurrence/) |
+
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | task recurrence preview JSON | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences preview --data @request.json
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences update
+
+Update a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences update [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `updateTaskRecurrence` | `PATCH /task-recurrences/{id}` | `task-recurrences:write` | [Update a task recurrence](/api/v1/reference/operations/updatetaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | task recurrence patch JSON | Yes | — | — |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences update ID --data @request.json --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences archive
+
+Archive a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences archive [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `archiveTaskRecurrence` | `DELETE /task-recurrences/{id}` | `task-recurrences:write` | [Archive a task recurrence](/api/v1/reference/operations/archivetaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+| `-y, --yes` | skip the destructive-operation confirmation | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Confirmation and automation
+
+This command can change or remove data and asks for confirmation by default. In a reviewed non-interactive job, pass `--yes` or set `TEAMGRID_CLI_ASSUME_YES=1`; otherwise the command exits with code `2`. Cancelling an interactive confirmation exits with code `0`.
+
+### Example
+
+```bash
+teamgrid task-recurrences archive ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences preview-stored
+
+preview occurrences from the current saved definition.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences preview-stored [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `previewStoredTaskRecurrence` | `GET /task-recurrences/{id}/preview` | `task-recurrences:read` | [Preview a stored task recurrence](/api/v1/reference/operations/previewstoredtaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--count <number>` | number of occurrences (1–100) | No | — | — |
+| `--from <date>` | preview window start | No | — | — |
+| `--until <date>` | preview window end | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences preview-stored ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences restore
+
+Restore a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences restore [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `restoreTaskRecurrence` | `POST /task-recurrences/{id}/restore` | `task-recurrences:write` | [Restore a task recurrence](/api/v1/reference/operations/restoretaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences restore ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences pause
+
+Pause a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences pause [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `pauseTaskRecurrence` | `POST /task-recurrences/{id}/pause` | `task-recurrences:write` | [Pause a task recurrence](/api/v1/reference/operations/pausetaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences pause ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences resume
+
+Resume a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences resume [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `resumeTaskRecurrence` | `POST /task-recurrences/{id}/resume` | `task-recurrences:write` | [Resume a task recurrence](/api/v1/reference/operations/resumetaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences resume ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences end
+
+End a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences end [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `endTaskRecurrence` | `POST /task-recurrences/{id}/end` | `task-recurrences:write` | [End a task recurrence](/api/v1/reference/operations/endtaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+| `-y, --yes` | skip the destructive-operation confirmation | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Confirmation and automation
+
+This command can change or remove data and asks for confirmation by default. In a reviewed non-interactive job, pass `--yes` or set `TEAMGRID_CLI_ASSUME_YES=1`; otherwise the command exits with code `2`. Cancelling an interactive confirmation exits with code `0`.
+
+### Example
+
+```bash
+teamgrid task-recurrences end ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences remove-from-tasks
+
+end the series and remove recurrence links from its tasks while preserving history.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences remove-from-tasks [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `removeTaskRecurrenceFromTasks` | `POST /task-recurrences/{id}/remove-from-tasks` | `task-recurrences:write` | [Remove a task recurrence from its tasks](/api/v1/reference/operations/removetaskrecurrencefromtasks/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+| `-y, --yes` | skip the destructive-operation confirmation | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Confirmation and automation
+
+This command can change or remove data and asks for confirmation by default. In a reviewed non-interactive job, pass `--yes` or set `TEAMGRID_CLI_ASSUME_YES=1`; otherwise the command exits with code `2`. Cancelling an interactive confirmation exits with code `0`.
+
+### Example
+
+```bash
+teamgrid task-recurrences remove-from-tasks ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences owner
+
+transfer task recurrence ownership.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences owner [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `transferTaskRecurrenceOwner` | `POST /task-recurrences/{id}/owner` | `task-recurrences:write` | [Transfer task recurrence ownership](/api/v1/reference/operations/transfertaskrecurrenceowner/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | new owner JSON | Yes | — | — |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences owner ID --data @request.json --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences template-from-task
+
+replace the recurrence task template from an existing task.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences template-from-task [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `applyTaskAsTaskRecurrenceTemplate` | `POST /task-recurrences/{id}/definition-from-task` | `task-recurrences:write` | [Replace a recurrence template from a task](/api/v1/reference/operations/applytaskastaskrecurrencetemplate/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | source task and copy policy JSON | Yes | — | — |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences template-from-task ID --data @request.json --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences versions list
+
+List task recurrence versions.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences versions list [options] <series-id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `listTaskRecurrenceVersions` | `GET /task-recurrences/{id}/versions` | `task-recurrences:read` | [List task recurrence versions](/api/v1/reference/operations/listtaskrecurrenceversions/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--all` | read every page | No | — | — |
+| `--cursor <cursor>` | resume from an opaque cursor | No | — | — |
+| `--limit <number>` | resources per page (1–100) | No | — | — |
+| `--max-pages <number>` | safety limit for --all (1–10000) | No | — | `10000` |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+Without `--all`, table output renders the page data and JSON preserves the complete page envelope. With `--all`, table and JSON aggregate all traversed resources while JSONL streams one resource per line.
+
+### Example
+
+```bash
+teamgrid task-recurrences versions list SERIES_ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences versions get
+
+Get a task recurrence version.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences versions get [options] <series-id> <version-id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `getTaskRecurrenceVersion` | `GET /task-recurrences/{id}/versions/{versionId}` | `task-recurrences:read` | [Get a task recurrence version](/api/v1/reference/operations/gettaskrecurrenceversion/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+| `version-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+This command defines no additional options.
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences versions get SERIES_ID VERSION_ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences versions restore
+
+Restore a task recurrence version.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences versions restore [options] <series-id> <version-id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `restoreTaskRecurrenceVersion` | `POST /task-recurrences/{id}/versions/{versionId}/restore` | `task-recurrences:write` | [Restore a task recurrence version](/api/v1/reference/operations/restoretaskrecurrenceversion/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+| `version-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | optional restore reason JSON | No | — | — |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences versions restore SERIES_ID VERSION_ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences occurrences list
+
+List task recurrence occurrences.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences occurrences list [options] <series-id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `listTaskRecurrenceOccurrences` | `GET /task-recurrences/{id}/occurrences` | `task-recurrences:read` | [List task recurrence occurrences](/api/v1/reference/operations/listtaskrecurrenceoccurrences/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--all` | read every page | No | — | — |
+| `--cursor <cursor>` | resume from an opaque cursor | No | — | — |
+| `--limit <number>` | resources per page (1–100) | No | — | — |
+| `--max-pages <number>` | safety limit for --all (1–10000) | No | — | `10000` |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+Without `--all`, table output renders the page data and JSON preserves the complete page envelope. With `--all`, table and JSON aggregate all traversed resources while JSONL streams one resource per line.
+
+### Example
+
+```bash
+teamgrid task-recurrences occurrences list SERIES_ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences occurrences get
+
+Get a task recurrence occurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences occurrences get [options] <series-id> <occurrence-key>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `getTaskRecurrenceOccurrence` | `GET /task-recurrences/{id}/occurrences/{occurrenceKey}` | `task-recurrences:read` | [Get a task recurrence occurrence](/api/v1/reference/operations/gettaskrecurrenceoccurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+| `occurrence-key` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+This command defines no additional options.
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences occurrences get SERIES_ID OCCURRENCE_KEY
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences occurrences override
+
+Override a task recurrence occurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences occurrences override [options] <series-id> <occurrence-key>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `overrideTaskRecurrenceOccurrence` | `PUT /task-recurrences/{id}/occurrences/{occurrenceKey}/override` | `task-recurrences:write` | [Override a task recurrence occurrence](/api/v1/reference/operations/overridetaskrecurrenceoccurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+| `occurrence-key` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | occurrence override JSON | Yes | — | — |
+| `--if-match <revision\|etag>` | latest task recurrence occurrence revision or strong ETag | No | — | — |
+| `--create-if-missing` | create a ledger placeholder using placeholderToken from stored preview | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences occurrences override SERIES_ID OCCURRENCE_KEY --data @request.json
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences occurrences clear-override
+
+Clear a task recurrence occurrence override.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences occurrences clear-override [options] <series-id> <occurrence-key>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `clearTaskRecurrenceOccurrenceOverride` | `DELETE /task-recurrences/{id}/occurrences/{occurrenceKey}/override` | `task-recurrences:write` | [Clear a task recurrence occurrence override](/api/v1/reference/operations/cleartaskrecurrenceoccurrenceoverride/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+| `occurrence-key` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence occurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences occurrences clear-override SERIES_ID OCCURRENCE_KEY --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences occurrences retry
+
+Retry a failed task recurrence occurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences occurrences retry [options] <series-id> <occurrence-key>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `retryTaskRecurrenceOccurrence` | `POST /task-recurrences/{id}/occurrences/{occurrenceKey}/retry` | `task-recurrences:write` | [Retry a failed task recurrence occurrence](/api/v1/reference/operations/retrytaskrecurrenceoccurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `series-id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+| `occurrence-key` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence occurrence revision or strong ETag | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences occurrences retry SERIES_ID OCCURRENCE_KEY --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences recheck
+
+Recheck a task recurrence asynchronously.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences recheck [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `recheckTaskRecurrence` | `POST /task-recurrences/{id}/recheck` | `task-recurrences:write` | [Recheck a task recurrence asynchronously](/api/v1/reference/operations/rechecktaskrecurrence/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--wait` | wait until the asynchronous recheck finishes | No | — | — |
+| `--poll-interval <milliseconds>` | poll interval while waiting | No | — | `1000` |
+| `--max-wait <milliseconds>` | maximum wait time | No | — | `300000` |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences recheck ID
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences events submit
+
+Submit an event to a task recurrence.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences events submit [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `submitTaskRecurrenceEvent` | `POST /task-recurrences/{id}/events` | `task-recurrences:run` | [Submit an event to a task recurrence](/api/v1/reference/operations/submittaskrecurrenceevent/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json\|@file\|->` | event envelope JSON | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid task-recurrences events submit ID --data @request.json
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
 <!-- cli/reference/tasks.md -->
 ---
 title: "teamgrid tasks"
-description: "14 executable @teamgrid/cli commands in the tasks group, generated from CLI 1.0.7."
+description: "14 executable @teamgrid/cli commands in the tasks group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and mutate tasks.
 
@@ -14804,12 +16465,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/time-entries.md -->
 ---
 title: "teamgrid time-entries"
-description: "8 executable @teamgrid/cli commands in the time-entries group, generated from CLI 1.0.7."
+description: "8 executable @teamgrid/cli commands in the time-entries group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and mutate time entries.
 Command aliases: `teamgrid times`.
@@ -15197,12 +16858,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/users.md -->
 ---
 title: "teamgrid users"
-description: "1 executable @teamgrid/cli commands in the users group, generated from CLI 1.0.7."
+description: "1 executable @teamgrid/cli commands in the users group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 list workspace users.
 
@@ -15268,12 +16929,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/webhook-deliveries.md -->
 ---
 title: "teamgrid webhook-deliveries"
-description: "2 executable @teamgrid/cli commands in the webhook-deliveries group, generated from CLI 1.0.7."
+description: "2 executable @teamgrid/cli commands in the webhook-deliveries group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect credential-owned webhook delivery history.
 
@@ -15385,12 +17046,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/webhooks.md -->
 ---
 title: "teamgrid webhooks"
-description: "7 executable @teamgrid/cli commands in the webhooks group, generated from CLI 1.0.7."
+description: "7 executable @teamgrid/cli commands in the webhooks group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage webhooks.
 
@@ -15735,12 +17396,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/workspace-settings.md -->
 ---
 title: "teamgrid workspace-settings"
-description: "2 executable @teamgrid/cli commands in the workspace-settings group, generated from CLI 1.0.7."
+description: "2 executable @teamgrid/cli commands in the workspace-settings group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and update public workspace settings.
 
@@ -15843,12 +17504,12 @@ The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, 
 <!-- cli/reference/workspace.md -->
 ---
 title: "teamgrid workspace"
-description: "2 executable @teamgrid/cli commands in the workspace group, generated from CLI 1.0.7."
+description: "2 executable @teamgrid/cli commands in the workspace group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.0.7` at Developer Platform commit `31706a2278ce`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect the authenticated workspace.
 
@@ -15981,7 +17642,7 @@ Teams durch den empfohlenen Einstieg.
 ## CLI und Browser-Login
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7
+npm install --global @teamgrid/cli@1.1.0
 teamgrid auth login
 teamgrid auth status --check
 teamgrid workspace
@@ -16078,20 +17739,20 @@ The [project templates guide](/api/v1/project-templates/) documents template sem
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-18
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The stable `1.0.0` API v1 contract contains 132 paths and 211 operations. The CLI maps all 211
-operations. The TypeScript SDK maps the 210 programmatic operations; the one-time anonymous CLI
-code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 29 bounded reads
-are available in the `all` profile, while the least-privilege `core` default exposes 15. Writes,
+The stable `1.1.0` API v1 contract contains 154 paths and 237 operations. The CLI maps all 237
+operations. The TypeScript SDK maps the 236 programmatic operations; the one-time anonymous CLI
+code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 36 bounded reads
+are available in the `all` profile, while the least-privilege `core` default exposes 22. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
 
 The cross-interface contract currently governs workspace, projects and asynchronous project
-lifecycle operations, tasks and timers, time entries, calendar appointments, absences, availability,
+lifecycle operations, tasks, recurring tasks and timers, time entries, calendar appointments, absences, availability,
 contacts, comments, activity, documents, files, workspace administration, search, bounded exports,
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
@@ -16100,7 +17761,7 @@ feed. Finance fields are scope-gated, and MCP product reads always remove acquis
 
 The same release boundary qualifies 18 project, task, project-sharing, and project-template
 mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
-reads. Another 34
+reads. Another 46
 protected operations retain resource-specific revision formats for planned work, custom-field
 values, calendar data, documents, workspace administration, automations, workspace settings, and
 webhook-secret rotation.
@@ -16108,8 +17769,8 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 211 operations. API discovery and the one-time CLI code exchange are anonymous or
-public-client operations; all 209 credential-authenticated operations are bound to their App execution methods, product-permission
+registry for all 237 operations. API discovery and the one-time CLI code exchange are anonymous or
+public-client operations; all 235 credential-authenticated operations are bound to their App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families. The two
 current-credential self-service operations deliberately require no additional scope, but still
@@ -16120,7 +17781,7 @@ The current registry identity and SHA-256 are published in the
 owning App cell exchange this exact identity during startup compatibility negotiation and fail
 readiness on any mismatch. The same identity is included in the canonical deployment manifest.
 
-V5 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+V7 declares every request-dependent scope and dynamic policy used by collaboration, automation,
 custom-field content, calendar, work-management, and search/export handlers. The owning App cell
 resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
@@ -16133,11 +17794,11 @@ migration, consent, revocation, and policy-family qualification are complete.
 ## Product capability ledger
 
 Operation parity is not the same as total TeamGrid product coverage. The separate product ledger
-classifies 73 capabilities against the current implementation:
+classifies 74 capabilities against the current implementation:
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Released in the stable contract | 61 | A bounded public v1 workflow is implemented across its required surfaces |
+| Released in the stable contract | 62 | A bounded public v1 workflow is implemented across its required surfaces |
 | Partial | 0 | No capability is advertised with an incomplete public workflow |
 | Planned | 6 | The workflow remains on the roadmap and is not part of the current contract |
 | Intentionally private | 6 | The capability is an implementation or privileged control plane, not a public API target |
@@ -16147,7 +17808,7 @@ project reads, complete project-template capture and instantiation, task reads, 
 complete planned-work scheduling, complete non-billing time-entry reads and writes, complete contact reads,
 complete audit reads and bounded audit exports, complete custom-field-value reads and
 compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
-project sharing, conflict-safe task bulk operations, time-entry billing, the qualified change feed,
+project sharing, conflict-safe task bulk operations, recurring tasks, time-entry billing, the qualified change feed,
 and webhook-secret rotation are released in the stable contract. Remaining planned
 work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
 
@@ -16155,7 +17816,7 @@ Raw database access, generic Meteor/DDP calls, superadmin controls, provider sec
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
 are represented by stable resources and domain commands instead of those internals.
 
-## Post-1.0 qualification boundary
+## Post-1.1 qualification boundary
 
 The six planned domains are additive roadmap candidates, not hidden or partially supported
 endpoints:
@@ -16173,7 +17834,7 @@ endpoints:
 - **Import jobs** need schema-versioned validation, dry-run results, idempotent commit, per-row
   outcomes, and safe rollback boundaries.
 
-Future 1.x releases may add qualified resources and commands without weakening stable 1.0
+Future 1.x releases may add qualified resources and commands without weakening stable 1.1
 behavior. Existing operation semantics, scopes, errors, regional routing, and security boundaries
 remain compatible throughout the major version. A breaking change requires a new API major.
 
@@ -17152,7 +18813,7 @@ reviewedAt: 2026-08-10
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7 @teamgrid/mcp-server@1.0.7
+npm install --global @teamgrid/cli@1.1.0 @teamgrid/mcp-server@1.1.0
 teamgrid auth login
 teamgrid auth status --check
 ```
@@ -17260,7 +18921,7 @@ search tools.
 Use the same stable release for the CLI and MCP server:
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7 @teamgrid/mcp-server@1.0.7
+npm install --global @teamgrid/cli@1.1.0 @teamgrid/mcp-server@1.1.0
 teamgrid --version
 npm list --global @teamgrid/mcp-server --depth=0
 ```
@@ -17366,15 +19027,15 @@ selecting a broader tool profile.
 title: TeamGrid MCP server
 description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-08
+reviewedAt: 2026-08-18
 ---
 
 `@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
-official API v1 client. The default `core` profile exposes 15 operational read tools; the `all`
-profile exposes 29. Broader profiles are explicit opt-ins.
+official API v1 client. The default `core` profile exposes 22 operational read tools; the `all`
+profile exposes 36. Broader profiles are explicit opt-ins.
 
 ```bash
-npm install --global @teamgrid/cli@1.0.7 @teamgrid/mcp-server@1.0.7
+npm install --global @teamgrid/cli@1.1.0 @teamgrid/mcp-server@1.1.0
 teamgrid auth login
 ```
 
@@ -17401,31 +19062,31 @@ accepts an ETag, invokes a protected mutation, or polls project-template operati
 resources.
 
 [Run your first MCP query](/mcp/first-query/), [configure an MCP host](/mcp/configuration/), browse
-the [complete 29-tool reference](/mcp/reference/), or [review the tools and security
+the [complete 36-tool reference](/mcp/reference/), or [review the tools and security
 model](/mcp/tools-and-security/). If a connection or tool call fails, use the [MCP troubleshooting
 matrix](/mcp/troubleshooting/).
 
 <!-- mcp/reference/index.md -->
 ---
 title: MCP tool reference
-description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 29 TeamGrid MCP tools.
+description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 36 TeamGrid MCP tools.
 owner: Developer Platform
 reviewedAt: 2026-08-10
 ---
 
 This reference is generated from the tool registry shipped in
-`@teamgrid/mcp-server@1.0.7` and joined with the pinned API v1 capability
-contract. It contains 29 read-only tools. Unknown input properties are
+`@teamgrid/mcp-server@1.1.0` and joined with the pinned API v1 capability
+contract. It contains 36 read-only tools. Unknown input properties are
 rejected by every tool schema.
 
 ## Profiles at a glance
 
 | Selected profile | Advertised tools | Adds beyond `core` |
 | --- | ---: | --- |
-| `core` | 15 | Operational workspace, project, task, time-entry, list, tag, product, and product-group reads |
-| `collaboration` | 22 | Contacts, contact groups, call notes, and users |
-| `governance` | 21 | Custom-field definitions, services, and webhook configuration |
-| `all` | 29 | Union of both broader profiles plus curated federated search |
+| `core` | 22 | Operational workspace, project, task, time-entry, list, tag, product, and product-group reads |
+| `collaboration` | 29 | Contacts, contact groups, call notes, and users |
+| `governance` | 28 | Custom-field definitions, services, and webhook configuration |
+| `all` | 36 | Union of both broader profiles plus curated federated search |
 
 Select the narrowest profile your workflow needs. A profile controls which tools are advertised;
 the API credential scopes and resource grants still control which data each advertised tool can
@@ -17446,6 +19107,13 @@ read.
 | [`teamgrid_tag_get`](/mcp/reference/teamgrid_tag_get/) | Get one TeamGrid tag by id. | `tags:read` | operational-data |
 | [`teamgrid_tags_list`](/mcp/reference/teamgrid_tags_list/) | List TeamGrid tags. | `tags:read` | operational-data |
 | [`teamgrid_task_get`](/mcp/reference/teamgrid_task_get/) | Get one TeamGrid task by id. | `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_get`](/mcp/reference/teamgrid_task_recurrence_get/) | Get one recurring TeamGrid task definition, including its current immutable policy version. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_occurrence_get`](/mcp/reference/teamgrid_task_recurrence_occurrence_get/) | Get one occurrence-ledger entry for a TeamGrid task recurrence. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_occurrences_list`](/mcp/reference/teamgrid_task_recurrence_occurrences_list/) | List the immutable occurrence ledger for one TeamGrid task recurrence with stable cursor pagination. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_preview`](/mcp/reference/teamgrid_task_recurrence_preview/) | Preview bounded future occurrences from a saved TeamGrid task recurrence without changing state. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_version_get`](/mcp/reference/teamgrid_task_recurrence_version_get/) | Get one immutable TeamGrid task recurrence definition version. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrence_versions_list`](/mcp/reference/teamgrid_task_recurrence_versions_list/) | List immutable definition versions for one TeamGrid task recurrence. | `task-recurrences:read`, `tasks:read` | operational-data |
+| [`teamgrid_task_recurrences_list`](/mcp/reference/teamgrid_task_recurrences_list/) | List recurring TeamGrid task definitions with stable cursor pagination and optional project or lifecycle filters. | `task-recurrences:read`, `tasks:read` | operational-data |
 | [`teamgrid_tasks_list`](/mcp/reference/teamgrid_tasks_list/) | List TeamGrid tasks with optional project, assignee, and status filters. | `tasks:read` | operational-data |
 | [`teamgrid_time_entries_list`](/mcp/reference/teamgrid_time_entries_list/) | List TeamGrid time entries with stable cursor pagination. | `time-entries:read` | work-record-data |
 | [`teamgrid_time_entry_get`](/mcp/reference/teamgrid_time_entry_get/) | Get one TeamGrid time entry by id. | `time-entries:read` | work-record-data |
@@ -17507,7 +19175,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -17589,7 +19257,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -17675,7 +19343,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -17757,7 +19425,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -17839,7 +19507,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -17925,7 +19593,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18046,7 +19714,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18132,7 +19800,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18249,7 +19917,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18330,7 +19998,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18427,7 +20095,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18512,7 +20180,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18593,7 +20261,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18682,7 +20350,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18778,7 +20446,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18859,7 +20527,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -18947,7 +20615,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19049,7 +20717,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19131,7 +20799,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19217,7 +20885,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19298,7 +20966,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19383,7 +21051,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19451,6 +21119,626 @@ Authentication failures that prevent the MCP process from starting are covered s
 
 [Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
 
+<!-- mcp/reference/teamgrid_task_recurrence_get.md -->
+---
+title: teamgrid_task_recurrence_get
+description: "Get one recurring TeamGrid task definition, including its current immutable policy version."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrence_get` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`getTaskRecurrence`](/api/v1/reference/operations/gettaskrecurrence/) — `GET /task-recurrences/{id}`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This tool returns a single API response envelope and is not paginated. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> Read the TeamGrid task recurrence with ID `<id>` and summarize only the fields returned by TeamGrid.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `id` is missing, empty, or longer than 128 characters. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
+<!-- mcp/reference/teamgrid_task_recurrence_occurrence_get.md -->
+---
+title: teamgrid_task_recurrence_occurrence_get
+description: "Get one occurrence-ledger entry for a TeamGrid task recurrence."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrence_occurrence_get` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "occurrenceKey": {
+      "type": "string",
+      "pattern": "^(?:occ1-[a-f0-9]{64}|seed:[A-Za-z0-9_-]{1,128})$"
+    },
+    "seriesId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    }
+  },
+  "required": [
+    "occurrenceKey",
+    "seriesId"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`getTaskRecurrenceOccurrence`](/api/v1/reference/operations/gettaskrecurrenceoccurrence/) — `GET /task-recurrences/{id}/occurrences/{occurrenceKey}`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This tool returns a single API response envelope and is not paginated. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> List the first 20 TeamGrid task recurrence occurrence. Do not request another page; tell me whether another cursor is available.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
+<!-- mcp/reference/teamgrid_task_recurrence_occurrences_list.md -->
+---
+title: teamgrid_task_recurrence_occurrences_list
+description: "List the immutable occurrence ledger for one TeamGrid task recurrence with stable cursor pagination."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrence_occurrences_list` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "maxLength": 512
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "seriesId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    }
+  },
+  "required": [
+    "seriesId"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`listTaskRecurrenceOccurrences`](/api/v1/reference/operations/listtaskrecurrenceoccurrences/) — `GET /task-recurrences/{id}/occurrences`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This is a cursor-paginated tool. `limit` accepts 1–100. When `meta.page.nextCursor` is not null, pass that opaque value as `cursor` to request the next page. Do not construct, edit, or decode cursors. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> List the first 20 TeamGrid task recurrence occurrences. Do not request another page; tell me whether another cursor is available.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Request a smaller page or narrower filters. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
+<!-- mcp/reference/teamgrid_task_recurrence_preview.md -->
+---
+title: teamgrid_task_recurrence_preview
+description: "Preview bounded future occurrences from a saved TeamGrid task recurrence without changing state."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrence_preview` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    },
+    "until": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`previewStoredTaskRecurrence`](/api/v1/reference/operations/previewstoredtaskrecurrence/) — `GET /task-recurrences/{id}/preview`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This tool returns a single API response envelope and is not paginated. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> Read the TeamGrid task recurrence preview with ID `<id>` and summarize only the fields returned by TeamGrid.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `id` is missing, empty, or longer than 128 characters. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
+<!-- mcp/reference/teamgrid_task_recurrence_version_get.md -->
+---
+title: teamgrid_task_recurrence_version_get
+description: "Get one immutable TeamGrid task recurrence definition version."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrence_version_get` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "seriesId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    },
+    "versionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    }
+  },
+  "required": [
+    "seriesId",
+    "versionId"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`getTaskRecurrenceVersion`](/api/v1/reference/operations/gettaskrecurrenceversion/) — `GET /task-recurrences/{id}/versions/{versionId}`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This tool returns a single API response envelope and is not paginated. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> List the first 20 TeamGrid task recurrence version. Do not request another page; tell me whether another cursor is available.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
+<!-- mcp/reference/teamgrid_task_recurrence_versions_list.md -->
+---
+title: teamgrid_task_recurrence_versions_list
+description: "List immutable definition versions for one TeamGrid task recurrence."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrence_versions_list` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "maxLength": 512
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "seriesId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    }
+  },
+  "required": [
+    "seriesId"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`listTaskRecurrenceVersions`](/api/v1/reference/operations/listtaskrecurrenceversions/) — `GET /task-recurrences/{id}/versions`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This is a cursor-paginated tool. `limit` accepts 1–100. When `meta.page.nextCursor` is not null, pass that opaque value as `cursor` to request the next page. Do not construct, edit, or decode cursors. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> List the first 20 TeamGrid task recurrence versions. Do not request another page; tell me whether another cursor is available.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Request a smaller page or narrower filters. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
+<!-- mcp/reference/teamgrid_task_recurrences_list.md -->
+---
+title: teamgrid_task_recurrences_list
+description: "List recurring TeamGrid task definitions with stable cursor pagination and optional project or lifecycle filters."
+owner: Developer Platform
+reviewedAt: 2026-08-10
+---
+
+`teamgrid_task_recurrences_list` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+`core` profile and is advertised in: `core`, `collaboration`, `governance`, `all`.
+
+## Input schema
+
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "maxLength": 512
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "projectId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,256}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "suspended",
+        "needs_attention",
+        "ended",
+        "archived"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false
+}
+```
+
+The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+
+## Scope and API operation
+
+Required scope: `task-recurrences:read`, `tasks:read`.
+
+- [`listTaskRecurrences`](/api/v1/reference/operations/listtaskrecurrences/) — `GET /task-recurrences`
+
+The credential must also satisfy normal workspace authorization and any service-account resource
+grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Output and limits
+
+The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block. This is a cursor-paginated tool. `limit` accepts 1–100. When `meta.page.nextCursor` is not null, pass that opaque value as `cursor` to request the next page. Do not construct, edit, or decode cursors. The serialized result may not exceed
+256 KiB.
+
+The linked API operation is the canonical reference for the response envelope and resource schema.
+MCP does not add write fields, an ETag input, or a hidden authorization path.
+
+## Security classification
+
+**operational-data:** The response contains operational workspace data visible to the credential.
+
+The server advertises MCP annotations `readOnlyHint: true`, `idempotentHint: true`,
+`destructiveHint: false`, and `openWorldHint: false`. The host and model can still retain tool
+arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
+
+## Example prompt
+
+> List the first 20 TeamGrid task recurrences. Do not request another page; tell me whether another cursor is available.
+
+The prompt is illustrative. Inspect the proposed tool arguments before approving access to
+personal, commercial, conversation, or security-configuration data.
+
+## Common failures
+
+| Condition | Observable behavior and recovery |
+| --- | --- |
+| `limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Request a smaller page or narrower filters. |
+| An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
+
+Authentication failures that prevent the MCP process from starting are covered separately in
+[MCP troubleshooting](/mcp/troubleshooting/).
+
+[Back to all MCP tools](/mcp/reference/) · [MCP security model](/mcp/tools-and-security/)
+
 <!-- mcp/reference/teamgrid_tasks_list.md -->
 ---
 title: teamgrid_tasks_list
@@ -19464,7 +21752,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19560,7 +21848,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19667,7 +21955,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19748,7 +22036,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19831,7 +22119,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -19917,7 +22205,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -20004,7 +22292,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.0.7`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
 
 ```json
 {
@@ -20068,14 +22356,14 @@ Authentication failures that prevent the MCP process from starting are covered s
 title: MCP tools and security
 description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
 owner: Security
-reviewedAt: 2026-08-16
+reviewedAt: 2026-08-18
 ---
 
 ## Available tools
 
-The default `core` profile exposes 15 operational tools. `collaboration` adds seven contact,
+The default `core` profile exposes 22 operational tools. `collaboration` adds seven contact,
 call-note, and user tools. `governance` adds six custom-field-definition, service, and webhook tools.
-`all` exposes those 28 tools plus the separately curated `teamgrid_search` tool, for a total of 29.
+`all` exposes those 35 tools plus the separately curated `teamgrid_search` tool, for a total of 36.
 Select a broader profile only when the host
 and workflow require it. Service reads are not in `core` because service objects can include
 commercially sensitive billing rates.
@@ -20091,6 +22379,13 @@ commercially sensitive billing rates.
 | `teamgrid_project_get` | Core | Read one project by ID |
 | `teamgrid_tasks_list` | Core | List tasks with project, assignee, and status filters |
 | `teamgrid_task_get` | Core | Read one task by ID |
+| `teamgrid_task_recurrences_list` | Core | List recurring-task series |
+| `teamgrid_task_recurrence_get` | Core | Read one recurring-task series and its active definition |
+| `teamgrid_task_recurrence_preview` | Core | Preview a saved recurring-task definition |
+| `teamgrid_task_recurrence_versions_list` | Core | List immutable definition versions |
+| `teamgrid_task_recurrence_version_get` | Core | Read one immutable definition version |
+| `teamgrid_task_recurrence_occurrences_list` | Core | List bounded occurrence-ledger entries |
+| `teamgrid_task_recurrence_occurrence_get` | Core | Read one occurrence-ledger entry |
 | `teamgrid_time_entries_list` | Core | List time entries with date, task, user, service, and creator filters; billing fields and filters are removed |
 | `teamgrid_time_entry_get` | Core | Read one time entry by ID |
 | `teamgrid_lists_list` | Core | List task lists |
@@ -20148,6 +22443,10 @@ Time-entry tools remove `billable`, `billed`, and `billedAt` from every result, 
 credential has `time-entries:billing`. Their schemas do not accept `billable` or `billed` filters.
 Current-credential inspection and revocation, webhook test delivery, and export streaming remain
 SDK/CLI capabilities and are forbidden through MCP.
+
+Recurring-task tools expose only saved series, versions, stored previews, and occurrence-ledger
+reads. Draft preview, create/update/lifecycle actions, overrides, retries, event submission, and
+operation control remain API/SDK/CLI-only.
 
 Federated search is the only additional curated tool. It requires `search:read` plus every matching
 domain read scope, accepts at most three resource types and 50 results, and is marked sensitive
@@ -20259,7 +22558,7 @@ exposure is possible, revoke or rotate the affected credential before continuing
 title: OpenAPI files
 description: Download the exact TeamGrid API v0 and v1 OpenAPI 3.1 contracts used to generate this documentation.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-18
 ---
 
 The API reference is generated from checked-in OpenAPI 3.1 contracts. The same files are available for code generation, validation, or import into an API client:
@@ -20283,16 +22582,16 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The stable `1.0.0` manifest records 132 v1 paths, 211 governed v1 operations, 87 frozen v0
-operations, 87 v0 migration decisions, 87 canonical scopes, and 73 classified TeamGrid product
+The stable `1.1.0` manifest records 154 v1 paths, 237 governed v1 operations, 87 frozen v0
+operations, 87 v0 migration decisions, 90 canonical scopes, and 74 classified TeamGrid product
 capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
-reads, and another 34 domain-specific `If-Match` operations. These counts describe the synchronized
+reads, and another 47 domain-specific `If-Match` operations. These counts describe the synchronized
 contract; they do not promote planned capabilities into the stable release.
 
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
-release they tested. The `1.0.0` checkpoint qualifies core project, task, and project-template
+release they tested. The `1.1.0` checkpoint qualifies core project, task, and project-template
 CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
-checkpoint is `1.0.7`. See [resource concurrency](/api/v1/resource-concurrency/).
+checkpoint is `1.1.0`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 
@@ -20458,16 +22757,16 @@ client package version in automated environments and review the changelog before
 | Surface | Stable version | Runtime | Contract | Support |
 | --- | --- | --- | --- | --- |
 | API v1 | `1.0.0` | HTTPS | OpenAPI `1.0.0` | Stable |
-| TypeScript SDK | `@teamgrid/api-client@1.0.7` | Node.js `22.14–24` | API v1 | Stable |
-| CLI | `@teamgrid/cli@1.0.7` | Node.js `22.14–24` | API v1 | Stable |
-| MCP server | `@teamgrid/mcp-server@1.0.7` | Node.js `22.14–24` | API v1, curated reads | Stable |
+| TypeScript SDK | `@teamgrid/api-client@1.1.0` | Node.js `22.14–24` | API v1 | Stable |
+| CLI | `@teamgrid/cli@1.1.0` | Node.js `22.14–24` | API v1 | Stable |
+| MCP server | `@teamgrid/mcp-server@1.1.0` | Node.js `22.14–24` | API v1, curated reads | Stable |
 | API v0 | Unversioned legacy contract | HTTPS | OpenAPI 3.1 snapshot | Maintenance |
 
 ## Install the synchronized clients
 
 ```bash
-npm install @teamgrid/api-client@1.0.7
-npm install --global @teamgrid/cli@1.0.7 @teamgrid/mcp-server@1.0.7
+npm install @teamgrid/api-client@1.1.0
+npm install --global @teamgrid/cli@1.1.0 @teamgrid/mcp-server@1.1.0
 ```
 
 SDK, CLI, and MCP use the same credential-derived regional routing. They do not create independent
@@ -20495,13 +22794,13 @@ reviewedAt: 2026-08-08
 
 ## Official packages
 
-The stable public packages share version `1.0.7` and the API v1 contract:
+The stable public packages share version `1.1.0` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.0.7` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.0.7` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.0.7` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.1.0` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.1.0` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.1.0` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.
@@ -20604,7 +22903,7 @@ credential from a secret manager for a deployed, shared, or scheduled process.
 
 ## `TeamGridClientOptions`
 
-The following constructor surface is taken from `@teamgrid/api-client@1.0.7`:
+The following constructor surface is taken from `@teamgrid/api-client@1.1.0`:
 
 | Option | Type | Required | Default and behavior |
 | --- | --- | --- | --- |
@@ -20725,7 +23024,7 @@ network listener.
 title: TypeScript SDK
 description: Use the official typed and region-aware Node.js client for TeamGrid API v1.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-08-18
 ---
 
 `@teamgrid/api-client` is the official TypeScript client for API v1. It parses credential location hints, derives the regional endpoint, enforces bounded response sizes and timeouts, applies safe retries, exposes cursor iterators, and returns stable error classes without retaining the bearer secret.
@@ -20737,7 +23036,7 @@ source and reconciled with the capability policy and OpenAPI v1 contract.
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.0.7
+npm install @teamgrid/api-client@1.1.0
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.
@@ -20754,6 +23053,10 @@ One `TeamGridClient` exposes the complete current API v1 surface:
 | `projects` | List, get, create, update, read/replace sharing, complete, reopen, archive, restore |
 | `projectLifecycleOperations` | Get and wait for asynchronous project lifecycle operations |
 | `tasks` | List, get, create, update, duplicate, move, atomically replace checklist, archive, restore, complete, reopen, timer start and stop |
+| `taskRecurrences` | Preview, list, get, create, update, lifecycle, owner, template, event-ingress, and recheck workflows |
+| `taskRecurrenceVersions` | List, get, and restore immutable recurring-task definition versions |
+| `taskRecurrenceOccurrences` | List, get, override, clear, and retry occurrence-ledger entries with explicit preconditions |
+| `taskRecurrenceOperations` | Get, wait for, and cancel bounded asynchronous recurrence operations |
 | `timeEntries` | List, get, create, update, read/update billing, archive, restore, and cursor page iteration |
 | `contacts` | List, get, create, update |
 | `callNotes` | List, get, create, archive, restore |
@@ -20797,11 +23100,11 @@ Paginated clients also expose `pages()` async iterators. Creates and asynchronou
 accept an idempotency key through mutation options. Every method uses the scopes documented in the
 API reference; the SDK never adds authority beyond the supplied credential.
 
-The compatible package checkpoint for this contract is `1.0.7`; pin that exact version in
+The compatible package checkpoint for this contract is `1.1.0`; pin that exact version in
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
-idempotency key. Another 34 protected operations retain domain-specific revision types.
+idempotency key. Another 47 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require
@@ -20983,7 +23286,7 @@ reviewedAt: 2026-08-08
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.0.7
+npm install @teamgrid/api-client@1.1.0
 ```
 
 ## Create a client
@@ -21209,6 +23512,32 @@ can no longer be resumed: take a new checkpoint and rebuild the snapshot.
 Change events are synchronization signals, not permanent copies of task content. Re-read current
 resources and apply an explicit deletion/tombstone policy.
 
+## Preview and recover a recurring-task policy
+
+A draft preview is synchronous for bounded policies and asynchronous for high-cost policies. The
+SDK validates both response shapes and the operation's exact polling location:
+
+```ts
+const accepted = await client.taskRecurrences.preview({
+  count: 20,
+  policy: recurrencePolicy,
+  template: { name: 'Weekly review', projectId: 'project-id' },
+})
+
+const result = accepted.data.type === 'taskRecurrenceOperation'
+  ? await client.taskRecurrenceOperations.wait(accepted.data.id, {
+    maxWaitMs: 300_000,
+    pollIntervalMs: 1_000,
+  })
+  : accepted
+
+await persistRecurrencePreview(result.data)
+```
+
+Do not retry a failed operation by inventing a new occurrence identity. Correct its stable error,
+then use the documented recheck or occurrence retry boundary. The complete policy and lifecycle
+model is in [Recurring tasks](/api/v1/recurring-tasks/).
+
 ## Create and download a bounded time-entry export
 
 Large reports use an asynchronous export job followed by a reveal-once download intent. The SDK
@@ -21320,7 +23649,7 @@ owner: Developer Platform
 reviewedAt: 2026-08-10
 ---
 
-`@teamgrid/api-client@1.0.7` is an ESM-only Node.js package. Its declared runtime range is Node.js
+`@teamgrid/api-client@1.1.0` is an ESM-only Node.js package. Its declared runtime range is Node.js
 22.14 through Node.js 24 (`>=22.14 <25`). Pin both the package and Node major in deployed builds.
 
 ## ESM setup
@@ -21331,7 +23660,7 @@ Use an ESM project by setting `"type": "module"` in `package.json`, or use `.mjs
 {
   "type": "module",
   "dependencies": {
-    "@teamgrid/api-client": "1.0.7"
+    "@teamgrid/api-client": "1.1.0"
   }
 }
 ```

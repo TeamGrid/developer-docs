@@ -8161,8 +8161,19 @@
                 "{id}",
                 "download-intent"
               ],
-              "query": [],
-              "raw": "{{baseUrl}}/exports/{id}/download-intent"
+              "query": [
+                {
+                  "disabled": true,
+                  "key": "cursor",
+                  "value": "{{cursor}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/exports/{id}/download-intent?cursor={{cursor}}&limit={{limit}}"
             }
           },
           "response": []
@@ -9444,6 +9455,1100 @@
         }
       ],
       "name": "Service Accounts"
+    },
+    {
+      "item": [
+        {
+          "name": "List task recurrences",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to list task recurrences. It returns only resources visible to the credential and applies the documented filters before producing a bounded, stable page. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "key": "cursor",
+                  "value": "{{cursor}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "limit",
+                  "value": "{{limit}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "projectId",
+                  "value": "{{projectId}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "status",
+                  "value": "{{status}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/task-recurrences?cursor={{cursor}}&limit={{limit}}&projectId={{projectId}}&status={{status}}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to create a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Use a stable Idempotency-Key when retrying so a transport timeout cannot create duplicate work.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"changeReason\": \"string\",\n  \"name\": \"string\",\n  \"policy\": {\n    \"candidates\": null,\n    \"conditions\": [\n      null\n    ],\n    \"engineVersion\": \"string\",\n    \"limits\": {\n      \"maxOccurrences\": null,\n      \"until\": null\n    },\n    \"materialization\": {\n      \"catchUp\": \"all\",\n      \"catchUpLimit\": 1,\n      \"lead\": null,\n      \"overlap\": \"allow\"\n    },\n    \"schemaVersion\": 0,\n    \"timeBasis\": {\n      \"disambiguation\": \"compatible\",\n      \"mode\": \"elapsed\",\n      \"timeZone\": \"string\"\n    },\n    \"transforms\": [\n      null\n    ]\n  },\n  \"sourceTaskId\": \"string\",\n  \"template\": {\n    \"billable\": false,\n    \"contactId\": \"string\",\n    \"customFieldValues\": null,\n    \"description\": \"string\",\n    \"descriptionFormat\": \"markdown-v1\",\n    \"groupId\": \"string\",\n    \"listId\": \"string\",\n    \"name\": \"string\",\n    \"personalListId\": \"string\",\n    \"plannedTime\": 0,\n    \"projectId\": \"string\",\n    \"serviceId\": \"string\"\n  },\n  \"templatePatch\": {\n    \"billable\": false,\n    \"contactId\": \"string\",\n    \"customFieldValues\": null,\n    \"description\": \"string\",\n    \"descriptionFormat\": \"markdown-v1\",\n    \"groupId\": \"string\",\n    \"listId\": \"string\",\n    \"name\": \"string\",\n    \"personalListId\": \"string\",\n    \"plannedTime\": 0,\n    \"projectId\": \"string\",\n    \"serviceId\": \"string\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Preview a draft task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to preview a draft task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "preview"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/preview"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"context\": null,\n  \"count\": 20,\n  \"from\": \"2026-07-29T09:00:00.000Z\",\n  \"policy\": {\n    \"candidates\": null,\n    \"conditions\": [\n      null\n    ],\n    \"engineVersion\": \"string\",\n    \"limits\": {\n      \"maxOccurrences\": null,\n      \"until\": null\n    },\n    \"materialization\": {\n      \"catchUp\": \"all\",\n      \"catchUpLimit\": 1,\n      \"lead\": null,\n      \"overlap\": \"allow\"\n    },\n    \"schemaVersion\": 0,\n    \"timeBasis\": {\n      \"disambiguation\": \"compatible\",\n      \"mode\": \"elapsed\",\n      \"timeZone\": \"string\"\n    },\n    \"transforms\": [\n      null\n    ]\n  },\n  \"template\": {\n    \"billable\": false,\n    \"contactId\": \"string\",\n    \"customFieldValues\": null,\n    \"description\": \"string\",\n    \"descriptionFormat\": \"markdown-v1\",\n    \"groupId\": \"string\",\n    \"listId\": \"string\",\n    \"name\": \"string\",\n    \"personalListId\": \"string\",\n    \"plannedTime\": 0,\n    \"projectId\": \"string\",\n    \"serviceId\": \"string\"\n  },\n  \"until\": \"2026-07-29T09:00:00.000Z\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to get a task recurrence. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to update a task recurrence. Only documented mutable fields are accepted; omitted fields retain their current values unless the request schema states replacement semantics. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"changeReason\": \"string\",\n  \"name\": \"string\",\n  \"policy\": {\n    \"candidates\": null,\n    \"conditions\": [\n      null\n    ],\n    \"engineVersion\": \"string\",\n    \"limits\": {\n      \"maxOccurrences\": null,\n      \"until\": null\n    },\n    \"materialization\": {\n      \"catchUp\": \"all\",\n      \"catchUpLimit\": 1,\n      \"lead\": null,\n      \"overlap\": \"allow\"\n    },\n    \"schemaVersion\": 0,\n    \"timeBasis\": {\n      \"disambiguation\": \"compatible\",\n      \"mode\": \"elapsed\",\n      \"timeZone\": \"string\"\n    },\n    \"transforms\": [\n      null\n    ]\n  },\n  \"template\": {\n    \"billable\": false,\n    \"contactId\": \"string\",\n    \"customFieldValues\": null,\n    \"description\": \"string\",\n    \"descriptionFormat\": \"markdown-v1\",\n    \"groupId\": \"string\",\n    \"listId\": \"string\",\n    \"name\": \"string\",\n    \"personalListId\": \"string\",\n    \"plannedTime\": 0,\n    \"projectId\": \"string\",\n    \"serviceId\": \"string\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Archive a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to archive a task recurrence. The operation preserves TeamGrid lifecycle and permission rules instead of bypassing them with a direct data deletion. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Preview a stored task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to preview a stored task recurrence. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "preview"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "key": "from",
+                  "value": "{{from}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "until",
+                  "value": "{{until}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "count",
+                  "value": "{{count}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/preview?from={{from}}&until={{until}}&count={{count}}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Restore a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to restore a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "restore"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/restore"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Pause a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to pause a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "pause"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/pause"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resume a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to resume a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "resume"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/resume"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to end a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "end"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/end"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove a task recurrence from its tasks",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to remove a task recurrence from its tasks. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "remove-from-tasks"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/remove-from-tasks"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer task recurrence ownership",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to transfer task recurrence ownership. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "owner"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/owner"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"id\": \"string\",\n  \"kind\": \"developerPrincipal\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Replace a recurrence template from a task",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to replace a recurrence template from a task. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "definition-from-task"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/definition-from-task"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"changeReason\": \"string\",\n  \"policy\": {\n    \"candidates\": null,\n    \"conditions\": [\n      null\n    ],\n    \"engineVersion\": \"string\",\n    \"limits\": {\n      \"maxOccurrences\": null,\n      \"until\": null\n    },\n    \"materialization\": {\n      \"catchUp\": \"all\",\n      \"catchUpLimit\": 1,\n      \"lead\": null,\n      \"overlap\": \"allow\"\n    },\n    \"schemaVersion\": 0,\n    \"timeBasis\": {\n      \"disambiguation\": \"compatible\",\n      \"mode\": \"elapsed\",\n      \"timeZone\": \"string\"\n    },\n    \"transforms\": [\n      null\n    ]\n  },\n  \"taskId\": \"string\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List task recurrence versions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to list task recurrence versions. It returns only resources visible to the credential and applies the documented filters before producing a bounded, stable page. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "versions"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/versions"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a task recurrence version",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to get a task recurrence version. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "versions",
+                "{versionId}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/versions/{versionId}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Restore a task recurrence version",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to restore a task recurrence version. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "versions",
+                "{versionId}",
+                "restore"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/versions/{versionId}/restore"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"changeReason\": \"string\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List task recurrence occurrences",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to list task recurrence occurrences. It returns only resources visible to the credential and applies the documented filters before producing a bounded, stable page. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "occurrences"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "key": "cursor",
+                  "value": "{{cursor}}"
+                },
+                {
+                  "disabled": true,
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/occurrences?cursor={{cursor}}&limit={{limit}}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a task recurrence occurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to get a task recurrence occurrence. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "occurrences",
+                "{occurrenceKey}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Override a task recurrence occurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to override a task recurrence occurrence. Only documented mutable fields are accepted; omitted fields retain their current values unless the request schema states replacement semantics. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "occurrences",
+                "{occurrenceKey}",
+                "override"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}/override"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"action\": \"materialize\",\n  \"placeholderToken\": \"string\",\n  \"scheduledForLocal\": \"string\",\n  \"templatePatch\": {\n    \"billable\": false,\n    \"contactId\": \"string\",\n    \"customFieldValues\": null,\n    \"description\": \"string\",\n    \"descriptionFormat\": \"markdown-v1\",\n    \"groupId\": \"string\",\n    \"listId\": \"string\",\n    \"name\": \"string\",\n    \"personalListId\": \"string\",\n    \"plannedTime\": 0,\n    \"projectId\": \"string\",\n    \"serviceId\": \"string\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clear a task recurrence occurrence override",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to clear a task recurrence occurrence override. The operation preserves TeamGrid lifecycle and permission rules instead of bypassing them with a direct data deletion. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "occurrences",
+                "{occurrenceKey}",
+                "override"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}/override"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retry a failed task recurrence occurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to retry a failed task recurrence occurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "occurrences",
+                "{occurrenceKey}",
+                "retry"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/occurrences/{occurrenceKey}/retry"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recheck a task recurrence asynchronously",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to recheck a task recurrence asynchronously. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "recheck"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/recheck"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Submit an event to a task recurrence",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to submit an event to a task recurrence. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "events"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/events"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"causationId\": \"string\",\n  \"correlationId\": \"string\",\n  \"eventId\": \"string\",\n  \"eventType\": \"string\",\n  \"occurredAt\": \"2026-07-29T09:00:00.000Z\",\n  \"payload\": null,\n  \"schemaVersion\": 0,\n  \"sourceId\": \"string\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a task recurrence operation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to get a task recurrence operation. It returns the resource only when it belongs to the authenticated workspace and is visible to the credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrence-operations",
+                "{id}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrence-operations/{id}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel a task recurrence operation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to cancel a task recurrence operation. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrence-operations",
+                "{id}",
+                "cancel"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrence-operations/{id}/cancel"
+            }
+          },
+          "response": []
+        }
+      ],
+      "name": "Task Recurrences"
     }
   ],
   "variable": [

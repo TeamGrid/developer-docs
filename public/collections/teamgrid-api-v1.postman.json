@@ -9923,6 +9923,42 @@
           "response": []
         },
         {
+          "name": "Remove a task recurrence from its tasks",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Use this operation to remove a task recurrence from its tasks. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "task-recurrences",
+                "{id}",
+                "remove-from-tasks"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/task-recurrences/{id}/remove-from-tasks"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Transfer task recurrence ownership",
           "request": {
             "auth": {

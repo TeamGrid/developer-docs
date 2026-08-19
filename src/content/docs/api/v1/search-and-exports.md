@@ -2,7 +2,7 @@
 title: Search and exports
 description: Search authorized resources and download bounded CSV exports through a header-only capability.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-08-19
 ---
 
 ## Federated search
@@ -20,8 +20,8 @@ tool. Use a dedicated credential and request only the resource types needed for 
 
 ## Bounded asynchronous exports
 
-`POST /exports` creates a CSV export job for `contacts`, `projects`, `tasks`, `timeEntries`, or
-`auditEvents`.
+`POST /exports` creates a CSV export job for `contacts`, `projects`, `taskRecurrences`, `tasks`,
+`timeEntries`, or `auditEvents`.
 Exports are bounded to 10,000 rows and at most 16 selected fields. The request supports archived and
 updated-at filters and must use a stable `Idempotency-Key` when retried.
 
@@ -29,6 +29,12 @@ Creating a job requires `exports:write`; status and download operations require 
 matching domain read scope and analytics permission are also enforced. Poll `GET /exports/{id}` until
 the state is `succeeded` or `failed`; a successful job records whether the requested result was
 truncated.
+
+A `taskRecurrences` export requires `task-recurrences:read`, `tasks:read`, and the normal task
+permission. Its allowlisted projection includes series identity, name, lifecycle status, owner,
+project, current definition identity/version/hash and timestamps. Optional fields can include the
+canonical policy, task template and human summary. It exports series state, not occurrence-ledger
+rows or generated task content; export generated tasks separately with `resourceType: "tasks"`.
 
 Audit exports additionally require `audit:read` and an immutable `createdAtTo` snapshot boundary.
 They may use `createdAtFrom`, span at most 366 days, and never accept updated-at or archive filters.

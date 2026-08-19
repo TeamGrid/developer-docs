@@ -2028,6 +2028,11 @@ POST {{baseUrl}}/task-recurrences/{id}/end
 Authorization: Bearer {{token}}
 Accept: application/json
 
+### Remove a task recurrence from its tasks
+POST {{baseUrl}}/task-recurrences/{id}/remove-from-tasks
+Authorization: Bearer {{token}}
+Accept: application/json
+
 ### Transfer task recurrence ownership
 POST {{baseUrl}}/task-recurrences/{id}/owner
 Authorization: Bearer {{token}}

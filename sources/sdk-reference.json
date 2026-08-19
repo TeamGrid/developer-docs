@@ -3,20 +3,20 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "bd139c5ebb3fdccfb734e8cd4719dec5547e6002",
+    "sourceCommit": "884fa0807e6cb157a672e79b10830aff435ce140",
     "version": "1.1.0"
   },
   "sources": {
-    "capabilityPolicySha256": "bcc853bcd6b141efb2ffbbd22c42c9a008cb24997a0e2a75594286cf50091e3b",
+    "capabilityPolicySha256": "90ce40e1bcfca7fc9eb402b36eac43fb46061767d15972b17d7b8b44550b9e6f",
     "clientDeclaration": "developer-platform/packages/api-client/src/client.ts",
-    "clientDeclarationSha256": "de441784c838d1c2b5d5b5d26f1056eca82a5a0b0ee830cb2f663b0fec7f3eb1",
-    "operationBindingsSha256": "aaeb6273d02436e5a30e68ba4d46d62e28708d655c29c222537a44d977e42215",
-    "openApiSha256": "cf26d41b9125cecbd65c1a2fd88b1006ca3441d195abba86370c2755098bc373"
+    "clientDeclarationSha256": "599e875de396038d4aa8438a25ee735667e30e4ee05fd1f8e63b43b99ad74493",
+    "operationBindingsSha256": "d03b64ff07750414f38688d279b5c4213544ade60e61f66a2eb5f2c1c4d09f0b",
+    "openApiSha256": "ac6e7c1582cba74a0f3fb89e400f20ed86c403896e7d1b5a276f264b0eef780f"
   },
   "summary": {
     "clientCount": 54,
     "helperCount": 45,
-    "operationCount": 235
+    "operationCount": 236
   },
   "clientOptions": [
     {
@@ -10883,7 +10883,7 @@
         }
       ],
       "name": "taskRecurrences",
-      "operationCount": 15,
+      "operationCount": 16,
       "operations": [
         {
           "name": "list",
@@ -12135,6 +12135,127 @@
             }
           ],
           "summary": "End a task recurrence",
+          "tag": "Task Recurrences"
+        },
+        {
+          "name": "removeFromTasks",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "options: TaskRecurrenceMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "TaskRecurrenceMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "taskRecurrences.removeFromTasks(id: string, options: TaskRecurrenceMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/removetaskrecurrencefromtasks/",
+          "conditionalScopes": [],
+          "description": "Use this operation to remove a task recurrence from its tasks. The server validates the complete payload and derives workspace ownership from the authenticated credential. Required scopes, product permissions, sharing rules, workspace locks, and regional cell ownership are enforced for every request. Send the latest strong ETag in If-Match; stale revisions fail without overwriting a concurrent change.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "POST",
+          "operationId": "removeTaskRecurrenceFromTasks",
+          "path": "/task-recurrences/{id}/remove-from-tasks",
+          "request": {
+            "body": null,
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong task-recurrence ETag. Wildcards, weak validators, lists, and surrounding whitespace are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "task-recurrences:write",
+            "tasks:read",
+            "tasks:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The authorized recurrence resource.",
+              "mediaType": "application/json",
+              "schema": "TaskRecurrence envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Remove a task recurrence from its tasks",
           "tag": "Task Recurrences"
         },
         {

@@ -2,7 +2,7 @@
 title: Credentials and scopes
 description: Authenticate API v1 with scoped TeamGrid service credentials and understand their tenant and region boundaries.
 owner: Security
-reviewedAt: 2026-08-18
+reviewedAt: 2026-08-19
 ---
 
 API v1 accepts three reveal-once bearer credential formats:
@@ -58,8 +58,8 @@ The credential prefix contains an untrusted routing hint. The target TeamGrid ce
 - Personal-credential owners can identify and revoke their own credentials by non-secret metadata.
 - Authorized administrators can view and manage service-account metadata without revealing secrets.
 - Personal and service-account principals must be active at request time.
-- The API and App cell must negotiate the exact code-owned 236-operation action-policy registry,
-  including all 234 credential-authenticated operations,
+- The API and App cell must negotiate the exact code-owned 237-operation action-policy registry,
+  including all 235 credential-authenticated operations,
   before the service is ready.
 
 Every valid credential can inspect only its own safe metadata through `GET /v1/auth/context`. This
@@ -95,7 +95,7 @@ desktop, remote terminal, container, MCP, SDK, and CI choices.
 | `projects:lifecycle` | Complete, reopen, archive, restore, and inspect asynchronous project lifecycle operations |
 | `projects:sharing` | Read and atomically replace project access-control entries; sensitive scope for human principals |
 | `tasks:read`, `tasks:write` | Tasks and task metadata |
-| `task-recurrences:read`, `task-recurrences:write`, `task-recurrences:run` | Read/manage recurring-task series and submit or recheck their bounded execution inputs; generated-task access also requires the matching task scope |
+| `task-recurrences:read`, `task-recurrences:write`, `task-recurrences:run` | Read recurring-task state; manage, preview and recheck series; or submit external triggers. Reads also require `tasks:read`; writes and recheck require `tasks:read` plus `tasks:write`; only external event submission uses `task-recurrences:run` plus `tasks:write` |
 | `time-entries:read`, `time-entries:write` | Time entries |
 | `time-entries:billing` | Read and compare-and-set billable state and billing rate; sensitive finance scope |
 | `contacts:read`, `contacts:write` | Contacts |

@@ -231,7 +231,7 @@ function renderReferenceIndex(reference) {
     .join('\n\n')
   return `---
 title: MCP tool reference
-description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 29 TeamGrid MCP tools.
+description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 36 TeamGrid MCP tools.
 owner: Developer Platform
 reviewedAt: 2026-08-10
 ---

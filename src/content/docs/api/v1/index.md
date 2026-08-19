@@ -5,7 +5,7 @@ owner: Developer Platform
 reviewedAt: 2026-08-18
 ---
 
-API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.1.0` contains 153 paths and 236 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
+API v1 is the stable, recommended contract for new TeamGrid integrations. It uses regional ingress, scoped reveal-once credentials, cursor pagination, idempotent creates, consistent errors, strong write preconditions, and signed webhook deliveries. Version `1.1.0` contains 154 paths and 237 operations. This is interface coverage, not a claim that every TeamGrid product capability is public.
 
 ## Base URL
 
@@ -36,7 +36,7 @@ and credential-owned asynchronous-operation resources.
 Most mutable resources use explicit domain operations instead of a generic database mutation endpoint. Project completion, reopen, archive, and restore are asynchronous lifecycle operations with a separately readable operation resource. Task and time-entry transitions remain synchronous domain commands. Product acquisition cost and project-statement finance data require additional finance scopes. Webhook delivery history is readable only for deliveries owned by the authenticated service credential.
 
 Projects, project sharing, tasks, and project templates expose developer revisions and require strong
-`If-Match` preconditions for their 18 mutating operations. Another 46 protected operations retain
+`If-Match` preconditions for their 18 mutating operations. Another 47 protected operations retain
 domain-specific revision formats. Review [resource concurrency](/api/v1/resource-concurrency/)
 before building a writer.
 

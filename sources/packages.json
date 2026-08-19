@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceRepository": "TeamGrid/developer-platform",
-  "sourceCommit": "bd139c5ebb3fdccfb734e8cd4719dec5547e6002",
+  "sourceCommit": "884fa0807e6cb157a672e79b10830aff435ce140",
   "version": "1.1.0",
   "packages": {
     "apiClient": {

@@ -82,7 +82,7 @@ The compatible package checkpoint for this contract is `1.1.0`; pin that exact v
 reproducible deployments. Tasks, projects, and project templates expose
 developer revisions and require typed `ifMatch` options for their 18 protected mutations. Project
 lifecycle changes and template instantiation remain asynchronous and also accept a stable
-idempotency key. Another 46 protected operations retain domain-specific revision types.
+idempotency key. Another 47 protected operations retain domain-specific revision types.
 
 Types model finance-gated fields as optional. Product `purchasePrice` is present only with
 `products:finance:read`; project-statement budget entries and `purchasePrice` require

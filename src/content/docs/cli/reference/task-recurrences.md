@@ -1,11 +1,11 @@
 ---
 title: "teamgrid task-recurrences"
-description: "23 executable @teamgrid/cli commands in the task-recurrences group, generated from CLI 1.1.0."
+description: "24 executable @teamgrid/cli commands in the task-recurrences group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-18
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `bd139c5ebb3f`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 define, inspect, and operate recurring tasks.
 
@@ -35,6 +35,7 @@ Global options can be placed before the command group.
 - [`teamgrid task-recurrences pause`](#teamgrid-task-recurrences-pause) — Pause a task recurrence.
 - [`teamgrid task-recurrences resume`](#teamgrid-task-recurrences-resume) — Resume a task recurrence.
 - [`teamgrid task-recurrences end`](#teamgrid-task-recurrences-end) — End a task recurrence.
+- [`teamgrid task-recurrences remove-from-tasks`](#teamgrid-task-recurrences-remove-from-tasks) — end the series and remove recurrence links from its tasks while preserving history.
 - [`teamgrid task-recurrences owner`](#teamgrid-task-recurrences-owner) — transfer task recurrence ownership.
 - [`teamgrid task-recurrences template-from-task`](#teamgrid-task-recurrences-template-from-task) — replace the recurrence task template from an existing task.
 - [`teamgrid task-recurrences versions list`](#teamgrid-task-recurrences-versions-list) — List task recurrence versions.
@@ -528,6 +529,55 @@ This command can change or remove data and asks for confirmation by default. In 
 
 ```bash
 teamgrid task-recurrences end ID --if-match REVISION
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid task-recurrences remove-from-tasks
+
+end the series and remove recurrence links from its tasks while preserving history.
+
+### Syntax
+
+```bash
+teamgrid task-recurrences remove-from-tasks [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `removeTaskRecurrenceFromTasks` | `POST /task-recurrences/{id}/remove-from-tasks` | `task-recurrences:write` | [Remove a task recurrence from its tasks](/api/v1/reference/operations/removetaskrecurrencefromtasks/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--if-match <revision\|etag>` | latest task recurrence revision or strong ETag | Yes | — | — |
+| `-y, --yes` | skip the destructive-operation confirmation | No | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Confirmation and automation
+
+This command can change or remove data and asks for confirmation by default. In a reviewed non-interactive job, pass `--yes` or set `TEAMGRID_CLI_ASSUME_YES=1`; otherwise the command exits with code `2`. Cancelling an interactive confirmation exits with code `0`.
+
+### Example
+
+```bash
+teamgrid task-recurrences remove-from-tasks ID --if-match REVISION
 ```
 
 ### Exit codes

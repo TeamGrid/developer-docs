@@ -2,7 +2,7 @@
 title: Recurring tasks
 description: Create advanced task series, preview schedules, manage immutable versions, override occurrences, and recover asynchronous operations.
 owner: Developer Experience
-reviewedAt: 2026-08-18
+reviewedAt: 2026-08-19
 ---
 
 Recurring tasks are task automation, not calendar appointments. A recurrence series owns an
@@ -12,10 +12,18 @@ creates ordinary TeamGrid tasks with read-only recurrence provenance.
 
 ## Choose scopes and ownership
 
-Read operations require `task-recurrences:read` and `tasks:read`. Definition and lifecycle writes
-require `task-recurrences:write` and `tasks:write`. External trigger submission and recheck use
-`task-recurrences:run` plus `tasks:write`. Workspace entitlement, task permissions, sharing,
-resource grants and series ownership are enforced in addition to OAuth or credential scopes.
+Read operations require `task-recurrences:read` and `tasks:read`. Preview, definition, lifecycle,
+occurrence, recheck and operation-cancellation writes require all of `task-recurrences:write`,
+`tasks:read`, and `tasks:write`. Only external trigger submission uses `task-recurrences:run` plus
+`tasks:write`. Workspace entitlement, task permissions, sharing, resource grants and series
+ownership are enforced in addition to credential scopes.
+
+| Workflow | Required scopes |
+| --- | --- |
+| List/get series, versions, occurrences, stored previews and operation status | `task-recurrences:read`, `tasks:read` |
+| Create or preview a draft; update, pause, resume, end, archive, restore, transfer, recheck or remove a series from tasks | `task-recurrences:write`, `tasks:read`, `tasks:write` |
+| Restore a version; override, clear or retry an occurrence; cancel an operation | `task-recurrences:write`, `tasks:read`, `tasks:write` |
+| Submit an external event | `task-recurrences:run`, `tasks:write` |
 
 Use a service account for a shared integration and a personal credential for user-owned
 automation. A guessed series or occurrence from another workspace remains indistinguishable from
@@ -203,6 +211,43 @@ teamgrid task-recurrences recheck SERIES_ID --wait --output json
 teamgrid task-recurrence-operations wait OPERATION_ID --output json
 ```
 
+## Remove a recurrence from its tasks
+
+Ending a series stops future work but leaves recurrence provenance on tasks that were already
+materialized. Use the separate compare-and-set operation when the user explicitly wants those
+tasks to become ordinary tasks again:
+
+```ts
+const current = await client.taskRecurrences.get(seriesId)
+const removed = await client.taskRecurrences.removeFromTasks(seriesId, {
+  ifMatch: current.transport.headers.etag!,
+})
+```
+
+```bash
+teamgrid task-recurrences remove-from-tasks SERIES_ID \
+  --if-match '"tr1-<current revision>"' \
+  --yes \
+  --output json
+```
+
+The matching HTTP operation is
+`POST /v1/task-recurrences/{id}/remove-from-tasks`. It requires the latest strong series ETag and
+returns the ended series with a new ETag. The mutation is atomic across the series, materialized
+tasks and occurrence ledger:
+
+- the series becomes terminal `ended`, so it cannot be resumed or restored;
+- generated tasks are not deleted, archived or otherwise changed, but all server-managed
+  recurrence-link fields are removed;
+- occurrence history remains immutable and auditable;
+- a detached occurrence exposes `cardId: null`, its former task as `detachedCardId`, and the
+  `detachedAt` and `detachedBy` audit fields;
+- the now-ordinary task can seed a different recurrence through the normal create workflow.
+
+A stale ETag returns `412`, a missing one returns `428`, and insufficient access fails without a
+partial detach. The SDK requires `ifMatch`; the CLI additionally requires an interactive
+confirmation or explicit `--yes`. The operation is deliberately unavailable through MCP.
+
 ## Event-driven series
 
 An `externalEvent` source subscribes a series to an exact `eventType` and optional `sourceId`.
@@ -211,11 +256,17 @@ identity: replaying the same envelope is safe, while reusing it with different c
 conflict. Event timestamps are bounded by the documented retention and future-skew window.
 
 Use signed webhooks for low-latency output notifications and the change feed with
-`resourceTypes=taskRecurrence` for durable reconciliation. An event acceptance response means the
-trigger is durably queued; it does not promise that its generated task already exists.
+`resourceTypes=taskRecurrence` for durable series reconciliation. Generated tasks are ordinary
+`task` resources and therefore use the task feed. Occurrence-ledger rows are read through their
+dedicated endpoints and are not a change-feed resource type. An event acceptance response means
+the trigger is durably queued; it does not promise that its generated task already exists.
 
 ## MCP boundary
 
-The MCP server exposes seven bounded read-only recurrence tools for saved series, versions,
-stored previews and occurrences. It deliberately excludes unsaved drafts, lifecycle writes,
-overrides, retries, event ingress and operation control. Use the API, SDK or CLI for those actions.
+The MCP server exposes exactly seven bounded read-only recurrence tools:
+`teamgrid_task_recurrences_list`, `teamgrid_task_recurrence_get`,
+`teamgrid_task_recurrence_preview`, `teamgrid_task_recurrence_versions_list`,
+`teamgrid_task_recurrence_version_get`, `teamgrid_task_recurrence_occurrences_list`, and
+`teamgrid_task_recurrence_occurrence_get`. It deliberately excludes unsaved drafts, lifecycle
+writes, detachment, overrides, retries, event ingress and operation control. Use the API, SDK or
+CLI for those actions.

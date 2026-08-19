@@ -2,7 +2,7 @@
 title: Resource concurrency
 description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
 owner: Developer Platform
-reviewedAt: 2026-08-18
+reviewedAt: 2026-08-19
 ---
 
 API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the
@@ -67,7 +67,7 @@ reuse the pre-mutation validator.
 
 ## Other protected resources
 
-Another 46 operations retain their domain-specific compare-and-set contracts:
+Another 47 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |
@@ -76,7 +76,7 @@ Another 46 operations retain their domain-specific compare-and-set contracts:
 | Documents and files | 6 |
 | Custom-field values | 2 |
 | Planned work | 1 |
-| Recurring-task series, versions, templates, and occurrences | 12 |
+| Recurring-task series, versions, templates, occurrences, and task detachment | 13 |
 | Members, invitations, roles, and groups | 8 |
 | Service-account resource grants | 1 |
 | Time-entry billing | 1 |

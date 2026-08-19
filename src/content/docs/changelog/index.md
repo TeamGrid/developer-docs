@@ -2,7 +2,7 @@
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-08-18
+reviewedAt: 2026-08-19
 ---
 
 ## Current platform
@@ -24,15 +24,17 @@ Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 - Added advanced recurring tasks as task automation with immutable definition versions,
   deterministic wall-clock or elapsed-time policies, business calendars, lifecycle controls,
   occurrence overrides, external triggers, recovery operations, and ordinary generated tasks.
-- Added 25 recurrence operations across API v1, TypeScript SDK, and CLI. Seven bounded recurrence
+- Added 26 recurrence operations across API v1, TypeScript SDK, and CLI, including the explicit
+  compare-and-set workflow that ends a series and removes recurrence links from its tasks while
+  preserving occurrence audit history. Seven bounded recurrence
   reads are available in the curated MCP server; mutation, event-ingress, and operation-control
   tools remain deliberately excluded.
 - Added short-lived, definition-bound placeholder proofs and `If-None-Match: *` so a stored-preview
   occurrence can be overridden before its immutable ledger row exists. Existing occurrences retain
   strong ETag and `If-Match` concurrency.
-- Expanded the synchronized contract to 153 paths, 236 governed operations, 90 scopes, and a
-  24-resource durable change feed. The SDK exposes 235 mapped operations through 54 clients; the
-  CLI exposes 242 commands in 54 groups, and MCP exposes 36 curated read-only tools.
+- Expanded the synchronized contract to 154 paths, 237 governed operations, 90 scopes, and a
+  24-resource durable change feed. The SDK exposes 236 mapped operations through 54 clients; the
+  CLI exposes 243 commands in 54 groups, and MCP exposes 36 curated read-only tools.
 - Qualified aligned 1.1.0 package artifacts with production dependency, edge-runtime, type,
   conformance, redaction, size-budget, and clean packed-install gates.
 

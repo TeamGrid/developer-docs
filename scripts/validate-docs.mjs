@@ -368,6 +368,7 @@ const expectedIndependentIfMatchOperationIds = [
   'deleteRole',
   'endTaskRecurrence',
   'removeMember',
+  'removeTaskRecurrenceFromTasks',
   'renameFile',
   'overrideTaskRecurrenceOccurrence',
   'pauseTaskRecurrence',
@@ -439,7 +440,7 @@ if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
   !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('The stable contract must preserve exactly 64 qualified If-Match operations.')
+  fail('The stable contract must preserve exactly 65 qualified If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -488,7 +489,7 @@ const resourceConcurrencyDocumentation = await readFile(
 )
 for (const marker of [
   'Exactly 18 core mutations require `If-Match`',
-  'Another 46 operations retain their domain-specific compare-and-set contracts',
+  'Another 47 operations retain their domain-specific compare-and-set contracts',
   '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',
   '`412 precondition_failed`',
@@ -648,7 +649,7 @@ for (const marker of [
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
   `${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutations`,
-  '46 domain-specific `If-Match` operations',
+  '47 domain-specific `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)

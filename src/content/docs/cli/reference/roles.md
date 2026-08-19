@@ -2,10 +2,10 @@
 title: "teamgrid roles"
 description: "5 executable @teamgrid/cli commands in the roles group, generated from CLI 1.1.0."
 owner: Developer Experience
-reviewedAt: 2026-08-18
+reviewedAt: 2026-08-19
 ---
 
-> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `bd139c5ebb3f`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `884fa0807e6c`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and administer workspace roles.
 

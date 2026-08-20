@@ -11,8 +11,8 @@
     }
   },
   "sourceRepository": "TeamGrid/teamgrid-api",
-  "sourceCommit": "c1bb146762c52c80f51f9bc3695fce0b5008b4a9",
-  "runtimeCommit": "c1bb146762c52c80f51f9bc3695fce0b5008b4a9",
+  "sourceCommit": "989907de7c11b061b11a249e6fdeb2b0446134b6",
+  "runtimeCommit": "989907de7c11b061b11a249e6fdeb2b0446134b6",
   "scopes": {
     "count": 90,
     "sha256": "bf7c5cd3a50c0ba8881285e562f0602d9b67122a9dfeeff0e58cd346c2e063d7"

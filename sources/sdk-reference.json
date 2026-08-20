@@ -3,7 +3,7 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "884fa0807e6cb157a672e79b10830aff435ce140",
+    "sourceCommit": "efeff4648d71ed12bfaf92d01afbe872a972b05a",
     "version": "1.1.0"
   },
   "sources": {

@@ -8,8 +8,14 @@ const root = path.resolve(import.meta.dirname, '..')
 const packageManifest = JSON.parse(
   await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
 )
+const sdkReference = JSON.parse(
+  await readFile(path.join(root, 'sources', 'sdk-reference.json'), 'utf8'),
+)
 const cliReference = JSON.parse(
   await readFile(path.join(root, 'sources', 'cli-reference.json'), 'utf8'),
+)
+const mcpReference = JSON.parse(
+  await readFile(path.join(root, 'sources', 'mcp-reference.json'), 'utf8'),
 )
 const stableVersion = packageManifest.version
 const smokeRun = (
@@ -25,7 +31,7 @@ const checks = [
   ['/guides/production-go-live/', 'Production go-live checklist'],
   ['/de/', 'deutscher Einstieg'],
   ['/api/v0/migration-matrix/', '87 frozen API v0 runtime routes'],
-  ['/sdk/reference/', '210 API methods'],
+  ['/sdk/reference/', `${sdkReference.summary.operationCount} API methods`],
   ['/sdk/reference/tasks/', 'tasks.update'],
   ['/cli/', `@teamgrid/cli@${stableVersion}`],
   ['/cli/browser-login/', 'The CLI performs this sequence'],
@@ -33,7 +39,7 @@ const checks = [
   ['/cli/commands/', 'This workflow guide covers every command group in CLI'],
   ['/cli/reference/', `${cliReference.executableCommandCount} executable commands`],
   ['/cli/reference/tasks/', 'teamgrid tasks update'],
-  ['/mcp/reference/', '29 read-only tools'],
+  ['/mcp/reference/', `${mcpReference.tools.length} read-only tools`],
   ['/mcp/reference/teamgrid_tasks_list/', 'exact JSON Schema'],
   ['/resources/compatibility/', `@teamgrid/mcp-server@${stableVersion}`],
   ['/changelog/', `Developer Platform ${stableVersion}`],

@@ -87,14 +87,57 @@ Dieses Dokument ist kein Production-Freigabenachweis.
   zu große Antworten getestet. Veröffentlichung und Liveprüfung stehen noch aus.
 
 Aktueller lokaler Prüfstand der Vollerweiterung: **440 SDK-/CLI-/MCP-Tests**,
-**451 API-Tests** und **42 App-CAS-/Vertragsprüfungen** bestanden. Paketbau,
+**451 API-Tests** und **51 gezielte App-Prüfungen** nach Integration des Lesefixes bestanden. Paketbau,
 Produktionsabhängigkeitsaudit, Edge-Client, Redaction und saubere Installation
 aller drei Pakete sind grün. Die installierte MCP-Binary bietet die Profile
 `core` (22), `work` (41) und `full` (207) sowohl im modernen als auch im Legacy-
 Protokoll an. Die generierte Tabelle `packages/mcp-server/COVERAGE.md` im
 [SDK/MCP-Kandidaten](https://github.com/TeamGrid/developer-platform/pull/53)
 führt alle 207 Werkzeuge und 30 Ausschlüsse einzeln auf. Diese lokalen Belege
-ersetzen weder die Live-Schreibprüfung noch die aktuelle Betriebssystem-CI.
+ersetzen keine Live-Schreibprüfung. Die aktuelle SDK-CI
+[36553562462](https://github.com/TeamGrid/developer-platform/actions/runs/36553562462)
+ist auf macOS/Linux/Windows mit Node 22/24 grün. Auch die vollständige App-CI
+[36553658885](https://github.com/TeamGrid/teamgrid/actions/runs/36553658885)
+für `67ecef07174fd5b55d234316b0d551539a76e22f` ist inzwischen erfolgreich.
+
+### Vertiefte Prüfung am 29. September: verbleibende konkrete Lücken
+
+Geprüfter SDK-/MCP-Quellstand: `1027e57a92c2e88ba8997e6edffdf8a0733c4b99`.
+Nach frischem MCP-Build bestehen erneut alle **74 MCP-Tests in sieben Dateien**.
+Zusätzliche lokale Proben mit synthetischen API-Antworten zeigen folgende Fälle,
+die diese Tests bisher nicht absichern. Die Proben ändern keine Kundendaten und
+belegen keine echte OAuth-Anmeldung oder Live-Mutation.
+
+| Priorität | Befund | Erforderliche Änderung / Abnahme |
+| --- | --- | --- |
+| P1, Remote-Freigabe | `http.ts` exportiert ausschließlich eine Integrationsgrenze. Tokenverifier und API-Delegation sind Pflicht-Hooks; ein konkreter Authorization Server und ein betriebener Endpunkt fehlen. Der eigene CLI-PKCE-Austausch verwendet TeamGrid-spezifisches JSON und ersetzt diesen OAuth-Weg nicht. | OAuth-Provider, regionale Speicherung, Consent, Clientregistrierung, Tokenlebenszyklus und Delegation implementieren; vollständigen Anmeldeweg in echten Hosts qualifizieren. |
+| P1, Berechtigungsanforderung | Protected-Resource-Metadaten enthalten auch bei `core` und abgeschalteten Writes **73 Scopes**, darunter **32 Write-/Run-Scopes**. Die erste 401-Challenge enthält keinen `scope`. | Minimale Einstiegsscopes ausdrücklich challengen; Metadaten und nachträgliche Scope-Erweiterung auf den tatsächlichen Zugang abstimmen. Sonst können Clients beim Einstieg sämtliche Scopes anfordern. |
+| P1, Browser-Kompatibilität | Ein moderner SDK-Client sendet `Mcp-Name` bei `tools/call`; die CORS-Preflight-Antwort erlaubt diesen Header nicht. Node-Tests erzwingen keine Browser-CORS-Regeln. | Header freigeben und einen echten Browser-Preflight samt anschließendem Tool-Aufruf prüfen. Origin-Prüfung beibehalten. |
+| P1, Ergebnissicherheit | Ein zulässiges Dokument mit 300 KiB Inhalt überschreitet das MCP-Limit von 256 KiB. Lesen scheitert; auch eine bereits erfolgreich ausgeführte Umbenennung wird als `result_too_large` mit `isError: true` gemeldet. | Für Mutationen eine kleine, eindeutige Erfolgsquittung mit ID/Revision liefern; für große Inhalte begrenzte Ausschnitte/Resource-Zugriff ergänzen. Größenfehler dürfen einen bestätigten Commit nicht verdecken. |
+| P1, Live-Freigabe | Der Katalog enthält 63 bedingte Writes, eine Bulk-Aktion mit Revision je Element und 59 unbedingte Writes. Bei 34 der unbedingten Writes gibt es außerdem keinen Idempotency-Key-Vertrag. Neuanlagen ohne ETag sind dabei nicht automatisch fehlerhaft. | Besonders Updates, Timer, Lösch-/Archivaktionen auf Konkurrenz und unklare Ergebnisse prüfen. Die 19 strengen Core-CAS-Aktionen zusätzlich pro Zelle qualifizieren. |
+| P2, zusätzliche Feldrechte | Die Änderung eines Einkaufspreises benötigt `products:finance:write`. Der Basis-Scope-Challenge erfasst dieses Recht nicht; die nachgelagerte API-403 wird zu HTTP 200 mit MCP-Toolfehler, ohne OAuth-Challenge. | Feldabhängige Scopes strukturiert ableiten und eine gezielte Zustimmungserweiterung ermöglichen; Rollen-/Sperrfehler dürfen keine Scope-Erweiterung auslösen. |
+| P2, Abbruch / Fristen | Der MCP-Request-Abbruch erreicht die generierten SDK-Aufrufe nicht. Eine synthetisch verzögerte Leseoperation beendet sich nach Request-Abbruch weiter. Für die externen Auth-/Delegation-Hooks fehlt eine lokale Gesamtfrist. | AbortSignal und Fristen bis zum SDK weiterreichen; bei Writes zwischen abgebrochenem Warten und unbekanntem Commit unterscheiden. Kein automatischer Wiederholungsversuch bei unklarem Ergebnis. |
+| P2, Einrichtung / Profile | Das CLI-Preset `read-only` deckt nur die Basisscopes für 7 von 22 `core`-Tools ab; `daily-work` für 15 von 41 `work`-Tools. Beide Gesamtprofile benötigen den im Browser gesperrten Scope `task-recurrences:read`. | Einen stimmigen Einstieg aus Login-Preset und Toolprofil anbieten; bestehende Profilnamen kompatibel halten. Sensible Scope-Sperren nicht pauschal entfernen. |
+| P2, Arbeitsabläufe / Kontext | Domänenprofile erhalten nur den Workspace als gemeinsamen Kontext. Beispielsweise fehlen `tasks-write` die Benutzer-/Projektauflösung. `full` liefert hingegen alle 207 Definitionen ohne Cursor in rund 711 kB aus. | Erforderliche Leseabhängigkeiten gezielt ergänzen, passende Profile anbieten und große Discovery-Antworten begrenzen. Paginierung allein verkleinert nicht den am Ende geladenen Modellkontext. |
+| P2, Vertragsklarheit | Das gleiche Aufgaben-Tool nimmt in `work` eine unquotierte Revision, in `full` ein quotiertes ETag entgegen. Fachliche Output-Schemas bleiben generisch. | Vor der ersten Veröffentlichung der neuen Profile vereinheitlichen und konkrete Ergebnisschemas erzeugen. |
+
+Die beiden Protokollbefunde folgen aus der aktuellen
+[Scope-Auswahl](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
+und den [HTTP-Headeranforderungen](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http).
+Die API verweigert fehlende Feldrechte weiterhin; die fehlende OAuth-Challenge ist
+ein Einrichtungs-/Interoperabilitätsproblem und kein nachgewiesener Berechtigungsbypass.
+
+Vor dem Remote-Pilot muss die konkrete Delegation Benutzer, Grant, Workspace,
+Region/Zelle und die Schnittmenge aus Consent, Scopes und aktuellen Benutzerrechten
+binden. Die aktuelle Workspace-ID-Prüfung im Adapter genügt dafür allein nicht.
+Grantbezogene Limits, Audit-Korrelation, messbare Widerrufszeit, Key-Rotation,
+Abhängigkeitenausfälle und saubere Reconnects sind Teil derselben Abnahme.
+
+Die API-Abdeckung beschreibt bestehende öffentliche Geschäftsoperationen. Sie
+umfasst keine allgemeine Telefonie, Import-/Report-Jobs oder beliebige internen
+App-Methoden. Datei-/Exportbytes und Secrets bleiben außerhalb des Werkzeugkatalogs;
+für abgeschlossene Datei-/Export-Arbeitsabläufe ist ein eigener geschützter Übergang
+zur passenden Benutzeroberfläche bzw. Übertragung erforderlich.
 
 Früherer Prüfstand vor der Vollerweiterung: lokal 414 SDK-/MCP-Tests, 449 API-Tests, die betroffenen App-Tests
 und Installation aus gepackten Paketen erfolgreich. Auch der aktuelle MCP-Stand

@@ -1,8 +1,35 @@
 # TeamGrid MCP: Zielbild und Umsetzungsplan
 
-Stand: 29. September 2026. Status: geprüfte Bestandsaufnahme und Umsetzungsvorschlag.
+Stand: 29. September 2026. Status: Umsetzung läuft; öffentliche Pakete weiterhin 1.2.1.
 Neue Schreibtools, Remote-MCP und die Freigabe des Browserlogins sind noch nicht ausgeliefert.
 Dieses Dokument ist kein Production-Freigabenachweis.
+
+### Umsetzungsstand am 29. September
+
+- Staging läuft auf denselben App-/API-SHAs wie Production. Browserlogin wurde
+  ausschließlich in Staging über den kontrollierten Workflow aktiviert:
+  [Aktivierung](https://github.com/TeamGrid/teamgrid/actions/runs/36533474091).
+  Die echte Benutzeranmeldung und anschließende Widerrufsprüfung sind noch offen.
+- Im SDK-Kandidaten sind `context` (34 Lesewerkzeuge), `work` (41 Werkzeuge,
+  davon sieben Schreibwerkzeuge), Workspace-Prüfung, Revisionen und stabile
+  Erstellungsschlüssel implementiert. Bestehende Profile bleiben unverändert.
+- Die Migration auf MCP SDK 2.2.0 und die explizite Unterstützung von
+  Protokoll 2026-07-28 sind implementiert. Tests prüfen auch ältere Clients und
+  die tatsächlich installierten stdio-Binaries.
+- Eine regionale HTTP-Transportgrenze ist implementiert und lokal getestet:
+  Metadaten, Audience-/Issuer-/Zellprüfung, frische Tokenprüfung, getrennte
+  API-Delegation, Scope-Challenges, Begrenzungen und Abschalter. Der konkrete
+  TeamGrid-OAuth-Provider samt Browserzustimmung, Refresh, CIMD und Speicherung
+  ist weiterhin offen; es gibt noch keinen freigegebenen Remote-Endpunkt.
+- Die App-Pipeline erhält einen maschinenlesbaren Qualifikationsnachweis vor
+  Production-Aktivierung. Er bindet Tests an Zelle, App/API, Vertragsdigest und
+  npm-Integritäten. Ungültige oder veraltete Nachweise scheitern vor der Änderung.
+- Der Portal-Statusproxy ist im Dokumentations-PR korrigiert und auf große sowie
+  zu große Antworten getestet. Veröffentlichung und Liveprüfung stehen noch aus.
+
+Diese Änderungen sind Kandidaten, keine Aussage über bereits veröffentlichte
+Funktionen. Zeit-/Timer-Schreibzugriffe und die übrigen offenen Abnahmepunkte
+bleiben Teil der weiteren Umsetzung.
 
 ## Entscheidungsempfehlung
 
@@ -226,10 +253,12 @@ Für jedes Release zusammenführen:
 - Driftprüfung für handgeschriebene Einstiegstexte zusätzlich zu generierten Referenzen.
 - Status-/Dokumentations-Smoke nach Deployment mit kontrollierter Rücknahme bei Fehlern.
 
-Bekannter separater Betriebsfehler: Der Portal-Statusproxy begrenzt Antworten auf 256 KiB, während
+Separater Betriebsfehler im veröffentlichten Portal: Der Statusproxy begrenzt Antworten auf 256 KiB, während
 der Statusdienst beim Audit 422.460 Bytes einschließlich Historie lieferte. Das Portal antwortete
 deshalb 503 trotz gesundem Upstream. Einen kleinen Status-Summary-Endpunkt bevorzugen oder die
-Grenze nach einer begrenzten Zwischenlösung testen. Keine unbegrenzte Antwortverarbeitung.
+Grenze nach einer begrenzten Zwischenlösung testen. Im Kandidaten ist die Grenze auf 1 MiB
+angehoben; deklarierte und tatsächlich gestreamte Übergrößen werden abgebrochen. Die Ausgabe
+bleibt die kleine Statusprojektion. Keine unbegrenzte Antwortverarbeitung.
 Dieser Fehler muss vor einem als vollständig grün bezeichneten Portal-Release behoben werden.
 
 ## 7. Lieferreihenfolge und Abnahmekriterien

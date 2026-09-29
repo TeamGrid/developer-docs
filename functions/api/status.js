@@ -1,12 +1,15 @@
 const statusEndpoint = 'https://status.teamgrid.app/api/v1/status'
 const allowedStatuses = new Set(['operational', 'degraded', 'outage', 'unknown'])
-const maximumPayloadBytes = 256 * 1024
+// The public status response includes history (~413 KiB at the September 2026
+// audit). Keep a bounded input budget until the upstream offers a summary route.
+const maximumPayloadBytes = 1024 * 1024
 
 async function readBoundedJson(response) {
   if (!response.body) throw new Error('Status response has no body.')
 
   const declaredLength = Number(response.headers.get('content-length') || 0)
   if (Number.isFinite(declaredLength) && declaredLength > maximumPayloadBytes) {
+    await response.body.cancel()
     throw new Error('Status response is too large.')
   }
 

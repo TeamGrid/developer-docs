@@ -1,5 +1,7 @@
 # MCP: Vollständigkeit von Nutzerabläufen und Freigabekriterien
 
+Aktuelle Korrekturen und offene Freigabeschritte: [Umsetzungsstand](./mcp-implementation-status.md).
+
 Stand: 29. September 2026. Zweite vertiefte Prüfung; Analyse, keine Freigabe.
 
 ## Entscheidung

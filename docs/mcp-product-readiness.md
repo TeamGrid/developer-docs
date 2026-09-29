@@ -1,5 +1,7 @@
 # TeamGrid MCP: Zielbild und Umsetzungsplan
 
+Aktuelle Korrekturen und offene Freigabeschritte: [Umsetzungsstand](./mcp-implementation-status.md).
+
 Stand: 29. September 2026. Status: Umsetzung läuft; öffentliche Pakete weiterhin 1.2.1.
 Neue Schreibtools, Remote-MCP und die Freigabe des Browserlogins sind noch nicht ausgeliefert.
 Dieses Dokument ist kein Production-Freigabenachweis.

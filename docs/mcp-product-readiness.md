@@ -6,8 +6,8 @@ Dieses Dokument ist kein Production-Freigabenachweis.
 
 ### Umsetzungsstand am 29. September
 
-- Staging läuft auf denselben App-/API-SHAs wie Production. Browserlogin wurde
-  ausschließlich in Staging über den kontrollierten Workflow aktiviert:
+- Staging läuft mit dem App-Lesefix `8491fee`; die API ist unverändert.
+  Browserlogin wurde ausschließlich in Staging über den kontrollierten Workflow aktiviert:
   [Aktivierung](https://github.com/TeamGrid/teamgrid/actions/runs/36533474091).
   Die echte Zustimmung im Test-Workspace, Token-Austausch, Speicherung im macOS-
   Schlüsselbund, Workspace-/Benutzerabruf und moderne MCP-Discovery sind bestätigt.
@@ -18,13 +18,25 @@ Dieses Dokument ist kein Production-Freigabenachweis.
   [Router #3029](https://github.com/TeamGrid/teamgrid/pull/3029) und
   [Deployment 36537359586](https://github.com/TeamGrid/teamgrid/actions/runs/36537359586)
   ausgeliefert. Der neue Aktivierungs-Vorabcheck erkennt genau diesen Fehler.
-- Der vollständige Lesetest ist noch nicht bestanden: Projekt-/Aufgabenlisten
-  treffen bei alten Datensätzen auf eine fehlerhafte Zuordnung der internen
-  Revisionsinitialisierung zu einer Browser-Sitzung (`security-session-unavailable`).
-  [App #3030](https://github.com/TeamGrid/teamgrid/pull/3030) korrigiert ausschließlich
-  diesen Metadatenpfad; Liveprüfung nach qualifiziertem App-Deployment steht aus.
-  24 gezielte Tests prüfen unter anderem parallele Browser-Sitzungen und
-  fortbestehende Migrationssperren. Alle bisherigen Test-Credentials sind widerrufen.
+- Der vollständige unten abgegrenzte Lesetest ist nach dem Staging-Deployment von
+  [App #3030](https://github.com/TeamGrid/teamgrid/pull/3030) bestanden: sieben echte
+  MCP-Aufrufe für Workspace, Projekte, Aufgaben, Benutzer und Kommentare,
+  403 bei fehlendem Dokumenten-Scope sowie 401 nach Widerruf. Auch der bereits
+  laufende MCP-Prozess verweigert anschließend den Zugriff; Schlüsselbund und
+  Testprofil sind bereinigt. Der Fehler lag an der Revisionsinitialisierung alter
+  Datensätze im internen Service-DDP-Kontext, nicht an einem Browser-Cookie.
+  24 gezielte Tests sowie isolierte native Staging-/DE-/US-Proben sichern den
+  engen Fix ab. Dies ist kein Nachweis für alle 34 Tools oder für Schreibaktionen.
+- Die Prüfung des Schreibpfads zeigt einen zusätzlichen Freigabeblocker: Bei deaktivierten
+  Resource-Revisions-Gates verwirft die App die mitgesendete `expectedRevision`.
+  Ein Pflichtparameter im SDK oder ein syntaktisch gültiger `If-Match`-Header
+  beweist deshalb noch keinen Schutz gegen das Überschreiben neuer Änderungen.
+  Die Gates sind in Staging, DE und US derzeit deaktiviert. Vor Veröffentlichung
+  des neuen MCP-Schreibprofils müssen der serverseitige CAS-Pfad, konkurrierende
+  Änderungen und interne Service-Schreibzugriffe im vorbereiteten Workspace
+  qualifiziert sein. Der Lesefix #3030 aktiviert diese Gates nicht. Die historische
+  CAS-Anleitung bindet noch Vertrag 1.0.2; sie muss für den aktuellen Stable-Vertrag
+  geprüft werden, bevor eine Aktivierung erfolgt.
 - Im SDK-Kandidaten sind `context` (34 Lesewerkzeuge), `work` (41 Werkzeuge,
   davon sieben Schreibwerkzeuge), Workspace-Prüfung, Revisionen und stabile
   Erstellungsschlüssel implementiert. Bestehende Profile bleiben unverändert.
@@ -85,7 +97,7 @@ prüfen. Die Anzahl der registrierten Werkzeuge allein ist kein Qualitätsmaß.
 | MCP | Lokales stdio, 22/29/28/36 Tools in core/collaboration/governance/all | Alle Profile bleiben derzeit lesend |
 | Browserlogin | Implementiert, in DE und US deaktiviert | Aktivierung ist ein eigener Rollout |
 | Manuelle Anmeldung | Token-Import, Keychain und anschließender MCP-Aufruf erfolgreich geprüft | Funktionierender Einrichtungsweg bis zur Freigabe |
-| Aufgaben schreiben | SDK verlangt Revision bei Änderung, Verschieben und Abschluss | Geeigneter erster Schreibumfang |
+| Aufgaben schreiben | SDK verlangt Revision; App ignoriert sie bei deaktivierten Revisions-Gates | Server-CAS und Konfliktfälle vor Freigabe qualifizieren |
 | Zeiterfassung | Gewöhnliche Updates und Timer nehmen im SDK keine zwingende Revision entgegen | Backend-Semantik und Wiederholungen vor MCP-Freigabe gesondert prüfen |
 | Remote-MCP | Kein HTTP-Endpunkt, kein allgemein freigegebenes delegiertes OAuth | Eigener Architektur- und Implementierungsumfang |
 | MCP-Protokoll | Eingebundenes SDK 1.30.0 unterstützt höchstens 2025-11-25 | Migration auf aktuelle Protokollgeneration qualifizieren |

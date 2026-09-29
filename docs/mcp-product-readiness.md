@@ -4,6 +4,10 @@ Stand: 29. September 2026. Status: Umsetzung läuft; öffentliche Pakete weiterh
 Neue Schreibtools, Remote-MCP und die Freigabe des Browserlogins sind noch nicht ausgeliefert.
 Dieses Dokument ist kein Production-Freigabenachweis.
 
+Die ergänzende [Prüfung vollständiger Nutzerabläufe](./mcp-completeness-audit.md)
+enthält weitere reproduzierte Fehler, fachliche Lücken und den gemeinsamen
+Abnahmekatalog W01–W20. Beide Prüfungen sind vor der jeweiligen Freigabe zu berücksichtigen.
+
 ### Umsetzungsstand am 29. September
 
 - Staging, DE und US laufen mit dem App-Lesefix `8491fee`; die API ist unverändert.

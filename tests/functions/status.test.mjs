@@ -52,3 +52,35 @@ test('rejects unsupported methods', async () => {
   assert.equal(response.status, 405)
   assert.equal(response.headers.get('allow'), 'GET')
 })
+
+test('projects healthy status even when upstream includes a large history', async (t) => {
+  t.mock.method(globalThis, 'fetch', async () => Response.json({
+    generatedAt: '2026-09-29T10:00:00.000Z',
+    history: 'x'.repeat(500 * 1024),
+    overallStatus: 'operational',
+  }))
+  const response = await onRequest(request())
+  assert.equal(response.status, 200)
+  assert.deepEqual(await response.json(), {
+    generatedAt: '2026-09-29T10:00:00.000Z',
+    overallStatus: 'operational',
+  })
+})
+
+test('cancels oversized status streams with and without declared length', async (t) => {
+  for (const declaredLength of [false, true]) {
+    let cancelled = false
+    const body = new ReadableStream({
+      pull(controller) { controller.enqueue(new Uint8Array(600 * 1024)) },
+      cancel() { cancelled = true },
+    })
+    t.mock.method(globalThis, 'fetch', async () => new Response(body, {
+      headers: declaredLength ? { 'content-length': String(2 * 1024 * 1024) } : {},
+    }))
+    const response = await onRequest(request())
+    assert.equal(response.status, 503)
+    assert.equal(response.headers.get('cache-control'), 'no-store')
+    assert.equal(cancelled, true)
+    t.mock.restoreAll()
+  }
+})

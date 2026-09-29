@@ -2,7 +2,7 @@
 title: Project templates
 description: Capture safe project templates and instantiate them through credential-owned asynchronous operations.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-09-29
 ---
 
 Project templates capture a reusable project, list, and task structure. Public responses contain
@@ -56,5 +56,6 @@ CLI applies the same binding automatically when `--wait` is present.
 Only the credential that created an instantiation can read its operation status. A replay with the
 same idempotency key, payload, and source revision returns the original operation; using the key for
 different input returns `409`. Templates expose developer revisions; accepted and terminal
-operations expose their source and result revisions. Template metadata and operation status are forbidden in every MCP profile because
-captured workflow shape and bulk creation state are not suitable bounded model tools.
+operations expose their source and result revisions. The 1.2.2 MCP candidate includes template metadata, instantiation and operation status in
+`projects-write` and `full`. Accepted work must be followed through its status tool; acceptance
+is not proof of completed project creation.

@@ -2,7 +2,7 @@
 title: TeamGrid Developer – deutscher Einstieg
 description: Der kompakte deutsche Einstieg in API v1, TypeScript SDK, CLI, Browser-Login, MCP und sichere Produktivintegrationen.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 Die vollständige Referenz bleibt auf Englisch, damit Methodennamen, Fehlermeldungen und technische
@@ -34,13 +34,17 @@ Teams durch den empfohlenen Einstieg.
 ## CLI und Browser-Login
 
 ```bash
-npm install --global @teamgrid/cli@1.1.0
-teamgrid auth login
+npm install --global @teamgrid/cli@1.2.2
+teamgrid auth login --manual
 teamgrid auth status --check
 teamgrid workspace
 ```
 
-Der Browser-Login nutzt eine lokale Loopback-Verbindung und speichert den Token im
+Neue Browser-Anmeldungen sind in DE und US nach Prüfung vom 29. September 2026 deaktiviert.
+Lege im Developer Center einen Personal Token mit den benötigten Rechten an und importiere ihn
+über die verdeckte Terminal-Eingabe. Vorhandene Credentials funktionieren weiterhin.
+
+Nach der Freigabe nutzt der Browser-Login eine lokale Loopback-Verbindung und speichert den Token im
 Betriebssystem-Schlüsselbund. `--no-browser` ist kein Device Flow. Für CI und Server darf kein
 interaktiver Browser-Login verwendet werden; dort gehört ein Service-Account-Token in einen Secret
 Manager. Alle Einzelheiten stehen unter [CLI Browser Login](/cli/browser-login/).

@@ -2,7 +2,7 @@
 title: Calendar and availability
 description: Work with TeamGrid appointments, absences, availability, and planned-work schedules without bypassing delegated access controls.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-09-29
 ---
 
 API v1 separates four scheduling concepts:
@@ -41,5 +41,6 @@ Planned-work replacement has a separate asynchronous operation resource because 
 complete task schedule. Follow the [planned-work guide](/api/v1/planned-work/) for its revision,
 idempotency, and polling contract.
 
-Calendar, absence, availability, and planned-work data are intentionally unavailable through MCP,
-including the `all` profile.
+The 1.2.2 MCP candidate exposes these domains in explicit profiles including
+`schedule-write` and `full`. The preserved `all` read profile does not include them.
+Time windows and individual permissions remain enforced.

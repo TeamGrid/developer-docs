@@ -2,13 +2,13 @@
 title: SDK quickstart
 description: Install the TeamGrid TypeScript SDK and list tasks through a region-aware API v1 client.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-09-29
 ---
 
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.1.0
+npm install @teamgrid/api-client@1.2.2
 ```
 
 ## Create a client
@@ -55,6 +55,10 @@ console.log(result.data.id)
 
 ## Update a task
 
+First confirm that the owning cell has qualified server-side concurrency enforcement. The SDK's
+required `ifMatch` option alone does not prove stale writes will be rejected; see the current
+[deployment qualification status](/api/v1/resource-concurrency/#deployment-qualification).
+
 Tasks expose a developer revision and strong ETag. Read the task and pass that validator to the
 mutation:
 
@@ -71,7 +75,7 @@ console.log(updated.data.attributes.name)
 
 ## Use task workflows
 
-Task placement and checklist replacement are atomic, revision-protected operations:
+With server-side CAS qualified, task placement and checklist replacement use revision preconditions:
 
 ```ts
 const current = await client.tasks.get('task-id')

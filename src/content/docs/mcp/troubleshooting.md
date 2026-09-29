@@ -2,7 +2,7 @@
 title: Troubleshoot the MCP server
 description: Diagnose TeamGrid MCP startup, authentication, profile, schema, authorization, pagination, and result-size failures without exposing credentials.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 Start with the terminal used by the same operating-system account as the MCP host:
@@ -18,6 +18,10 @@ Then start `teamgrid-mcp --profile default --tool-profile core` directly. A heal
 server normally waits silently for host input. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd> after this
 check; do not type prompts into its standard input.
 
+New browser authorizations are currently disabled in DE and US. Use `auth login --manual` for
+initial setup, or `auth login --manual --replace` when replacing an existing local profile.
+See [browser-login availability](/cli/browser-login/).
+
 ## Diagnosis matrix
 
 | Symptom or message | Likely boundary | Safe check | Resolution |
@@ -28,15 +32,15 @@ check; do not type prompts into its standard input.
 | The process reports `profile_credential_mismatch` | Keychain credential and CLI profile metadata describe different credential, cell, or region | Inspect the non-secret profile status; do not print the token | Log in again with `--replace` so metadata and keychain state are written together |
 | The terminal works but the desktop host cannot authenticate | The host runs as another OS user or cannot access the same keychain backend | Compare the host OS account and `--profile` value with the terminal session | Store a credential for that OS user or pass a dedicated service credential through an isolated environment; do not put it in a transcript |
 | The process starts and waits with no output | This is usually normal stdio behavior | Confirm the host shows the server as connected and can list tools | Let the MCP host own standard input/output. Do not expect an interactive prompt from `teamgrid-mcp` |
-| A documented tool is missing | The selected tool profile does not advertise it | Check the server `--tool-profile` argument and the tool's **Available in** profiles in the [reference](/mcp/reference/) | Select the narrowest required profile and restart the host; `core` has 15, `collaboration` 22, `governance` 21, and `all` 29 tools |
-| A tool is visible but returns `teamgrid_request_failed` | The API rejected the request because of scope, resource grant, tenant state, rate limit, or an upstream failure | Verify the required scope on the tool reference page and run `teamgrid auth status --check` | Correct the credential or requested resource. The returned detail is redacted; never enable a broader profile merely to diagnose it |
+| A documented tool is missing | The selected tool profile does not advertise it | Check the server `--tool-profile` argument and the tool's **Available in** profiles in the [reference](/mcp/reference/) | Select the narrowest required profile and restart the host; `core` has 22, `collaboration` 29, `governance` 28, and `all` 36 tools |
+| A tool is visible but returns an API error such as `insufficient_scope` | The API rejected the request because of scope, resource grant, tenant state, rate limit, or an upstream failure | Verify the required scope on the tool reference page and run `teamgrid auth status --check` | Correct the credential or requested resource. The returned detail is redacted; never enable a broader profile merely to diagnose it |
 | The host rejects arguments before calling TeamGrid | The exact MCP JSON Schema rejected the input | Compare arguments with the tool's [input schema](/mcp/reference/) | Remove unknown properties and correct required values, enum choices, lengths, or list limits |
 | A list call returns `result_too_large` | Serialized structured content exceeded 256 KiB | Check `limit` and filters in the approved arguments | Request a smaller page or narrower filters. Continue with the opaque cursor only when another page is required |
 | A list repeats or skips data | A cursor was altered, decoded, or reused with incompatible filters | Compare the cursor flow and filters without logging the whole result | Start the listing again, keep filters stable, and pass `meta.page.nextCursor` back unchanged |
 | Results come from an unexpected workspace or region | The selected credential profile points to another tenant, region, or cell | Call only `teamgrid_workspace_get` and inspect its returned tenant metadata | Stop reading business data, choose the intended CLI profile, verify it with `teamgrid auth status --check`, and restart the host |
-| Product purchase prices are absent | Intentional MCP redaction | Check the product tool description | Use a governed API, SDK, or CLI workflow with the appropriate finance overlay; MCP product tools always remove `purchasePrice` |
+| Product purchase prices are absent | Intentional MCP redaction | Check the product tool description | Use a governed API, SDK, or CLI workflow with the appropriate finance overlay; the preserved read profiles remove `purchasePrice`; candidate finance profiles require the declared finance scopes |
 | A webhook signing secret is absent | Reveal-once secrets are forbidden in MCP | Check the webhook tool description | Rotate or retrieve reveal-once material only through an explicitly governed API, SDK, CLI, or TeamGrid UI workflow; never put it in an AI transcript |
-| `all` still does not show writes, audit events, files, exports, or change-feed tools | Intentional product boundary | Review [tools and security](/mcp/tools-and-security/) | Use API v1, the SDK, or CLI. `all` is the explicit union of 29 curated reads, not unrestricted API access |
+| `all` still does not show writes, audit events, files, exports, or change-feed tools | Intentional product boundary | Review [tools and security](/mcp/tools-and-security/) | `all` retains 36 curated reads. In the 1.2.2 candidate, explicitly select a suitable domain profile or `full` for additional business tools; the change feed stays API/SDK/CLI-only |
 | `TEAMGRID_API_TOKEN` appears ignored or points to the wrong cell | Environment credentials override the named keychain credential | Inspect only whether the variable is present, never its value | Remove unintended host environment overrides or supply the intended dedicated token together with the correct regional base URL |
 
 ## Tool errors versus startup errors
@@ -50,11 +54,17 @@ After the server is connected, TeamGrid request failures use a stable MCP error 
 ```json
 {
   "error": {
-    "code": "teamgrid_request_failed",
-    "detail": "<redacted TeamGrid request error>"
+    "code": "insufficient_scope",
+    "detail": "<redacted TeamGrid request error>",
+    "status": 403
   }
 }
 ```
+
+API and SDK errors preserve their valid machine-readable code. When available, the envelope also
+contains `status`, a safe `requestId`, and valid `retryAfterMs` without shortening the server delay. Unknown failures use
+`teamgrid_request_failed`; malformed upstream codes fall back to `teamgrid_api_error` or
+`teamgrid_client_error`. MCP also sets `isError: true`.
 
 Oversized results use `result_too_large`. Schema validation errors are produced by the MCP protocol
 layer before the TeamGrid handler runs, so their display varies by host.
@@ -68,3 +78,16 @@ response metadata may contain a request ID that is safe and useful for tracing.
 Never share an API token, browser authorization code, PKCE verifier, webhook signing secret,
 `Authorization` header, credential-store contents, or an unreviewed tool transcript. If accidental
 exposure is possible, revoke or rotate the affected credential before continuing diagnostics.
+
+## Candidate write and OAuth failures
+
+| Outcome | Next step |
+| --- | --- |
+| Additional scopes requested | Review the exact requested operation and consent; sensitive scopes require passkey confirmation |
+| Workspace, role or sharing denial | Correct access in TeamGrid; broader OAuth scopes cannot bypass it |
+| Revision conflict | Read the current resource, compare the change and decide again |
+| Unknown commit after timeout | Inspect the resource or operation status before any retry |
+| Accepted asynchronous job | Use the returned status tool and ID; acceptance is not completion |
+| Provider unavailable (503) | Retry within your deadline; do not replace or widen a credential to diagnose an outage |
+| Revoked or expired remote connection | Reconnect through the host and review the workspace and scopes again |
+| Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |

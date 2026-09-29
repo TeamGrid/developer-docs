@@ -83,6 +83,11 @@ jobs:
         id: packages
         run: |
           set -euo pipefail
+          if [[ "$(node -p "require('./sources/release-status.json').status")" != "published" ]]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Candidate documentation verified; Production publication waits for release qualification."
+            exit 0
+          fi
           version="$(node -p "require('./sources/packages.json').version")"
           for attempt in {1..12}; do
             all_public=true

@@ -2,7 +2,7 @@
 title: Search and exports
 description: Search authorized resources and download bounded CSV exports through a header-only capability.
 owner: Developer Platform
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
 ## Federated search
@@ -15,7 +15,7 @@ term of at least two characters, one to three unique resource types, and an opti
 and the normal product permission. Asking for `projects` and `tasks`, for example, requires both
 `projects:read` and `tasks:read`. Results never cross the credential's workspace or cell boundary.
 
-Search is the only newly added AI-facing operation: `teamgrid_search` is a curated, sensitive MCP
+Search is a bounded AI-facing operation: `teamgrid_search` is a curated, sensitive MCP
 tool. Use a dedicated credential and request only the resource types needed for the question.
 
 ## Bounded asynchronous exports
@@ -68,4 +68,7 @@ download endpoint does not accept a query-string fallback. TeamGrid resolves pri
 internally and streams the file through the API with redirects disabled, a 50 MiB response limit,
 `Cache-Control: no-store`, and content-type hardening. It does not reveal a storage URL.
 
-Export jobs, intents, metadata, and bulk content are forbidden in every MCP profile.
+The 1.2.2 MCP candidate includes export job creation and status. Private resource reads
+deliver at most 1 MiB after fresh authorization; intent credentials stay internal. An export
+is owned by its creating credential, so a separate CLI login does not gain access to it.
+Larger transfers use the authorized App/SDK/CLI flow. See [MCP limits](/mcp/tools-and-security/).

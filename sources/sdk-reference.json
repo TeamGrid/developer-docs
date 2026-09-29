@@ -3,22 +3,32 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "efeff4648d71ed12bfaf92d01afbe872a972b05a",
-    "version": "1.1.0"
+    "sourceCommit": "ccf18032d309725f8503a13461e62a15ff11faca",
+    "version": "1.2.2"
   },
   "sources": {
-    "capabilityPolicySha256": "90ce40e1bcfca7fc9eb402b36eac43fb46061767d15972b17d7b8b44550b9e6f",
+    "capabilityPolicySha256": "85802249aa59a015b702d8258060857543bf67a8d610958a9e68372ecf565383",
     "clientDeclaration": "developer-platform/packages/api-client/src/client.ts",
-    "clientDeclarationSha256": "599e875de396038d4aa8438a25ee735667e30e4ee05fd1f8e63b43b99ad74493",
-    "operationBindingsSha256": "d03b64ff07750414f38688d279b5c4213544ade60e61f66a2eb5f2c1c4d09f0b",
-    "openApiSha256": "ac6e7c1582cba74a0f3fb89e400f20ed86c403896e7d1b5a276f264b0eef780f"
+    "clientDeclarationSha256": "1753c06ff80f9e94ebb1a671f6ea918b3cb04a1bc0bb5695b7b56b5d768b440e",
+    "operationBindingsSha256": "c3d2863f459e3bfaca60c08cacb54021f0dc449f61f99bc160760862af07d536",
+    "openApiSha256": "bdf41c34e956541c63e03641bd3c485d241da1a43d0c4d32456508e8bdc5e297"
   },
   "summary": {
     "clientCount": 54,
     "helperCount": 45,
-    "operationCount": 236
+    "operationCount": 237
   },
   "clientOptions": [
+    {
+      "name": "requestContext",
+      "optional": true,
+      "type": "() => RequestOptions"
+    },
+    {
+      "name": "requireResourceCas",
+      "optional": true,
+      "type": "boolean"
+    },
     {
       "name": "apiRootDomain",
       "optional": true,
@@ -4150,7 +4160,7 @@
         }
       ],
       "name": "comments",
-      "operationCount": 5,
+      "operationCount": 6,
       "operations": [
         {
           "name": "list",
@@ -4586,6 +4596,138 @@
             }
           ],
           "summary": "Archive a comment",
+          "tag": "Collaboration"
+        },
+        {
+          "name": "update",
+          "parameters": [
+            {
+              "display": "id: string",
+              "name": "id",
+              "optional": false,
+              "type": "string"
+            },
+            {
+              "display": "data: CommentUpdate",
+              "name": "data",
+              "optional": false,
+              "type": "CommentUpdate"
+            },
+            {
+              "display": "options: CommentMutationOptions",
+              "name": "options",
+              "optional": false,
+              "type": "CommentMutationOptions"
+            }
+          ],
+          "returnForm": "Promise",
+          "signature": "comments.update(id: string, data: CommentUpdate, options: CommentMutationOptions)",
+          "apiHref": "/api/v1/reference/operations/updatecomment/",
+          "conditionalScopes": [
+            "contacts:read",
+            "projects:read",
+            "tasks:read"
+          ],
+          "description": "Updates plain text and canonical active-member mentions under current owner/role permissions and an exact revision. Preserves attachments, reactions and edit history. Editing does not resend notifications.",
+          "errorResponses": [
+            {
+              "description": "The request is invalid.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "400"
+            },
+            {
+              "description": "The bearer credential is missing, invalid, expired, or revoked.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "401"
+            },
+            {
+              "description": "The credential has insufficient scope.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "403"
+            },
+            {
+              "description": "The tenant-scoped resource does not exist.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "404"
+            },
+            {
+              "description": "The request conflicts with the current resource state.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "409"
+            },
+            {
+              "description": "The resource changed since the supplied revision.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "412"
+            },
+            {
+              "description": "A strong If-Match revision is required.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "428"
+            },
+            {
+              "description": "The credential or source exceeded its rate limit.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "429"
+            },
+            {
+              "description": "The cell-local application returned an invalid response.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "502"
+            },
+            {
+              "description": "A required cell-local dependency is unavailable.",
+              "mediaType": "application/json",
+              "schema": "ErrorEnvelope",
+              "status": "503"
+            }
+          ],
+          "httpMethod": "PATCH",
+          "operationId": "updateComment",
+          "path": "/comments/{id}",
+          "request": {
+            "body": {
+              "mediaType": "application/json",
+              "schema": "CommentUpdate"
+            },
+            "parameters": [
+              {
+                "description": "Stable identifier of the resource in the authenticated workspace.",
+                "location": "path",
+                "name": "id",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "description": "Exactly one latest strong comment ETag. Wildcards, weak validators, and lists are rejected.",
+                "location": "header",
+                "name": "If-Match",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "requiredScopes": [
+            "comments:write"
+          ],
+          "successResponses": [
+            {
+              "description": "The request to edit a comment succeeded. The response contains the canonical public result and request metadata.",
+              "mediaType": "application/json",
+              "schema": "Comment envelope",
+              "status": "200"
+            }
+          ],
+          "summary": "Edit a comment",
           "tag": "Collaboration"
         },
         {
@@ -8678,7 +8820,7 @@
             "projects:read",
             "tasks:read"
           ],
-          "description": "Searches only the requested, scope-authorized product domains in the owning cell. Results are bounded, metadata-only, tenant-filtered and sharing-filtered.",
+          "description": "Searches only the requested, scope-authorized product domains in the owning cell. Results are bounded, metadata-only, tenant-filtered and sharing-filtered. meta.search.complete is always false: even a short or empty index result does not prove completeness. Narrow ambiguous searches or use resource list pagination for complete reports. Verify recent writes by their returned IDs because indexing can lag.",
           "errorResponses": [
             {
               "description": "The request is invalid.",
@@ -8725,7 +8867,15 @@
               "mediaType": "application/json",
               "schema": "SearchRequest"
             },
-            "parameters": []
+            "parameters": [
+              {
+                "description": "Opt in to explicit bounded-search metadata. Omitted for compatibility with older strict SDK response validators.",
+                "location": "header",
+                "name": "X-TeamGrid-Response-Features",
+                "required": false,
+                "type": "string"
+              }
+            ]
           },
           "requiredScopes": [
             "search:read"
@@ -18425,7 +18575,7 @@
           "signature": "tasks.move(id: string, data: TaskPlacement, options: TaskMutationOptions)",
           "apiHref": "/api/v1/reference/operations/movetask/",
           "conditionalScopes": [],
-          "description": "Atomically changes assignment and ordering within one target task container. The neighboring task ids are validated in the same workspace and container.",
+          "description": "Reorders a task in an existing assignee, personal-list, or project-list placement. For assignee and personal-list axes, assigneeId must already be assigned to the task; change assignments through the task update endpoint. Neighboring task ids are validated in the same workspace and placement container.",
           "errorResponses": [
             {
               "description": "The request is invalid.",

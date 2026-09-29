@@ -2,7 +2,7 @@
 title: Platform discovery and settings
 description: Negotiate TeamGrid capabilities, workspace entitlements, event channels, and safe revisioned workspace defaults.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-09-29
 ---
 
 The API exposes a small control plane so an integration can negotiate the public contract and
@@ -83,7 +83,7 @@ settings when the write executes. This extra administrative recheck applies to t
 not to ordinary workspace-wide service-credential reads.
 
 Use `client.workspaceSettings.get()` and `client.workspaceSettings.update(...)`, or
-`teamgrid workspace-settings get|update`. These operations are forbidden through MCP.
+`teamgrid workspace-settings get|update`. The 1.2.2 candidate exposes these operations in the explicit administration profile and `full`; current settings permissions and revisions still apply.
 
 ## Authorization-filtered event catalog
 

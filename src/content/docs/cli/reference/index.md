@@ -2,10 +2,10 @@
 title: CLI command reference
 description: Exact syntax, arguments, options, API operations, scopes, output behavior, safety notes, examples, and exit codes for every TeamGrid CLI command.
 owner: Developer Experience
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
-This reference is generated from the real `@teamgrid/cli@1.1.0` Commander tree and the public API capability manifest. It covers all 243 executable commands in 54 top-level groups, including 173 argument and 569 command-option definitions plus 6 global options. Its 236 canonical CLI paths map to all 237 API v1 operations.
+This reference is generated from the real `@teamgrid/cli@1.2.2` Commander tree and the public API capability manifest. It covers all 245 executable commands in 54 top-level groups, including 175 argument and 573 command-option definitions plus 6 global options. Its 237 canonical CLI paths map to all 238 API v1 operations.
 
 Use [CLI commands](/cli/commands/) for workflow-oriented guidance and this reference when you need exact terminal syntax. Run `teamgrid --version` before comparing an installed CLI with this release.
 
@@ -75,9 +75,9 @@ See [CLI automation](/cli/automation/) for pagination and exit-code handling and
 | [`teamgrid absences`](/cli/reference/absences/) | 6 | read and manage absences. |
 | [`teamgrid availability`](/cli/reference/availability/) | 1 | inspect derived availability. |
 | [`teamgrid activity`](/cli/reference/activity/) | 1 | inspect target-owned activity. |
-| [`teamgrid comments`](/cli/reference/comments/) | 5 | read and manage target comments. |
+| [`teamgrid comments`](/cli/reference/comments/) | 6 | read and manage target comments. |
 | [`teamgrid documents`](/cli/reference/documents/) | 6 | read and manage documents. |
-| [`teamgrid files`](/cli/reference/files/) | 6 | read and manage file metadata. |
+| [`teamgrid files`](/cli/reference/files/) | 7 | read and manage file metadata. |
 | [`teamgrid file-upload-intents`](/cli/reference/file-upload-intents/) | 3 | create and complete direct file uploads. |
 | [`teamgrid members`](/cli/reference/members/) | 4 | read and administer workspace members. |
 | [`teamgrid invitations`](/cli/reference/invitations/) | 5 | read and administer workspace invitations. |

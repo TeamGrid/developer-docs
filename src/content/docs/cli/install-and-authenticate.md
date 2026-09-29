@@ -2,7 +2,7 @@
 title: Install and authenticate
 description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 ## Requirements
@@ -17,9 +17,18 @@ reviewedAt: 2026-08-10
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.1.0
+npm install --global @teamgrid/cli@1.2.2
 teamgrid --help
 ```
+
+## Current production availability
+
+As verified on 29 September 2026, new CLI browser authorizations are disabled in both DE and US.
+Existing credentials continue to work. For a new local connection, create a narrowly scoped
+Personal Token in **Settings → Team → Developer Center → Access** and import it with
+`teamgrid auth login --manual`. Enter the secret only into the terminal's hidden prompt.
+The browser flow below applies when the owning cell enables it; `--no-browser` does not bypass
+that gate. See [CLI browser login](/cli/browser-login/) for details.
 
 ## Sign in through the browser
 
@@ -46,9 +55,10 @@ Use the bounded `daily-work` preset only when the CLI needs ordinary task writes
 teamgrid auth login --preset daily-work
 ```
 
-Browser login rejects sensitive administrative, finance, credential-management, and PII scopes.
-Create an explicitly scoped personal credential in Developer Center and import it with `--manual`
-when a reviewed local workflow genuinely needs one.
+Published 1.2.1 rejects sensitive browser-login scopes. The 1.2.2 candidate supports sensitive
+scopes through an additional passkey confirmation when the owning cell enables developer
+consent. Current workspace rights still apply. A reviewed Personal Token can also be imported
+with `--manual`. See [browser login](/cli/browser-login/).
 
 ## When a browser cannot open
 

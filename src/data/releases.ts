@@ -1,5 +1,3 @@
-import packageManifest from '../../sources/packages.json'
-
 export type DeveloperRelease = {
   date: string
   description: string
@@ -9,21 +7,32 @@ export type DeveloperRelease = {
   version: string
 }
 
-const currentPackageVersion = packageManifest.version
-
 export const developerReleases: DeveloperRelease[] = [
   {
-    date: '2026-08-16',
+    date: '2026-08-31',
+    description: 'The synchronized client checkpoint for API contract 1.2.0.',
+    highlights: [
+      'Multiple task assignees and explicit primary-assignee fields',
+      'Updated task placement contracts and compatible client schemas',
+      '36 curated read-only MCP tools; browser login remains subject to regional availability',
+      'Synchronized 1.2.1 SDK, CLI, MCP, examples, and references',
+    ],
+    stability: 'stable',
+    title: 'Developer Platform 1.2.1',
+    version: '1.2.1',
+  },
+  {
+    date: '2026-08-20',
     description: 'The advanced recurring-task and synchronized client release.',
     highlights: [
       'Explicit task description formats without rewriting existing customer content',
       'Advanced recurring tasks with immutable occurrences and deliberate task detachment',
       'Backward-compatible API, SDK, CLI, and read-only MCP coverage',
-      `Synchronized ${currentPackageVersion} SDK, CLI, MCP, examples, and references`,
+      'Synchronized 1.1.0 SDK, CLI, MCP, examples, and references',
     ],
     stability: 'stable',
-    title: `Developer Platform ${currentPackageVersion}`,
-    version: currentPackageVersion,
+    title: 'Developer Platform 1.1.0',
+    version: '1.1.0',
   },
   {
     date: '2026-08-10',

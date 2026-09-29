@@ -17,7 +17,8 @@ test('homepage remains structurally stable', async ({ page }, testInfo) => {
   )
   await expect(page.locator('.docs-sidebar')).toBeVisible()
   await expect(page.locator('.docs-sidebar a.is-current')).toHaveText('Developer home')
-  await expect(page.getByText('237 operations')).toBeVisible()
+  await expect(page.getByText('238 operations')).toBeVisible()
+  await expect(page.getByText('Unpublished 1.2.2 candidate.', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Choose an interface' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Make the first request' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Prepare for production' })).toBeVisible()
@@ -178,6 +179,8 @@ test('API reference preserves content order and schema disclosure', async ({ pag
   await expect(data).toHaveAttribute('aria-expanded', 'true')
   await expect(page.locator("[data-schema-parent='data']").first()).toBeVisible()
 
+  // Keep sticky headers in a deterministic position after expanding a schema.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
   await expect(page).toHaveScreenshot(`api-reference-${testInfo.project.name}.png`, { fullPage: true })
 })
 

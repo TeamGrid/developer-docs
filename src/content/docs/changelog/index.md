@@ -2,13 +2,14 @@
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
 ## Current platform
 
-API v1 uses the stable `1.1.0` contract while the SDK, CLI, and MCP npm packages are synchronized
-at stable version `1.1.0`.
+API v1 uses the stable `1.2.0` contract while the SDK, CLI, and MCP npm packages are synchronized
+at published version `1.2.1`. These documentation changes describe the unpublished
+`1.2.2` candidate; [candidate status](/mcp/candidate/) identifies pending release checks.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -18,6 +19,31 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Unpublished 1.2.2 candidate · 2026-09-29
+
+- Added regional OAuth, explicit work/domain profiles, 208 MCP tools and private resources.
+- Added purpose-bound passkey consent for sensitive CLI and OAuth permissions.
+- Added comment updates, user/time-zone context and explicit partial/uncertain results.
+- Corrected deadlines, cancellation, schema validation and server retry-delay handling.
+- Regenerated complete SDK/CLI/MCP references and documented candidate/live availability.
+- Hosted routing, real-client/cell qualification and independent release reviews remain open.
+
+## Documentation alignment · 2026-09-29
+
+- Synchronized the published API contract 1.2.0 and SDK, CLI, and MCP package references 1.2.1.
+- Included the released task `assigneeIds` and `primaryAssigneeId` contract and placement rules.
+- Corrected MCP profile counts, structured errors, and time-entry billing-field redaction.
+- Documented the current DE/US browser-login gate and the working manual token import path.
+- The MCP server remains local and read-only: these documentation corrections add no write tools
+  or hosted MCP endpoint.
+
+## Developer Platform 1.2.1 · 2026-08-31
+
+- Published aligned SDK, CLI, and MCP packages against API contract 1.2.0.
+- Included multiple task assignees, an explicit primary assignee, and updated placement contracts.
+- Kept MCP at 36 curated read-only tools. Package publication does not enable regional browser
+  authorization; consult the current [login availability](/cli/browser-login/).
 
 ## Developer Platform 1.1.0 · 2026-08-18
 

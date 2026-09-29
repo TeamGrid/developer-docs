@@ -1,11 +1,11 @@
 ---
 title: "teamgrid files"
-description: "6 executable @teamgrid/cli commands in the files group, generated from CLI 1.1.0."
+description: "7 executable @teamgrid/cli commands in the files group, generated from CLI 1.2.2."
 owner: Developer Experience
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
-> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `efeff4648d71`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.2.2` at Developer Platform commit `ccf18032d309`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage file metadata.
 
@@ -29,6 +29,7 @@ Global options can be placed before the command group.
 - [`teamgrid files rename`](#teamgrid-files-rename) — Rename a file.
 - [`teamgrid files archive`](#teamgrid-files-archive) — Archive a file.
 - [`teamgrid files restore`](#teamgrid-files-restore) — Restore a file.
+- [`teamgrid files download`](#teamgrid-files-download) — Performs a local TeamGrid CLI operation.
 - [`teamgrid files download-intent`](#teamgrid-files-download-intent) — Create a file download intent.
 
 ## teamgrid files list
@@ -252,6 +253,49 @@ The command uses the global output mode: human-readable `table` by default, or m
 
 ```bash
 teamgrid files restore ID --if-match ETAG
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
+
+## teamgrid files download
+
+Performs a local TeamGrid CLI operation.
+
+### Syntax
+
+```bash
+teamgrid files download [options] <id>
+```
+
+### API operation and scope
+
+The public capability manifest does not assign a dedicated API operation to this local CLI command.
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--file <path>` | create a private output file without overwriting | Yes | — | — |
+| `--max-bytes <number>` | download safety limit, maximum 50 MiB | No | — | `52428800` |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid files download ID --file PATH
 ```
 
 ### Exit codes

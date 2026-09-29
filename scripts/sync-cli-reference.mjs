@@ -241,6 +241,7 @@ async function main() {
     sourceRootArgument >= 0
       ? process.argv[sourceRootArgument + 1]
       : process.env.TEAMGRID_DEVELOPER_PLATFORM_REPOSITORY
+        || process.env.TEAMGRID_DEVELOPER_PLATFORM_DIR
         || path.join(root, '..', 'developer-platform'),
   )
   if (!(await exists(path.join(sourceRoot, '.git')))) {

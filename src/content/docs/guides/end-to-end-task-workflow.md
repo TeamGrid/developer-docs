@@ -1,13 +1,13 @@
 ---
 title: End-to-end task workflow
-description: Complete the same safe TeamGrid task workflow through HTTP, the TypeScript SDK, the CLI, and the read-only MCP server.
+description: Complete the same safe TeamGrid task workflow through HTTP, the TypeScript SDK, the CLI, and the MCP server.
 owner: Developer Experience
 reviewedAt: 2026-08-10
 ---
 
 This tutorial reads a task, changes its name with a strong precondition, and verifies the result.
-Use a dedicated test task. MCP stops after the read because its public tool surface is deliberately
-read-only.
+Use a dedicated test task. Published MCP 1.2.1 stops after the read. The 1.2.2 candidate can complete the reviewed
+write when its cell and credential satisfy the required CAS and scope gates.
 
 ## Prerequisites
 
@@ -111,8 +111,12 @@ Use teamgrid_task_get to read task TASK_ID. Return only its id, name, project id
 completion state, and developer revision. Do not call any other TeamGrid tool.
 ```
 
-Review the proposed tool call before allowing it. MCP can return the current revision but exposes
-no mutation tool and cannot submit `If-Match`. Complete the update through HTTP, SDK, or CLI.
+Review the read before allowing it. With candidate 1.2.2, select `work`, verify the access
+plan and current workspace, then propose a `teamgrid_task_update` call containing
+`workspaceId`, the task `id`, its fresh `expectedRevision` and `data.name`. Approve only
+the intended rename. Read the returned task ID again to verify the change. A revision
+conflict requires a fresh read; an uncertain commit requires inspection before retrying.
+The published 1.2.1 MCP remains read-only; use HTTP, SDK or CLI for its update step.
 
 ## Verify and clean up
 

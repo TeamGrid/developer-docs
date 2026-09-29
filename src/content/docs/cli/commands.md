@@ -2,7 +2,7 @@
 title: CLI commands
 description: Command groups, filters, input formats, and output controls supported by the TeamGrid CLI.
 owner: Developer Experience
-reviewedAt: 2026-08-16
+reviewedAt: 2026-09-29
 ---
 
 ## Global options
@@ -17,7 +17,7 @@ Global options can be placed before a command group.
 | `--timeout <milliseconds>` | Set the request timeout; default is 30 seconds |
 | `--retries <0–5>` | Set bounded safe-request retries; default is 2 |
 
-This workflow guide covers every command group in CLI `1.1.0`. For exact syntax, arguments,
+This workflow guide covers every command group in CLI `1.2.1`. For exact syntax, arguments,
 options, defaults, choices, API operations, scopes, output behavior, confirmations, examples, and
 exit codes, use the generated [CLI command reference](/cli/reference/). It is derived from the same
 Commander tree as the released package and checked against the API capability manifest.

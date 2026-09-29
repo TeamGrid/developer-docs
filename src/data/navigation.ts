@@ -109,6 +109,7 @@ export const navigation: NavigationGroup[] = [
     label: 'MCP server',
     items: [
       { label: 'Overview', href: '/mcp/' },
+      { label: 'Candidate availability', href: '/mcp/candidate/' },
       { label: 'Configure a host', href: '/mcp/configuration/' },
       { label: 'First MCP query', href: '/mcp/first-query/' },
       { label: 'Tool reference', href: '/mcp/reference/' },

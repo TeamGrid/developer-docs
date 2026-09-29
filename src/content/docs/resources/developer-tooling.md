@@ -2,18 +2,18 @@
 title: Developer tooling and downloads
 description: Official TeamGrid packages, API contracts and importable client collections in one place.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-09-29
 ---
 
 ## Official packages
 
-The stable public packages share version `1.1.0` and the API v1 contract:
+The stable public packages share version `1.2.1` and the API v1 contract:
 
 | Package | Install | Use |
 | --- | --- | --- |
-| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.1.0` | TypeScript and Node.js services |
-| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.1.0` | Terminal, scripts and CI |
-| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.1.0` | Compatible MCP hosts |
+| [`@teamgrid/api-client`](https://www.npmjs.com/package/@teamgrid/api-client) | `npm install @teamgrid/api-client@1.2.2` | TypeScript and Node.js services |
+| [`@teamgrid/cli`](https://www.npmjs.com/package/@teamgrid/cli) | `npm install --global @teamgrid/cli@1.2.2` | Terminal, scripts and CI |
+| [`@teamgrid/mcp-server`](https://www.npmjs.com/package/@teamgrid/mcp-server) | `npm install --global @teamgrid/mcp-server@1.2.2` | Compatible MCP hosts |
 
 Pin the exact package version in reproducible deployments. CI for this portal verifies that every
 documented stable package is publicly available before Production deployment.

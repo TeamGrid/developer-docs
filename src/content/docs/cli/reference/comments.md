@@ -1,11 +1,11 @@
 ---
 title: "teamgrid comments"
-description: "5 executable @teamgrid/cli commands in the comments group, generated from CLI 1.1.0."
+description: "6 executable @teamgrid/cli commands in the comments group, generated from CLI 1.2.2."
 owner: Developer Experience
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
-> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `efeff4648d71`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.2.2` at Developer Platform commit `ccf18032d309`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 read and manage target comments.
 
@@ -24,11 +24,57 @@ Global options can be placed before the command group.
 
 ## Commands
 
+- [`teamgrid comments update`](#teamgrid-comments-update) — Edit a comment.
 - [`teamgrid comments list`](#teamgrid-comments-list) — List target comments.
 - [`teamgrid comments create`](#teamgrid-comments-create) — Create a target comment.
 - [`teamgrid comments get`](#teamgrid-comments-get) — Get a comment.
 - [`teamgrid comments archive`](#teamgrid-comments-archive) — Archive a comment.
 - [`teamgrid comments restore`](#teamgrid-comments-restore) — Restore a comment.
+
+## teamgrid comments update
+
+Edit a comment.
+
+### Syntax
+
+```bash
+teamgrid comments update [options] <id>
+```
+
+### API operation and scope
+
+| Operation | HTTP | Scope | API reference |
+| --- | --- | --- | --- |
+| `updateComment` | `PATCH /comments/{id}` | `comments:write` | [Edit a comment](/api/v1/reference/operations/updatecomment/) |
+
+### Arguments
+
+| Argument | Required | Variadic | Choices | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | Yes | No | — | — | Identifier or value named by the command syntax. |
+
+### Command options
+
+| Option | Description | Required | Choices | Default |
+| --- | --- | --- | --- | --- |
+| `--data <json>` | comment update JSON or @file | Yes | — | — |
+| `--if-match <etag>` | exact quoted ETag from the reviewed comment | Yes | — | — |
+
+The [global options](#global-options) and implicit `-h, --help` option also apply.
+
+### Output
+
+The command uses the global output mode: human-readable `table` by default, or machine-readable `json`/`jsonl`.
+
+### Example
+
+```bash
+teamgrid comments update ID --data JSON --if-match ETAG
+```
+
+### Exit codes
+
+The command uses the [stable CLI exit codes](/cli/automation/#exit-codes) (`0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `130`). See the linked table for the meaning and automation behavior of each code.
 
 ## teamgrid comments list
 

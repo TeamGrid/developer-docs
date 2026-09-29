@@ -1,17 +1,31 @@
 ---
 title: Resource concurrency
-description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
+description: Use strong ETags and If-Match, and verify the owning cell has qualified concurrency enforcement.
 owner: Developer Platform
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
-API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the
-strong `ETag` response header, and send that value unchanged as `If-Match` with the mutation.
+The qualified API v1 concurrency contract uses explicit preconditions for protected writes.
+Read the resource, retain the strong `ETag` response header, and send that value unchanged as
+`If-Match` with the mutation.
 Never derive an ETag from an ID, timestamp, or another resource.
+
+## Deployment qualification
+
+As of 29 September 2026, the resource-revision rollout gates for the core project, task and
+project-template contracts are disabled in the hosted DE and US cells. In this compatibility
+mode, the API requires a correctly formed `If-Match` header, but the App can discard its expected
+revision. Receiving an ETag or a successful API readiness response therefore does not prove that
+a stale mutation will be rejected. Do not rely on these core revisions for unattended concurrent
+writes until the owning cell's server-side CAS qualification has been confirmed.
+
+The intended contract below applies once that rollout is qualified. The new MCP write profile
+remains unreleased while the server-side conflict tests are open. Other resource families retain
+their separate domain-specific contracts listed below.
 
 ## Projects, tasks, and project templates
 
-The `1.1.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
+The `1.2.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 
@@ -67,7 +81,7 @@ reuse the pre-mutation validator.
 
 ## Other protected resources
 
-Another 47 operations retain their domain-specific compare-and-set contracts:
+Another 48 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |
@@ -96,6 +110,6 @@ corresponding read operation.
 | `428 precondition_required` | A protected mutation omitted `If-Match` | Read the resource and send its latest strong validator |
 | `503 service_unavailable` | The owning cell cannot currently prove the concurrency contract | Keep the precondition and retry later with bounded backoff |
 
-Never respond to `412` or `503` by removing `If-Match`. This safety model is qualified per
-production cell and the API readiness check remains closed when resource concurrency cannot be
-proven.
+Never respond to `412` or `503` by removing `If-Match`. Concurrency qualification is cell-local.
+API readiness can be healthy in compatibility mode, so it must not be used by itself as evidence
+that core-resource compare-and-set enforcement is active.

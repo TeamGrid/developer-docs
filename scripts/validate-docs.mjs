@@ -72,6 +72,11 @@ for (const relativePath of [
     fail(`${relativePath} must name the exact verified package version.`)
   }
 }
+const release = JSON.parse(await readFile(path.join(root, 'sources', 'release-status.json'), 'utf8'))
+if (!['candidate', 'published'].includes(release.status) || release.version !== packageManifest.version) {
+  fail('Explicit release status must match the pinned package version.')
+}
+
 const starterPackage = JSON.parse(await readFile(
   path.join(root, 'public', 'examples', 'teamgrid-task-workflow.package.json'),
   'utf8',
@@ -391,6 +396,7 @@ const expectedIndependentIfMatchOperationIds = [
   'updateAbsence',
   'updateAppointment',
   'updateAutomationDefinition',
+  'updateComment',
   'updateDocument',
   'updateGroup',
   'updateMemberRole',
@@ -440,7 +446,7 @@ if (
   JSON.stringify(independentIfMatchOperations.map((operation) => operation.operationId))
   !== JSON.stringify(expectedAllIfMatchOperationIds)
 ) {
-  fail('The stable contract must preserve exactly 65 qualified If-Match operations.')
+  fail('The stable contract must preserve exactly 66 declared If-Match operations.')
 }
 for (const operation of independentIfMatchOperations) {
   const ifMatchParameters = (operation.parameters || []).filter((parameter) =>
@@ -489,7 +495,7 @@ const resourceConcurrencyDocumentation = await readFile(
 )
 for (const marker of [
   'Exactly 18 core mutations require `If-Match`',
-  'Another 47 operations retain their domain-specific compare-and-set contracts',
+  'Another 48 operations retain their domain-specific compare-and-set contracts',
   '`developerRevision` and `developerUpdatedAt`',
   '`400 invalid_precondition`',
   '`412 precondition_failed`',
@@ -505,7 +511,7 @@ const mcpDocumentation = await readFile(
   path.join(root, 'src', 'content', 'docs', 'mcp', 'tools-and-security.md'),
   'utf8',
 )
-const mcpOperations = capabilities.operationPolicy.filter((item) => item.mcp.exposure === 'read')
+const mcpOperations = capabilities.operationPolicy.filter((item) => item.mcp.exposure === 'read' && !item.mcp.profiles)
 for (const operation of mcpOperations) {
   if (!mcpDocumentation.includes(`\`${operation.mcp.tool}\``)) {
     fail(`MCP documentation is missing ${operation.mcp.tool}.`)
@@ -649,7 +655,7 @@ for (const marker of [
   `${canonicalManifest.summary?.governedV1Operations} governed v1 operations`,
   `${canonicalManifest.summary?.canonicalScopes} canonical scopes`,
   `${canonicalManifest.summary?.resourceCasMutationOperations} \`resource-cas-v1\` mutations`,
-  '47 domain-specific `If-Match` operations',
+  '48 domain-specific `If-Match` operations',
 ]) {
   if (!openApiDocumentation.includes(marker)) {
     fail(`OpenAPI documentation is missing current manifest marker: ${marker}.`)

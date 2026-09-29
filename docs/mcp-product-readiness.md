@@ -6,7 +6,7 @@ Dieses Dokument ist kein Production-Freigabenachweis.
 
 ### Umsetzungsstand am 29. September
 
-- Staging läuft mit dem App-Lesefix `8491fee`; die API ist unverändert.
+- Staging, DE und US laufen mit dem App-Lesefix `8491fee`; die API ist unverändert.
   Browserlogin wurde ausschließlich in Staging über den kontrollierten Workflow aktiviert:
   [Aktivierung](https://github.com/TeamGrid/teamgrid/actions/runs/36533474091).
   Die echte Zustimmung im Test-Workspace, Token-Austausch, Speicherung im macOS-
@@ -27,6 +27,10 @@ Dieses Dokument ist kein Production-Freigabenachweis.
   Datensätze im internen Service-DDP-Kontext, nicht an einem Browser-Cookie.
   24 gezielte Tests sowie isolierte native Staging-/DE-/US-Proben sichern den
   engen Fix ab. Dies ist kein Nachweis für alle 34 Tools oder für Schreibaktionen.
+  Die anschließenden Production-Releases in DE und US einschließlich authentifizierter
+  API-Prüfungen und US-Funktionstest sind erfolgreich; der
+  [unveränderliche Release-Nachweis](https://github.com/TeamGrid/teamgrid/releases/tag/teamgrid-release-ledger-v1/tg-20260929T082928Z-8491fee719)
+  bindet App, API und Vertragsstand. Production-Browserlogin bleibt ausgeschaltet.
 - Die Prüfung des Schreibpfads zeigt einen zusätzlichen Freigabeblocker: Bei deaktivierten
   Resource-Revisions-Gates verwirft die App die mitgesendete `expectedRevision`.
   Ein Pflichtparameter im SDK oder ein syntaktisch gültiger `If-Match`-Header
@@ -88,7 +92,7 @@ Eine gute MCP-Integration muss typische Arbeitsabläufe zuverlässig abschließe
 verbinden, die richtige Aufgabe finden, eine Änderung nachvollziehbar ausführen und das Ergebnis
 prüfen. Die Anzahl der registrierten Werkzeuge allein ist kein Qualitätsmaß.
 
-## 1. Verifizierter Ausgangspunkt
+## 1. Verifizierter Ausgangspunkt vor dem Lesefix
 
 | Bereich | Befund | Konsequenz |
 | --- | --- | --- |

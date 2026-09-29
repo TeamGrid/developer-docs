@@ -9,9 +9,22 @@ Dieses Dokument ist kein Production-Freigabenachweis.
 - Staging läuft auf denselben App-/API-SHAs wie Production. Browserlogin wurde
   ausschließlich in Staging über den kontrollierten Workflow aktiviert:
   [Aktivierung](https://github.com/TeamGrid/teamgrid/actions/runs/36533474091).
-  Die echte Anmeldung im Test-Workspace und die Anzeige der richtigen
-  CLI-Zustimmung sind bestätigt. Zugangserteilung, MCP-Aufruf und anschließende
-  Widerrufsprüfung sind noch offen; die erste unbeantwortete Anfrage lief ab.
+  Die echte Zustimmung im Test-Workspace, Token-Austausch, Speicherung im macOS-
+  Schlüsselbund, Workspace-/Benutzerabruf und moderne MCP-Discovery sind bestätigt.
+  Widerruf verweigert sowohl API-Zugriff als auch weitere Aufrufe im bereits
+  laufenden MCP-Prozess; das Testprofil wird lokal entfernt.
+- Der erste bestätigte Austausch scheiterte an der öffentlichen Staging-Route.
+  Die eng begrenzte Korrektur für den einzelnen Staging-API-Alias ist mit
+  [Router #3029](https://github.com/TeamGrid/teamgrid/pull/3029) und
+  [Deployment 36537359586](https://github.com/TeamGrid/teamgrid/actions/runs/36537359586)
+  ausgeliefert. Der neue Aktivierungs-Vorabcheck erkennt genau diesen Fehler.
+- Der vollständige Lesetest ist noch nicht bestanden: Projekt-/Aufgabenlisten
+  treffen bei alten Datensätzen auf eine fehlerhafte Zuordnung der internen
+  Revisionsinitialisierung zu einer Browser-Sitzung (`security-session-unavailable`).
+  [App #3030](https://github.com/TeamGrid/teamgrid/pull/3030) korrigiert ausschließlich
+  diesen Metadatenpfad; Liveprüfung nach qualifiziertem App-Deployment steht aus.
+  24 gezielte Tests prüfen unter anderem parallele Browser-Sitzungen und
+  fortbestehende Migrationssperren. Alle bisherigen Test-Credentials sind widerrufen.
 - Im SDK-Kandidaten sind `context` (34 Lesewerkzeuge), `work` (41 Werkzeuge,
   davon sieben Schreibwerkzeuge), Workspace-Prüfung, Revisionen und stabile
   Erstellungsschlüssel implementiert. Bestehende Profile bleiben unverändert.
@@ -32,13 +45,16 @@ Dieses Dokument ist kein Production-Freigabenachweis.
   Die sensible Browser-Scope-Sperre wird dabei ausdrücklich erklärt.
 - Abgelaufene CLI-Zustimmungen werden im App-Kandidaten automatisch entfernt.
   Die bestehende serverseitige Ablaufprüfung bleibt maßgeblich.
+- Der CLI-Callback meldet nur den Eingang der Zustimmung. Erst das Terminal
+  bestätigt den abgeschlossenen Austausch und die sichere Speicherung.
 - Der Portal-Statusproxy ist im Dokumentations-PR korrigiert und auf große sowie
   zu große Antworten getestet. Veröffentlichung und Liveprüfung stehen noch aus.
 
 Prüfstand: lokal 414 SDK-/MCP-Tests, 449 API-Tests, die betroffenen App-Tests
-und Installation aus gepackten Paketen erfolgreich. Der MCP-Stand vor der
-zusätzlichen Setup-Diagnose bestand alle sechs CI-Jobs für macOS, Linux und
-Windows mit Node 22/24; der neue Commit muss dieselbe Matrix erneut bestehen.
+und Installation aus gepackten Paketen erfolgreich. Auch der aktuelle MCP-Stand
+`1837742` einschließlich Setup-Diagnose und Callback-Korrektur bestand
+[alle sechs CI-Jobs](https://github.com/TeamGrid/developer-platform/actions/runs/36537172269)
+für macOS, Linux und Windows mit Node 22/24.
 Die Dokumentations-CI ist grün. Pull Requests:
 [App #3028](https://github.com/TeamGrid/teamgrid/pull/3028),
 [API #174](https://github.com/TeamGrid/teamgrid-api/pull/174),

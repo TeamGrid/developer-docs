@@ -9,7 +9,9 @@ Dieses Dokument ist kein Production-Freigabenachweis.
 - Staging läuft auf denselben App-/API-SHAs wie Production. Browserlogin wurde
   ausschließlich in Staging über den kontrollierten Workflow aktiviert:
   [Aktivierung](https://github.com/TeamGrid/teamgrid/actions/runs/36533474091).
-  Die echte Benutzeranmeldung und anschließende Widerrufsprüfung sind noch offen.
+  Die echte Anmeldung im Test-Workspace und die Anzeige der richtigen
+  CLI-Zustimmung sind bestätigt. Zugangserteilung, MCP-Aufruf und anschließende
+  Widerrufsprüfung sind noch offen; die erste unbeantwortete Anfrage lief ab.
 - Im SDK-Kandidaten sind `context` (34 Lesewerkzeuge), `work` (41 Werkzeuge,
   davon sieben Schreibwerkzeuge), Workspace-Prüfung, Revisionen und stabile
   Erstellungsschlüssel implementiert. Bestehende Profile bleiben unverändert.
@@ -24,8 +26,24 @@ Dieses Dokument ist kein Production-Freigabenachweis.
 - Die App-Pipeline erhält einen maschinenlesbaren Qualifikationsnachweis vor
   Production-Aktivierung. Er bindet Tests an Zelle, App/API, Vertragsdigest und
   npm-Integritäten. Ungültige oder veraltete Nachweise scheitern vor der Änderung.
+- Die neuen terminalbasierten Diagnosemodi `teamgrid-mcp --explain-scopes` und
+  `--check` erklären exakte Rechte und prüfen frische API-Scopes und den
+  Workspace. Fehlende Rechte liefern betroffene Werkzeuge und einen Fehlerstatus.
+  Die sensible Browser-Scope-Sperre wird dabei ausdrücklich erklärt.
+- Abgelaufene CLI-Zustimmungen werden im App-Kandidaten automatisch entfernt.
+  Die bestehende serverseitige Ablaufprüfung bleibt maßgeblich.
 - Der Portal-Statusproxy ist im Dokumentations-PR korrigiert und auf große sowie
   zu große Antworten getestet. Veröffentlichung und Liveprüfung stehen noch aus.
+
+Prüfstand: lokal 414 SDK-/MCP-Tests, 449 API-Tests, die betroffenen App-Tests
+und Installation aus gepackten Paketen erfolgreich. Der MCP-Stand vor der
+zusätzlichen Setup-Diagnose bestand alle sechs CI-Jobs für macOS, Linux und
+Windows mit Node 22/24; der neue Commit muss dieselbe Matrix erneut bestehen.
+Die Dokumentations-CI ist grün. Pull Requests:
+[App #3028](https://github.com/TeamGrid/teamgrid/pull/3028),
+[API #174](https://github.com/TeamGrid/teamgrid-api/pull/174),
+[SDK/MCP #53](https://github.com/TeamGrid/developer-platform/pull/53),
+[Dokumentation #55](https://github.com/TeamGrid/developer-docs/pull/55).
 
 Diese Änderungen sind Kandidaten, keine Aussage über bereits veröffentlichte
 Funktionen. Zeit-/Timer-Schreibzugriffe und die übrigen offenen Abnahmepunkte

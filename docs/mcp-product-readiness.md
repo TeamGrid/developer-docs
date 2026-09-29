@@ -41,9 +41,29 @@ Dieses Dokument ist kein Production-Freigabenachweis.
   qualifiziert sein. Der Lesefix #3030 aktiviert diese Gates nicht. Die historische
   CAS-Anleitung bindet noch Vertrag 1.0.2; sie muss für den aktuellen Stable-Vertrag
   geprüft werden, bevor eine Aktivierung erfolgt.
-- Im SDK-Kandidaten sind `context` (34 Lesewerkzeuge), `work` (41 Werkzeuge,
-  davon sieben Schreibwerkzeuge), Workspace-Prüfung, Revisionen und stabile
-  Erstellungsschlüssel implementiert. Bestehende Profile bleiben unverändert.
+- Der erweiterte SDK-Kandidat enthält `full` mit **207 Werkzeugen: 84 lesend und
+  123 schreibend**, außerdem elf Profile für Aufgaben, Projekte, Planung, Zeit,
+  Inhalte, CRM, Kataloge, Finanzen, Administration, Automatisierung und Integrationen.
+  `context` (34) und `work` (41) bleiben als kleinere Profile erhalten. Die
+  veröffentlichten vier Leseprofile behalten ihre bisherige Bedeutung.
+- Alle 237 API-Operationen haben eine überprüfte MCP-Entscheidung. 30 verbleiben
+  bewusst in Authentifizierung, Credential-Verwaltung, signierten/binary Transfers,
+  Protokollverhandlung oder der Massensynchronisierung. Dateimetadaten und
+  Umbenennen/Archivieren/Wiederherstellen sowie Dokumentinhalte sind enthalten.
+- Schemas, feste SDK-Aufrufe und eine vollständige Abdeckungstabelle werden aus
+  dem kanonischen Vertrag generiert. Die CI prüft Drift; es gibt kein freies
+  HTTP-Werkzeug. Jede Mutation prüft den aktuellen Workspace. Starke ETags werden
+  gezielt als `meta.etag` zurückgegeben, ohne übrige HTTP-Header oder Secrets.
+- Für Core-Mutationen ist ein strenger CAS-Vertrag implementiert: Der MCP-Client
+  verlangt `X-TeamGrid-Resource-CAS: required-v1`; die API bestätigt die Unterstützung
+  und die App weist strenge Änderungen bei geschlossenen Revisions-, Backfill-,
+  Enforcement- oder Cutover-Gates ab. Die alte API-Kompatibilität bleibt für
+  Bestandsclients erhalten. Der Header allein ist kein Live-Freigabenachweis.
+- Bestehende API-Aktionen ohne Revisionsschutz, etwa gewöhnliche Zeitänderungen,
+  Timer und einige Katalog-/Admin-Aktionen, sind ausdrücklich als unbedingte
+  Änderungen dokumentiert. Sie behaupten keinen Konkurrenzschutz und wiederholen
+  unklare Ergebnisse nicht automatisch. Asynchrone Annahme bleibt von Abschluss
+  unterscheidbar; eine fehlende Antwort wird nicht als Erfolg dargestellt.
 - Die Migration auf MCP SDK 2.2.0 und die explizite Unterstützung von
   Protokoll 2026-07-28 sind implementiert. Tests prüfen auch ältere Clients und
   die tatsächlich installierten stdio-Binaries.
@@ -66,7 +86,17 @@ Dieses Dokument ist kein Production-Freigabenachweis.
 - Der Portal-Statusproxy ist im Dokumentations-PR korrigiert und auf große sowie
   zu große Antworten getestet. Veröffentlichung und Liveprüfung stehen noch aus.
 
-Prüfstand: lokal 414 SDK-/MCP-Tests, 449 API-Tests, die betroffenen App-Tests
+Aktueller lokaler Prüfstand der Vollerweiterung: **440 SDK-/CLI-/MCP-Tests**,
+**451 API-Tests** und **42 App-CAS-/Vertragsprüfungen** bestanden. Paketbau,
+Produktionsabhängigkeitsaudit, Edge-Client, Redaction und saubere Installation
+aller drei Pakete sind grün. Die installierte MCP-Binary bietet die Profile
+`core` (22), `work` (41) und `full` (207) sowohl im modernen als auch im Legacy-
+Protokoll an. Die generierte Tabelle `packages/mcp-server/COVERAGE.md` im
+[SDK/MCP-Kandidaten](https://github.com/TeamGrid/developer-platform/pull/53)
+führt alle 207 Werkzeuge und 30 Ausschlüsse einzeln auf. Diese lokalen Belege
+ersetzen weder die Live-Schreibprüfung noch die aktuelle Betriebssystem-CI.
+
+Früherer Prüfstand vor der Vollerweiterung: lokal 414 SDK-/MCP-Tests, 449 API-Tests, die betroffenen App-Tests
 und Installation aus gepackten Paketen erfolgreich. Auch der aktuelle MCP-Stand
 `1837742` einschließlich Setup-Diagnose und Callback-Korrektur bestand
 [alle sechs CI-Jobs](https://github.com/TeamGrid/developer-platform/actions/runs/36537172269)
@@ -78,8 +108,8 @@ Die Dokumentations-CI ist grün. Pull Requests:
 [Dokumentation #55](https://github.com/TeamGrid/developer-docs/pull/55).
 
 Diese Änderungen sind Kandidaten, keine Aussage über bereits veröffentlichte
-Funktionen. Zeit-/Timer-Schreibzugriffe und die übrigen offenen Abnahmepunkte
-bleiben Teil der weiteren Umsetzung.
+Funktionen. Zeit-/Timer-Schreibzugriffe sind inzwischen im Kandidaten enthalten;
+ihre echte Live-Abnahme und die übrigen offenen Freigabepunkte bleiben ausstehend.
 
 ## Entscheidungsempfehlung
 
@@ -166,9 +196,9 @@ Rücknahmeprüfung verlangen. Gegenwärtige Principal- und Health-Gates ersetzen
 nicht. Auth-Aktivierung, Image-Deployment und neue MCP-Schreibfunktionen in getrennten Änderungen
 beobachtbar halten.
 
-## 3. Schreibmodus: kleiner, nützlicher erster Umfang
+## 3. Schreibmodus: vollständige fachliche Abdeckung als Kandidat
 
-Ein **neues explizites Profil**, beispielsweise `work`, einführen. Bestehende Profile einschließlich
+Die expliziten Profile `work`, `full` und elf Domänenprofile sind implementiert. Bestehende Profile einschließlich
 `all` behalten ihre Lesebedeutung. Ein Paketupdate darf keine bisherige Installation schreibfähig
 machen. Profilwahl, Credential-Scopes, Ressourcenfreigaben und aktuelle Benutzerrechte bleiben
 eigenständige Prüfungen.
@@ -179,17 +209,17 @@ eigenständige Prüfungen.
 | Erste Freigabe | Name, Beschreibung, Termin und Verantwortliche ändern | `tasks.update` mit erwarteter Revision; assigneeIds/primaryAssigneeId korrekt erhalten |
 | Erste Freigabe | Aufgabe verschieben, abschließen, wieder öffnen | `tasks.move/complete/reopen`; Zielrechte und Revision prüfen |
 | Erste Freigabe | Kommentar lesen und hinzufügen | `comments.list/get/create`; Kommentarerstellung kann Benachrichtigungen auslösen |
-| Danach | Zeit erfassen, Timer starten/stoppen | Bestehende API, aber Mehrfachausführung, aktive Timer und Konkurrenzfälle qualifizieren |
-| Danach | Projektstammdaten bearbeiten | Revision vorhanden; Lebenszyklusaktionen teilweise asynchron |
-| Danach | Dokumente, Dateien, Kalender und konkrete Custom-Field-Werte lesen | Fehlender Kontext begrenzt heute vollständige Arbeitsabläufe |
-| Gesonderte Freigabe | Massenänderungen, Archivierung, Freigaben, Finanzen und Administration | Höhere Wirkung; eigene Rechte und Bestätigungsregeln |
+| Kandidat umgesetzt | Zeit erfassen, Timer starten/stoppen | `time-write`; Semantik ohne pauschalen CAS-Anspruch, Live-Ausfallfälle qualifizieren |
+| Kandidat umgesetzt | Projekte und Vorlagen, Teilen und Lebenszyklus | `projects-write`; strenger CAS, asynchrone Operationen separat abfragen |
+| Kandidat umgesetzt | Dokumente, Dateimetadaten, Kalender, Custom Fields lesen und ändern | `content-write`, `schedule-write`, `catalog-write`; feste API-Schemas und Vorbedingungen |
+| Kandidat umgesetzt, Abnahme offen | Massenänderungen, Archivierung, Freigaben, Finanzen, Administration und Automation | Eigene Domänenprofile und API-Rechte; tatsächliche Benutzerautorisierung bleibt nötig |
 
 ### Verbindlicher Änderungsvertrag
 
 - Bestehende Objekte vor einer Änderung gezielt lesen. Die dabei erhaltene Revision für exakt
   diesen Änderungswunsch verwenden. Bei Konflikt aktuellen Stand und Unterschiede zeigen;
   keine automatische neue Revision holen, um die alte Absicht ungeprüft durchzusetzen.
-- Für Erstellungen einen Idempotency-Key pro Benutzerabsicht bis zur eindeutigen Auflösung erhalten.
+- Für Erstellungen mit API-Replay-Vertrag einen Idempotency-Key pro Benutzerabsicht bis zur eindeutigen Auflösung erhalten.
   Derselbe Key muss auch bei einer erneuten MCP-Tool-Anforderung wiederverwendet werden können.
   Die heutige SDK-Generierung je Methodenaufruf allein löst Wiederholungen durch den Host nicht.
 - Timeouts nach einer Mutation bedeuten zunächst „Ergebnis unklar“. Über Key/Operation/gezielten
@@ -316,9 +346,9 @@ Dieser Fehler muss vor einem als vollständig grün bezeichneten Portal-Release 
 | Schritt | Ergebnis | Abnahme |
 | --- | --- | --- |
 | A: Verlässlicher Einstieg | Aktuelle Docs und Browserlogin im Pilot | Echte Neuverbindung bis MCP-Aufruf, Widerruf und Rücknahme in Staging/DE/US |
-| B: Arbeitsmodus | Aufgaben- und Kommentarwerkzeuge | Opt-in; korrekte Rechte, Konkurrenz, Wiederholung, Audit und Aufräumen |
+| B: Arbeitsmodus | 207 geprüfte Tooldefinitionen einschließlich 123 Schreibaktionen | Opt-in; korrekte Rechte, Konkurrenz, Wiederholung, Audit und Aufräumen |
 | C: Direkte Verbindung | Remote-MCP und delegiertes OAuth | Echter Host-Login, Regionalität, Isolation, Erneuerung/Widerruf, Protokollkompatibilität |
-| D: Vollständige Abläufe | Zeit, Dateien, Kalender und weitere Kontextwerkzeuge nach Bedarf | Konkrete Anwenderabläufe bestanden; Betriebswerte im vereinbarten Bereich |
+| D: Vollständige Abläufe | Alle implementierten Domänen live qualifizieren | Konkrete Anwenderabläufe bestanden; Betriebswerte im vereinbarten Bereich |
 
 A und die Architekturarbeit für C können gleichzeitig vorbereitet werden. Die erste nützliche
 Schreibfreigabe muss nicht auf alle späteren Domänen warten. Eine belastbare Aufwandsschätzung

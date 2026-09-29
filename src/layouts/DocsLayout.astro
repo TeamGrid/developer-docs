@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 import BaseLayout from './BaseLayout.astro'
 import PageFeedback from '../components/PageFeedback.astro'
+import release from '../../sources/release-status.json'
 
 interface Props {
   title: string
@@ -44,7 +45,7 @@ const isLegacyApi = Astro.url.pathname.startsWith('/api/v0/')
         </article>
         <div class="page-meta">
           <span>
-            Stable documentation
+            {release.status === 'candidate' ? 'Release candidate documentation' : 'Stable documentation'}
             {owner && ` · ${owner}`}
             {reviewedAt && ` · Reviewed ${reviewedAt.toISOString().slice(0, 10)}`}
           </span>

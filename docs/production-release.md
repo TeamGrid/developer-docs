@@ -13,6 +13,14 @@ contract, content, HTML, browser, and visual regression checks.
 5. CI deploys the preserved verified artifact atomically to Cloudflare Pages.
 6. The workflow runs public smoke requests against the canonical domain.
 
+Candidate documentation uses `sources/release-status.json` with `status: candidate`,
+the candidate version and the last `publishedVersion`. Builds show a visible candidate
+banner while the changelog feed and compatibility badge retain the published version.
+CI verifies candidates but skips Production deployment even if their npm packages
+already exist. After package and cell qualification, update the status to `published`,
+the published version and maintained availability text together; then run the full
+verification again. Changing this marker is a release decision, not a test repair.
+
 Authentication documentation has an additional ordering rule. Do not publish browser-login,
 Windows Credential Manager, or `TeamGrid CLI` lifecycle guidance merely because its portal change
 is ready. First verify that the pinned CLI package exists on npm and that the exact App candidate

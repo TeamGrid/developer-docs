@@ -26,11 +26,12 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The stable `1.2.0` manifest records 154 v1 paths, 237 governed v1 operations, 87 frozen v0
+The synchronized `1.2.0` manifest is a release candidate. It records 154 v1 paths, 238 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 90 canonical scopes, and 74 classified TeamGrid product
 capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
-reads, and another 47 domain-specific `If-Match` operations. These counts describe the synchronized
-contract; they do not promote planned capabilities into the stable release.
+reads, and another 48 domain-specific `If-Match` operations. These counts describe the synchronized
+contract; they do not prove deployment or promote planned capabilities into the stable release.
+All successful JSON response and JSON request examples are checked against their schemas.
 
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
 release they tested. The `1.2.0` checkpoint qualifies core project, task, and project-template

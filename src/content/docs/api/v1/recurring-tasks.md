@@ -246,7 +246,7 @@ tasks and occurrence ledger:
 
 A stale ETag returns `412`, a missing one returns `428`, and insufficient access fails without a
 partial detach. The SDK requires `ifMatch`; the CLI additionally requires an interactive
-confirmation or explicit `--yes`. The operation is deliberately unavailable through MCP.
+confirmation or explicit `--yes`. The 1.2.2 MCP candidate also exposes this explicit lifecycle action with its revision precondition.
 
 ## Event-driven series
 
@@ -263,10 +263,10 @@ the trigger is durably queued; it does not promise that its generated task alrea
 
 ## MCP boundary
 
-The MCP server exposes exactly seven bounded read-only recurrence tools:
+The preserved MCP read profiles expose seven bounded recurrence tools:
 `teamgrid_task_recurrences_list`, `teamgrid_task_recurrence_get`,
 `teamgrid_task_recurrence_preview`, `teamgrid_task_recurrence_versions_list`,
 `teamgrid_task_recurrence_version_get`, `teamgrid_task_recurrence_occurrences_list`, and
-`teamgrid_task_recurrence_occurrence_get`. It deliberately excludes unsaved drafts, lifecycle
-writes, detachment, overrides, retries, event ingress and operation control. Use the API, SDK or
-CLI for those actions.
+`teamgrid_task_recurrence_occurrence_get`. The 1.2.2 candidate adds reviewed draft previews, lifecycle
+writes, detachment, overrides, retries, event ingress and operation status in `tasks-write`
+and `full`. Consult the exact [tool schemas](/mcp/reference/) and confirm business effects.

@@ -7,12 +7,14 @@ reviewedAt: 2026-09-29
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The stable `1.2.0` API v1 contract contains 154 paths and 237 operations. The CLI maps all 237
-operations. The TypeScript SDK maps the 236 programmatic operations; the one-time anonymous CLI
+The synchronized `1.2.0` API v1 candidate contract contains 154 paths and 238 operations. The CLI maps all 238
+operations. The TypeScript SDK maps the 237 programmatic operations; the one-time anonymous CLI
 code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 36 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 22. Writes,
 destructive lifecycle operations, project statements, webhook delivery
-history, audit events, API discovery, and reveal-once secrets are deliberately not exposed through MCP.
+history and audit events are not exposed by the published 1.2.1 MCP package.
+The [MCP candidate](/mcp/candidate/) exposes 208 business tools (84 reads, 124 writes) through explicit profiles.
+API discovery and reveal-once secrets remain outside the business tool surface.
 
 The cross-interface contract currently governs workspace, projects and asynchronous project
 lifecycle operations, tasks, recurring tasks and timers, time entries, calendar appointments, absences, availability,
@@ -20,11 +22,11 @@ contacts, comments, activity, documents, files, workspace administration, search
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
 planned work, personal access credentials, service accounts, resource grants, and the durable change
-feed. Finance fields are scope-gated, and MCP product reads always remove acquisition cost.
+feed. Finance fields are scope-gated, and the preserved MCP read profiles remove acquisition cost; candidate finance profiles require the corresponding scopes.
 
-The same release boundary qualifies 18 project, task, project-sharing, and project-template
+The contract declares 18 project, task, project-sharing, and project-template
 mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
-reads. Another 46
+reads. Another 48
 protected operations retain resource-specific revision formats for planned work, custom-field
 values, calendar data, documents, workspace administration, automations, workspace settings, and
 webhook-secret rotation.
@@ -32,8 +34,8 @@ webhook-secret rotation.
 ## Authorization registry
 
 Transport parity is only one half of the contract. TeamGrid also maintains a code-owned action-policy
-registry for all 237 operations. API discovery and the one-time CLI code exchange are anonymous or
-public-client operations; all 235 credential-authenticated operations are bound to their App execution methods, product-permission
+registry for all 238 operations. API discovery and the one-time CLI code exchange are anonymous or
+public-client operations; all 236 credential-authenticated operations are bound to their App execution methods, product-permission
 resolvers, entitlement checks, resource-grant resolvers, conditional domain policies, sensitive
 field overlays, allowed principal kinds, and one of 12 principal-policy rollout families. The two
 current-credential self-service operations deliberately require no additional scope, but still
@@ -44,9 +46,9 @@ The current registry identity and SHA-256 are published in the
 owning App cell exchange this exact identity during startup compatibility negotiation and fail
 readiness on any mismatch. The same identity is included in the canonical deployment manifest.
 
-V7 declares every request-dependent scope and dynamic policy used by collaboration, automation,
+V8 declares every request-dependent scope and dynamic policy used by collaboration, automation,
 custom-field content, calendar, work-management, and search/export handlers. The owning App cell
-resolves stored targets before evaluating grants, and its V13 runtime provides one exact resolver
+resolves stored targets before evaluating grants, and its V16 candidate runtime provides one exact resolver
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
 alone does not activate principal enforcement.
 

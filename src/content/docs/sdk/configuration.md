@@ -24,7 +24,7 @@ credential from a secret manager for a deployed, shared, or scheduled process.
 
 ## `TeamGridClientOptions`
 
-The following constructor surface is taken from `@teamgrid/api-client@1.2.1`:
+The following constructor surface is taken from `@teamgrid/api-client@1.2.2`:
 
 | Option | Type | Required | Default and behavior |
 | --- | --- | --- | --- |

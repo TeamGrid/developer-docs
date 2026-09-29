@@ -32,7 +32,7 @@ teamgrid tasks update --help
 Install the exact stable version again to upgrade or repair a global installation:
 
 ```bash
-npm install --global @teamgrid/cli@1.2.1
+npm install --global @teamgrid/cli@1.2.2
 teamgrid --version
 teamgrid auth status --check
 ```

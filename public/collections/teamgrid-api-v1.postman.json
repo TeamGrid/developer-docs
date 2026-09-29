@@ -1200,6 +1200,54 @@
           "response": []
         },
         {
+          "name": "Edit a comment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{token}}"
+                }
+              ]
+            },
+            "description": "Updates plain text and canonical active-member mentions under current owner/role permissions and an exact revision. Preserves attachments, reactions and edit history. Editing does not resend notifications.",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comments",
+                "{id}"
+              ],
+              "query": [],
+              "raw": "{{baseUrl}}/comments/{id}"
+            },
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"text\": \"string\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Archive a comment",
           "request": {
             "auth": {
@@ -8015,7 +8063,7 @@
                 }
               ]
             },
-            "description": "Searches only the requested, scope-authorized product domains in the owning cell. Results are bounded, metadata-only, tenant-filtered and sharing-filtered.",
+            "description": "Searches only the requested, scope-authorized product domains in the owning cell. Results are bounded, metadata-only, tenant-filtered and sharing-filtered. meta.search.complete is always false: even a short or empty index result does not prove completeness. Narrow ambiguous searches or use resource list pagination for complete reports. Verify recent writes by their returned IDs because indexing can lag.",
             "header": [
               {
                 "key": "Accept",

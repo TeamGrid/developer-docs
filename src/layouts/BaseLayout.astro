@@ -3,6 +3,7 @@ import Footer from '../components/Footer.astro'
 import Header from '../components/Header.astro'
 import SearchDialog from '../components/SearchDialog.astro'
 import '../styles/global.css'
+import release from '../../sources/release-status.json'
 
 interface Props {
   title: string
@@ -55,6 +56,13 @@ const schema = {
   <body data-layout={layout} data-page-title={title} data-page-description={description}>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <Header />
+    {release.status === 'candidate' && (
+      <aside class="release-candidate-notice" aria-label="Release status">
+        <strong>Unpublished {release.version} candidate.</strong>{' '}
+        The public package remains {release.publishedVersion}. Installation examples for the
+        candidate apply after release. <a href="/mcp/candidate/">View release status</a>.
+      </aside>
+    )}
     <slot />
     <Footer />
     <SearchDialog />
@@ -74,3 +82,12 @@ const schema = {
     </script>
   </body>
 </html>
+
+
+<style>
+  .release-candidate-notice {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid currentColor;
+    font-size: 0.875rem;
+  }
+</style>

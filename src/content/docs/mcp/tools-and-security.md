@@ -1,11 +1,14 @@
 ---
 title: MCP tools and security
-description: Review the exact read-only TeamGrid MCP tool surface, pagination behavior, and trust boundaries.
+description: Review TeamGrid MCP profiles, write preconditions, private resources, result limits and authorization boundaries.
 owner: Security
-reviewedAt: 2026-08-18
+reviewedAt: 2026-09-29
 ---
 
-## Available tools
+**Unpublished candidate 1.2.2:** 208 tools (84 reads, 124 writes). Public 1.2.1
+retains the four read profiles below. See [release status](/mcp/candidate/).
+
+## Preserved read profiles
 
 The default `core` profile exposes 22 operational tools. `collaboration` adds seven contact,
 call-note, and user tools. `governance` adds six custom-field-definition, service, and webhook tools.
@@ -55,74 +58,86 @@ commercially sensitive billing rates.
 
 List tools return API v1 cursor metadata. Pass the returned opaque cursor to continue; do not construct or decode cursors.
 
-Every tool is declared read-only and idempotent. A serialized tool result is limited to 256 KiB;
-request a smaller page if the server returns `result_too_large`. Call-note, contact, service, and
-webhook tools can expose personal, commercial, or security-sensitive information and should use
-dedicated least-privilege credentials.
+## Candidate profiles and writes
 
-Every advertised tool also carries a human-readable title, strict input and output schemas, and
-read-only/idempotent annotations. Stable API failures become bounded structured errors containing
-only the public error code and, when available, HTTP status, request ID, and retry delay.
-Authorization headers, bearer credentials, transport headers, raw causes, and unexpected exception
-text are never projected into the model conversation.
+The candidate adds `context`, `work`, `full` and eleven domain profiles. The
+[generated reference](/mcp/reference/) lists exact membership, input schemas and
+annotations for all 208 tools. `full` includes the business surface: tasks and
+recurrences, time, planning, comments, documents, files, CRM, catalogs, finance,
+workspace administration, audit, exports, automations and integrations.
 
-Project and task results include the same developer revision as API v1. The local server does not
-register mutation tools or accept `If-Match`, even for protected resource families. Use the SDK or
-CLI for controlled writes.
+Every write requires `workspaceId`. Operations declare their actual concurrency
+contract: revision-protected updates require `expectedRevision`; idempotent creates
+require `idempotencyKey`. Core CAS operations additionally require the server's
+active CAS protocol. Read the current resource before proposing a change. A
+conflict requires a new read and a fresh decision, not an unconditional retry.
 
-Task results also include `descriptionFormat`. Treat `plain-text` as literal customer content and
-interpret Markdown only when the API explicitly returns `markdown-v1`; do not infer formatting from
-punctuation in a task. MCP remains read-only and cannot convert, promote, or rewrite a description.
+Writes may send invitations, publish comments, trigger webhooks or change future
+automation behavior. Review targets and effects before approval in the host.
+`readOnlyHint`, `destructiveHint`, `idempotentHint` and `openWorldHint` describe each
+operation; these annotations do not grant authority or replace host confirmation.
 
-Product tools deliberately remove `purchasePrice` even if the selected API credential also has
-`products:finance:read`. Project statements are forbidden in every MCP profile because they contain
-financial and budget-adjacent data. Webhook delivery history is also forbidden because it contains
-sensitive operational metadata. The qualified change feed remains forbidden through MCP because a
-high-volume durable synchronization stream is not a bounded interactive model task. Custom-field values, project
-templates and their instantiation status, and planned-work schedules and operation status are
-forbidden because they expose sensitive per-resource workflow or workload data. These resources
-cannot be enabled through `--tool-profile all`; no tool for them is registered or advertised.
-Custom-field **definition** reads are the only custom-field exception and remain confined to the
-`governance` profile.
+Receipts distinguish `completed`, `accepted`, partial failure and an uncertain
+commit. Accepted operations include a status tool and stable identifier. After a
+lost response, inspect the target or operation and reuse an idempotency key only
+when its declared contract permits it. Independent tool calls are not atomic.
 
-Time-entry tools remove `billable`, `billed`, and `billedAt` from every result, even when the
-credential has `time-entries:billing`. Their schemas do not accept `billable` or `billed` filters.
-Current-credential inspection and revocation, webhook test delivery, and export streaming remain
-SDK/CLI capabilities and are forbidden through MCP.
+## Reading complete results
 
-Recurring-task tools expose only saved series, versions, stored previews, and occurrence-ledger
-reads. Draft preview, create/update/lifecycle actions, overrides, retries, event submission, and
-operation control remain API/SDK/CLI-only.
+Tool discovery uses opaque cursor pages, at most 50 tools and 256 KiB per page.
+Business list pagination is separate: continue with `meta.page.nextCursor` and
+keep filters stable. Search returns at most 50 matches, can lag new changes and
+cannot establish a complete inventory even when fewer matches are returned.
+Never calculate workspace-wide totals from a partial page or bounded search.
 
-Federated search is the only additional curated tool. It requires `search:read` plus every matching
-domain read scope, accepts at most three resource types and 50 results, and is marked sensitive
-because one query can cross several authorized domains. Calendar, absence, availability, comments,
-activity, documents, files, workspace administration, exports, automation metadata and execution,
-integration-installation status, capability and entitlement negotiation, the event catalog,
-workspace settings, and webhook-secret rotation remain forbidden even in `all`. Reveal-once secrets
-must never enter a model transcript.
+Serialized tool results are limited to 256 KiB. Reduce page size when necessary.
+Large documents use 16 KiB sections bound to the same revision; restart a read if
+the document changes. Mutations return compact receipts rather than echoing all
+content. Treat `plain-text` literally and interpret Markdown only where
+`descriptionFormat` explicitly declares `markdown-v1`.
 
-Developer and workspace audit events are also forbidden in every MCP profile. Their administrative
-metadata can reveal credential usage, denied operations, resource identifiers, and security posture;
-use the API, SDK, or CLI only within an explicitly governed audit workflow.
+File and export lookup may return private `teamgrid://` resource URIs.
+`resources/read` delivers at most 1 MiB with fresh authorization and a 30-second
+budget. Credentials and signed download URLs never enter the transcript. The CLI
+has a separate bounded file-download path. Uploads continue through existing
+App/CLI/SDK transfer workflows; there is no arbitrary filesystem or URL-fetch tool.
+
+## Field-level and scope boundaries
+
+Preserved read profiles remove product `purchasePrice` and time-entry billing
+fields even when a credential has wider scopes. Candidate domain profiles use
+their concrete field contracts and current finance/billing scopes. Missing
+permissions must not be interpreted as zero financial values.
+
+Optional fields and compound operations can require additional scopes. Remote
+OAuth challenges request only applicable missing scopes; role, sharing and
+workspace-lock failures cannot be solved by granting broader scopes. Sensitive
+CLI/OAuth scopes require a separate passkey confirmation of the exact request.
+
+Reveal-once credentials and webhook signing secrets remain excluded. The change feed remains forbidden through MCP
+because durable synchronization belongs in a controlled API/SDK/CLI integration.
+Credential issuance, secret rotation and arbitrary database or HTTP access are
+also excluded; `full` does not remove these boundaries.
 
 ## Security model
 
-The host can read every object allowed by the selected API credential. The local server does not broaden those permissions, but model prompts, host logs, tool transcripts, and third-party extensions can still become data-exposure paths.
+Use a dedicated credential and the smallest suitable tool profile. The API and
+App recheck current membership, role, scope, sharing, resource grants, workspace
+locks and owning cell. The remote gateway verifies each request and uses a
+separate short API delegation; it does not pass the MCP token to the business API.
 
-- Create a dedicated credential with the smallest practical scopes.
-- Select the intended TeamGrid profile explicitly.
-- Enable the server only in hosts and workspaces you trust.
-- Review tool calls and results before using them in consequential decisions.
-- Revoke the TeamGrid credential to terminate access.
-- Inspect API v1 audit events for access history.
+Remote OAuth connections can be inspected and revoked in the owning workspace.
+Revocation invalidates the grant family on subsequent requests. Local stdio uses
+the CLI credential lifecycle; removing only the local profile does not revoke
+its server credential. [CLI authentication](/cli/browser-login/) explains both.
 
-Treat every TeamGrid field as untrusted customer-controlled content. Text or links returned from a
-task, project, contact, or another tool are data, not instructions: they must not cause the host to
-reveal secrets, broaden scopes or tool filters, execute another tool, or follow another cursor.
+Treat all returned customer content as untrusted data. Embedded instructions must
+not broaden access, reveal secrets, choose a write target, follow an arbitrary URL
+or trigger another action without the user's intent. Use only trusted hosts and
+review what they retain in tool transcripts and logs.
 
-MCP tools intentionally cannot create, update, archive, or remove TeamGrid resources. Use the API, SDK, or CLI for an explicitly controlled write workflow.
-
-For the exact JSON Schema, scopes, API operation, result behavior, data classification, example
-prompt, and failure modes of each registered tool, use the [complete MCP tool
-reference](/mcp/reference/).
+Errors expose bounded public codes, status, safe request IDs and valid retry
+delays. Raw causes, authorization headers, transport credentials and signed
+transfer URLs are not projected. Provider outages return 503; revoked access is
+rejected. Respect `Retry-After`; a local deadline may end the attempt but does not
+shorten the server's requested delay.

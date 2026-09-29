@@ -38,9 +38,9 @@ See [browser-login availability](/cli/browser-login/).
 | A list call returns `result_too_large` | Serialized structured content exceeded 256 KiB | Check `limit` and filters in the approved arguments | Request a smaller page or narrower filters. Continue with the opaque cursor only when another page is required |
 | A list repeats or skips data | A cursor was altered, decoded, or reused with incompatible filters | Compare the cursor flow and filters without logging the whole result | Start the listing again, keep filters stable, and pass `meta.page.nextCursor` back unchanged |
 | Results come from an unexpected workspace or region | The selected credential profile points to another tenant, region, or cell | Call only `teamgrid_workspace_get` and inspect its returned tenant metadata | Stop reading business data, choose the intended CLI profile, verify it with `teamgrid auth status --check`, and restart the host |
-| Product purchase prices are absent | Intentional MCP redaction | Check the product tool description | Use a governed API, SDK, or CLI workflow with the appropriate finance overlay; MCP product tools always remove `purchasePrice` |
+| Product purchase prices are absent | Intentional MCP redaction | Check the product tool description | Use a governed API, SDK, or CLI workflow with the appropriate finance overlay; the preserved read profiles remove `purchasePrice`; candidate finance profiles require the declared finance scopes |
 | A webhook signing secret is absent | Reveal-once secrets are forbidden in MCP | Check the webhook tool description | Rotate or retrieve reveal-once material only through an explicitly governed API, SDK, CLI, or TeamGrid UI workflow; never put it in an AI transcript |
-| `all` still does not show writes, audit events, files, exports, or change-feed tools | Intentional product boundary | Review [tools and security](/mcp/tools-and-security/) | Use API v1, the SDK, or CLI. `all` is the explicit union of 36 curated reads, not unrestricted API access |
+| `all` still does not show writes, audit events, files, exports, or change-feed tools | Intentional product boundary | Review [tools and security](/mcp/tools-and-security/) | `all` retains 36 curated reads. In the 1.2.2 candidate, explicitly select a suitable domain profile or `full` for additional business tools; the change feed stays API/SDK/CLI-only |
 | `TEAMGRID_API_TOKEN` appears ignored or points to the wrong cell | Environment credentials override the named keychain credential | Inspect only whether the variable is present, never its value | Remove unintended host environment overrides or supply the intended dedicated token together with the correct regional base URL |
 
 ## Tool errors versus startup errors
@@ -62,7 +62,7 @@ After the server is connected, TeamGrid request failures use a stable MCP error 
 ```
 
 API and SDK errors preserve their valid machine-readable code. When available, the envelope also
-contains `status`, a safe `requestId`, and bounded `retryAfterMs`. Unknown failures use
+contains `status`, a safe `requestId`, and valid `retryAfterMs` without shortening the server delay. Unknown failures use
 `teamgrid_request_failed`; malformed upstream codes fall back to `teamgrid_api_error` or
 `teamgrid_client_error`. MCP also sets `isError: true`.
 
@@ -78,3 +78,16 @@ response metadata may contain a request ID that is safe and useful for tracing.
 Never share an API token, browser authorization code, PKCE verifier, webhook signing secret,
 `Authorization` header, credential-store contents, or an unreviewed tool transcript. If accidental
 exposure is possible, revoke or rotate the affected credential before continuing diagnostics.
+
+## Candidate write and OAuth failures
+
+| Outcome | Next step |
+| --- | --- |
+| Additional scopes requested | Review the exact requested operation and consent; sensitive scopes require passkey confirmation |
+| Workspace, role or sharing denial | Correct access in TeamGrid; broader OAuth scopes cannot bypass it |
+| Revision conflict | Read the current resource, compare the change and decide again |
+| Unknown commit after timeout | Inspect the resource or operation status before any retry |
+| Accepted asynchronous job | Use the returned status tool and ID; acceptance is not completion |
+| Provider unavailable (503) | Retry within your deadline; do not replace or widen a credential to diagnose an outage |
+| Revoked or expired remote connection | Reconnect through the host and review the workspace and scopes again |
+| Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |

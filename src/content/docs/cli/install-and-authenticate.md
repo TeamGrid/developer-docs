@@ -17,7 +17,7 @@ reviewedAt: 2026-09-29
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.2.1
+npm install --global @teamgrid/cli@1.2.2
 teamgrid --help
 ```
 
@@ -55,9 +55,10 @@ Use the bounded `daily-work` preset only when the CLI needs ordinary task writes
 teamgrid auth login --preset daily-work
 ```
 
-Browser login rejects sensitive administrative, finance, credential-management, and PII scopes.
-Create an explicitly scoped personal credential in Developer Center and import it with `--manual`
-when a reviewed local workflow genuinely needs one.
+Published 1.2.1 rejects sensitive browser-login scopes. The 1.2.2 candidate supports sensitive
+scopes through an additional passkey confirmation when the owning cell enables developer
+consent. Current workspace rights still apply. A reviewed Personal Token can also be imported
+with `--manual`. See [browser login](/cli/browser-login/).
 
 ## When a browser cannot open
 

@@ -34,7 +34,7 @@ Teams durch den empfohlenen Einstieg.
 ## CLI und Browser-Login
 
 ```bash
-npm install --global @teamgrid/cli@1.2.1
+npm install --global @teamgrid/cli@1.2.2
 teamgrid auth login --manual
 teamgrid auth status --check
 teamgrid workspace

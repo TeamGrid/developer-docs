@@ -5,7 +5,7 @@ owner: Developer Platform
 reviewedAt: 2026-09-29
 ---
 
-`@teamgrid/api-client@1.2.1` is an ESM-only Node.js package. Its declared runtime range is Node.js
+`@teamgrid/api-client@1.2.2` is an ESM-only Node.js package. Its declared runtime range is Node.js
 22.14 through Node.js 24 (`>=22.14 <25`). Pin both the package and Node major in deployed builds.
 
 ## ESM setup

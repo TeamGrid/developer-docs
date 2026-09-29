@@ -8,7 +8,11 @@ const failures = []
 const packageManifest = JSON.parse(
   await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'),
 )
-const stableVersion = packageManifest.version
+const releaseStatus = JSON.parse(
+  await readFile(path.join(root, 'sources', 'release-status.json'), 'utf8'),
+)
+const stableVersion = releaseStatus.status === 'candidate'
+  ? releaseStatus.publishedVersion : packageManifest.version
 
 async function exists(file) {
   try {
@@ -234,6 +238,10 @@ if (redirects.includes('/changelog/:slug ')) {
 }
 
 const builtHome = await readFile(path.join(dist, 'index.html'), 'utf8')
+if (releaseStatus.status === 'candidate'
+  && !builtHome.includes(`Unpublished ${packageManifest.version} candidate.`)) {
+  failures.push('Candidate documentation must visibly identify the unpublished version.')
+}
 if (!builtHome.includes(`aria-label="Developer Platform ${stableVersion} compatibility"`)) {
   failures.push(`The production header does not advertise Developer Platform ${stableVersion}.`)
 }

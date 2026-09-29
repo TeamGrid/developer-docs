@@ -181,6 +181,16 @@ GET {{baseUrl}}/comments/{id}
 Authorization: Bearer {{token}}
 Accept: application/json
 
+### Edit a comment
+PATCH {{baseUrl}}/comments/{id}
+Authorization: Bearer {{token}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "text": "string"
+}
+
 ### Archive a comment
 DELETE {{baseUrl}}/comments/{id}
 Authorization: Bearer {{token}}

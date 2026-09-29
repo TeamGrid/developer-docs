@@ -3,6 +3,7 @@ import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
 const docsRoot = path.join(root, 'src', 'content', 'docs')
+const release = JSON.parse(await readFile(path.join(root, 'sources/release-status.json'), 'utf8'))
 const site = 'https://developer.teamgridapp.com'
 
 const links = [
@@ -22,8 +23,9 @@ const links = [
 
 const summary = [
   '# TeamGrid Developer Documentation',
+  ...(release.status === 'candidate' ? [`Unpublished ${release.version} candidate. Public packages remain ${release.publishedVersion}; new installation examples apply only after release.`, ''] : []),
   '',
-  '> Official documentation for TeamGrid API v1, legacy API v0, the TypeScript SDK, CLI, and optional read-only MCP server.',
+  '> Official documentation for TeamGrid API v1, legacy API v0, the TypeScript SDK, CLI, and MCP server with explicit read/write profiles.',
   '',
   'API v1 is the source of truth for new integrations. The SDK, CLI, and MCP server are clients of API v1. API v0 is retained for compatibility.',
   '',

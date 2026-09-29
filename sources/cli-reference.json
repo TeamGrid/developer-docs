@@ -1,26 +1,27 @@
 {
   "schemaVersion": 1,
   "package": "@teamgrid/cli",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "sourceRepository": "TeamGrid/developer-platform",
-  "sourceCommit": "16acc3339ee6b6f1e556c79520fba34d8662b8d5",
-  "sourceProgramSha256": "4e227c149e7cf9a304375b6181ed501cbe0f18b0651e2d95d27234eebfbf2e6a",
-  "apiContractSourceCommit": "3d122fd6232a726e8e712ce6918f98408c0965ff",
-  "reviewedAt": "2026-08-31",
+  "sourceCommit": "ccf18032d309725f8503a13461e62a15ff11faca",
+  "sourceProgramSha256": "b1bf5a3abec65212b4df78e14ce2384b80cf8a99e881df055721db58a2916df4",
+  "apiContractSourceCommit": "187fb961ce9a8b1d29b2e9f4c5cbab7f56e9d870",
+  "reviewedAt": "2026-09-29",
   "commanderVersion": "15.0.0",
   "groupCount": 54,
-  "commandNodeCount": 299,
-  "executableCommandCount": 243,
-  "mappedCliPathCount": 236,
-  "apiBackedExecutableCommandCount": 240,
-  "apiOperationCount": 237,
-  "argumentDefinitionCount": 173,
-  "commandOptionDefinitionCount": 569,
+  "commandNodeCount": 301,
+  "executableCommandCount": 245,
+  "mappedCliPathCount": 237,
+  "apiBackedExecutableCommandCount": 241,
+  "apiOperationCount": 238,
+  "argumentDefinitionCount": 175,
+  "commandOptionDefinitionCount": 573,
   "confirmationCommandCount": 40,
   "localCommands": [
     "doctor",
     "auth profiles",
-    "task-recurrence-operations wait"
+    "task-recurrence-operations wait",
+    "files download"
   ],
   "globalOptions": [
     {
@@ -158,7 +159,9 @@
               "variadic": false,
               "choices": [
                 "read-only",
-                "daily-work"
+                "daily-work",
+                "mcp-context",
+                "mcp-work"
               ],
               "defaultValue": "read-only"
             },
@@ -9390,6 +9393,54 @@
       "aliases": [],
       "commands": [
         {
+          "path": "comments update",
+          "fullPath": "teamgrid comments update",
+          "parentPath": "comments",
+          "syntax": "teamgrid comments update [options] <id>",
+          "description": "Edit a comment.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--data <json>",
+              "short": null,
+              "long": "--data",
+              "description": "comment update JSON or @file",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--if-match <etag>",
+              "short": null,
+              "long": "--if-match",
+              "description": "exact quoted ETag from the reviewed comment",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": "comments update",
+          "apiOperations": [
+            {
+              "method": "PATCH",
+              "path": "/comments/{id}",
+              "operationId": "updateComment",
+              "summary": "Edit a comment",
+              "scope": "comments:write"
+            }
+          ]
+        },
+        {
           "path": "comments list",
           "fullPath": "teamgrid comments list",
           "parentPath": "comments",
@@ -10191,6 +10242,47 @@
               "scope": "files:write"
             }
           ]
+        },
+        {
+          "path": "files download",
+          "fullPath": "teamgrid files download",
+          "parentPath": "files",
+          "syntax": "teamgrid files download [options] <id>",
+          "description": "Performs a local TeamGrid CLI operation.",
+          "aliases": [],
+          "arguments": [
+            {
+              "name": "id",
+              "description": "",
+              "required": true,
+              "variadic": false,
+              "choices": null
+            }
+          ],
+          "options": [
+            {
+              "flags": "--file <path>",
+              "short": null,
+              "long": "--file",
+              "description": "create a private output file without overwriting",
+              "mandatory": true,
+              "variadic": false,
+              "choices": null
+            },
+            {
+              "flags": "--max-bytes <number>",
+              "short": null,
+              "long": "--max-bytes",
+              "description": "download safety limit, maximum 50 MiB",
+              "mandatory": false,
+              "variadic": false,
+              "choices": null,
+              "defaultValue": 52428800
+            }
+          ],
+          "requiresConfirmation": false,
+          "canonicalCliPath": null,
+          "apiOperations": []
         },
         {
           "path": "files download-intent",
@@ -12438,60 +12530,60 @@
     }
   ],
   "generatedPages": {
-    "src/content/docs/cli/reference/index.md": "c316e7df77e112318aa003d4634fd741cc470029017dfe1cad7949ff018c0137",
-    "src/content/docs/cli/reference/doctor.md": "b329c2931587e717b4da4016223e03283ff0812f0617a88fe97fa1957900cd17",
-    "src/content/docs/cli/reference/auth.md": "fdd264733685a1661eb105874c82a84cfb6da5ee87d263361e99889e1f3c0954",
-    "src/content/docs/cli/reference/api-version.md": "f212afadeb72dce567fe0db0c35035c2e7e972e4c46a183a07b72d0c98b645ca",
-    "src/content/docs/cli/reference/workspace.md": "c1e6ffef1470983c4f6e13f3ceaa866f4cea55ec14850cb4f142d8afd37acd4b",
-    "src/content/docs/cli/reference/system.md": "cf19bbe2a507b357a9abd73539a6fa3466a68cd4dd966f0e6390789303dd1d08",
-    "src/content/docs/cli/reference/workspace-settings.md": "dce0d500f3687423d7ce821915a2389b735e7508092452f54516e8abf2d42779",
-    "src/content/docs/cli/reference/credentials.md": "3bda6f1bf9c2ca0e20d986cc23c510fba350cd2d55252d247288e9849b30f345",
-    "src/content/docs/cli/reference/service-accounts.md": "120f7e7d1d3ed77670a9772f49537c936b4a8a14ad8001ecd59443152ece4166",
-    "src/content/docs/cli/reference/events.md": "c474005a2accc2d46e1fc2b32ce49cd687566cd786b06f5c6796e141c88c9762",
-    "src/content/docs/cli/reference/projects.md": "79f8eb6e04c8971e2bee7972ba5e34e4087b6a7f89bffd1cb4c7097ced7fd428",
-    "src/content/docs/cli/reference/project-lifecycle-operations.md": "750dc90039ad16559475202da7b6b353f8dcfc34c3d2c4a916c97ca416a3eea4",
-    "src/content/docs/cli/reference/products.md": "6f3eda40e74653ff878026101421603df5647fd57043ac969b6979f45323daca",
-    "src/content/docs/cli/reference/product-groups.md": "56c6aa62b7c9a379f27881e671603c50db8261548e869dbca76a8cf2e0889736",
-    "src/content/docs/cli/reference/project-statements.md": "06be35072223371f3411dbb1389b559b1fc5a27e992f4cff5dbbe6bcd85a8282",
-    "src/content/docs/cli/reference/tasks.md": "6043ba0bab9e7a9375aa57e3894ea710c3ac78600cb6e6a43eec3629835db7aa",
-    "src/content/docs/cli/reference/task-recurrences.md": "6fbf3572b1380c6e8ed7f8fb66fb9a8c1dcbcdf2c72e9a2321d931ac8e3f2b9d",
-    "src/content/docs/cli/reference/task-recurrence-operations.md": "34245f8b9f0afd8d3662fbdd7cf2f09b4efee02a5aa9a358f2a3c158c2a9e138",
-    "src/content/docs/cli/reference/time-entries.md": "b4771675a4b8f2a500fff15767f44a5eafea720ea25914cfcc38d03c9c633d81",
-    "src/content/docs/cli/reference/call-notes.md": "b5ecb00d9adbf1c45908d2aa78d70365cc3cf02643d5be5bd6cfe8e519e6f16d",
-    "src/content/docs/cli/reference/contacts.md": "7a724a7a8a0c8bba3bf4986fb437788f428cd3f660f67ee6b5afb891f30f991d",
-    "src/content/docs/cli/reference/contact-groups.md": "754277c43fd8e2d4643b0d8de9c14ec9a87ab918b36eeac0620b2caa9d3657d0",
-    "src/content/docs/cli/reference/users.md": "962af88e799e3a6fb05bfbc771c51ebda820a514c36e44e670cacfb215a5f76d",
-    "src/content/docs/cli/reference/lists.md": "a36dba90181ecbb330134af20a35f067534e952e99c74ec03c4bd8ecdabf7516",
-    "src/content/docs/cli/reference/services.md": "d29e25d87323f26a90640d5efc15675ce1ac41a5564719ac1d99332b5382be93",
-    "src/content/docs/cli/reference/tags.md": "e8ea58dc3c1d65a85ed1851c5110cc8113c0615437030025f586c0df8f19e247",
-    "src/content/docs/cli/reference/custom-field-definitions.md": "45a49b9586b80703d19cdf7b8b8b8a021035c81802f753e4634309e89529bab9",
-    "src/content/docs/cli/reference/custom-field-values.md": "d8c637bc00acab27b15056218a547a0535b4ad6334ac3dfa8a759a586fc77d06",
-    "src/content/docs/cli/reference/project-templates.md": "044f346f3ea6653db1eaedbf9f1d0d02d29417f7736871ce1833e9fa03e5adf9",
-    "src/content/docs/cli/reference/project-template-instantiations.md": "4076bf1602db32a3247b0c4a526515e623f45b379351c48049e7118d8a1c4909",
-    "src/content/docs/cli/reference/planned-work.md": "b02ae7ae0d70d90f3a0976884e3e411cc04b469fd64b11a38cf3d645ccd626ee",
-    "src/content/docs/cli/reference/planned-work-operations.md": "30cc5acbe0e90d61d2a34ef022e4f71f673e0f97a889153b5e55db154ade6fa0",
-    "src/content/docs/cli/reference/changes.md": "1daf70ae5db67bfadb8b0aed59107007ea204fa85577237697bda62a31525d21",
-    "src/content/docs/cli/reference/audit-events.md": "89ef52712c0a632eceb7adccc606b0eb2070ad56aed3430bbda0e2549bfa0b8a",
-    "src/content/docs/cli/reference/webhook-deliveries.md": "4a259032051b13cc4520474f03a841204a6b927c10c626a7393794825b4abb61",
-    "src/content/docs/cli/reference/appointments.md": "e5e013a7a4362d55fd3f7ef16b3f6e1f2a03f0c6967c7ee2e6312f4b6f6ea070",
-    "src/content/docs/cli/reference/absences.md": "bb746dfa843493a01bd24a772dea7f9cea36679574a7fc3bcec6a55495189c2f",
-    "src/content/docs/cli/reference/availability.md": "c2982d1653f187a688ee6f96467ba2e43178e4802e0a73e3492dee2362d6430d",
-    "src/content/docs/cli/reference/activity.md": "85a43b5c1f61d20984afd6750b88358278365cb1e8a425644a50582e2790ddb3",
-    "src/content/docs/cli/reference/comments.md": "ab123dc188519efa3ae561356002cfc1dedb243e71247f799da7046d3f587e4a",
-    "src/content/docs/cli/reference/documents.md": "85dd7ad2eefe18b8c51cc0ac7f899ba9281d9a65c904edf73bf72d5bf4137394",
-    "src/content/docs/cli/reference/files.md": "f46bdeb2da27606ccb399f390317bea1b0fe313185ca63ee7d67810608813298",
-    "src/content/docs/cli/reference/file-upload-intents.md": "238081fc78e26a5f79847f68415908bd21556d9f4e232112bcfccdc947c0096f",
-    "src/content/docs/cli/reference/members.md": "d8c3efaae81c6e9a7be5eb9e44da112a29c9e19a7e81aaf37dee0756a9a400d0",
-    "src/content/docs/cli/reference/invitations.md": "8d58e21afea43246eb1c14d76f8d6690e1b95f0011e169d91c1fd2c8a2b3572b",
-    "src/content/docs/cli/reference/roles.md": "3c4ef8b1829211b462375e19372233bf5189bd519801159d282ef0ed5d5d9520",
-    "src/content/docs/cli/reference/groups.md": "b6914123bbee3ba37d779676bc84887477b650b0a5a040e33750b7cd8cf61e38",
-    "src/content/docs/cli/reference/search.md": "5f32fca3854b9d69208881de144f11799f2db2645e6dd3ad05886f248be1b708",
-    "src/content/docs/cli/reference/exports.md": "fd766b777c0db7dbada536f7bbb20602f425e1c151f502d2962c008d56cbf58a",
-    "src/content/docs/cli/reference/automation-actions.md": "14568b26c2a73f822b80c8f5f8dccc6968742264173568b8a0ee28a727c5cd56",
-    "src/content/docs/cli/reference/automation-definitions.md": "ab8c8d7e16d04f71bf813680e416d84a3f310d05f122c8fd601275494c7c948a",
-    "src/content/docs/cli/reference/automation-definition-versions.md": "c5a6002b39d08faf2f2996c46890c17adeffaaf73c8aceab2cefb33ff4285021",
-    "src/content/docs/cli/reference/automation-runs.md": "b37bca26999a8fcd942c7ec62edf7b14465f5f95dae46222231ffb98dd490f4c",
-    "src/content/docs/cli/reference/integration-installations.md": "81b93f742f655efd7bf6cebbf2192baf12ac0d8c4859d3ea71e873c25263b6a3",
-    "src/content/docs/cli/reference/webhooks.md": "6fe20f1fae5fac9b8bc4f85f4cdbc6b6c3d707e9a5486f00a2ab2fac40377e06"
+    "src/content/docs/cli/reference/index.md": "4c68dd3661488dd8342d58ff6edda453226ec92df0f885334a62f93258738c51",
+    "src/content/docs/cli/reference/doctor.md": "9692a15cea7948723c5d1b2a8763ccb6120a93480af5e697d8b8a914c8b0f86f",
+    "src/content/docs/cli/reference/auth.md": "ad49d1577ae0cdab49452c1f6e4947e3466b4d1600ed98d0d8de54166091d88d",
+    "src/content/docs/cli/reference/api-version.md": "ba32b17255e3a3edc328bfd13a130c5066edc40be68d8b43584e6a2bacf0497d",
+    "src/content/docs/cli/reference/workspace.md": "1ad83fe42ab1dc562bcff28f79f29179d3719c804959b9d33e8cd4f865ac233b",
+    "src/content/docs/cli/reference/system.md": "67c03158d38189a65ed70bf224467d71b32fbbc3438248d6812bf80d5ce6d652",
+    "src/content/docs/cli/reference/workspace-settings.md": "bddea10947ef1c04e4515707958acd6dd81ac0cc25a1f42bd3490d4dbb9e3b35",
+    "src/content/docs/cli/reference/credentials.md": "074c113c52e764fda60fd2e165e17b68a7331822b51b48f53a94d26af9672ef2",
+    "src/content/docs/cli/reference/service-accounts.md": "2897aec4cfdf0636631f80c1ad3fcb850154f309f4961d6f0febc65f9fb3e367",
+    "src/content/docs/cli/reference/events.md": "cba7131518f0301ce6b84b1f65a57bac4630f7102438ec565f0e32af02cb8615",
+    "src/content/docs/cli/reference/projects.md": "339ee1f56a43f61042bf1892bdeb221a8e20815d48805c77f16b2f32d4c5c8f2",
+    "src/content/docs/cli/reference/project-lifecycle-operations.md": "feea70897babd61b661b5ccdcfbec9f97f68f43117b4a239705da7cb2a832c85",
+    "src/content/docs/cli/reference/products.md": "f513af222e5e47a537d235ec7c3c502f6caf59cec6cda99b732c5af62ef3aa83",
+    "src/content/docs/cli/reference/product-groups.md": "6c7a28caa1ed1d4ca70d5ea27c3ec2fb581da3006582b3588068ca3561bb92ca",
+    "src/content/docs/cli/reference/project-statements.md": "987502da9da0c067299e2db8a388e71398cff4095ca2c595baa9411098dcf850",
+    "src/content/docs/cli/reference/tasks.md": "5fa9fbbbd0d8caafebf9658ec7533b2cf3268cdc648ef0924c0e1cd64dc69a7b",
+    "src/content/docs/cli/reference/task-recurrences.md": "532355978511d43f157351eac7480a3916b5a58c5032f0bdd0d267f2691a3724",
+    "src/content/docs/cli/reference/task-recurrence-operations.md": "5703c66a7355b6df1b156a2bebb105d44f18ee14342f053a391ccbd91104d8dc",
+    "src/content/docs/cli/reference/time-entries.md": "722893c18715c78be14af67d48dcf50d97ecd4c681a7e313878d8db7c5fe6134",
+    "src/content/docs/cli/reference/call-notes.md": "6fda30c0bf0849235be76d7cb0fd910154402d04820a9336ebfa6591d9a59acb",
+    "src/content/docs/cli/reference/contacts.md": "4b241886e2053083b5cff5e6e55f65623c4ed498845a792af1c441ee0451f0c2",
+    "src/content/docs/cli/reference/contact-groups.md": "3ff19324f2a1b72bcd8ca50d63149b1a31e47256383b9906b32376f8ae35cfff",
+    "src/content/docs/cli/reference/users.md": "df1bd526532a7bbf1513337502a6afddf19c1ba382b4aad5a6e25e9d7fac31fb",
+    "src/content/docs/cli/reference/lists.md": "6c1940181c2acba314033947e92075eae37345e3f37e87b22fc56afcfe8ad5dc",
+    "src/content/docs/cli/reference/services.md": "c87b8109fa0f1f9d3a9ce0e3f59d3dbf9eadb470b4e0d886266c8426f0e12236",
+    "src/content/docs/cli/reference/tags.md": "03f217b17016edb649e71bc38295dec5ee6678168721e6cbeaf23ea2e87191c2",
+    "src/content/docs/cli/reference/custom-field-definitions.md": "b9f3262ac9a20bd1db1720c4c20ed36cf772d5cc6748f974dc9b00c97b62101f",
+    "src/content/docs/cli/reference/custom-field-values.md": "1b77fd3ffbb17dc94a513971b265f44b3e0224c33812e474c14471d1b04c7c05",
+    "src/content/docs/cli/reference/project-templates.md": "f31d4e5a36a4b4315605480b98d059b82e768ebd1363489c649d79e6d1a88022",
+    "src/content/docs/cli/reference/project-template-instantiations.md": "b0a90fc252385fbbce0cb1fd17387e81af43b21515c1a582ea3749eb97090141",
+    "src/content/docs/cli/reference/planned-work.md": "3b26b1e7d6a596b05059fcf36f855dbe2314826576fc727f3aae6bc3f6d72897",
+    "src/content/docs/cli/reference/planned-work-operations.md": "a91c4df6241c85ec351c808cc328027b1b8fb33e04cd6b85a233f92b2f670c5b",
+    "src/content/docs/cli/reference/changes.md": "1697441446c816004fac12847551188a645cff0e7e58ffc9cc11f6e88ec0c113",
+    "src/content/docs/cli/reference/audit-events.md": "bf71e6a28c2f883556eda2ceb5576d4ef54d1e097ce4edc1a37c181254401261",
+    "src/content/docs/cli/reference/webhook-deliveries.md": "a3282eeb95b713deab34bb65ebf6ff0ca6b4bb8dae60d3545f6d044e075c225e",
+    "src/content/docs/cli/reference/appointments.md": "107792aaa9162cba3dc7eb146c02baaa380c3c61f13d9b7790527fc45b8c3c47",
+    "src/content/docs/cli/reference/absences.md": "b729e3e386be051fc059ac3134c918ccff3024dd460defb4061e5e0fe6bad149",
+    "src/content/docs/cli/reference/availability.md": "b733667ae34479eb5ad200ef638994e6a78075624a15d5705b0ab80e1004910e",
+    "src/content/docs/cli/reference/activity.md": "06aaa70ca1105eaab837d396dec53ecc05d4ace3a482ee4326f4415a6f093b8c",
+    "src/content/docs/cli/reference/comments.md": "f7b4d188b333890c63fcf800c52dc7999f74c499c85b471c22de515eb3003b8a",
+    "src/content/docs/cli/reference/documents.md": "f2f7f40d1415cf791859225d63989581104b830f1132be859e32054f61f4975c",
+    "src/content/docs/cli/reference/files.md": "699edf9a1ca8931b03e1252795b4eea9fcaba4c6ab6bd6b37319f026afdb5624",
+    "src/content/docs/cli/reference/file-upload-intents.md": "cf58b7a800311b22cf608bc27b3f5e51d340bf08270c194d6581d0f3f28e6746",
+    "src/content/docs/cli/reference/members.md": "08bf489e7b87178e5878dc8b9a2fea18fc773117d1e38d2b2761d1d74633109b",
+    "src/content/docs/cli/reference/invitations.md": "348c5e8078e653c408002b7855b519f02dbbbe1304ad5a153d80a894adef8089",
+    "src/content/docs/cli/reference/roles.md": "0c68f447010734746555f5c10e87d046668e76336b9c37e4b760c02bb9f22c43",
+    "src/content/docs/cli/reference/groups.md": "2c9d980026a06d27856c2b8b1a9cd686428c84de125026233a81db69fcf223e7",
+    "src/content/docs/cli/reference/search.md": "42ac1c1644c4315ee165a6ab64994fc4a807246ffe6822c936afa6e0eea9b5ce",
+    "src/content/docs/cli/reference/exports.md": "98df2e874bac1a0116d030e3b4d3b616bb66d2cd2652677a666b6f405a8cfe8a",
+    "src/content/docs/cli/reference/automation-actions.md": "99aceeec23cd2b1fa067bbbdc4d4a6ae29d5609d925792442bc117aeb7261d09",
+    "src/content/docs/cli/reference/automation-definitions.md": "bfac0609819e610a37d7800397a42c9f33e5d3d63050fbc95d7b1b81ccf1940b",
+    "src/content/docs/cli/reference/automation-definition-versions.md": "3293935ab1ffc6a2d94f39fdde08db1e39cceb0d712f8198a9c60a587a29cbf3",
+    "src/content/docs/cli/reference/automation-runs.md": "3cc5c044d8c3f7e1c22f278b979dadaeb762fdc46f0a5fb81dca18bcd25e2535",
+    "src/content/docs/cli/reference/integration-installations.md": "15a7fb34be470b088d3e15e322058604918525ea114a7dce957fad2d2ca347b8",
+    "src/content/docs/cli/reference/webhooks.md": "2162316f13521d9edab0aaacc777e4d11aec285b8693d5769d8b88e5fbc30aca"
   }
 }

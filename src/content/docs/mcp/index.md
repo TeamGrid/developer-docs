@@ -1,46 +1,66 @@
 ---
 title: TeamGrid MCP server
-description: Connect a supported AI host to a small, local, read-only TeamGrid tool surface backed by API v1.
+description: Connect an AI host to TeamGrid with explicit read or write profiles, bounded results and current workspace permissions.
 owner: Developer Platform
 reviewedAt: 2026-09-29
 ---
 
-`@teamgrid/mcp-server` is an optional local stdio adapter. It delegates every request to the
-official API v1 client. The default `core` profile exposes 22 operational read tools; the `all`
-profile exposes 36. Broader profiles are explicit opt-ins.
+**Unpublished candidate 1.2.2.** The public npm release remains 1.2.1 with four
+read-only profiles. The [candidate status](/mcp/candidate/) lists the remaining
+live qualification and release work. No hosted public endpoint is released.
+
+The candidate delegates business operations to the official API v1 client and
+exposes **208 tools: 84 reads and 124 writes**. It supports local stdio and a
+regional HTTP runtime with OAuth. Each request checks current permissions.
+
+## Choose a workflow
+
+| Need | Profile or entry point |
+| --- | --- |
+| Basic inspection | `core`: 22 operational reads; the default |
+| Contacts and colleagues | `collaboration`: 29 reads |
+| Configuration inspection | `governance`: 28 reads |
+| Existing broad read surface | The `all` profile exposes 36 curated reads |
+| Personal work context | `context` |
+| Task, time and comment work | `work` |
+| A specific business domain | One of the eleven domain profiles in the [reference](/mcp/reference/) |
+| All reviewed business tools | `full`: 208 tools, with current scopes and write gates still enforced |
+
+`all` keeps its existing meaning. Profiles and allow/deny filters select tools;
+they do not add permissions or bypass sharing, workspace locks or revision checks.
+Use the smallest profile suitable for the workflow.
+
+## Start locally
+
+The commands in this candidate documentation target 1.2.2 after publication.
+Until then, use a reviewed packed candidate for qualification or the published
+1.2.1 packages with their existing read-only behavior.
 
 ```bash
-npm install --global @teamgrid/cli@1.2.1 @teamgrid/mcp-server@1.2.1
+npm install --global @teamgrid/cli@1.2.2 @teamgrid/mcp-server@1.2.2
 teamgrid auth login --manual
 ```
 
-Create a Personal Token in **Settings → Team → Developer Center → Access** with only the required
-read scopes before importing it. New browser logins are disabled in DE and US as verified on
-29 September 2026; existing credentials remain usable. See [browser-login availability](/cli/browser-login/).
+Create a scoped Personal Token in **Settings → Team → Developer Center → Access**
+before importing it. Browser-login availability is a separate regional rollout;
+see [browser login](/cli/browser-login/). The stdio process uses the selected CLI
+credential store and opens no browser itself.
 
-## Deliberate boundaries
+## Results and boundaries
 
-- No remote TeamGrid MCP endpoint
-- No MCP-specific credential or database
-- No change-feed tool; the qualified API/SDK/CLI feed is a high-volume synchronization primitive
-- No write, archive, or remove tools
-- No writes and no mechanism for a model to submit `If-Match`
-- No session affinity or bypass around API authorization
-- No replacement for deterministic service integrations
-- No personal-data or governance tools in the default profile
-- No service reads in the default profile because service objects can include billing rates
-- No purchase prices in product tools, even when the credential also has finance scopes
-- No project-statement or webhook-delivery-history tools in any profile
-- No calendar, absence, availability, comment, document, file, administration, export, automation,
-  or integration-status tools in any profile
+Reads are bounded snapshots. Follow opaque cursors for complete listings; a search
+result is not a full inventory. Workspace context identifies the acting person
+when applicable and the effective time zone. Service credentials do not represent
+an invented human user.
 
-Use API v1 or the SDK for production services, the CLI for scripts and operator workflows, and MCP for human-supervised read workflows in a supported AI host.
+Writes require the exact workspace and any declared revision or idempotency key.
+Receipts distinguish completed, accepted, partial and uncertain outcomes. Inspect
+an uncertain result before retrying. Multi-tool workflows are not one transaction.
 
-Task and project reads include their developer revision. The MCP server remains read-only: no tool
-accepts an ETag, invokes a protected mutation, or polls project-template operation
-resources.
+Large documents use revision-bound sections. Private files and exports are available
+through bounded, freshly authorized resource reads; transfer URLs remain internal.
+Credential secrets, arbitrary HTTP or database access and durable synchronization
+streams stay outside the model tool surface.
 
-[Run your first MCP query](/mcp/first-query/), [configure an MCP host](/mcp/configuration/), browse
-the [complete 36-tool reference](/mcp/reference/), or [review the tools and security
-model](/mcp/tools-and-security/). If a connection or tool call fails, use the [MCP troubleshooting
-matrix](/mcp/troubleshooting/).
+[Run a first read](/mcp/first-query/), [configure a host](/mcp/configuration/), browse
+the [208-tool reference](/mcp/reference/) or review [security and writes](/mcp/tools-and-security/).

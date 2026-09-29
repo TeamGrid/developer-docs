@@ -61,16 +61,24 @@ Use `daily-work` only when ordinary task and time-entry writes are required:
 teamgrid auth login --preset daily-work
 ```
 
-Request additional non-sensitive scopes explicitly when a reviewed local workflow needs them:
+Request additional scopes explicitly when a reviewed local workflow needs them:
 
 ```bash
 teamgrid auth login --scope projects:read --scope tasks:read
 ```
 
-Browser login rejects sensitive administration, finance, credential-management, and PII scopes.
-Create a narrowly scoped Personal Token in **Settings → Team → Developer Center → Access**
-and import it with `--manual` for those cases. This restriction prevents a normal browser session
-from silently becoming a highly privileged developer credential.
+The 1.2.2 candidate supports sensitive administration, finance and PII scopes
+with a separate account-passkey confirmation bound to this exact authorization.
+The cell must enable browser login and developer consent; existing workspace
+permissions still apply. Published 1.2.1 rejects sensitive scopes in browser login.
+Manual import of a reviewed Personal Token remains available.
+
+Candidate presets also cover MCP workflows. Use the access plan to obtain exact
+scope arguments for the selected profile:
+
+```bash
+teamgrid-mcp --tool-profile work --explain-scopes
+```
 
 ## When the browser does not open
 
@@ -158,7 +166,7 @@ disabling the TeamGrid member immediately affects their personal credentials.
 | Browser waits or terminal times out | Confirm the callback can reach the CLI host's IPv4 loopback address, then start a new login |
 | Pairing phrases differ | Deny the request and start again; never approve mismatched phrases |
 | Workspace is missing | Confirm membership, Developer entitlement, workspace status, and regional availability |
-| Requested scope is rejected | Use a smaller preset or create a reviewed Personal Token for sensitive scopes |
+| Requested scope is rejected | Check the package/cell version, preset and current permissions; sensitive candidate scopes require passkey confirmation |
 | Profile already exists | Use another profile or deliberately retry with `--replace` |
 | Credential store is unavailable | Restore the native store; the CLI never falls back to plaintext storage |
 | `auth status --check` returns unauthorized | Revoke stale credentials if necessary and run browser login again |

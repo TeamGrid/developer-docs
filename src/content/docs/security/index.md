@@ -40,8 +40,9 @@ automatically converted.
 ## Sensitive resource scopes
 
 Finance scopes are overlays and must be paired with the corresponding base product or
-project-statement scope. Do not grant them to an MCP credential: MCP product tools remove
-`purchasePrice`, and project statements are unavailable in every tool profile. Call notes, contacts,
+project-statement scope. Preserved MCP read profiles remove
+`purchasePrice`. The 1.2.2 candidate finance profiles support explicitly scoped financial reads
+and writes; profile selection itself grants no finance authority. Call notes, contacts,
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
 
@@ -54,15 +55,16 @@ endpoint.
 Custom-field values and planned-work schedules can contain customer, personnel, or workload data.
 Their write operations require strong compare-and-set revisions so integrations cannot silently
 overwrite concurrent edits. Project templates can encode an organization's workflow structure.
-All three families and their operation status resources are unavailable in every MCP profile.
+The 1.2.2 MCP candidate exposes these reviewed families in explicit domain profiles and `full`,
+with the same revisions, permissions and operation-status contracts.
 
 Calendar, absence, availability, comments, documents, and files can contain personal or free-form
 content. Administration PII, export jobs, automation metadata, and integration-installation status
 use sensitive scopes and should have dedicated credentials. Export download capabilities are sent
 only in `X-TeamGrid-Export-Download-Intent`; never place them in URLs, logs, command arguments, or AI
-transcripts. All of these resource families remain unavailable to MCP except bounded federated
-search, which is a separately curated sensitive tool and still enforces every requested domain
-scope.
+transcripts. The 1.2.2 MCP candidate exposes reviewed operations for these families and bounded private
+file/export resources. Transfer capabilities stay internal. Every requested domain scope and
+current workspace permission remains enforced; secrets never belong in the model transcript.
 
 ## Webhooks
 

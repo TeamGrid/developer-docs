@@ -21,11 +21,11 @@ if (reference.package?.sourceCommit !== packages.sourceCommit) {
 const tools = reference.tools || []
 const toolNames = tools.map((tool) => tool.name)
 const uniqueToolNames = new Set(toolNames)
-if (tools.length !== 36 || uniqueToolNames.size !== 36) {
-  failures.push(`Expected 36 unique MCP tools, found ${tools.length}/${uniqueToolNames.size}.`)
+if (tools.length !== 208 || uniqueToolNames.size !== 208) {
+  failures.push(`Expected 208 unique MCP tools, found ${tools.length}/${uniqueToolNames.size}.`)
 }
 
-for (const [profile, expected] of Object.entries({ core: 22, collaboration: 29, governance: 28, all: 36 })) {
+for (const [profile, expected] of Object.entries({ core: 22, collaboration: 29, governance: 28, all: 36, full: 208 })) {
   const names = reference.profiles?.[profile] || []
   if (names.length !== expected || new Set(names).size !== expected) {
     failures.push(`MCP ${profile} profile must contain ${expected} unique tools.`)
@@ -34,8 +34,8 @@ for (const [profile, expected] of Object.entries({ core: 22, collaboration: 29, 
     if (!uniqueToolNames.has(name)) failures.push(`MCP ${profile} profile contains unknown tool ${name}.`)
   }
 }
-if (JSON.stringify([...reference.profiles.all].sort()) !== JSON.stringify([...toolNames].sort())) {
-  failures.push('MCP all profile does not contain the exact tool registry.')
+if (JSON.stringify([...reference.profiles.full].sort()) !== JSON.stringify([...toolNames].sort())) {
+  failures.push('MCP full profile does not contain the exact tool registry.')
 }
 
 // Check the onboarding prose too: internally consistent generated references do not
@@ -49,18 +49,18 @@ const [firstQuery, troubleshooting, configuration] = await Promise.all([
 if (!firstQuery.includes(`${reference.profiles.core.length} read-only tools`)) {
   failures.push('MCP first-query tool count differs from the registered core profile.')
 }
-for (const [profile, names] of Object.entries(reference.profiles)) {
+for (const [profile, names] of Object.entries(reference.profiles).filter(([name]) => ['core', 'collaboration', 'governance', 'all'].includes(name))) {
   const marker = profile === 'core' ? `\`${profile}\` has ${names.length}` : `\`${profile}\` ${names.length}`
   if (!troubleshooting.includes(marker)) {
     failures.push(`MCP troubleshooting has a stale ${profile} tool count.`)
   }
 }
-if (configuration.includes('before enabling any write-capable profile')) {
-  failures.push('MCP configuration must not advertise an unavailable write profile.')
+if (!configuration.includes('unpublished candidate')) {
+  failures.push('MCP configuration must identify the unpublished candidate.')
 }
 
-const policies = capabilities.operationPolicy.filter((operation) => operation.mcp?.exposure === 'read')
-if (policies.length !== 36) failures.push(`Expected 36 MCP-exposed policies, found ${policies.length}.`)
+const policies = capabilities.operationPolicy.filter((operation) => ['read', 'gated-write'].includes(operation.mcp?.exposure))
+if (policies.length !== 208) failures.push(`Expected 208 MCP-exposed policies, found ${policies.length}.`)
 const toolsByName = new Map(tools.map((tool) => [tool.name, tool]))
 for (const policy of policies) {
   const tool = toolsByName.get(policy.mcp.tool)
@@ -78,19 +78,18 @@ for (const policy of policies) {
 
 const referenceDirectory = path.join(root, 'src', 'content', 'docs', 'mcp', 'reference')
 const pages = (await readdir(referenceDirectory)).filter((file) => file.endsWith('.md')).sort()
-if (pages.length !== 37 || !pages.includes('index.md')) {
-  failures.push(`Expected MCP index plus 36 tool pages, found ${pages.length} Markdown pages.`)
+if (pages.length !== 209 || !pages.includes('index.md')) {
+  failures.push(`Expected MCP index plus 208 tool pages, found ${pages.length} Markdown pages.`)
 }
 for (const tool of tools) {
   if (tool.inputSchema?.additionalProperties !== false) {
     failures.push(`${tool.name} does not preserve a strict input schema.`)
   }
-  if (
-    tool.annotations?.readOnlyHint !== true
-    || tool.annotations?.idempotentHint !== true
-    || tool.annotations?.destructiveHint !== false
-    || tool.annotations?.openWorldHint !== false
-  ) {
+  const readOnly = tool.exposure === 'read'
+  if (tool.annotations?.readOnlyHint !== readOnly
+    || typeof tool.annotations?.idempotentHint !== 'boolean'
+    || typeof tool.annotations?.destructiveHint !== 'boolean'
+    || typeof tool.annotations?.openWorldHint !== 'boolean') {
     failures.push(`${tool.name} has stale MCP safety annotations.`)
   }
   if (tool.output?.maxSerializedBytes !== reference.resultContract?.maxSerializedBytes) {
@@ -122,4 +121,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('MCP reference integrity passed: 36 tools, strict schemas, exact profiles, API mappings, and 37 generated pages.')
+console.log('MCP reference integrity passed: 208 tools, strict schemas, exact profiles, API mappings, and 209 generated pages.')

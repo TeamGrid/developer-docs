@@ -5,10 +5,12 @@ owner: Developer Experience
 reviewedAt: 2026-09-29
 ---
 
-Install the stable packages and authenticate the CLI first:
+These instructions target the **unpublished candidate 1.2.2**. Install from npm
+only after publication, or use reviewed packed artifacts for qualification.
+Public 1.2.1 supports the four existing read profiles. Authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.2.1 @teamgrid/mcp-server@1.2.1
+npm install --global @teamgrid/cli@1.2.2 @teamgrid/mcp-server@1.2.2
 teamgrid auth login --manual
 teamgrid auth status --check
 ```
@@ -79,7 +81,7 @@ teamgrid-mcp --profile default --tool-profile core \
 
 For isolated process environments, `TEAMGRID_MCP_ALLOW_TOOLS` and
 `TEAMGRID_MCP_DENY_TOOLS` provide the same narrowing controls. Tool filters do not grant API scopes
-and cannot register a write or secret-bearing operation.
+and cannot enable any operation outside the selected profile or expose credential secrets.
 
 ## Verify the connection
 
@@ -102,3 +104,32 @@ an authorization boundary in addition to the scopes held by the credential.
 Continue with the [first MCP query](/mcp/first-query/), look up the exact contract in the [MCP tool
 reference](/mcp/reference/), or diagnose a failure with the [MCP troubleshooting
 matrix](/mcp/troubleshooting/).
+
+## Candidate write setup
+
+Before selecting `work`, a domain write profile or `full`, inspect the required
+scopes and readiness without changing business data:
+
+```bash
+teamgrid-mcp --tool-profile work --explain-scopes
+teamgrid-mcp --profile default --tool-profile work --check
+```
+
+Use the exact scope arguments printed by the access plan when signing in. Sensitive
+scopes require an account passkey and cell-enabled developer consent. A successful
+access check establishes authentication, scope coverage and required CAS protocol;
+it does not replace live conflict and business-permission qualification.
+
+## Remote OAuth runtime
+
+The candidate implements a regional HTTP MCP runtime. No public hosted URL is
+released yet. Once a cell is qualified, its published endpoint metadata will
+identify the regional authorization server. A compatible host must support
+resource-bound authorization code with PKCE S256, refresh-token rotation and
+incremental consent. Do not paste a local API token into a remote MCP connection.
+
+Connect using only the published endpoint for the workspace's owning cell, then
+review the client, workspace and scopes in the TeamGrid browser consent screen.
+Sensitive additions require a passkey confirmation. Disconnect through the owning
+workspace's connection management to revoke the grant family. Host and live-cell
+qualification are tracked in the [candidate status](/mcp/candidate/).

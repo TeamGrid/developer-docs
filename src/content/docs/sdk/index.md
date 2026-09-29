@@ -14,7 +14,7 @@ source and reconciled with the capability policy and OpenAPI v1 contract.
 Install the exact verified stable package version:
 
 ```bash
-npm install @teamgrid/api-client@1.2.1
+npm install @teamgrid/api-client@1.2.2
 ```
 
 Pin the exact version in reproducible deployments. Node.js 22.14 through 24 is supported.

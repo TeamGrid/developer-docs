@@ -2,7 +2,7 @@
 title: Workspace administration
 description: Manage members, invitations, roles, and groups with explicit PII overlays and strong revisions.
 owner: Developer Platform
-reviewedAt: 2026-07-29
+reviewedAt: 2026-09-29
 ---
 
 The administration resources are intended for tightly controlled workspace-management services.
@@ -28,8 +28,9 @@ default. A caller needs the relevant base read scope **and** `members:pii:read` 
 fields. The PII overlay does not grant member or invitation access on its own.
 
 Use separate credentials for administration and operational data access. Administration scopes are
-marked sensitive in the canonical scope contract and all administration operations are forbidden in
-every MCP profile.
+marked sensitive in the canonical scope contract. The 1.2.2 MCP candidate exposes reviewed
+administration operations in `admin-write` and `full`; sensitive CLI/OAuth consent requires a
+passkey. Review invitations and role changes before authorizing their effects.
 
 ## Safe mutations
 

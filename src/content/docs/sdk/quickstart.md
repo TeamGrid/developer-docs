@@ -8,7 +8,7 @@ reviewedAt: 2026-09-29
 ## Install
 
 ```bash
-npm install @teamgrid/api-client@1.2.1
+npm install @teamgrid/api-client@1.2.2
 ```
 
 ## Create a client

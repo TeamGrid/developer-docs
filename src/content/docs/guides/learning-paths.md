@@ -2,7 +2,7 @@
 title: Choose your learning path
 description: Follow a customer-focused path from first authentication to a production-ready API, SDK, CLI, or MCP workflow.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 Every TeamGrid interface uses the same API v1 resources, regional routing, scopes, and security
@@ -64,7 +64,9 @@ Choose this path for human-supervised reads in a trusted MCP host.
 5. Review the host's transcript, extension, retention, and data-handling behavior.
 6. Expand beyond `core` only after documenting why the additional data is required.
 
-MCP is deliberately read-only and is not a foundation for deterministic background integrations.
+Start with reads. The 1.2.2 candidate adds explicit work and domain write profiles: review
+the scope plan, confirm the target and fresh revision, and verify the resulting receipt.
+Use API/SDK integrations for deterministic background work.
 
 ## Shared completion criteria
 

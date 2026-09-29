@@ -81,7 +81,7 @@ reuse the pre-mutation validator.
 
 ## Other protected resources
 
-Another 47 operations retain their domain-specific compare-and-set contracts:
+Another 48 operations retain their domain-specific compare-and-set contracts:
 
 | Resource family | Protected mutations |
 | --- | ---: |

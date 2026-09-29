@@ -20,8 +20,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 4323',
-    reuseExistingServer: !process.env.CI,
+    // Test the built site. Astro dev can detach in agent environments, which
+    // makes Playwright lose process ownership and cleanup before startup.
+    command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4323',
+    reuseExistingServer: false,
     timeout: 120_000,
     url: 'http://127.0.0.1:4323',
   },

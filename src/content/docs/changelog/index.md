@@ -8,7 +8,8 @@ reviewedAt: 2026-09-29
 ## Current platform
 
 API v1 uses the stable `1.2.0` contract while the SDK, CLI, and MCP npm packages are synchronized
-at stable version `1.2.1`.
+at published version `1.2.1`. These documentation changes describe the unpublished
+`1.2.2` candidate; [candidate status](/mcp/candidate/) identifies pending release checks.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -18,6 +19,15 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
+
+## Unpublished 1.2.2 candidate · 2026-09-29
+
+- Added regional OAuth, explicit work/domain profiles, 208 MCP tools and private resources.
+- Added purpose-bound passkey consent for sensitive CLI and OAuth permissions.
+- Added comment updates, user/time-zone context and explicit partial/uncertain results.
+- Corrected deadlines, cancellation, schema validation and server retry-delay handling.
+- Regenerated complete SDK/CLI/MCP references and documented candidate/live availability.
+- Hosted routing, real-client/cell qualification and independent release reviews remain open.
 
 ## Documentation alignment · 2026-09-29
 

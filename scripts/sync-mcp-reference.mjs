@@ -53,6 +53,7 @@ function baseProfile(name, profiles) {
   if (profiles.collaboration.includes(name)) return 'collaboration'
   if (profiles.governance.includes(name)) return 'governance'
   if (profiles.all.includes(name)) return 'all'
+  if (profiles.full.includes(name)) return 'full'
   fail(`Tool '${name}' is not assigned to an MCP tool profile.`)
 }
 
@@ -99,7 +100,7 @@ function securityClassification(name) {
   if (name.includes('time_entr')) {
     return {
       classification: 'work-record-data',
-      summary: 'Time-entry records expose individual work activity. MCP removes billable, billed, and billedAt even when the credential has billing access.',
+      summary: 'Time-entry records expose individual work activity. Preserved read profiles remove billing fields; candidate domain profiles require the relevant billing scopes.',
     }
   }
   if (name === 'teamgrid_workspace_get') {
@@ -122,6 +123,7 @@ function resourceLabel(name) {
 }
 
 function examplePrompt(tool) {
+  if (!tool.annotations.readOnlyHint) return `Prepare a ${tool.name} operation for my chosen target. Resolve IDs, read current state and revisions, show the intended change, then report its confirmed or uncertain outcome without automatic retries.`
   if (tool.name === 'teamgrid_workspace_get') {
     return 'Use TeamGrid to show the authenticated workspace and its region. Do not call any write-capable tool.'
   }
@@ -172,10 +174,10 @@ function typicalErrors(tool) {
         'The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata.',
     },
     {
-      condition: 'The serialized result exceeds 256 KiB.',
+      condition: 'A read exceeds 256 KiB, or the connection ends while awaiting a write.',
       result: tool.output?.pagination
         ? 'The tool returns `result_too_large`. Request a smaller page or narrower filters.'
-        : 'The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI.',
+        : !tool.annotations.readOnlyHint ? 'Inspect the outcome and status/resume information. An interrupted wait does not prove rollback; never blindly repeat the write.' : 'Use a bounded section, smaller supported read, private resource or authorized App/CLI transfer.',
     },
     {
       condition: 'An unknown input property is supplied.',
@@ -190,33 +192,34 @@ function outputContract(tool, maxToolResultBytes) {
   const isSearch = tool.name === 'teamgrid_search'
   const redactions = []
   if (tool.name === 'teamgrid_product_get' || tool.name === 'teamgrid_products_list') {
-    redactions.push('`purchasePrice` is removed even when the credential has a finance overlay.')
+    redactions.push('`purchasePrice` is removed in the preserved read profiles; candidate domain profiles use current finance permissions.')
   }
   if (tool.name === 'teamgrid_webhook_get' || tool.name === 'teamgrid_webhooks_list') {
     redactions.push('Webhook read responses do not contain the reveal-once signing secret.')
   }
-  if (tool.name.includes('custom_field_definition')) {
+  if (tool.annotations.readOnlyHint && tool.name.includes('custom_field_definition')) {
     redactions.push('The tool exposes canonical definitions, not legacy defaults or per-resource values.')
   }
   return {
-    format:
-      'The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.',
-    kind: isSearch ? 'bounded-search' : hasCursor ? 'cursor-page' : 'single-resource',
+    format: tool.annotations.readOnlyHint
+      ? 'The bounded API result is returned as MCP structured content and equivalent JSON text.'
+      : 'A compact mutation receipt includes target and revision when available; outcome metadata distinguishes accepted, complete, partial and uncertain results.',
+    kind: !tool.annotations.readOnlyHint ? 'mutation-receipt' : isSearch ? 'bounded-search' : hasCursor ? 'cursor-page' : 'single-resource',
     maxSerializedBytes: maxToolResultBytes,
     pagination: hasCursor
       ? {
           input: 'Pass the opaque `meta.page.nextCursor` value as `cursor`.',
-          maxPageSize: tool.inputSchema.properties.limit.maximum,
+          maxPageSize: tool.inputSchema.properties.limit?.maximum || 100,
           nextCursor: 'meta.page.nextCursor',
         }
       : null,
     redactions,
-    searchLimit: isSearch ? tool.inputSchema.properties.limit.maximum : null,
+    searchLimit: isSearch ? (tool.inputSchema.properties.limit?.maximum || 50) : null,
   }
 }
 
 function renderReferenceIndex(reference) {
-  const sections = ['core', 'collaboration', 'governance', 'all']
+  const sections = ['core', 'collaboration', 'governance', 'all', 'full']
     .map((profile) => {
       const rows = reference.tools
         .filter((tool) => tool.baseProfile === profile)
@@ -231,14 +234,15 @@ function renderReferenceIndex(reference) {
     .join('\n\n')
   return `---
 title: MCP tool reference
-description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 36 TeamGrid MCP tools.
+description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for the 208 TeamGrid MCP candidate tools.
 owner: Developer Platform
 reviewedAt: 2026-09-29
 ---
 
-This reference is generated from the tool registry shipped in
+**Unpublished release candidate.** The public package remains 1.2.1.
+This reference is generated from the candidate tool registry in
 \`@teamgrid/mcp-server@${reference.package.version}\` and joined with the pinned API v1 capability
-contract. It contains ${reference.tools.length} read-only tools. Unknown input properties are
+contract. It contains ${reference.tools.length} business tools with explicit safety annotations. Unknown input properties are
 rejected by every tool schema.
 
 ## Profiles at a glance
@@ -248,7 +252,10 @@ rejected by every tool schema.
 | \`core\` | ${reference.profiles.core.length} | Operational workspace, project, task, time-entry, list, tag, product, and product-group reads |
 | \`collaboration\` | ${reference.profiles.collaboration.length} | Contacts, contact groups, call notes, and users |
 | \`governance\` | ${reference.profiles.governance.length} | Custom-field definitions, services, and webhook configuration |
-| \`all\` | ${reference.profiles.all.length} | Union of both broader profiles plus curated federated search |
+| \`all\` | ${reference.profiles.all.length} | Preserved read-only union |
+| \`full\` | ${reference.profiles.full.length} | Complete candidate inventory; explicit write opt-in |
+
+${Object.entries(reference.profiles).filter(([name]) => !['core', 'collaboration', 'governance', 'all', 'full'].includes(name)).map(([name, tools]) => `- \`${name}\`: ${tools.length} tools`).join('\n')}
 
 Select the narrowest profile your workflow needs. A profile controls which tools are advertised;
 the API credential scopes and resource grants still control which data each advertised tool can
@@ -259,8 +266,8 @@ ${sections}
 ## Shared result contract
 
 Every successful value is returned twice: as MCP structured content and as the same serialized JSON
-in a text content block. Results are capped at ${Math.round(reference.resultContract.maxSerializedBytes / 1024)} KiB. A larger result becomes
-\`result_too_large\`; reduce a list page or narrow the filters. API and SDK failures preserve safe machine-readable codes and available status, request ID, and
+in a text content block. Results are capped at ${Math.round(reference.resultContract.maxSerializedBytes / 1024)} KiB. Large reads use bounded pages or document sections. Mutations use small receipts;
+accepted, partial and uncertain outcomes must not be mistaken for completed writes. API and SDK failures preserve safe machine-readable codes and available status, request ID, and
 retry metadata, with developer secrets redacted. Unknown failures use \`teamgrid_request_failed\`.
 
 List tools use opaque cursor pagination. Pass \`meta.page.nextCursor\` back as \`cursor\`; never
@@ -274,6 +281,7 @@ Continue with the [first MCP query](/mcp/first-query/), [configuration](/mcp/con
 
 function renderToolPage(tool, reference) {
   const inputSchema = JSON.stringify(tool.inputSchema, null, 2)
+  const variants = Object.entries(tool.profileInputSchemas).map(([profile, schema]) => `### Input in ${profile}\n\n\`\`\`json\n${JSON.stringify(schema, null, 2)}\n\`\`\``).join('\n\n')
   const availableProfiles = tool.availableIn.map((profile) => `\`${profile}\``).join(', ')
   const requiredScopes = tool.scopes.required.map((scope) => `\`${scope}\``).join(', ')
   const conditionalScopes = tool.scopes.conditional.length
@@ -298,23 +306,27 @@ function renderToolPage(tool, reference) {
     .join('\n')
   return `---
 title: ${tool.name}
-description: ${JSON.stringify(tool.description)}
+description: ${JSON.stringify(`Input schema, permissions, API mapping and ${tool.annotations.readOnlyHint ? 'read' : 'write'} behavior for ${tool.name}.`)}
 owner: Developer Platform
 reviewedAt: 2026-09-29
 ---
 
-\`${tool.name}\` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
+\`${tool.name}\` is a ${tool.annotations.readOnlyHint ? 'read-only' : 'write-capable'} TeamGrid MCP tool. It is introduced by the
 \`${tool.baseProfile}\` profile and is advertised in: ${availableProfiles}.
+
+${tool.description}
 
 ## Input schema
 
-This is the exact JSON Schema advertised by \`@teamgrid/mcp-server@${reference.package.version}\`:
+**Unpublished candidate:** this is the exact JSON Schema advertised by \`@teamgrid/mcp-server@${reference.package.version}\`:
 
 \`\`\`json
 ${inputSchema}
 \`\`\`
 
-The schema is strict: properties not shown above are rejected before TeamGrid receives a request.
+The schema above is for \`full\`. Properties not in the selected profile schema are rejected.
+
+${variants}
 
 ## Scope and API operation
 
@@ -331,14 +343,14 @@ ${tool.output.format} ${pagination} The serialized result may not exceed
 ${Math.round(tool.output.maxSerializedBytes / 1024)} KiB.${redactions}
 
 The linked API operation is the canonical reference for the response envelope and resource schema.
-MCP does not add write fields, an ETag input, or a hidden authorization path.
+Write tools preserve their declared revision/idempotency contract and require current permissions.
+Accepted jobs provide status/resume information; uncertain writes must not be replayed blindly.
 
 ## Security classification
 
 **${tool.security.classification}:** ${tool.security.summary}
 
-The server advertises MCP annotations \`readOnlyHint: true\`, \`idempotentHint: true\`,
-\`destructiveHint: false\`, and \`openWorldHint: false\`. The host and model can still retain tool
+The exact safety annotations are \`${JSON.stringify(tool.annotations)}\`. The host and model can still retain tool
 arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.
 
 ## Example prompt
@@ -395,16 +407,22 @@ const maxToolResultBytes = Number(maxResultMatch[1]) * Number(maxResultMatch[2])
 
 const extractor = `
 import { createTeamGridMcpServer } from './dist/server.js'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
+import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
+import { toolsByProfile } from './dist/toolProfiles.js'
 const fakeClient = new Proxy({}, { get: () => new Proxy({}, { get: () => async () => ({ data: [], meta: {} }) }) })
 const result = {}
-for (const profile of ['core', 'collaboration', 'governance', 'all']) {
+for (const profile of Object.keys(toolsByProfile)) {
   const server = createTeamGridMcpServer(fakeClient, { toolProfile: profile })
   const client = new Client({ name: 'teamgrid-docs-extractor', version: '1.0.0' })
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)])
-  result[profile] = (await client.listTools()).tools
+  result[profile] = []
+  let cursor
+  do {
+    const page = await client.listTools(cursor ? { cursor } : undefined)
+    result[profile].push(...page.tools)
+    cursor = page.nextCursor
+  } while (cursor)
   await client.close()
   await server.close()
 }
@@ -414,7 +432,7 @@ const extracted = spawnSync(process.execPath, ['--input-type=module'], {
   cwd: mcpPackageRoot,
   encoding: 'utf8',
   input: extractor,
-  maxBuffer: 10 * 1024 * 1024,
+  maxBuffer: 32 * 1024 * 1024,
 })
 if (extracted.status !== 0) {
   fail(
@@ -440,11 +458,11 @@ for (const policy of capabilities.operationPolicy || []) {
   mappings.set(policy.mcp.tool, policy)
 }
 
-const allToolsByName = new Map(extractedProfiles.all.map((tool) => [tool.name, tool]))
-const tools = [...profiles.all].map((name) => {
+const allToolsByName = new Map(extractedProfiles.full.map((tool) => [tool.name, tool]))
+const tools = [...profiles.full].map((name) => {
   const advertised = allToolsByName.get(name)
   const mapping = mappings.get(name)
-  if (!advertised) fail(`tool '${name}' is missing from the extracted all-profile registry.`)
+  if (!advertised) fail(`tool '${name}' is missing from the extracted full-profile registry.`)
   if (!mapping) fail(`tool '${name}' is missing from developer-capabilities.json.`)
   const openApiMatch = findOpenApiOperation(openApi, mapping.operationId)
   const requiredScopes = [
@@ -454,6 +472,7 @@ const tools = [...profiles.all].map((name) => {
   const conditionalScopes = openApiMatch.operation['x-teamgrid-conditional-scopes'] || []
   const tool = {
     annotations: advertised.annotations,
+    exposure: mapping.mcp.exposure,
     apiOperations: [
       {
         href: operationHref(mapping.operationId),
@@ -466,10 +485,16 @@ const tools = [...profiles.all].map((name) => {
     baseProfile: baseProfile(name, profiles),
     description: advertised.description,
     inputSchema: advertised.inputSchema,
+    profileInputSchemas: Object.fromEntries(Object.entries(extractedProfiles).flatMap(([profile, tools]) => {
+      const variant = tools.find(tool => tool.name === name)
+      return variant && JSON.stringify(variant.inputSchema) !== JSON.stringify(advertised.inputSchema)
+        ? [[profile, variant.inputSchema]] : []
+    })),
     name,
     scopes: { conditional: conditionalScopes, required: [...new Set(requiredScopes)] },
     security: securityClassification(name),
   }
+  if (!advertised.annotations.readOnlyHint) tool.security = { classification: 'workspace-mutation', summary: 'This changes workspace state and may trigger business or external effects. Use its exact scope, revision and idempotency contract; profile selection grants no authority.' }
   tool.output = outputContract(tool, maxToolResultBytes)
   tool.examplePrompt = examplePrompt(tool)
   tool.typicalErrors = typicalErrors(tool)

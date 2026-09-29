@@ -1,11 +1,11 @@
 ---
 title: "teamgrid auth"
-description: "4 executable @teamgrid/cli commands in the auth group, generated from CLI 1.2.1."
+description: "4 executable @teamgrid/cli commands in the auth group, generated from CLI 1.2.2."
 owner: Developer Experience
-reviewedAt: 2026-08-31
+reviewedAt: 2026-09-29
 ---
 
-> Generated from `@teamgrid/cli@1.2.1` at Developer Platform commit `16acc3339ee6`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.2.2` at Developer Platform commit `ccf18032d309`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 manage local credential profiles.
 
@@ -54,7 +54,7 @@ teamgrid auth login [options]
 | `--manual` | paste a reveal-once API v1 credential | No | — | — |
 | `--no-browser` | print the authorization URL instead of opening a browser | No | — | — |
 | `--replace` | replace an existing local profile without revoking its prior credential | No | — | — |
-| `--preset <preset>` | browser-login permission preset | No | `read-only`, `daily-work` | `read-only` |
+| `--preset <preset>` | browser-login permission preset | No | `read-only`, `daily-work`, `mcp-context`, `mcp-work` | `read-only` |
 | `--scope <scope>` | request an exact scope; repeat or comma-separate | No | — | `[]` |
 | `--token-stdin` | read the credential from standard input | No | — | — |
 

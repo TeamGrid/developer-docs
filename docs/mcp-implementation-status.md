@@ -1,6 +1,6 @@
 # MCP: Umsetzung der beiden Prüfungen
 
-Stand: 29. September 2026. Paketkandidat 1.2.2; keine Production-Freigabe.
+Stand: 29. September 2026. Paketkandidat 1.2.2; keine Hosted-MCP-Freigabe.
 Die öffentlich veröffentlichte Paketversion bleibt 1.2.1. Implementierung,
 lokale Prüfungen, Host-Abnahme und Veröffentlichung sind getrennte Nachweise.
 
@@ -74,18 +74,48 @@ CI-Commits, nicht auf einen veröffentlichten Paket- oder Production-Stand:
 
 ## Noch vor einer vollständigen Freigabe abzuschließen
 
+### Inzwischen live verifiziert
+
+App `6b03f94757df87bb8a276c1ae1b6cf491f49ed33` und API
+`0d37827550279f35d992c6d60528d79df401011f` sind nach erfolgreicher
+[Staging-Abnahme](https://github.com/TeamGrid/teamgrid/actions/runs/36635445839)
+in [DE](https://github.com/TeamGrid/teamgrid/actions/runs/36636040345) und
+[US](https://github.com/TeamGrid/teamgrid/actions/runs/36636535004) ausgerollt.
+Bestehende API-Zugänge und Produktfunktionen bleiben verfügbar. OAuth und die
+öffentliche Hosted-MCP-Freigabe sind damit noch nicht qualifiziert.
+
+Auf Staging sind alle vier CAS-Gates aktiviert. Live-Tests vor und nach der
+[Durchsetzung](https://github.com/TeamGrid/teamgrid/actions/runs/36642054429)
+bestätigten für Aufgaben, Projekte und Projektvorlagen idempotente Erstellung,
+starke Revisionen, unveränderte Daten nach abgewiesenen alten Revisionen,
+genau einen Gewinner bei konkurrierenden Änderungen und verweigerten
+Schreibzugriff mit Leserechten. Ein fremder Workspace erhielt HTTP 404;
+normale App-Änderungen machten zuvor gelesene API-Revisionen ungültig.
+Die abschließenden Tests nutzten den strikten MCP-API-Vertrag `required-v1`.
+Testdaten wurden archiviert, alle sechs kurzlebigen Zugänge und ihre Principals
+widerrufen und anschließend per HTTP 401 geprüft. Diese API-Nachweise ersetzen
+den noch fehlenden echten OAuth-/MCP-Client-Test nicht.
+
+Die manuellen SDK-/Dokumentationsreviews sind abgeschlossen und die PRs #53
+beziehungsweise #55 zusammengeführt. Die Paketversion bleibt bis zur vollständigen
+Abnahme unveröffentlicht. CLI-Browser-Login ist in Production weiterhin geschlossen;
+die letzte manuelle Staging-Freigabe lief ohne Consent ab und stellte keinen Zugang aus.
+
+### Offene Abnahme
+
 1. Die implementierte zentrale Anmeldung mit einmaligem Workspace-Handoff und die Passkey-Bestätigung am exakten App-Kandidaten
    live prüfen, insbesondere zentrale Anmeldung mit einem Workspace in einer
    anderen Zelle. Bestehende Cross-Cell-Primitivtests ersetzen diesen Browserweg nicht.
-2. Gehostetes Routing und Konfiguration über die gültige Release-Pipeline
-   integrieren; nur nach der Abnahme OAuth/MCP-Schreibgates aktivieren.
+2. Das implementierte gehostete Routing und die Konfiguration über die gültige
+   Release-Pipeline tatsächlich vorbereiten und abnehmen; nur danach freigeben.
 3. Datei-Uploads bleiben beim bestehenden App-/CLI-/SDK-Transferweg. Die privaten
    MCP-Ressourcen liefern Downloads; sie stellen keinen beliebigen Upload- oder
    lokalen Dateisystemzugriff bereit. Den vollständigen Übergabeablauf abnehmen.
-4. Live-CAS, Konflikt-/Wiederaufnahmeszenarien, Rechteentzug, gesperrte/fremde
+4. Die erfolgreichen Staging-API-CAS-Tests um Hosted-MCP-, Zell- und
+   Wiederaufnahmeszenarien, Rechteentzug, gesperrte/fremde
    Workspaces, Last und reale Clients gemäß W01–W20 an den endgültigen SHAs prüfen.
-5. Unabhängige Reviews für SDK und Dokumentation, gemeinsame
-   Veröffentlichung und Prüfung der tatsächlichen Verfügbarkeit in DE/US.
+5. Gemeinsame Paket-/Dokumentationsveröffentlichung und Prüfung der tatsächlichen
+   Hosted-MCP-Verfügbarkeit in DE/US nach vollständiger Abnahme.
 
 Die [erste Prüfung](./mcp-product-readiness.md) und die
 [Vollständigkeitsmatrix](./mcp-completeness-audit.md) bleiben die Abnahmebasis.

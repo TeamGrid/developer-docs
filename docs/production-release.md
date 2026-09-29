@@ -20,6 +20,11 @@ with browser authorization and structured credential metadata is healthy in both
 cells. Publish the portal only after DE and US expose the same behavior; otherwise keep the previous
 portal revision live. This prevents documentation from becoming an accidental feature flag.
 
+Corrections that explicitly document a disabled login gate may ship while that gate is closed.
+Record the observation date and give the working manual import path. Do not describe the browser
+flow as generally available until the same behavior is verified in both cells. This distinction
+allows inaccurate availability guidance to be corrected without enabling authentication features.
+
 The custom domain does not need a DNS change for routine releases.
 
 ## Rollback

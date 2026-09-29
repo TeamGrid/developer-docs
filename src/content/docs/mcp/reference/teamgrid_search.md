@@ -2,7 +2,7 @@
 title: teamgrid_search
 description: "Search authorized TeamGrid contacts, projects, and tasks. Returns at most 50 curated metadata-only results; contact matches can contain personal data."
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 `teamgrid_search` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
@@ -10,7 +10,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.1`:
 
 ```json
 {
@@ -90,7 +90,7 @@ personal, commercial, conversation, or security-configuration data.
 | --- | --- |
 | The host uses a tool profile that does not include `all` access. | The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host. |
 | `term` is shorter than 2 or longer than 160 characters, contains control characters, or `types` is empty, duplicated, unsupported, or longer than 3. | MCP input validation rejects the call before an API request is made. |
-| The credential lacks `search:read` or an applicable conditional domain scope (`contacts:read`, `projects:read`, `tasks:read`) or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| The credential lacks `search:read` or an applicable conditional domain scope (`contacts:read`, `projects:read`, `tasks:read`) or cannot access the requested resource. | The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata. |
 | The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI. |
 | An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
 

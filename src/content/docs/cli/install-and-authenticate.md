@@ -2,7 +2,7 @@
 title: Install and authenticate
 description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 ## Requirements
@@ -17,9 +17,18 @@ reviewedAt: 2026-08-10
 Install the stable release from npm. Pin the exact version in controlled environments.
 
 ```bash
-npm install --global @teamgrid/cli@1.1.0
+npm install --global @teamgrid/cli@1.2.1
 teamgrid --help
 ```
+
+## Current production availability
+
+As verified on 29 September 2026, new CLI browser authorizations are disabled in both DE and US.
+Existing credentials continue to work. For a new local connection, create a narrowly scoped
+Personal Token in **Settings → Team → Developer Center → Access** and import it with
+`teamgrid auth login --manual`. Enter the secret only into the terminal's hidden prompt.
+The browser flow below applies when the owning cell enables it; `--no-browser` does not bypass
+that gate. See [CLI browser login](/cli/browser-login/) for details.
 
 ## Sign in through the browser
 

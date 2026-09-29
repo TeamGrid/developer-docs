@@ -2,12 +2,12 @@
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
 owner: Developer Experience
-reviewedAt: 2026-08-18
+reviewedAt: 2026-09-29
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The stable `1.1.0` API v1 contract contains 154 paths and 237 operations. The CLI maps all 237
+The stable `1.2.0` API v1 contract contains 154 paths and 237 operations. The CLI maps all 237
 operations. The TypeScript SDK maps the 236 programmatic operations; the one-time anonymous CLI
 code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 36 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 22. Writes,

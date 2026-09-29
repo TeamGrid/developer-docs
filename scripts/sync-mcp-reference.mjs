@@ -99,7 +99,7 @@ function securityClassification(name) {
   if (name.includes('time_entr')) {
     return {
       classification: 'work-record-data',
-      summary: 'Time-entry records can expose individual work activity and billing state.',
+      summary: 'Time-entry records expose individual work activity. MCP removes billable, billed, and billedAt even when the credential has billing access.',
     }
   }
   if (name === 'teamgrid_workspace_get') {
@@ -156,12 +156,12 @@ function typicalErrors(tool) {
     })
   } else if (tool.inputSchema.required?.includes('id')) {
     errors.push({
-      condition: '`id` is missing, empty, or longer than 128 characters.',
+      condition: '`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.',
       result: 'MCP input validation rejects the call before an API request is made.',
     })
   } else {
     errors.push({
-      condition: '`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.',
+      condition: 'An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.',
       result: 'MCP input validation rejects the call before an API request is made.',
     })
   }
@@ -169,7 +169,7 @@ function typicalErrors(tool) {
     {
       condition: `The credential lacks ${scopeRequirement} or cannot access the requested resource.`,
       result:
-        'The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request.',
+        'The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata.',
     },
     {
       condition: 'The serialized result exceeds 256 KiB.',
@@ -233,7 +233,7 @@ function renderReferenceIndex(reference) {
 title: MCP tool reference
 description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 36 TeamGrid MCP tools.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 This reference is generated from the tool registry shipped in
@@ -260,8 +260,8 @@ ${sections}
 
 Every successful value is returned twice: as MCP structured content and as the same serialized JSON
 in a text content block. Results are capped at ${Math.round(reference.resultContract.maxSerializedBytes / 1024)} KiB. A larger result becomes
-\`result_too_large\`; reduce a list page or narrow the filters. Upstream failures become
-\`teamgrid_request_failed\` with developer secrets redacted.
+\`result_too_large\`; reduce a list page or narrow the filters. API and SDK failures preserve safe machine-readable codes and available status, request ID, and
+retry metadata, with developer secrets redacted. Unknown failures use \`teamgrid_request_failed\`.
 
 List tools use opaque cursor pagination. Pass \`meta.page.nextCursor\` back as \`cursor\`; never
 construct or decode a cursor. The federated search tool is bounded to 50 results and is not
@@ -300,7 +300,7 @@ function renderToolPage(tool, reference) {
 title: ${tool.name}
 description: ${JSON.stringify(tool.description)}
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 \`${tool.name}\` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
@@ -491,7 +491,8 @@ const reference = {
   },
   profiles,
   resultContract: {
-    errorCodes: ['result_too_large', 'teamgrid_request_failed'],
+    errorCodes: ['result_too_large', 'teamgrid_request_failed', 'teamgrid_api_error', 'teamgrid_client_error'],
+    upstreamErrorCodes: 'Safe API and SDK machine-readable error codes are preserved; errorCodes lists local and fallback codes only.',
     maxSerializedBytes: maxToolResultBytes,
     transport: 'MCP structuredContent plus equivalent serialized JSON text content',
   },

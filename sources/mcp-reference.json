@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "package": {
     "name": "@teamgrid/mcp-server",
-    "sourceCommit": "efeff4648d71ed12bfaf92d01afbe872a972b05a",
+    "sourceCommit": "16acc3339ee6b6f1e556c79520fba34d8662b8d5",
     "sourceRepository": "TeamGrid/developer-platform",
-    "version": "1.1.0"
+    "version": "1.2.1"
   },
   "profiles": {
     "core": [
@@ -134,8 +134,11 @@
   "resultContract": {
     "errorCodes": [
       "result_too_large",
-      "teamgrid_request_failed"
+      "teamgrid_request_failed",
+      "teamgrid_api_error",
+      "teamgrid_client_error"
     ],
+    "upstreamErrorCodes": "Safe API and SDK machine-readable error codes are preserved; errorCodes lists local and fallback codes only.",
     "maxSerializedBytes": 262144,
     "transport": "MCP structuredContent plus equivalent serialized JSON text content"
   },
@@ -202,12 +205,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `call-notes:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -289,12 +292,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `call-notes:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -368,12 +371,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `contacts:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -447,12 +450,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `contact-groups:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -534,12 +537,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `contact-groups:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -656,12 +659,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `contacts:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -737,12 +740,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `custom-field-definitions:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -853,12 +856,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `custom-field-definitions:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -930,12 +933,12 @@
       "examplePrompt": "Read the TeamGrid list with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `lists:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1027,12 +1030,12 @@
       "examplePrompt": "List the first 20 TeamGrid lists. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `lists:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1106,12 +1109,12 @@
       "examplePrompt": "Read the TeamGrid product with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `products:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1183,12 +1186,12 @@
       "examplePrompt": "Read the TeamGrid product group with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `product-groups:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1272,12 +1275,12 @@
       "examplePrompt": "List the first 20 TeamGrid product groups. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `product-groups:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1366,12 +1369,12 @@
       "examplePrompt": "List the first 20 TeamGrid products. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `products:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1443,12 +1446,12 @@
       "examplePrompt": "Read the TeamGrid project with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `projects:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1531,12 +1534,12 @@
       "examplePrompt": "List the first 20 TeamGrid projects. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `projects:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1638,7 +1641,7 @@
         },
         {
           "condition": "The credential lacks `search:read` or an applicable conditional domain scope (`contacts:read`, `projects:read`, `tasks:read`) or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1712,12 +1715,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `services:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1799,12 +1802,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `services:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1876,12 +1879,12 @@
       "examplePrompt": "Read the TeamGrid tag with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `tags:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -1961,12 +1964,12 @@
       "examplePrompt": "List the first 20 TeamGrid tags. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `tags:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2038,12 +2041,12 @@
       "examplePrompt": "Read the TeamGrid task with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2115,12 +2118,12 @@
       "examplePrompt": "Read the TeamGrid task recurrence with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2197,12 +2200,12 @@
       "examplePrompt": "List the first 20 TeamGrid task recurrence occurrence. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2287,12 +2290,12 @@
       "examplePrompt": "List the first 20 TeamGrid task recurrence occurrences. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2379,12 +2382,12 @@
       "examplePrompt": "Read the TeamGrid task recurrence preview with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2461,12 +2464,12 @@
       "examplePrompt": "List the first 20 TeamGrid task recurrence version. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2551,12 +2554,12 @@
       "examplePrompt": "List the first 20 TeamGrid task recurrence versions. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2649,12 +2652,12 @@
       "examplePrompt": "List the first 20 TeamGrid task recurrences. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `task-recurrences:read` or `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2745,12 +2748,12 @@
       "examplePrompt": "List the first 20 TeamGrid tasks. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `tasks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2835,7 +2838,7 @@
       },
       "security": {
         "classification": "work-record-data",
-        "summary": "Time-entry records can expose individual work activity and billing state."
+        "summary": "Time-entry records expose individual work activity. MCP removes billable, billed, and billedAt even when the credential has billing access."
       },
       "output": {
         "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
@@ -2852,12 +2855,12 @@
       "examplePrompt": "List the first 20 TeamGrid time entries. Do not request another page; tell me whether another cursor is available.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `time-entries:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -2916,7 +2919,7 @@
       },
       "security": {
         "classification": "work-record-data",
-        "summary": "Time-entry records can expose individual work activity and billing state."
+        "summary": "Time-entry records expose individual work activity. MCP removes billable, billed, and billedAt even when the credential has billing access."
       },
       "output": {
         "format": "The API v1 response envelope is returned as MCP structured content and as the same serialized JSON in a text content block.",
@@ -2929,12 +2932,12 @@
       "examplePrompt": "Read the TeamGrid time entry with ID `<id>` and summarize only the fields returned by TeamGrid.",
       "typicalErrors": [
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `time-entries:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -3013,12 +3016,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `users:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -3094,12 +3097,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`id` is missing, empty, or longer than 128 characters.",
+          "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `webhooks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -3180,12 +3183,12 @@
           "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
         },
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `webhooks:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",
@@ -3248,12 +3251,12 @@
       "examplePrompt": "Use TeamGrid to show the authenticated workspace and its region. Do not call any write-capable tool.",
       "typicalErrors": [
         {
-          "condition": "`limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value.",
+          "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
           "result": "MCP input validation rejects the call before an API request is made."
         },
         {
           "condition": "The credential lacks `workspace:read` or cannot access the requested resource.",
-          "result": "The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request."
+          "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
         },
         {
           "condition": "The serialized result exceeds 256 KiB.",

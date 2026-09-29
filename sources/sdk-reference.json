@@ -3,15 +3,15 @@
   "package": {
     "name": "@teamgrid/api-client",
     "node": ">=22.14 <25",
-    "sourceCommit": "efeff4648d71ed12bfaf92d01afbe872a972b05a",
-    "version": "1.1.0"
+    "sourceCommit": "16acc3339ee6b6f1e556c79520fba34d8662b8d5",
+    "version": "1.2.1"
   },
   "sources": {
     "capabilityPolicySha256": "90ce40e1bcfca7fc9eb402b36eac43fb46061767d15972b17d7b8b44550b9e6f",
     "clientDeclaration": "developer-platform/packages/api-client/src/client.ts",
     "clientDeclarationSha256": "599e875de396038d4aa8438a25ee735667e30e4ee05fd1f8e63b43b99ad74493",
     "operationBindingsSha256": "d03b64ff07750414f38688d279b5c4213544ade60e61f66a2eb5f2c1c4d09f0b",
-    "openApiSha256": "ac6e7c1582cba74a0f3fb89e400f20ed86c403896e7d1b5a276f264b0eef780f"
+    "openApiSha256": "776f9739901adc7720b9ce6f8bfb137aeb83b56d56a43b9dbc1f6c4b0cd87285"
   },
   "summary": {
     "clientCount": 54,
@@ -18425,7 +18425,7 @@
           "signature": "tasks.move(id: string, data: TaskPlacement, options: TaskMutationOptions)",
           "apiHref": "/api/v1/reference/operations/movetask/",
           "conditionalScopes": [],
-          "description": "Atomically changes assignment and ordering within one target task container. The neighboring task ids are validated in the same workspace and container.",
+          "description": "Reorders a task in an existing assignee, personal-list, or project-list placement. For assignee and personal-list axes, assigneeId must already be assigned to the task; change assignments through the task update endpoint. Neighboring task ids are validated in the same workspace and placement container.",
           "errorResponses": [
             {
               "description": "The request is invalid.",

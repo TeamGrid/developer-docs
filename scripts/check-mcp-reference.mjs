@@ -38,6 +38,27 @@ if (JSON.stringify([...reference.profiles.all].sort()) !== JSON.stringify([...to
   failures.push('MCP all profile does not contain the exact tool registry.')
 }
 
+// Check the onboarding prose too: internally consistent generated references do not
+// catch stale tool counts or claims about profiles that customers cannot enable.
+const mcpGuide = async (name) => readFile(
+  path.join(root, 'src', 'content', 'docs', 'mcp', `${name}.md`), 'utf8',
+)
+const [firstQuery, troubleshooting, configuration] = await Promise.all([
+  mcpGuide('first-query'), mcpGuide('troubleshooting'), mcpGuide('configuration'),
+])
+if (!firstQuery.includes(`${reference.profiles.core.length} read-only tools`)) {
+  failures.push('MCP first-query tool count differs from the registered core profile.')
+}
+for (const [profile, names] of Object.entries(reference.profiles)) {
+  const marker = profile === 'core' ? `\`${profile}\` has ${names.length}` : `\`${profile}\` ${names.length}`
+  if (!troubleshooting.includes(marker)) {
+    failures.push(`MCP troubleshooting has a stale ${profile} tool count.`)
+  }
+}
+if (configuration.includes('before enabling any write-capable profile')) {
+  failures.push('MCP configuration must not advertise an unavailable write profile.')
+}
+
 const policies = capabilities.operationPolicy.filter((operation) => operation.mcp?.exposure === 'read')
 if (policies.length !== 36) failures.push(`Expected 36 MCP-exposed policies, found ${policies.length}.`)
 const toolsByName = new Map(tools.map((tool) => [tool.name, tool]))

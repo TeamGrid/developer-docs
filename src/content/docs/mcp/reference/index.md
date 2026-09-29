@@ -2,11 +2,11 @@
 title: MCP tool reference
 description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for all 36 TeamGrid MCP tools.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 This reference is generated from the tool registry shipped in
-`@teamgrid/mcp-server@1.1.0` and joined with the pinned API v1 capability
+`@teamgrid/mcp-server@1.2.1` and joined with the pinned API v1 capability
 contract. It contains 36 read-only tools. Unknown input properties are
 rejected by every tool schema.
 
@@ -83,8 +83,8 @@ read.
 
 Every successful value is returned twice: as MCP structured content and as the same serialized JSON
 in a text content block. Results are capped at 256 KiB. A larger result becomes
-`result_too_large`; reduce a list page or narrow the filters. Upstream failures become
-`teamgrid_request_failed` with developer secrets redacted.
+`result_too_large`; reduce a list page or narrow the filters. API and SDK failures preserve safe machine-readable codes and available status, request ID, and
+retry metadata, with developer secrets redacted. Unknown failures use `teamgrid_request_failed`.
 
 List tools use opaque cursor pagination. Pass `meta.page.nextCursor` back as `cursor`; never
 construct or decode a cursor. The federated search tool is bounded to 50 results and is not

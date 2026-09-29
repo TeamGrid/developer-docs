@@ -1,11 +1,11 @@
 ---
 title: "teamgrid automation-definition-versions"
-description: "1 executable @teamgrid/cli commands in the automation-definition-versions group, generated from CLI 1.1.0."
+description: "1 executable @teamgrid/cli commands in the automation-definition-versions group, generated from CLI 1.2.1."
 owner: Developer Experience
-reviewedAt: 2026-08-19
+reviewedAt: 2026-08-31
 ---
 
-> Generated from `@teamgrid/cli@1.1.0` at Developer Platform commit `efeff4648d71`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.2.1` at Developer Platform commit `16acc3339ee6`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect immutable automation definition versions.
 

@@ -2,7 +2,7 @@
 title: CLI browser login
 description: Sign in to the TeamGrid CLI through the browser, choose a workspace and scopes, and manage the resulting local credential safely.
 owner: Developer Experience
-reviewedAt: 2026-08-08
+reviewedAt: 2026-09-29
 ---
 
 Browser login is the default interactive authentication flow for the TeamGrid CLI when it is
@@ -11,6 +11,15 @@ stores the reveal-once secret in the operating-system credential store. Password
 browser sessions never enter the CLI. If the cell has temporarily disabled new browser
 authorizations, the flow fails closed; existing API credentials, `--manual`, SDK, CLI commands, and
 MCP traffic remain independent of that rollout gate.
+
+## Current production availability
+
+As verified on 29 September 2026, new CLI browser authorizations are disabled in both DE and US.
+Existing credentials continue to work. For a new local connection, create a narrowly scoped
+Personal Token in **Settings → Team → Developer Center → Access** and import it with
+`teamgrid auth login --manual`. Enter the secret only into the terminal's hidden prompt.
+The browser flow below applies when the owning cell enables it; `--no-browser` does not bypass
+that gate. See [CLI browser login](/cli/browser-login/) for details.
 
 ## Start the login
 

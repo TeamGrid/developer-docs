@@ -664,6 +664,7 @@ Content-Type: application/json
 
 {
   "assigneeId": null,
+  "assigneeIds": null,
   "billable": null,
   "contactId": null,
   "description": null,
@@ -673,8 +674,7 @@ Content-Type: application/json
   "listId": null,
   "name": "string",
   "plannedEndAt": "2026-07-29T09:00:00.000Z",
-  "plannedMinutes": null,
-  "plannedStartAt": "2026-07-29T09:00:00.000Z"
+  "plannedMinutes": null
 }
 
 ### Update multiple tasks safely
@@ -719,6 +719,7 @@ Content-Type: application/json
 
 {
   "assigneeId": null,
+  "assigneeIds": null,
   "billable": null,
   "contactId": null,
   "description": null,
@@ -728,8 +729,7 @@ Content-Type: application/json
   "listId": null,
   "name": "string",
   "plannedEndAt": "2026-07-29T09:00:00.000Z",
-  "plannedMinutes": null,
-  "plannedStartAt": "2026-07-29T09:00:00.000Z"
+  "plannedMinutes": null
 }
 
 ### Archive a task

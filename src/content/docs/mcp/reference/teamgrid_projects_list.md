@@ -2,7 +2,7 @@
 title: teamgrid_projects_list
 description: "List TeamGrid projects with stable cursor pagination."
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 `teamgrid_projects_list` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
@@ -10,7 +10,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.1`:
 
 ```json
 {
@@ -75,8 +75,8 @@ personal, commercial, conversation, or security-configuration data.
 
 | Condition | Observable behavior and recovery |
 | --- | --- |
-| `limit` is outside 1–100, `cursor` is longer than 512 characters, or a filter has an unsupported value. | MCP input validation rejects the call before an API request is made. |
-| The credential lacks `projects:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `projects:read` or cannot access the requested resource. | The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata. |
 | The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Request a smaller page or narrower filters. |
 | An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
 

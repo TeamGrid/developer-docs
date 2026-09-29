@@ -2,7 +2,7 @@
 title: Resource concurrency
 description: Prevent lost updates with API v1 strong ETags and required If-Match preconditions.
 owner: Developer Platform
-reviewedAt: 2026-08-19
+reviewedAt: 2026-09-29
 ---
 
 API v1 uses explicit optimistic concurrency for protected writes. Read the resource, retain the
@@ -11,7 +11,7 @@ Never derive an ETag from an ID, timestamp, or another resource.
 
 ## Projects, tasks, and project templates
 
-The `1.1.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
+The `1.2.0` contract exposes `developerRevision` and `developerUpdatedAt` on projects, tasks,
 and project templates. Their item reads and synchronous mutation responses include a strong ETag
 and `Cache-Control: private, no-store, no-transform`.
 

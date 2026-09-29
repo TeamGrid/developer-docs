@@ -2,16 +2,20 @@
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 Install the stable packages and authenticate the CLI first:
 
 ```bash
-npm install --global @teamgrid/cli@1.1.0 @teamgrid/mcp-server@1.1.0
-teamgrid auth login
+npm install --global @teamgrid/cli@1.2.1 @teamgrid/mcp-server@1.2.1
+teamgrid auth login --manual
 teamgrid auth status --check
 ```
+
+Create a Personal Token in **Settings → Team → Developer Center → Access** with only the required
+read scopes before importing it. New browser logins are disabled in DE and US as verified on
+29 September 2026; existing credentials remain usable. See [browser-login availability](/cli/browser-login/).
 
 ## Codex CLI, app, and IDE extension
 
@@ -83,7 +87,7 @@ After restarting the host:
 
 1. Confirm that a server named `teamgrid` is connected without a startup error.
 2. Ask the host to list TeamGrid tools and verify that the selected tool profile is reflected.
-3. Run a bounded read such as workspace discovery before enabling any write-capable profile.
+3. Run a bounded read such as workspace discovery. Every currently released profile is read-only.
 4. Confirm that the returned workspace and region match the intended credential.
 
 If the server does not start, run `teamgrid auth status --check` in the same operating-system user

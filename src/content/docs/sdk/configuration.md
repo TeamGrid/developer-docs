@@ -2,7 +2,7 @@
 title: SDK client configuration
 description: Configure regional routing, timeouts, retries, response limits, cancellation, and transport metadata for the TeamGrid TypeScript SDK.
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 Create one `TeamGridClient` with an explicit credential. The client validates the credential's
@@ -24,7 +24,7 @@ credential from a secret manager for a deployed, shared, or scheduled process.
 
 ## `TeamGridClientOptions`
 
-The following constructor surface is taken from `@teamgrid/api-client@1.1.0`:
+The following constructor surface is taken from `@teamgrid/api-client@1.2.1`:
 
 | Option | Type | Required | Default and behavior |
 | --- | --- | --- | --- |

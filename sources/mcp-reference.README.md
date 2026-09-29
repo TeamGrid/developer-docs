@@ -20,7 +20,7 @@ node scripts/sync-mcp-reference.mjs --check
 Set `TEAMGRID_DEVELOPER_PLATFORM_DIR` or pass
 `--platform-root=/absolute/path/to/developer-platform` when the sibling checkout lives elsewhere.
 The check exits non-zero when the package tree, version, runtime registry, capability mapping, input
-schemas, generated JSON, or any of the 30 generated pages drift.
+schemas, generated JSON, or any of the 37 generated pages drift.
 
 The documentation drift workflow should run the platform build first, then invoke the `--check`
 command. The root `package.json` may expose these commands as `sync:mcp-reference` and

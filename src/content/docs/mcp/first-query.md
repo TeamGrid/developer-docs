@@ -2,7 +2,7 @@
 title: Run your first MCP query
 description: Connect a least-privilege TeamGrid profile, verify the workspace boundary, and complete a bounded read in an MCP host.
 owner: Developer Experience
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 This walkthrough ends with a verified, read-only TeamGrid result in your MCP host. It starts with
@@ -14,7 +14,7 @@ search tools.
 Use the same stable release for the CLI and MCP server:
 
 ```bash
-npm install --global @teamgrid/cli@1.1.0 @teamgrid/mcp-server@1.1.0
+npm install --global @teamgrid/cli@1.2.1 @teamgrid/mcp-server@1.2.1
 teamgrid --version
 npm list --global @teamgrid/mcp-server --depth=0
 ```
@@ -24,16 +24,16 @@ commands are not found, resolve that in the terminal before configuring the host
 
 ## 2. Create a dedicated CLI profile
 
-Authenticate in a terminal, not inside the MCP process:
+Create a Personal Token with `workspace:read` and `projects:read` in **Settings → Team → Developer Center → Access**. Import it in a terminal before starting the MCP process:
 
 ```bash
-teamgrid --profile mcp-local auth login --scope workspace:read --scope projects:read
+teamgrid --profile mcp-local auth login --manual
 teamgrid --profile mcp-local auth status --check
 ```
 
-Browser login asks you to confirm the workspace and requested scopes. If interactive browser login
-is unavailable, follow the [CLI authentication alternatives](/cli/browser-login/) and store the
-credential under the same profile name. Do not paste a token into an AI conversation or host
+New browser logins are disabled in DE and US as verified on 29 September 2026. The manual import
+stores the token in the operating-system credential store. When browser login becomes available,
+follow [CLI browser login](/cli/browser-login/) and use the same profile name. Do not paste a token into an AI conversation or host
 configuration.
 
 For an unattended MCP process, use a dedicated service-account credential. A personal browser
@@ -87,7 +87,7 @@ never ask a model to construct or decode a cursor.
 ## 6. Confirm the effective boundary
 
 Ask the host to list the TeamGrid tools it can see. With `--tool-profile core`, it should advertise
-15 read-only tools. It must not advertise contact, call-note, service, webhook, or
+22 read-only tools. It must not advertise contact, call-note, service, webhook, or
 `teamgrid_search` tools. The credential in this walkthrough only has `workspace:read` and
 `projects:read`, so other advertised core tools will still fail authorization if called.
 

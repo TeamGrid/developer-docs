@@ -3837,7 +3837,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"assigneeId\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"descriptionFormat\": \"plain-text\",\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null,\n  \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\"\n}"
+              "raw": "{\n  \"assigneeId\": null,\n  \"assigneeIds\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"descriptionFormat\": \"plain-text\",\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null\n}"
             }
           },
           "response": []
@@ -3968,7 +3968,7 @@
                   "language": "json"
                 }
               },
-              "raw": "{\n  \"assigneeId\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"descriptionFormat\": \"plain-text\",\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null,\n  \"plannedStartAt\": \"2026-07-29T09:00:00.000Z\"\n}"
+              "raw": "{\n  \"assigneeId\": null,\n  \"assigneeIds\": null,\n  \"billable\": null,\n  \"contactId\": null,\n  \"description\": null,\n  \"descriptionFormat\": \"plain-text\",\n  \"dueAt\": \"2026-07-29T09:00:00.000Z\",\n  \"groupId\": null,\n  \"listId\": null,\n  \"name\": \"string\",\n  \"plannedEndAt\": \"2026-07-29T09:00:00.000Z\",\n  \"plannedMinutes\": null\n}"
             }
           },
           "response": []
@@ -4106,7 +4106,7 @@
                 }
               ]
             },
-            "description": "Atomically changes assignment and ordering within one target task container. The neighboring task ids are validated in the same workspace and container.",
+            "description": "Reorders a task in an existing assignee, personal-list, or project-list placement. For assignee and personal-list axes, assigneeId must already be assigned to the task; change assignments through the task update endpoint. Neighboring task ids are validated in the same workspace and placement container.",
             "header": [
               {
                 "key": "Accept",

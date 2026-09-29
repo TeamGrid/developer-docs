@@ -2,7 +2,7 @@
 title: teamgrid_product_group_get
 description: "Get one TeamGrid product group by id."
 owner: Developer Platform
-reviewedAt: 2026-08-10
+reviewedAt: 2026-09-29
 ---
 
 `teamgrid_product_group_get` is a read-only, idempotent TeamGrid MCP tool. It is introduced by the
@@ -10,7 +10,7 @@ reviewedAt: 2026-08-10
 
 ## Input schema
 
-This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.1.0`:
+This is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.1`:
 
 ```json
 {
@@ -68,8 +68,8 @@ personal, commercial, conversation, or security-configuration data.
 
 | Condition | Observable behavior and recovery |
 | --- | --- |
-| `id` is missing, empty, or longer than 128 characters. | MCP input validation rejects the call before an API request is made. |
-| The credential lacks `product-groups:read` or cannot access the requested resource. | The tool returns `teamgrid_request_failed`; the redacted detail comes from the rejected TeamGrid request. |
+| `id` is missing or violates this tool’s exact input schema, including any pattern or length restriction. | MCP input validation rejects the call before an API request is made. |
+| The credential lacks `product-groups:read` or cannot access the requested resource. | The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata. |
 | The serialized result exceeds 256 KiB. | The tool returns `result_too_large`. Use a narrower supported read, or move the workflow to the API, SDK, or CLI. |
 | An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
 

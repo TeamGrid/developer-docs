@@ -1,6 +1,6 @@
 # MCP: Umsetzung der beiden Prüfungen
 
-Stand: 29. September 2026. Paketkandidat 1.2.2; keine Hosted-MCP-Freigabe.
+Stand: 30. September 2026. Paketkandidat 1.2.2; keine Hosted-MCP-Freigabe.
 Die öffentlich veröffentlichte Paketversion bleibt 1.2.1. Implementierung,
 lokale Prüfungen, Host-Abnahme und Veröffentlichung sind getrennte Nachweise.
 
@@ -76,11 +76,11 @@ CI-Commits, nicht auf einen veröffentlichten Paket- oder Production-Stand:
 
 ### Inzwischen live verifiziert
 
-App `6b03f94757df87bb8a276c1ae1b6cf491f49ed33` und API
+App `12d504780de3ca3c577fa4a5914113ce4d467918` und API
 `0d37827550279f35d992c6d60528d79df401011f` sind nach erfolgreicher
-[Staging-Abnahme](https://github.com/TeamGrid/teamgrid/actions/runs/36635445839)
-in [DE](https://github.com/TeamGrid/teamgrid/actions/runs/36636040345) und
-[US](https://github.com/TeamGrid/teamgrid/actions/runs/36636535004) ausgerollt.
+[Staging-Abnahme](https://github.com/TeamGrid/teamgrid/actions/runs/36651502107)
+in [DE](https://github.com/TeamGrid/teamgrid/actions/runs/36651954314) und
+[US](https://github.com/TeamGrid/teamgrid/actions/runs/36652565385) ausgerollt.
 Bestehende API-Zugänge und Produktfunktionen bleiben verfügbar. OAuth und die
 öffentliche Hosted-MCP-Freigabe sind damit noch nicht qualifiziert.
 
@@ -95,6 +95,29 @@ Die abschließenden Tests nutzten den strikten MCP-API-Vertrag `required-v1`.
 Testdaten wurden archiviert, alle sechs kurzlebigen Zugänge und ihre Principals
 widerrufen und anschließend per HTTP 401 geprüft. Diese API-Nachweise ersetzen
 den noch fehlenden echten OAuth-/MCP-Client-Test nicht.
+
+Die erneute Prüfung der öffentlichen OAuth-Metadaten fand doppelte Schrägstriche
+in den angegebenen Endpunkt-URLs. [PR #3042](https://github.com/TeamGrid/teamgrid/pull/3042)
+korrigiert diese URLs. Der Live-Qualifier liest und prüft jetzt beide
+Discovery-Dokumente vor dem Consent und verwendet die dort veröffentlichten
+Endpunkte. Falscher Issuer, falsche Pfade oder fehlendes PKCE S256 führen zum
+Abbruch vor einer Freigabe.
+
+Das exakte Image `12d504780de3ca3c577fa4a5914113ce4d467918` wurde für Staging,
+DE und US isoliert einschließlich Rückkehr zum tatsächlich zuvor eingesetzten
+Image und erneuter Vorwärtsmigration geprüft. Die öffentliche HTTP-Discovery
+und ihre Ablehnungen bestanden in allen drei Konfigurationen. Auf Staging
+blieben die vier CAS-Gates erhalten; frische Sync-Verbindung, normaler Webaufruf
+und Abmelden/Anmelden wurden im Browser geprüft. Diese isolierten Nachweise
+stellen keinen echten Hosted-OAuth-Consent und keinen Kundentest dar.
+
+Am echten Staging-Endpunkt bestanden danach die öffentliche Discovery mit
+kanonischen URLs und S256, die Authentifizierungs-Challenges für MCP-POSTs,
+die Ablehnung ungültiger Tokens und fremder Origins sowie die Abschottung
+interner Provider-Pfade. Nicht unterstützte GET-Streams antworten gemäß
+[Streamable-HTTP-Vertrag](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#listening-for-messages-from-the-server)
+mit HTTP 405. Der temporäre Zugang umfasst ausschließlich den festen
+Qualifikationsclient; eine allgemeine Kundenfreigabe wurde nicht vorgenommen.
 
 Die manuellen SDK-/Dokumentationsreviews sind abgeschlossen und die PRs #53
 beziehungsweise #55 zusammengeführt. Die Paketversion bleibt bis zur vollständigen

@@ -1,6 +1,13 @@
 # TeamGrid Developer Documentation
 
-Source for [developer.teamgridapp.com](https://developer.teamgridapp.com), covering API v1, legacy API v0, the TypeScript SDK, CLI, and optional read-only MCP server.
+Source for [developer.teamgridapp.com](https://developer.teamgridapp.com), covering API v1, legacy API v0, the TypeScript SDK, CLI, and MCP server.
+
+The checked-in 1.2.2 documentation describes the release candidate, including
+authorized MCP writes and hosted OAuth. The public package version remains 1.2.1.
+[`sources/release-status.json`](sources/release-status.json) controls publication;
+[`MCP implementation status`](docs/mcp-implementation-status.md) records completed
+checks and the remaining live qualification. A successful build does not publish
+candidate documentation or establish hosted service availability.
 
 ## Local development
 

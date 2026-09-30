@@ -2,7 +2,7 @@
 
 Aktuelle Korrekturen und offene Freigabeschritte: [Umsetzungsstand](./mcp-implementation-status.md).
 
-Stand: 29. September 2026. Zweite vertiefte Prüfung; Analyse, keine Freigabe.
+Ausgangsanalyse: 29. September 2026. Abnahmestand aktualisiert am 30. September; keine Freigabe.
 
 ## Entscheidung
 
@@ -185,29 +185,33 @@ bleiben; echte Live-Ansichten brauchen bei Einführung eine passende reaktive Qu
 
 Die Szenarien verbinden bisherige und neue Befunde. „Offen“ bedeutet fehlender
 Nachweis auf dem konkreten Release-Kandidaten; vorhandene Teiltests bleiben nutzbar.
+Die historischen Befunde oben bleiben als Ausgangsanalyse erhalten. Die folgende
+Spalte berücksichtigt die inzwischen implementierten Korrekturen und die im
+[Umsetzungsstand](./mcp-implementation-status.md) verlinkten Nachweise. Sie
+unterscheidet bestandene Teilprüfungen vom noch offenen Ende-zu-Ende-Nachweis.
 
 | ID | Nutzerablauf | Fertig, wenn … | Aktueller Nachweis |
 | --- | --- | --- | --- |
-| W01 | Lokaler Einstieg | Installation, Schlüsselbund, passendes Login-/Toolprofil und erste Aktion funktionieren in den unterstützten Betriebssystemen. | macOS-Staging teilweise live; Presets/Restmatrix offen |
-| W02 | Remote-OAuth | Echter Host führt Anmeldung, minimalen Consent, zusätzliche Rechte, Erneuerung und Widerruf erfolgreich aus. | Provider/Delegation offen |
-| W03 | Verbindung verwalten | Zwei Clients/Workspaces sind unterscheidbar; Ersetzen, Trennen und Wiederverbinden betreffen genau die gewählte Verbindung. | Credential-Bausteine vorhanden; Remote-Abnahme offen |
-| W04 | „Ich“ und lokale Zeit | Persönlicher Zugang, Service-Zugang, Zeitzone und Sommerzeit führen zu eindeutig richtigen Zielen/Zeitpunkten. | Kontextprojektion fehlt |
-| W05 | Ziel finden | Gleichnamige Treffer werden unterscheidbar; begrenzte und leere Suche werden korrekt eingeordnet; direkte ID-Prüfung funktioniert. | Basissuche vorhanden; Vollständigkeitsvertrag offen |
-| W06 | Aufgabe bearbeiten | Anlegen, Zuweisen, Termin, Beschreibung, Verschieben, Abschluss und Wiederöffnung respektieren Rechte, Format und aktuelle Revision. | Tools/Tests vorhanden; Live-CAS und neue Schema-Korrektur offen |
-| W07 | Kommentar korrigieren | Lesen, Erstellen und zulässige Bearbeitung erhalten Inhalte und korrekte Erwähnungs-/Benachrichtigungswirkung. | Update-Fachvertrag fehlt |
+| W01 | Lokaler Einstieg | Installation, Schlüsselbund, passendes Login-/Toolprofil und erste Aktion funktionieren in den unterstützten Betriebssystemen. | Presets und Paketinstallation in sechs OS-/Node-Kombinationen geprüft; echter Browser-/Schlüsselbundablauf offen |
+| W02 | Remote-OAuth | Echter Host führt Anmeldung, minimalen Consent, zusätzliche Rechte, Erneuerung und Widerruf erfolgreich aus. | Provider/Delegation implementiert und Transaktionen geprüft; echter ChatGPT-Consent offen |
+| W03 | Verbindung verwalten | Zwei Clients/Workspaces sind unterscheidbar; Ersetzen, Trennen und Wiederverbinden betreffen genau die gewählte Verbindung. | Eigene Verbindungen und Widerruf implementiert; Zwei-Client-/Workspace-Abnahme offen |
+| W04 | „Ich“ und lokale Zeit | Persönlicher Zugang, Service-Zugang, Zeitzone und Sommerzeit führen zu eindeutig richtigen Zielen/Zeitpunkten. | Kontextprojektion implementiert; echter Nutzer-/Zeitzonenablauf offen |
+| W05 | Ziel finden | Gleichnamige Treffer werden unterscheidbar; begrenzte und leere Suche werden korrekt eingeordnet; direkte ID-Prüfung funktioniert. | Begrenzte Top-N-Suche gekennzeichnet; Mehrdeutigkeits-/Client-Abnahme offen |
+| W06 | Aufgabe bearbeiten | Anlegen, Zuweisen, Termin, Beschreibung, Verschieben, Abschluss und Wiederöffnung respektieren Rechte, Format und aktuelle Revision. | Schema korrigiert und Staging-API-CAS bestanden; ChatGPT-/endgültige Image-Abnahme offen |
+| W07 | Kommentar korrigieren | Lesen, Erstellen und zulässige Bearbeitung erhalten Inhalte und korrekte Erwähnungs-/Benachrichtigungswirkung. | Kommentar-Update implementiert und API-geprüft; Live-Client-/Benachrichtigungsablauf offen |
 | W08 | Zeit und Timer | Richtiger Nutzer/Aufgabe, paralleler Timerstart, Antwortverlust, Sperren und erneuter Stopp führen zu nachvollziehbaren Ergebnissen. | Tools vorhanden; Live-Szenarien offen |
 | W09 | Planung und Kalender | Abwesenheiten, Termine, geplante Arbeit und Verfügbarkeit respektieren Zeitfenster, Zeitzone und delegierte Rechte. | Tools vorhanden; vollständige Live-Abnahme offen |
-| W10 | Inhalte und Dateien | Große Dokumente sind begrenzt lesbar; Änderungen werden klar quittiert; Datei-/Exportergebnisse sind erreichbar. | Größenfehler und Transferübergang offen |
+| W10 | Inhalte und Dateien | Große Dokumente sind begrenzt lesbar; Änderungen werden klar quittiert; Datei-/Exportergebnisse sind erreichbar. | Abschnitte und private Downloads implementiert und begrenzt; vollständiger Live-Transferablauf offen |
 | W11 | Projekte und Vorlagen | Instanziierung/Lebenszyklus unterscheiden Annahme von Abschluss; Status bleibt nach Unterbrechung nachvollziehbar. | Operation-Tools vorhanden; Live-/Wiederaufnahmeprüfung offen |
 | W12 | CRM, Kataloge und Custom Fields | Typen, Pflichtfelder, Beziehungen und konkurrierende Änderungen sind je Operationsklasse geprüft. | Breite Definitionen; Live-Abnahme offen |
-| W13 | Finanzen | Zusatzrechte und Feldprojektionen stimmen; keine stille Null-/Teilbetragsinterpretation; Wiederholung ist sicher. | API-Rechte vorhanden; zusätzliche OAuth-Challenges/Live-Abnahme offen |
+| W13 | Finanzen | Zusatzrechte und Feldprojektionen stimmen; keine stille Null-/Teilbetragsinterpretation; Wiederholung ist sicher. | Bedingte Scope-Challenges implementiert; Finanz-/Live-Abnahme offen |
 | W14 | Administration | Rollen, Einladungen, Gruppen und Freigaben wirken nur auf beabsichtigte Ziele; sensible Bestätigung und Audit sind geprüft. | Tools vorhanden; qualifizierter Zustimmungsweg/Live-Abnahme offen |
 | W15 | Automationen und Integrationen | Änderung, Testauslösung, zukünftige Nebenwirkungen und Abbruch sind verständlich, begrenzt und nachvollziehbar. | Tools vorhanden; externe Wirkung/Live-Abnahme offen |
 | W16 | Vollständige Auswertung | Alle erforderlichen Seiten werden verarbeitet oder die Grenze ausdrücklich gemeldet; Summen stimmen gegen eine Referenz. | Pagination vorhanden; Workflow-Abnahme offen |
-| W17 | Konflikt und Unterbrechung | Parallele Änderung, Timeout vor/nach Commit, Bulk-Teilfehler und Host-Neustart erzeugen weder falschen Erfolg noch doppelte Absicht. | Teiltests vorhanden; Durchgängigkeit offen |
+| W17 | Konflikt und Unterbrechung | Parallele Änderung, Timeout vor/nach Commit, Bulk-Teilfehler und Host-Neustart erzeugen weder falschen Erfolg noch doppelte Absicht. | Fristen/Abbruch/Ergebnisse korrigiert und Staging-API-CAS geprüft; Host-Wiederaufnahme offen |
 | W18 | Entzug und Isolation | Zwei Benutzer/Workspaces, Rollenänderung, Team-Sperre und DE-/US-Zuordnung bleiben während und zwischen Aufrufen korrekt. | API-/App-Bausteine und Teilbelege; Remote-/Schreibmatrix offen |
-| W19 | Belastung und Inhaltssicherheit | Langsame Bodies, Rate-Limits, übergroße Antworten und manipulierte Toolinhalte bleiben begrenzt; keine Secrets oder fremden Ziele werden zugänglich. | Grenzprüfungen vorhanden; neue Fehler und Host-Evaluation offen |
-| W20 | Release und Support | Paket/Vertrag/App/API/Zelle/Hostversion sind gebunden; Docs stimmen, Fehler sind diagnostizierbar und Rücknahme erhält den bisherigen Funktionsstand. | Pipeline-/Dokumentationsgates vorhanden; vollständiges Produktrelease offen |
+| W19 | Belastung und Inhaltssicherheit | Langsame Bodies, Rate-Limits, übergroße Antworten und manipulierte Toolinhalte bleiben begrenzt; keine Secrets oder fremden Ziele werden zugänglich. | Body-/Schema-/Fristkorrekturen geprüft; reale Last- und Host-Evaluation offen |
+| W20 | Release und Support | Paket/Vertrag/App/API/Zelle/Hostversion sind gebunden; Docs stimmen, Fehler sind diagnostizierbar und Rücknahme erhält den bisherigen Funktionsstand. | App/API regional ausgerollt; gepatchtes SDK und Browserkorrektur benötigen neuen Release und Live-Abnahme |
 
 ### Freigaberegel
 

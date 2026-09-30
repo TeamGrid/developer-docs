@@ -133,3 +133,15 @@ review the client, workspace and scopes in the TeamGrid browser consent screen.
 Sensitive additions require a passkey confirmation. Disconnect through the owning
 workspace's connection management to revoke the grant family. Host and live-cell
 qualification are tracked in the [candidate status](/mcp/candidate/).
+
+### ChatGPT client registration
+
+For the candidate, ChatGPT uses a public OAuth client with mandatory PKCE. Its
+Client ID Metadata Document can advertise both `none` and `private_key_jwt`;
+TeamGrid selects `none` only when that method is explicitly supported. The
+metadata origin must first be approved by the TeamGrid operator.
+
+The operator must copy the exact callback shown in ChatGPT's connection
+management and verify its client metadata and issuer requirements. Do not
+substitute a wildcard callback or paste a CLI/API credential into ChatGPT.
+See the [current OpenAI OAuth contract](https://developers.openai.com/plugins/build/auth).

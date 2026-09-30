@@ -27,7 +27,10 @@ Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 - Added comment updates, user/time-zone context and explicit partial/uncertain results.
 - Corrected deadlines, cancellation, schema validation and server retry-delay handling.
 - Regenerated complete SDK/CLI/MCP references and documented candidate/live availability.
-- Hosted routing, real-client/cell qualification and independent release reviews remain open.
+- Corrected signed-in consent routing and ChatGPT public-client method negotiation.
+- Patched the candidate's fast-uri dependency to 3.1.8; fresh release audit required.
+- Implementation reviews and closed regional hosting preparation are complete;
+  real-client/cell qualification, public activation and publication remain open.
 
 ## Documentation alignment · 2026-09-29
 

@@ -2,7 +2,7 @@
 title: MCP release candidate
 description: Implemented MCP extensions, OAuth and qualification status before public release.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-09-30
 ---
 
 The 1.2.2 package candidate is **not published**. The public release remains 1.2.1
@@ -48,14 +48,40 @@ The MCP access token is accepted only at its resource. The provider creates a
 separate short API delegation, rechecked against current authority. Connected
 applications can be inspected and disconnected without exposing token values.
 
+## ChatGPT qualification
+
+ChatGPT is the selected client for the first live customer-path qualification;
+this is still pending. Testing uses an approved synthetic workspace and the
+test endpoint supplied by TeamGrid. Public endpoint setup remains unavailable.
+
+1. Enable developer mode in ChatGPT under **Settings → Security and login**, if
+   your account and workspace policy permit it.
+2. Open **Plugins**, select the plus button, and enter the approved HTTPS MCP
+   endpoint, including `/mcp`, with OAuth authentication.
+3. Sign in to TeamGrid, select the synthetic workspace, and review the requested
+   access. Complete the passkey confirmation when sensitive access is requested.
+4. In a new chat, select the connection and verify workspace identity, reading,
+   creation and editing of a uniquely named test task. Verify the resulting task
+   in TeamGrid and archive it after the test.
+5. Revoke the connection in TeamGrid. Verify that further calls fail and that
+   reconnecting requires a fresh authorization.
+
+Record the exact package, App/API versions, region and results. Creating the
+connection alone does not establish write, conflict or revocation correctness.
+See OpenAI's [connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt)
+and [OAuth authentication guide](https://developers.openai.com/plugins/build/auth).
+
 ## Release status
 
 Local API, SDK/CLI/MCP, real MongoDB transaction and hosted-container checks are
 available. Live browser/passkey/cross-region qualification, real client and write
-scenarios, hosted routing through the governed release pipeline, independent
-reviews and publication remain required. Production activation stays closed until
+scenarios, regional activation and publication remain required. The implementation
+reviews and closed regional hosting preparation are complete. Production activation stays closed until
 those checks pass. No new endpoint URL should be configured from this candidate page.
 
 The implementation is tracked in [SDK/MCP pull request 53](https://github.com/TeamGrid/developer-platform/pull/53),
 [App pull request 3028](https://github.com/TeamGrid/teamgrid/pull/3028) and
 [API pull request 174](https://github.com/TeamGrid/teamgrid-api/pull/174).
+The candidate also includes the [fast-uri 3.1.8 security patch](https://github.com/TeamGrid/developer-platform/pull/55).
+The corrected SDK image has passed protected CI; its regional release and live
+ChatGPT qualification are separate pending steps.

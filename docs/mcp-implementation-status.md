@@ -126,6 +126,24 @@ die letzte manuelle Staging-Freigabe lief ohne Consent ab und stellte keinen Zug
 
 ### Offene Abnahme
 
+**Aktuelle Ergänzung vom 30. September:** Der Kunde verwendet ChatGPT. Der echte
+Staging-Versuch fand vor dem Consent einen Redirect zur normalen Aufgabenansicht.
+[App PR3044](https://github.com/TeamGrid/teamgrid/pull/3044) korrigiert die genauen
+OAuth-/Bestätigungsrouten und die Auswahl der von ChatGPT angebotenen öffentlichen
+Client-Methode `none`. Das zentrale Staging-Login erlaubt die Auswahl beider
+synthetischen Workspaces. Der Versuch wurde vor Schreibzugriffen gestoppt und
+Staging-Hosted-MCP wieder geschlossen; es gibt weiterhin keinen echten Consent-Nachweis.
+
+Der frische Audit des bisherigen SDK97042d7 fand außerdem
+[GHSA-hrr3-gc8f-f4qj](https://github.com/advisories/GHSA-hrr3-gc8f-f4qj).
+[SDK PR55](https://github.com/TeamGrid/developer-platform/pull/55) hebt ausschließlich
+`fast-uri` von 3.1.7 auf 3.1.8. Der genaue Hauptzweig-Stand `a0c251d74b279f6f2c4b8b67a32c89acbadd9585`
+bestand 695 Tests, vollständige Paketprüfung, alle sechs OS-/Node-Kombinationen
+und den [Image-Build](https://github.com/TeamGrid/developer-platform/actions/runs/36664796797).
+[App PR3045](https://github.com/TeamGrid/teamgrid/pull/3045) bindet dessen Digest und
+vermeidet einen zweiten separaten Image-Pin im Live-Qualifier. Die neue regionale
+Auslieferung und die folgende ChatGPT-Abnahme stehen aus.
+
 1. Die implementierte zentrale Anmeldung mit einmaligem Workspace-Handoff und die Passkey-Bestätigung am exakten App-Kandidaten
    live prüfen, insbesondere zentrale Anmeldung mit einem Workspace in einer
    anderen Zelle. Bestehende Cross-Cell-Primitivtests ersetzen diesen Browserweg nicht.

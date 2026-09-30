@@ -90,4 +90,6 @@ exposure is possible, revoke or rotate the affected credential before continuing
 | Accepted asynchronous job | Use the returned status tool and ID; acceptance is not completion |
 | Provider unavailable (503) | Retry within your deadline; do not replace or widen a credential to diagnose an outage |
 | Revoked or expired remote connection | Reconnect through the host and review the workspace and scopes again |
+| OAuth authorization opens ordinary tasks instead of a consent screen | Report the App version and request time to TeamGrid; this is a failed authorization flow, not a completed connection |
+| ChatGPT cannot register its OAuth client | Check approved client metadata, authentication-method negotiation and the exact callback; do not widen origins or bypass PKCE |
 | Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |

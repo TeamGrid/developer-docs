@@ -144,6 +144,30 @@ und den [Image-Build](https://github.com/TeamGrid/developer-platform/actions/run
 vermeidet einen zweiten separaten Image-Pin im Live-Qualifier. Die neue regionale
 Auslieferung und die folgende ChatGPT-Abnahme stehen aus.
 
+**Aktualisierter Stand vom 30. September:** Die gestalteten OAuth-Views und die
+übersetzten Berechtigungszahlen wurden mit App `6b169596be6b42318487de6ccd641aea8467b665`
+auf Staging bereitgestellt. Der anschließende Live-Versuch scheiterte in beiden
+Browsern bei `prepareConfirmation` mit `security-session-changed`: Der Zweck war
+vorbereitet, ein Passkey-Transport wurde noch nicht ausgestellt. Die Diagnose
+fand einen veralteten zentralen Sitzungsvorfahren; der Fehler belegt keine
+fehlende Browserunterstützung für Passkeys.
+
+[App PR3054](https://github.com/TeamGrid/teamgrid/pull/3054) ergänzt eine konkrete,
+übersetzte Anleitung zur normalen zentralen Abmeldung und erneuten Anmeldung.
+Die alte Zustimmung bleibt gesperrt; nach der Anmeldung muss der Client eine neue
+Anfrage starten. App `92d0d4d4c078f98fb4b040e584d7f6844f3544d1` ist zusammengeführt
+und hat die vollständige CI sowie den Image-Build bestanden. Die neue
+zellbezogene Image-Abnahme und Bereitstellung sind noch offen.
+
+[Delivery PR3055](https://github.com/TeamGrid/teamgrid/pull/3055) erlaubt ausschließlich
+das geprüfte Abschalten eines exakt laufenden MCP-Vorgängers nach einer neueren
+App-Zusammenführung. Die Aktivierungsprüfungen bleiben unverändert. Der echte
+[Staging-Abschaltlauf](https://github.com/TeamGrid/teamgrid/actions/runs/36711478436)
+ist erfolgreich abgeschlossen. Der Live-Test wartet außerdem auf die bestätigte
+Testidentität mit Zugang zu beiden synthetischen Workspaces. DE und US bleiben
+auf App `12d504780de3ca3c577fa4a5914113ce4d467918`; Hosted-OAuth ist geschlossen.
+Es gibt weiterhin keinen erfolgreichen echten OAuth-/ChatGPT-Abnahmenachweis.
+
 1. Die implementierte zentrale Anmeldung mit einmaligem Workspace-Handoff und die Passkey-Bestätigung am exakten App-Kandidaten
    live prüfen, insbesondere zentrale Anmeldung mit einem Workspace in einer
    anderen Zelle. Bestehende Cross-Cell-Primitivtests ersetzen diesen Browserweg nicht.

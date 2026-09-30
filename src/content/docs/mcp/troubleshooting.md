@@ -2,7 +2,7 @@
 title: Troubleshoot the MCP server
 description: Diagnose TeamGrid MCP startup, authentication, profile, schema, authorization, pagination, and result-size failures without exposing credentials.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-09-30
 ---
 
 Start with the terminal used by the same operating-system account as the MCP host:
@@ -92,4 +92,26 @@ exposure is possible, revoke or rotate the affected credential before continuing
 | Revoked or expired remote connection | Reconnect through the host and review the workspace and scopes again |
 | OAuth authorization opens ordinary tasks instead of a consent screen | Report the App version and request time to TeamGrid; this is a failed authorization flow, not a completed connection |
 | ChatGPT cannot register its OAuth client | Check approved client metadata, authentication-method negotiation and the exact callback; do not widen origins or bypass PKCE |
+| The confirmation reports an invalid sign-in session (`security-session-changed` or `security-session-unavailable`) | Sign out on TeamGrid's central sign-in page, sign in again, then start a new connection request in the MCP host |
+| The authorization request has expired | Start a new request in the MCP host; an old consent URL cannot renew the request |
 | Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |
+
+## Confirmation closes before a passkey prompt
+
+A briefly opening confirmation window does not establish that the browser cannot use passkeys.
+When TeamGrid reports an invalid sign-in session, the confirmation stopped before the passkey
+transport was issued. A workspace handoff can retain an older central sign-in session whose
+security state is no longer valid.
+
+1. Use **Sign out and sign in again** when the consent screen offers it. Otherwise, sign out on
+   TeamGrid's normal central sign-in page.
+2. Sign in normally with the intended account. Confirm that this account belongs to the required
+   workspace; the workspace picker shows only workspaces it can access.
+3. Start a new connection request from the MCP host and review its workspace and scopes again.
+4. Complete the normal passkey confirmation if requested.
+
+The session-specific recovery message is included in the App release candidate and still requires
+regional release qualification. Other permission, workspace or routing errors can produce the
+generic connection-failure message; do not treat that message alone as proof of a session failure.
+An expired request must be restarted in the host. Refreshing an old consent URL or switching browsers
+does not renew it. Keep session validation and passkey confirmation enabled throughout recovery.

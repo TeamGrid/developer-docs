@@ -19020,8 +19020,8 @@ Use the endpoint for the workspace's owning region:
 
 | Region | MCP resource |
 | --- | --- |
-| Germany / DE | `https://mcp.de.teamgrid.app/mcp` |
-| United States / US | `https://mcp.us.teamgrid.app/mcp` |
+| Germany / DE | `https://mcp-de.teamgrid.app/mcp` |
+| United States / US | `https://mcp-us.teamgrid.app/mcp` |
 
 In ChatGPT, create an MCP connection with the exact HTTPS resource and OAuth
 authentication. Sign in to TeamGrid, select one workspace and review the access
@@ -19203,8 +19203,8 @@ it does not replace live conflict and business-permission qualification.
 
 ## Remote OAuth runtime
 
-Production hosted resources are **`https://mcp.de.teamgrid.app/mcp`** and
-**`https://mcp.us.teamgrid.app/mcp`**. Use the resource for your workspace’s owning
+Production hosted resources are **`https://mcp-de.teamgrid.app/mcp`** and
+**`https://mcp-us.teamgrid.app/mcp`**. Use the resource for your workspace’s owning
 region. Its protected-resource metadata identifies the regional authorization server. A compatible host must support
 resource-bound authorization code with PKCE S256, refresh-token rotation and
 incremental consent. Do not paste a local API token into a remote MCP connection.
@@ -62634,7 +62634,7 @@ Never share an API token, browser authorization code, PKCE verifier, webhook sig
 `Authorization` header, credential-store contents, or an unreviewed tool transcript. If accidental
 exposure is possible, revoke or rotate the affected credential before continuing diagnostics.
 
-## Candidate write and OAuth failures
+## Write and OAuth failures
 
 | Outcome | Next step |
 | --- | --- |
@@ -62676,6 +62676,7 @@ confirmation transport. A small difference between server and browser clocks cau
 reject that valid response before displaying the passkey page. Signing in again or switching
 browsers does not correct this App defect. The correction keeps server expiry authoritative and
 bounds the browser's wait independently of its wall clock; it is included in the deployed Production App release.
+
 Support can distinguish these failures using the preparation result without collecting cookies,
 transport tokens, authorization codes or passkey assertions.
 

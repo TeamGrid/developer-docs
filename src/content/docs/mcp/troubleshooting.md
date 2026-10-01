@@ -79,7 +79,7 @@ Never share an API token, browser authorization code, PKCE verifier, webhook sig
 `Authorization` header, credential-store contents, or an unreviewed tool transcript. If accidental
 exposure is possible, revoke or rotate the affected credential before continuing diagnostics.
 
-## Candidate write and OAuth failures
+## Write and OAuth failures
 
 | Outcome | Next step |
 | --- | --- |
@@ -121,5 +121,6 @@ confirmation transport. A small difference between server and browser clocks cau
 reject that valid response before displaying the passkey page. Signing in again or switching
 browsers does not correct this App defect. The correction keeps server expiry authoritative and
 bounds the browser's wait independently of its wall clock; it is included in the deployed Production App release.
+
 Support can distinguish these failures using the preparation result without collecting cookies,
 transport tokens, authorization codes or passkey assertions.

@@ -168,6 +168,26 @@ Testidentität mit Zugang zu beiden synthetischen Workspaces. DE und US bleiben
 auf App `12d504780de3ca3c577fa4a5914113ce4d467918`; Hosted-OAuth ist geschlossen.
 Es gibt weiterhin keinen erfolgreichen echten OAuth-/ChatGPT-Abnahmenachweis.
 
+**Aktualisierter Stand vom 1. Oktober:** App `92d0d4d4c078f98fb4b040e584d7f6844f3544d1`
+bestand die neue native, regionale und manuelle Browser-Abnahme und wurde im
+[Staging-Release](https://github.com/TeamGrid/teamgrid/actions/runs/36815024805)
+erfolgreich bereitgestellt. Der Nutzer bestätigte die normale Anmeldung mit dem
+bestehenden Konto und Mitgliedschaft in beiden Test-Workspaces. Die nächste
+Zustimmung scheiterte an einer anderen Grenze: Der Server lieferte den gültigen
+Bestätigungstransport, der Browser verwarf ihn vor der Passkey-Seite mit
+`Invalid developer confirmation`. Die serverseitige Ablaufzeit erschien wegen
+einer Zeitabweichung 139,731 ms oberhalb der lokalen 120-Sekunden-Grenze.
+
+[App PR3056](https://github.com/TeamGrid/teamgrid/pull/3056) entfernt diese zusätzliche
+Prüfung anhand der Browser-Uhr. Die Wartezeit bleibt begrenzt; serverseitige
+Ablaufzeiten, Sitzungsbindung, Passkey-Prüfung und Verbrauch des Nachweises bleiben
+verbindlich. Der Regressionstest scheiterte vor der Korrektur; anschließend
+bestanden 15 gezielte Tests sowie Linting, TypeScript und Dokumentationsprüfungen.
+Das neue Image und der echte OAuth-Ablauf sind noch abzunehmen. Beide fehlgeschlagenen
+Versuche bleiben dokumentiert; der temporäre Staging-MCP-Zugang wurde über den
+[geschützten Abschaltlauf](https://github.com/TeamGrid/teamgrid/actions/runs/36818447781)
+wieder geschlossen. DE und US bleiben unverändert; keine öffentliche Freigabe.
+
 1. Die implementierte zentrale Anmeldung mit einmaligem Workspace-Handoff und die Passkey-Bestätigung am exakten App-Kandidaten
    live prüfen, insbesondere zentrale Anmeldung mit einem Workspace in einer
    anderen Zelle. Bestehende Cross-Cell-Primitivtests ersetzen diesen Browserweg nicht.

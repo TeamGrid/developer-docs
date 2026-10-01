@@ -2,7 +2,7 @@
 title: Troubleshoot the MCP server
 description: Diagnose TeamGrid MCP startup, authentication, profile, schema, authorization, pagination, and result-size failures without exposing credentials.
 owner: Developer Experience
-reviewedAt: 2026-09-30
+reviewedAt: 2026-10-01
 ---
 
 Start with the terminal used by the same operating-system account as the MCP host:
@@ -93,6 +93,7 @@ exposure is possible, revoke or rotate the affected credential before continuing
 | OAuth authorization opens ordinary tasks instead of a consent screen | Report the App version and request time to TeamGrid; this is a failed authorization flow, not a completed connection |
 | ChatGPT cannot register its OAuth client | Check approved client metadata, authentication-method negotiation and the exact callback; do not widen origins or bypass PKCE |
 | The confirmation reports an invalid sign-in session (`security-session-changed` or `security-session-unavailable`) | Sign out on TeamGrid's central sign-in page, sign in again, then start a new connection request in the MCP host |
+| A fresh sign-in still produces a briefly opening popup; support finds `Invalid developer confirmation` after successful preparation | This can be a TeamGrid App clock-skew defect before the passkey prompt. Report the App version and request time; retry a new request after the corrected App is available |
 | The authorization request has expired | Start a new request in the MCP host; an old consent URL cannot renew the request |
 | Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |
 
@@ -115,3 +116,11 @@ regional release qualification. Other permission, workspace or routing errors ca
 generic connection-failure message; do not treat that message alone as proof of a session failure.
 An expired request must be restarted in the host. Refreshing an old consent URL or switching browsers
 does not renew it. Keep session validation and passkey confirmation enabled throughout recovery.
+
+A separate Staging failure on 1 October 2026 occurred after the server successfully issued the
+confirmation transport. A small difference between server and browser clocks caused the App to
+reject that valid response before displaying the passkey page. Signing in again or switching
+browsers does not correct this App defect. The correction keeps server expiry authoritative and
+bounds the browser's wait independently of its wall clock; it still requires release qualification.
+Support can distinguish these failures using the preparation result without collecting cookies,
+transport tokens, authorization codes or passkey assertions.

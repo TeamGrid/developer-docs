@@ -1,6 +1,4 @@
 # TeamGrid Developer Documentation
-Unpublished 1.2.2 candidate. Public packages remain 1.2.1; new installation examples apply only after release.
-
 
 > Official documentation for TeamGrid API v1, legacy API v0, the TypeScript SDK, CLI, and MCP server with explicit read/write profiles.
 

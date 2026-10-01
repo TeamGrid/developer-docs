@@ -2,7 +2,7 @@
 title: teamgrid_file_rename
 description: "Input schema, permissions, API mapping and write behavior for teamgrid_file_rename."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_file_rename` is a write-capable TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ Rename a file. Changes the selected workspace under current API permissions. Rea
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {

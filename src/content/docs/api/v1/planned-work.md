@@ -2,7 +2,7 @@
 title: Planned work
 description: Read bounded workload windows and atomically replace one task schedule with strong revisions.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 Planned work exposes the per-day workload assigned to a task and user. Treat it as sensitive
@@ -54,5 +54,5 @@ teamgrid planned-work replace TASK_ID --data @schedule.json \
   --yes --wait --output json
 ```
 
-The CLI requires `--yes` for the full replacement in non-interactive automation. The 1.2.2 MCP candidate includes planned-work reads, schedule replacement and operation
+The CLI requires `--yes` for the full replacement in non-interactive automation. The 1.2.2 MCP server includes planned-work reads, schedule replacement and operation
 status in `schedule-write` and `full`. Review the entire replacement and its current revision.

@@ -2,11 +2,11 @@
 title: MCP tools and security
 description: Review TeamGrid MCP profiles, write preconditions, private resources, result limits and authorization boundaries.
 owner: Security
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
-**Unpublished candidate 1.2.2:** 208 tools (84 reads, 124 writes). Public 1.2.1
-retains the four read profiles below. See [release status](/mcp/candidate/).
+**Stable release 1.2.2:** 208 tools (84 reads, 124 writes). The four existing
+read profiles remain unchanged. See [release status](/mcp/candidate/).
 
 ## Preserved read profiles
 
@@ -60,7 +60,7 @@ List tools return API v1 cursor metadata. Pass the returned opaque cursor to con
 
 ## Candidate profiles and writes
 
-The candidate adds `context`, `work`, `full` and eleven domain profiles. The
+Version 1.2.2 adds `context`, `work`, `full` and eleven domain profiles. The
 [generated reference](/mcp/reference/) lists exact membership, input schemas and
 annotations for all 208 tools. `full` includes the business surface: tasks and
 recurrences, time, planning, comments, documents, files, CRM, catalogs, finance,

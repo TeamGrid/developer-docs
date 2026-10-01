@@ -2,7 +2,7 @@
 title: teamgrid_product_create
 description: "Input schema, permissions, API mapping and write behavior for teamgrid_product_create."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_product_create` is a write-capable TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ Create a product. Changes the selected workspace under current API permissions. 
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {

@@ -2,7 +2,7 @@
 title: teamgrid_time_entry_billing_get
 description: "Input schema, permissions, API mapping and read behavior for teamgrid_time_entry_billing_get."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_time_entry_billing_get` is a read-only TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ Get time-entry billing state
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {
@@ -55,7 +55,7 @@ Accepted jobs provide status/resume information; uncertain writes must not be re
 
 ## Security classification
 
-**work-record-data:** Time-entry records expose individual work activity. Preserved read profiles remove billing fields; candidate domain profiles require the relevant billing scopes.
+**work-record-data:** Time-entry records expose individual work activity. Preserved read profiles remove billing fields; domain profiles require the relevant billing scopes.
 
 The exact safety annotations are `{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false}`. The host and model can still retain tool
 arguments and results in prompts, logs, or transcripts; use a dedicated least-privilege credential.

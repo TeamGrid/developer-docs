@@ -2,14 +2,14 @@
 title: TeamGrid MCP server
 description: Connect an AI host to TeamGrid with explicit read or write profiles, bounded results and current workspace permissions.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
-**Unpublished candidate 1.2.2.** The public npm release remains 1.2.1 with four
-read-only profiles. The [candidate status](/mcp/candidate/) lists the remaining
-live qualification and release work. No hosted public endpoint is released.
+**Stable release 1.2.2.** Hosted MCP and CLI browser login are enabled in
+Production DE and US. See [release status](/mcp/candidate/) and
+[ChatGPT setup](/mcp/configuration/#remote-oauth-runtime).
 
-The candidate delegates business operations to the official API v1 client and
+The server delegates business operations to the official API v1 client and
 exposes **208 tools: 84 reads and 124 writes**. It supports local stdio and a
 regional HTTP runtime with OAuth. Each request checks current permissions.
 
@@ -32,17 +32,14 @@ Use the smallest profile suitable for the workflow.
 
 ## Start locally
 
-The commands in this candidate documentation target 1.2.2 after publication.
-Until then, use a reviewed packed candidate for qualification or the published
-1.2.1 packages with their existing read-only behavior.
+Install the matching stable packages:
 
 ```bash
 npm install --global @teamgrid/cli@1.2.2 @teamgrid/mcp-server@1.2.2
-teamgrid auth login --manual
+teamgrid auth login
 ```
 
-Create a scoped Personal Token in **Settings → Team → Developer Center → Access**
-before importing it. Browser-login availability is a separate regional rollout;
+Sign in, select one workspace and approve the requested scopes;
 see [browser login](/cli/browser-login/). The stdio process uses the selected CLI
 credential store and opens no browser itself.
 

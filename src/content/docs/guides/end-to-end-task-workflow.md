@@ -6,13 +6,13 @@ reviewedAt: 2026-08-10
 ---
 
 This tutorial reads a task, changes its name with a strong precondition, and verifies the result.
-Use a dedicated test task. Published MCP 1.2.1 stops after the read. The 1.2.2 candidate can complete the reviewed
+Use a dedicated test task. MCP 1.2.2 can complete the reviewed
 write when its cell and credential satisfy the required CAS and scope gates.
 
 ## Prerequisites
 
 - a credential in the correct region with `workspace:read` and `tasks:read`;
-- `tasks:write` only for the HTTP, SDK, or CLI update;
+- `tasks:write` for any requested update, including the explicit MCP work profile;
 - one existing test task ID;
 - an explicit intended new name.
 
@@ -111,7 +111,7 @@ Use teamgrid_task_get to read task TASK_ID. Return only its id, name, project id
 completion state, and developer revision. Do not call any other TeamGrid tool.
 ```
 
-Review the read before allowing it. With candidate 1.2.2, select `work`, verify the access
+Review the read before allowing it. With release 1.2.2, select `work`, verify the access
 plan and current workspace, then propose a `teamgrid_task_update` call containing
 `workspaceId`, the task `id`, its fresh `expectedRevision` and `data.name`. Approve only
 the intended rename. Read the returned task ID again to verify the change. A revision

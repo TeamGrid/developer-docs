@@ -2,7 +2,7 @@
 title: Custom-field definitions and values
 description: Manage TeamGrid custom-field schemas and safely compare and set values on supported resources.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 API v1 separates a custom-field **definition** from the value stored on one resource. Definitions
@@ -89,6 +89,6 @@ teamgrid custom-field-values clear task TASK_ID FIELD_ID \
   --if-match "$REVISION" --yes --output json
 ```
 
-The preserved `governance` profile exposes definition reads. The 1.2.2 MCP candidate
+The preserved `governance` profile exposes definition reads. The 1.2.2 MCP server
 also exposes reviewed definition and value operations in explicit domain profiles and `full`.
 Value writes keep their resource-specific permissions and revision requirements.

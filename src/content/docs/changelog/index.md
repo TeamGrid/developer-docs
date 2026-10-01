@@ -2,14 +2,14 @@
 title: Changelog
 description: Track TeamGrid Developer Platform documentation, API, SDK, CLI, and MCP changes.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 ## Current platform
 
 API v1 uses the stable `1.2.0` contract while the SDK, CLI, and MCP npm packages are synchronized
-at published version `1.2.1`. These documentation changes describe the unpublished
-`1.2.2` candidate; [candidate status](/mcp/candidate/) identifies pending release checks.
+at published version `1.2.2`. Hosted MCP and CLI browser login are enabled in
+Production DE and US; [release status](/mcp/candidate/) records the accepted release.
 Authoritative changes are recorded in the public source repositories and their release history:
 
 - [Developer documentation](https://github.com/TeamGrid/developer-docs)
@@ -20,17 +20,18 @@ Breaking changes are not made silently. OpenAPI contract changes, package versio
 Subscribe to the [Atom changelog feed](/changelog/feed.xml) or consume the
 [machine-readable release history](/changelog/releases.json).
 
-## Unpublished 1.2.2 candidate · 2026-09-29
+## Developer Platform 1.2.2 · 2026-10-02
 
 - Added regional OAuth, explicit work/domain profiles, 208 MCP tools and private resources.
 - Added purpose-bound passkey consent for sensitive CLI and OAuth permissions.
 - Added comment updates, user/time-zone context and explicit partial/uncertain results.
 - Corrected deadlines, cancellation, schema validation and server retry-delay handling.
-- Regenerated complete SDK/CLI/MCP references and documented candidate/live availability.
+- Regenerated complete SDK/CLI/MCP references and documented Production availability.
 - Corrected signed-in consent routing and ChatGPT public-client method negotiation.
-- Patched the candidate's fast-uri dependency to 3.1.8; fresh release audit required.
-- Implementation reviews and closed regional hosting preparation are complete;
-  real-client/cell qualification, public activation and publication remain open.
+- Patched fast-uri to 3.1.8 and retained the exact release dependency audit.
+- Activated hosted MCP and CLI browser login for Production DE and US with existing
+  authorization and Passkey requirements. The owner accepted this exact release
+  and waived additional functional exercises; unexecuted checks are not marked passed.
 
 ## Documentation alignment · 2026-09-29
 

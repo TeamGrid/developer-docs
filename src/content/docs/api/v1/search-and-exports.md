@@ -2,7 +2,7 @@
 title: Search and exports
 description: Search authorized resources and download bounded CSV exports through a header-only capability.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 ## Federated search
@@ -68,7 +68,7 @@ download endpoint does not accept a query-string fallback. TeamGrid resolves pri
 internally and streams the file through the API with redirects disabled, a 50 MiB response limit,
 `Cache-Control: no-store`, and content-type hardening. It does not reveal a storage URL.
 
-The 1.2.2 MCP candidate includes export job creation and status. Private resource reads
+The 1.2.2 MCP server includes export job creation and status. Private resource reads
 deliver at most 1 MiB after fresh authorization; intent credentials stay internal. An export
 is owned by its creating credential, so a separate CLI login does not gain access to it.
 Larger transfers use the authorized App/SDK/CLI flow. See [MCP limits](/mcp/tools-and-security/).

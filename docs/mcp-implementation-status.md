@@ -1,5 +1,13 @@
 # MCP: Umsetzung der beiden Prüfungen
 
+> Historischer Analyse- und Qualifikationsstand bis 30. September 2026. Die unten
+> genannten damaligen Freigabesperren sind kein aktueller Betriebsstatus.
+> Am 2. Oktober 2026 hat der Release-Owner die exakte Production-Version freigegeben
+> und weitere Funktionstests ausdrücklich abgewählt. Aktueller Status:
+> [MCP-Freigabe](../src/content/docs/mcp/candidate.md) und
+> [Production-Veröffentlichung](./production-release.md). Echte vorhandene Nachweise
+> bleiben erhalten; nicht ausgeführte Prüfungen werden nicht als bestanden bezeichnet.
+
 Stand: 30. September 2026. Paketkandidat 1.2.2; keine Hosted-MCP-Freigabe.
 Die öffentlich veröffentlichte Paketversion bleibt 1.2.1. Implementierung,
 lokale Prüfungen, Host-Abnahme und Veröffentlichung sind getrennte Nachweise.

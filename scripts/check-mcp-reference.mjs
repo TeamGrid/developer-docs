@@ -2,10 +2,11 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
-const [packages, capabilities, reference] = await Promise.all([
+const [packages, capabilities, reference, release] = await Promise.all([
   readFile(path.join(root, 'sources', 'packages.json'), 'utf8').then(JSON.parse),
   readFile(path.join(root, 'public', 'openapi', 'developer-capabilities.json'), 'utf8').then(JSON.parse),
   readFile(path.join(root, 'sources', 'mcp-reference.json'), 'utf8').then(JSON.parse),
+  readFile(path.join(root, 'sources', 'release-status.json'), 'utf8').then(JSON.parse),
 ])
 const failures = []
 
@@ -55,8 +56,10 @@ for (const [profile, names] of Object.entries(reference.profiles).filter(([name]
     failures.push(`MCP troubleshooting has a stale ${profile} tool count.`)
   }
 }
-if (!configuration.includes('unpublished candidate')) {
-  failures.push('MCP configuration must identify the unpublished candidate.')
+const releaseLabel = release.status === 'published'
+  ? `stable release ${release.version}` : `unpublished candidate ${release.version}`
+if (!configuration.includes(releaseLabel)) {
+  failures.push(`MCP configuration must identify ${releaseLabel}.`)
 }
 
 const policies = capabilities.operationPolicy.filter((operation) => ['read', 'gated-write'].includes(operation.mcp?.exposure))

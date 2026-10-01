@@ -64,7 +64,7 @@ Choose this path for human-supervised reads in a trusted MCP host.
 5. Review the host's transcript, extension, retention, and data-handling behavior.
 6. Expand beyond `core` only after documenting why the additional data is required.
 
-Start with reads. The 1.2.2 candidate adds explicit work and domain write profiles: review
+Start with reads. The 1.2.2 release adds explicit work and domain write profiles: review
 the scope plan, confirm the target and fresh revision, and verify the resulting receipt.
 Use API/SDK integrations for deterministic background work.
 

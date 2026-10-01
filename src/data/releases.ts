@@ -9,6 +9,19 @@ export type DeveloperRelease = {
 
 export const developerReleases: DeveloperRelease[] = [
   {
+    date: '2026-10-02',
+    description: 'Hosted OAuth MCP and explicit business write profiles across Production DE and US.',
+    highlights: [
+      '208 MCP tools: 84 reads and 124 writes with current workspace permissions',
+      'Regional hosted OAuth with PKCE, workspace consent, refresh rotation and revocation',
+      'CLI browser login and personal Passkey confirmation for sensitive scopes',
+      'Preserved read-only profiles, required resource CAS and bounded private resources',
+    ],
+    stability: 'stable',
+    title: 'Developer Platform 1.2.2',
+    version: '1.2.2',
+  },
+  {
     date: '2026-08-31',
     description: 'The synchronized client checkpoint for API contract 1.2.0.',
     highlights: [

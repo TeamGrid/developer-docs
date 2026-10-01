@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import release from '../../sources/release-status.json' with { type: 'json' }
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/status', async (route) => {
@@ -18,7 +19,9 @@ test('homepage remains structurally stable', async ({ page }, testInfo) => {
   await expect(page.locator('.docs-sidebar')).toBeVisible()
   await expect(page.locator('.docs-sidebar a.is-current')).toHaveText('Developer home')
   await expect(page.getByText('238 operations')).toBeVisible()
-  await expect(page.getByText('Unpublished 1.2.2 candidate.', { exact: true })).toBeVisible()
+  const candidateNotice = page.getByText(`Unpublished ${release.version} candidate.`, { exact: true })
+  if (release.status === 'candidate') await expect(candidateNotice).toBeVisible()
+  else await expect(candidateNotice).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Choose an interface' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Make the first request' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Prepare for production' })).toBeVisible()

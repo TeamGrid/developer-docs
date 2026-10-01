@@ -2,22 +2,19 @@
 title: Configure an MCP host
 description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
-These instructions target the **unpublished candidate 1.2.2**. Install from npm
-only after publication, or use reviewed packed artifacts for qualification.
-Public 1.2.1 supports the four existing read profiles. Authenticate the CLI first:
+These instructions target **stable release 1.2.2**. Authenticate the CLI first:
 
 ```bash
 npm install --global @teamgrid/cli@1.2.2 @teamgrid/mcp-server@1.2.2
-teamgrid auth login --manual
+teamgrid auth login
 teamgrid auth status --check
 ```
 
-Create a Personal Token in **Settings → Team → Developer Center → Access** with only the required
-read scopes before importing it. New browser logins are disabled in DE and US as verified on
-29 September 2026; existing credentials remain usable. See [browser-login availability](/cli/browser-login/).
+Choose one workspace and approve only the required scopes. Sensitive permissions
+require personal Passkey confirmation. See [browser login](/cli/browser-login/).
 
 ## Codex CLI, app, and IDE extension
 
@@ -89,7 +86,7 @@ After restarting the host:
 
 1. Confirm that a server named `teamgrid` is connected without a startup error.
 2. Ask the host to list TeamGrid tools and verify that the selected tool profile is reflected.
-3. Run a bounded read such as workspace discovery. Every currently released profile is read-only.
+3. Run a bounded read such as workspace discovery. The selected `core` profile is read-only.
 4. Confirm that the returned workspace and region match the intended credential.
 
 If the server does not start, run `teamgrid auth status --check` in the same operating-system user
@@ -105,7 +102,7 @@ Continue with the [first MCP query](/mcp/first-query/), look up the exact contra
 reference](/mcp/reference/), or diagnose a failure with the [MCP troubleshooting
 matrix](/mcp/troubleshooting/).
 
-## Candidate write setup
+## Explicit write setup
 
 Before selecting `work`, a domain write profile or `full`, inspect the required
 scopes and readiness without changing business data:
@@ -122,21 +119,20 @@ it does not replace live conflict and business-permission qualification.
 
 ## Remote OAuth runtime
 
-The candidate implements a regional HTTP MCP runtime. No public hosted URL is
-released yet. Once a cell is qualified, its published endpoint metadata will
-identify the regional authorization server. A compatible host must support
+Production hosted resources are **`https://mcp.de.teamgrid.app/mcp`** and
+**`https://mcp.us.teamgrid.app/mcp`**. Use the resource for your workspace’s owning
+region. Its protected-resource metadata identifies the regional authorization server. A compatible host must support
 resource-bound authorization code with PKCE S256, refresh-token rotation and
 incremental consent. Do not paste a local API token into a remote MCP connection.
 
 Connect using only the published endpoint for the workspace's owning cell, then
 review the client, workspace and scopes in the TeamGrid browser consent screen.
 Sensitive additions require a passkey confirmation. Disconnect through the owning
-workspace's connection management to revoke the grant family. Host and live-cell
-qualification are tracked in the [candidate status](/mcp/candidate/).
+workspace's connection management to revoke the grant family. The exact release decision is recorded in [release status](/mcp/candidate/).
 
 ### ChatGPT client registration
 
-For the candidate, ChatGPT uses a public OAuth client with mandatory PKCE. Its
+ChatGPT uses a public OAuth client with mandatory PKCE. Its
 Client ID Metadata Document can advertise both `none` and `private_key_jwt`;
 TeamGrid selects `none` only when that method is explicitly supported. The
 metadata origin must first be approved by the TeamGrid operator.

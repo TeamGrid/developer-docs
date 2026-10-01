@@ -2,7 +2,7 @@
 title: Install and authenticate
 description: Install the TeamGrid CLI, sign in through the browser, and understand local credential storage and revocation.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 ## Requirements
@@ -23,12 +23,16 @@ teamgrid --help
 
 ## Current production availability
 
-As verified on 29 September 2026, new CLI browser authorizations are disabled in both DE and US.
-Existing credentials continue to work. For a new local connection, create a narrowly scoped
-Personal Token in **Settings → Team → Developer Center → Access** and import it with
-`teamgrid auth login --manual`. Enter the secret only into the terminal's hidden prompt.
-The browser flow below applies when the owning cell enables it; `--no-browser` does not bypass
-that gate. See [CLI browser login](/cli/browser-login/) for details.
+CLI browser login is enabled in Production DE and US for eligible workspaces.
+Start with `teamgrid auth login`; choose one workspace and approve only the scopes
+needed by your workflow. Sensitive scopes require personal Passkey confirmation.
+Manual import through `teamgrid auth login --manual` remains available in
+**Settings → Team → Developer Center → Access**. Enter secrets only into the
+terminal's hidden prompt. See [CLI browser login](/cli/browser-login/).
+
+Real desktop credential-storage acceptance was performed on macOS. Windows and
+Linux retain source and installation compatibility; no real desktop acceptance
+is claimed for those platforms.
 
 ## Sign in through the browser
 
@@ -55,9 +59,8 @@ Use the bounded `daily-work` preset only when the CLI needs ordinary task writes
 teamgrid auth login --preset daily-work
 ```
 
-Published 1.2.1 rejects sensitive browser-login scopes. The 1.2.2 candidate supports sensitive
-scopes through an additional passkey confirmation when the owning cell enables developer
-consent. Current workspace rights still apply. A reviewed Personal Token can also be imported
+Version 1.2.2 supports sensitive scopes through an additional personal Passkey
+confirmation. Current workspace rights still apply. A reviewed Personal Token can also be imported
 with `--manual`. See [browser login](/cli/browser-login/).
 
 ## When a browser cannot open

@@ -41,7 +41,7 @@ automatically converted.
 
 Finance scopes are overlays and must be paired with the corresponding base product or
 project-statement scope. Preserved MCP read profiles remove
-`purchasePrice`. The 1.2.2 candidate finance profiles support explicitly scoped financial reads
+`purchasePrice`. The 1.2.2 finance profiles support explicitly scoped financial reads
 and writes; profile selection itself grants no finance authority. Call notes, contacts,
 users, service billing data, audit events, and webhook delivery metadata also deserve dedicated
 least-privilege credentials and controlled downstream retention.
@@ -55,14 +55,14 @@ endpoint.
 Custom-field values and planned-work schedules can contain customer, personnel, or workload data.
 Their write operations require strong compare-and-set revisions so integrations cannot silently
 overwrite concurrent edits. Project templates can encode an organization's workflow structure.
-The 1.2.2 MCP candidate exposes these reviewed families in explicit domain profiles and `full`,
+The 1.2.2 MCP server exposes these reviewed families in explicit domain profiles and `full`,
 with the same revisions, permissions and operation-status contracts.
 
 Calendar, absence, availability, comments, documents, and files can contain personal or free-form
 content. Administration PII, export jobs, automation metadata, and integration-installation status
 use sensitive scopes and should have dedicated credentials. Export download capabilities are sent
 only in `X-TeamGrid-Export-Download-Intent`; never place them in URLs, logs, command arguments, or AI
-transcripts. The 1.2.2 MCP candidate exposes reviewed operations for these families and bounded private
+transcripts. The 1.2.2 MCP server exposes reviewed operations for these families and bounded private
 file/export resources. Transfer capabilities stay internal. Every requested domain scope and
 current workspace permission remains enforced; secrets never belong in the model transcript.
 

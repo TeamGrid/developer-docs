@@ -2,18 +2,18 @@
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
-The synchronized `1.2.0` API v1 candidate contract contains 154 paths and 238 operations. The CLI maps all 238
+The synchronized `1.2.0` API v1 contract contains 154 paths and 238 operations. The CLI maps all 238
 operations. The TypeScript SDK maps the 237 programmatic operations; the one-time anonymous CLI
 code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 36 bounded reads
 are available in the `all` profile, while the least-privilege `core` default exposes 22. Writes,
 destructive lifecycle operations, project statements, webhook delivery
 history and audit events are not exposed by the published 1.2.1 MCP package.
-The [MCP candidate](/mcp/candidate/) exposes 208 business tools (84 reads, 124 writes) through explicit profiles.
+The [MCP release](/mcp/candidate/) exposes 208 business tools (84 reads, 124 writes) through explicit profiles.
 API discovery and reveal-once secrets remain outside the business tool surface.
 
 The cross-interface contract currently governs workspace, projects and asynchronous project
@@ -22,7 +22,7 @@ contacts, comments, activity, documents, files, workspace administration, search
 automation definitions and runs, integration-installation status, call notes, contact groups, users,
 metadata, custom fields, commerce resources, audit events, webhooks, delivery history, templates, and
 planned work, personal access credentials, service accounts, resource grants, and the durable change
-feed. Finance fields are scope-gated, and the preserved MCP read profiles remove acquisition cost; candidate finance profiles require the corresponding scopes.
+feed. Finance fields are scope-gated, and the preserved MCP read profiles remove acquisition cost; finance profiles require the corresponding scopes.
 
 The contract declares 18 project, task, project-sharing, and project-template
 mutations with strong ETags and required `If-Match`, plus two revision-bound asynchronous-operation
@@ -48,7 +48,7 @@ readiness on any mismatch. The same identity is included in the canonical deploy
 
 V8 declares every request-dependent scope and dynamic policy used by collaboration, automation,
 custom-field content, calendar, work-management, and search/export handlers. The owning App cell
-resolves stored targets before evaluating grants, and its V16 candidate runtime provides one exact resolver
+resolves stored targets before evaluating grants, and its V16 runtime provides one exact resolver
 for every authenticated action. Promotion remains evidence-gated per cell; contract completeness
 alone does not activate principal enforcement.
 

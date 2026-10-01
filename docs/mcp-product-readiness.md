@@ -1,5 +1,13 @@
 # TeamGrid MCP: Zielbild und Umsetzungsplan
 
+> Historischer Analyse- und Qualifikationsstand bis 30. September 2026. Die unten
+> genannten damaligen Freigabesperren sind kein aktueller Betriebsstatus.
+> Am 2. Oktober 2026 hat der Release-Owner die exakte Production-Version freigegeben
+> und weitere Funktionstests ausdrücklich abgewählt. Aktueller Status:
+> [MCP-Freigabe](../src/content/docs/mcp/candidate.md) und
+> [Production-Veröffentlichung](./production-release.md). Echte vorhandene Nachweise
+> bleiben erhalten; nicht ausgeführte Prüfungen werden nicht als bestanden bezeichnet.
+
 Aktuelle Korrekturen und offene Freigabeschritte: [Umsetzungsstand](./mcp-implementation-status.md).
 
 Stand: 29. September 2026. Status: Umsetzung läuft; öffentliche Pakete weiterhin 1.2.1.

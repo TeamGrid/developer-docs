@@ -18,7 +18,7 @@ Then start `teamgrid-mcp --profile default --tool-profile core` directly. A heal
 server normally waits silently for host input. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd> after this
 check; do not type prompts into its standard input.
 
-New browser authorizations are currently disabled in DE and US. Use `auth login --manual` for
+Browser login is enabled in Production DE and US. Use `auth login --manual` as an alternative for
 initial setup, or `auth login --manual --replace` when replacing an existing local profile.
 See [browser-login availability](/cli/browser-login/).
 
@@ -38,9 +38,9 @@ See [browser-login availability](/cli/browser-login/).
 | A list call returns `result_too_large` | Serialized structured content exceeded 256 KiB | Check `limit` and filters in the approved arguments | Request a smaller page or narrower filters. Continue with the opaque cursor only when another page is required |
 | A list repeats or skips data | A cursor was altered, decoded, or reused with incompatible filters | Compare the cursor flow and filters without logging the whole result | Start the listing again, keep filters stable, and pass `meta.page.nextCursor` back unchanged |
 | Results come from an unexpected workspace or region | The selected credential profile points to another tenant, region, or cell | Call only `teamgrid_workspace_get` and inspect its returned tenant metadata | Stop reading business data, choose the intended CLI profile, verify it with `teamgrid auth status --check`, and restart the host |
-| Product purchase prices are absent | Intentional MCP redaction | Check the product tool description | Use a governed API, SDK, or CLI workflow with the appropriate finance overlay; the preserved read profiles remove `purchasePrice`; candidate finance profiles require the declared finance scopes |
+| Product purchase prices are absent | Intentional MCP redaction | Check the product tool description | Use a governed API, SDK, or CLI workflow with the appropriate finance overlay; the preserved read profiles remove `purchasePrice`; finance profiles require the declared finance scopes |
 | A webhook signing secret is absent | Reveal-once secrets are forbidden in MCP | Check the webhook tool description | Rotate or retrieve reveal-once material only through an explicitly governed API, SDK, CLI, or TeamGrid UI workflow; never put it in an AI transcript |
-| `all` still does not show writes, audit events, files, exports, or change-feed tools | Intentional product boundary | Review [tools and security](/mcp/tools-and-security/) | `all` retains 36 curated reads. In the 1.2.2 candidate, explicitly select a suitable domain profile or `full` for additional business tools; the change feed stays API/SDK/CLI-only |
+| `all` still does not show writes, audit events, files, exports, or change-feed tools | Intentional product boundary | Review [tools and security](/mcp/tools-and-security/) | `all` retains 36 curated reads. In version 1.2.2, explicitly select a suitable domain profile or `full` for additional business tools; the change feed stays API/SDK/CLI-only |
 | `TEAMGRID_API_TOKEN` appears ignored or points to the wrong cell | Environment credentials override the named keychain credential | Inspect only whether the variable is present, never its value | Remove unintended host environment overrides or supply the intended dedicated token together with the correct regional base URL |
 
 ## Tool errors versus startup errors
@@ -111,8 +111,7 @@ security state is no longer valid.
 3. Start a new connection request from the MCP host and review its workspace and scopes again.
 4. Complete the normal passkey confirmation if requested.
 
-The session-specific recovery message is included in the App release candidate and still requires
-regional release qualification. Other permission, workspace or routing errors can produce the
+The session-specific recovery message is included in the deployed Production App release. Other permission, workspace or routing errors can produce the
 generic connection-failure message; do not treat that message alone as proof of a session failure.
 An expired request must be restarted in the host. Refreshing an old consent URL or switching browsers
 does not renew it. Keep session validation and passkey confirmation enabled throughout recovery.
@@ -121,6 +120,6 @@ A separate Staging failure on 1 October 2026 occurred after the server successfu
 confirmation transport. A small difference between server and browser clocks caused the App to
 reject that valid response before displaying the passkey page. Signing in again or switching
 browsers does not correct this App defect. The correction keeps server expiry authoritative and
-bounds the browser's wait independently of its wall clock; it still requires release qualification.
+bounds the browser's wait independently of its wall clock; it is included in the deployed Production App release.
 Support can distinguish these failures using the preparation result without collecting cookies,
 transport tokens, authorization codes or passkey assertions.

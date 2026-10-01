@@ -18,6 +18,7 @@ const capabilitiesPath = resolve(repositoryRoot, 'public/openapi/developer-capab
 const openApiPath = resolve(repositoryRoot, 'public/openapi/v1.json')
 const referencePath = resolve(repositoryRoot, 'sources/mcp-reference.json')
 const outputDirectory = resolve(repositoryRoot, 'src/content/docs/mcp/reference')
+const release = JSON.parse(await readFile(resolve(repositoryRoot, 'sources/release-status.json'), 'utf8'))
 
 function fail(message) {
   throw new Error(`MCP reference sync failed: ${message}`)
@@ -100,7 +101,7 @@ function securityClassification(name) {
   if (name.includes('time_entr')) {
     return {
       classification: 'work-record-data',
-      summary: 'Time-entry records expose individual work activity. Preserved read profiles remove billing fields; candidate domain profiles require the relevant billing scopes.',
+      summary: 'Time-entry records expose individual work activity. Preserved read profiles remove billing fields; domain profiles require the relevant billing scopes.',
     }
   }
   if (name === 'teamgrid_workspace_get') {
@@ -192,7 +193,7 @@ function outputContract(tool, maxToolResultBytes) {
   const isSearch = tool.name === 'teamgrid_search'
   const redactions = []
   if (tool.name === 'teamgrid_product_get' || tool.name === 'teamgrid_products_list') {
-    redactions.push('`purchasePrice` is removed in the preserved read profiles; candidate domain profiles use current finance permissions.')
+    redactions.push('`purchasePrice` is removed in the preserved read profiles; domain profiles use current finance permissions.')
   }
   if (tool.name === 'teamgrid_webhook_get' || tool.name === 'teamgrid_webhooks_list') {
     redactions.push('Webhook read responses do not contain the reveal-once signing secret.')
@@ -234,13 +235,13 @@ function renderReferenceIndex(reference) {
     .join('\n\n')
   return `---
 title: MCP tool reference
-description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for the 208 TeamGrid MCP candidate tools.
+description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for the 208 TeamGrid MCP tools.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
-**Unpublished release candidate.** The public package remains 1.2.1.
-This reference is generated from the candidate tool registry in
+${release.status === 'published' ? `**Stable release ${release.version}.**` : `**Unpublished candidate ${release.version}.** Public packages remain ${release.publishedVersion}.`}
+This reference is generated from the exact tool registry in
 \`@teamgrid/mcp-server@${reference.package.version}\` and joined with the pinned API v1 capability
 contract. It contains ${reference.tools.length} business tools with explicit safety annotations. Unknown input properties are
 rejected by every tool schema.
@@ -253,7 +254,7 @@ rejected by every tool schema.
 | \`collaboration\` | ${reference.profiles.collaboration.length} | Contacts, contact groups, call notes, and users |
 | \`governance\` | ${reference.profiles.governance.length} | Custom-field definitions, services, and webhook configuration |
 | \`all\` | ${reference.profiles.all.length} | Preserved read-only union |
-| \`full\` | ${reference.profiles.full.length} | Complete candidate inventory; explicit write opt-in |
+| \`full\` | ${reference.profiles.full.length} | Complete inventory; explicit write opt-in |
 
 ${Object.entries(reference.profiles).filter(([name]) => !['core', 'collaboration', 'governance', 'all', 'full'].includes(name)).map(([name, tools]) => `- \`${name}\`: ${tools.length} tools`).join('\n')}
 
@@ -308,7 +309,7 @@ function renderToolPage(tool, reference) {
 title: ${tool.name}
 description: ${JSON.stringify(`Input schema, permissions, API mapping and ${tool.annotations.readOnlyHint ? 'read' : 'write'} behavior for ${tool.name}.`)}
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 \`${tool.name}\` is a ${tool.annotations.readOnlyHint ? 'read-only' : 'write-capable'} TeamGrid MCP tool. It is introduced by the
@@ -318,7 +319,7 @@ ${tool.description}
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by \`@teamgrid/mcp-server@${reference.package.version}\`:
+${release.status === 'published' ? '**Stable release:**' : '**Unpublished candidate:**'} this is the exact JSON Schema advertised by \`@teamgrid/mcp-server@${reference.package.version}\`:
 
 \`\`\`json
 ${inputSchema}

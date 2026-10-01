@@ -2,10 +2,10 @@
 title: "teamgrid project-template-instantiations"
 description: "1 executable @teamgrid/cli commands in the project-template-instantiations group, generated from CLI 1.2.2."
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
-> Generated from `@teamgrid/cli@1.2.2` at Developer Platform commit `ccf18032d309`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
+> Generated from `@teamgrid/cli@1.2.2` at Developer Platform commit `b0e4b3dfa4af`. Run `node scripts/sync-cli-reference.mjs --check` to detect drift; do not edit this page manually.
 
 inspect credential-owned project-template instantiations.
 

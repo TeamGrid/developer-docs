@@ -1,12 +1,12 @@
 ---
 title: MCP tool reference
-description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for the 208 TeamGrid MCP candidate tools.
+description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for the 208 TeamGrid MCP tools.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
-**Unpublished release candidate.** The public package remains 1.2.1.
-This reference is generated from the candidate tool registry in
+**Stable release 1.2.2.**
+This reference is generated from the exact tool registry in
 `@teamgrid/mcp-server@1.2.2` and joined with the pinned API v1 capability
 contract. It contains 208 business tools with explicit safety annotations. Unknown input properties are
 rejected by every tool schema.
@@ -19,7 +19,7 @@ rejected by every tool schema.
 | `collaboration` | 29 | Contacts, contact groups, call notes, and users |
 | `governance` | 28 | Custom-field definitions, services, and webhook configuration |
 | `all` | 36 | Preserved read-only union |
-| `full` | 208 | Complete candidate inventory; explicit write opt-in |
+| `full` | 208 | Complete inventory; explicit write opt-in |
 
 - `context`: 34 tools
 - `work`: 41 tools

@@ -2,7 +2,7 @@
 title: teamgrid_project_template_instantiate
 description: "Input schema, permissions, API mapping and write behavior for teamgrid_project_template_instantiate."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_project_template_instantiate` is a write-capable TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ Instantiate a project template asynchronously. Changes the selected workspace un
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {

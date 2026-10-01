@@ -119,8 +119,8 @@ it does not replace live conflict and business-permission qualification.
 
 ## Remote OAuth runtime
 
-Production hosted resources are **`https://mcp.de.teamgrid.app/mcp`** and
-**`https://mcp.us.teamgrid.app/mcp`**. Use the resource for your workspace’s owning
+Production hosted resources are **`https://mcp-de.teamgrid.app/mcp`** and
+**`https://mcp-us.teamgrid.app/mcp`**. Use the resource for your workspace’s owning
 region. Its protected-resource metadata identifies the regional authorization server. A compatible host must support
 resource-bound authorization code with PKCE S256, refresh-token rotation and
 incremental consent. Do not paste a local API token into a remote MCP connection.

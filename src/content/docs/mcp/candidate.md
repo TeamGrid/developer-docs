@@ -16,8 +16,8 @@ Use the endpoint for the workspace's owning region:
 
 | Region | MCP resource |
 | --- | --- |
-| Germany / DE | `https://mcp.de.teamgrid.app/mcp` |
-| United States / US | `https://mcp.us.teamgrid.app/mcp` |
+| Germany / DE | `https://mcp-de.teamgrid.app/mcp` |
+| United States / US | `https://mcp-us.teamgrid.app/mcp` |
 
 In ChatGPT, create an MCP connection with the exact HTTPS resource and OAuth
 authentication. Sign in to TeamGrid, select one workspace and review the access

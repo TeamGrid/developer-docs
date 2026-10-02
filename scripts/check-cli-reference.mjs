@@ -7,6 +7,7 @@ const manifest = JSON.parse(
   await readFile(path.join(root, 'sources', 'cli-reference.json'), 'utf8'),
 )
 const packages = JSON.parse(await readFile(path.join(root, 'sources', 'packages.json'), 'utf8'))
+const contracts = JSON.parse(await readFile(path.join(root, 'sources', 'contracts.json'), 'utf8'))
 const capabilities = JSON.parse(
   await readFile(path.join(root, 'public', 'openapi', 'developer-capabilities.json'), 'utf8'),
 )
@@ -23,6 +24,9 @@ if (
   || manifest.version !== packages.packages?.cli?.version
 ) {
   failures.push('CLI reference package version or source commit differs from sources/packages.json.')
+}
+if (manifest.apiContractSourceCommit !== contracts.sourceCommit) {
+  failures.push('CLI reference API source commit differs from sources/contracts.json. Regenerate the CLI reference.')
 }
 if (manifest.commanderVersion !== '15.0.0') {
   failures.push(`Unexpected pinned Commander version: ${manifest.commanderVersion}`)

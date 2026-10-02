@@ -55,6 +55,36 @@ permissions are requested, a confirmation window opens for your personal Passkey
 After successful confirmation it closes and the connection flow continues. A
 request containing only ordinary read scopes can complete without that popup.
 
+### Who chooses the permissions?
+
+The MCP client requests OAuth scopes; TeamGrid displays the requested set for
+the workspace you choose. The current consent screen lets you **approve or deny
+that set**. It does not provide individual scope checkboxes or add permissions
+that the client has not requested.
+
+The initial connection requests `workspace:read`. This identifies your workspace;
+it does not authorize reading all its business data or writing to it. A later
+operation can require additional consent:
+
+| Requested action | Required scopes |
+| --- | --- |
+| Identify the connected workspace | `workspace:read` |
+| List tasks | `workspace:read`, `tasks:read` |
+| Create a task | `workspace:read`, `tasks:write` |
+| Read a task and then update it | `workspace:read`, `tasks:read`, `tasks:write` |
+| List projects | `workspace:read`, `projects:read` |
+
+An operation with protected fields or related resources can require additional
+scopes. Check its [tool reference](/mcp/reference/) and the actual consent screen.
+Existing approved scopes should be retained when requesting additional access.
+You can decline a new request; previously approved reads remain available while
+their original connection is valid. TeamGrid roles, sharing rules and workspace
+locks apply independently of OAuth consent.
+
+If you need a specific scope set at initial setup in a local MCP client, use the
+[CLI browser-login workflow](/cli/browser-login/) and an explicit tool profile.
+That local configuration does not change the hosted ChatGPT connection.
+
 Do not dismiss a generic connection failure as a browser or cookie problem. If
 the request expires, restart the connection from ChatGPT. Refreshing an expired
 consent URL cannot create a new request. The [OAuth troubleshooting matrix](/mcp/troubleshooting/#write-and-oauth-failures)
@@ -93,6 +123,14 @@ Tool safety annotations guide the host; they do not replace TeamGrid authorizati
 If ChatGPT has cached an earlier tool catalog, open its connection settings and
 select **Refresh**, then start a new conversation. If authentication is invalid,
 reconnect and review TeamGrid consent again.
+
+Access tokens currently last up to five minutes. The host renews them using the
+refresh token while the underlying grant remains valid. This renewal does not
+add permissions and should not require a new login every few minutes.
+An additional-permission request is separate from token expiry. If ChatGPT says
+the connection has expired immediately before a new read or write, the message
+alone does not establish the cause: check the approved scopes and see
+[early reconnect prompts](/mcp/troubleshooting/#early-chatgpt-reconnect-prompts).
 
 Removing a connection from ChatGPT stops its use in that host. To revoke its
 server-side token family, open the owning TeamGrid workspace's

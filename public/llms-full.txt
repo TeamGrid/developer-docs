@@ -66206,6 +66206,7 @@ The table below covers consent and outcome recovery.
 | ChatGPT cannot register its OAuth client | Check approved client metadata, authentication-method negotiation and the exact callback; do not widen origins or bypass PKCE |
 | The confirmation reports an invalid sign-in session (`security-session-changed` or `security-session-unavailable`) | Sign out on TeamGrid's central sign-in page, sign in again, then start a new connection request in the MCP host |
 | A fresh sign-in still produces a briefly opening popup; support finds `Invalid developer confirmation` after successful preparation | This can be a TeamGrid App clock-skew defect before the passkey prompt. Report the App version and request time; retry a new request after the corrected App is available |
+| A fresh request immediately closes its popup with the generic connection-failure message, before a passkey prompt | Share the request time, region and selected workspace with support. A workspace-routing defect can reject the confirmation before passkey authentication starts; repeated sign-ins cannot correct that server defect |
 | The authorization request has expired | Start a new request in the MCP host; an old consent URL cannot renew the request |
 | Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |
 
@@ -66265,6 +66266,12 @@ bounds the browser's wait independently of its wall clock; it is included in the
 
 Support can distinguish these failures using the preparation result without collecting cookies,
 transport tokens, authorization codes or passkey assertions.
+
+A workspace-routing failure can also stop the confirmation before a passkey prompt. When a proxy
+loses the original workspace host on the realtime connection, TeamGrid cannot validate that
+connection against the signed-in workspace. Support must check the actual App release and host
+routing; the correction must retain workspace isolation and session validation. Do not disable
+passkey confirmation, change the selected workspace or grant broader scopes to work around it.
 
 <!-- mcp/write-workflow.md -->
 ---

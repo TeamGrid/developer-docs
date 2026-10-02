@@ -12,7 +12,18 @@ The production domain was cut over from ReadMe to Cloudflare Pages on 2026-07-19
 
 ## Normal deployment
 
-Merges to protected `main` run the `verify` job first. The `deploy` job then builds the same commit and uploads `dist` to the production branch of the Pages project. The Cloudflare account ID and the scoped Pages token are stored in the GitHub `production` environment.
+Merges to protected `main` run source verification and the existing browser job.
+The verification job archives the exact built `dist` artifact. Deployment
+downloads that artifact, requires all three documented npm package versions to
+be public, and uploads the same commit to the Pages production branch. The
+Cloudflare account ID and scoped Pages token remain in the GitHub `production`
+environment. The final canonical-route check must pass before release closeout.
+
+For published documentation, the daily client-reference drift job resolves the
+common `latest` version and exact source commit from all three npm packages.
+Candidate documentation uses the current repository source. Conflicting versions,
+missing commits, failed registry requests and actual reference drift remain
+errors; delivery-only README commits do not substitute for published provenance.
 
 Do not deploy an unverified local build over the production branch during normal operation. Use a pull request so the source commit, verification result, and deployed artifact remain traceable.
 

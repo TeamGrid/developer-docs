@@ -117,6 +117,7 @@ The table below covers consent and outcome recovery.
 | A fresh sign-in still produces a briefly opening popup; support finds `Invalid developer confirmation` after successful preparation | This can be a TeamGrid App clock-skew defect before the passkey prompt. Report the App version and request time; retry a new request after the corrected App is available |
 | A fresh request immediately closes its popup with the generic connection-failure message, before a passkey prompt | Share the request time, region and selected workspace with support. A workspace-routing defect can reject the confirmation before passkey authentication starts; repeated sign-ins cannot correct that server defect |
 | The authorization request has expired | Start a new request in the MCP host; an old consent URL cannot renew the request |
+| The popup says `This request is unavailable for this account. Return to the original window.` | Check the intended signed-in account and start a fresh request in the MCP host. This message does not establish that a workspace has no Passkey; see [account and region confirmation](#passkeys-and-workspaces-in-different-regions) |
 | Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |
 
 ## Early ChatGPT reconnect prompts
@@ -181,3 +182,30 @@ loses the original workspace host on the realtime connection, TeamGrid cannot va
 connection against the signed-in workspace. Support must check the actual App release and host
 routing; the correction must retain workspace isolation and session validation. Do not disable
 passkey confirmation, change the selected workspace or grant broader scopes to work around it.
+
+## Passkeys and workspaces in different regions
+
+A Passkey belongs to your **TeamGrid account**, not to each workspace. A US-hosted
+workspace can therefore request confirmation on TeamGrid's central sign-in page
+at `login.teamgrid.app`. You do not need to register another Passkey in that
+workspace. The confirmation still belongs to the selected workspace and the
+exact permissions shown in the original request.
+
+The message **“This request is unavailable for this account. Return to the original
+window.”** means that the confirmation cannot be matched to the current account,
+session and request. An expired request, a different signed-in account or a
+regional session-routing problem can reach this boundary before a Passkey is
+requested. The message alone cannot identify which condition caused it.
+
+1. Return to the original connection window. If TeamGrid offers a new sign-in,
+   use the intended account and its normal central sign-in method.
+2. If the request expired, restart the connection in ChatGPT or your MCP host.
+   Refreshing or reopening the old popup cannot renew it.
+3. Check the selected workspace and permissions, then confirm the new request.
+4. If a fresh request still fails, share the time, selected region and workspace
+   with support. Support must verify the regional transport and session binding;
+   copying Passkeys between workspaces or repeatedly clearing cookies cannot
+   correct a server-routing defect.
+
+Do not send the consent URL, browser session, authorization code or Passkey
+assertion to support. Keep account confirmation and workspace permissions enabled.

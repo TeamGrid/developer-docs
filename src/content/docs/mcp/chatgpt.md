@@ -55,6 +55,11 @@ permissions are requested, a confirmation window opens for your personal Passkey
 After successful confirmation it closes and the connection flow continues. A
 request containing only ordinary read scopes can complete without that popup.
 
+Your Passkey belongs to your TeamGrid account. Confirmation can open the central
+`login.teamgrid.app` page even for a US workspace; another workspace-specific
+Passkey is not required. See [account and region confirmation](/mcp/troubleshooting/#passkeys-and-workspaces-in-different-regions)
+if the popup reports that the request is unavailable for your account.
+
 ### Who chooses the permissions?
 
 The MCP client requests OAuth scopes; TeamGrid displays the requested set for

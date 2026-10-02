@@ -83,7 +83,7 @@ settings when the write executes. This extra administrative recheck applies to t
 not to ordinary workspace-wide service-credential reads.
 
 Use `client.workspaceSettings.get()` and `client.workspaceSettings.update(...)`, or
-`teamgrid workspace-settings get|update`. The 1.2.2 candidate exposes these operations in the explicit administration profile and `full`; current settings permissions and revisions still apply.
+`teamgrid workspace-settings get|update`. The 1.2.2 release exposes these operations in the explicit administration profile and `full`; current settings permissions and revisions still apply.
 
 ## Authorization-filtered event catalog
 

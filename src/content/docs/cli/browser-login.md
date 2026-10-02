@@ -2,7 +2,7 @@
 title: CLI browser login
 description: Sign in to the TeamGrid CLI through the browser, choose a workspace and scopes, and manage the resulting local credential safely.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 Browser login is the default interactive authentication flow for the TeamGrid CLI when it is
@@ -14,12 +14,16 @@ MCP traffic remain independent of that rollout gate.
 
 ## Current production availability
 
-As verified on 29 September 2026, new CLI browser authorizations are disabled in both DE and US.
-Existing credentials continue to work. For a new local connection, create a narrowly scoped
-Personal Token in **Settings → Team → Developer Center → Access** and import it with
-`teamgrid auth login --manual`. Enter the secret only into the terminal's hidden prompt.
-The browser flow below applies when the owning cell enables it; `--no-browser` does not bypass
-that gate. See [CLI browser login](/cli/browser-login/) for details.
+CLI browser login is enabled in Production DE and US for eligible workspaces.
+Start with `teamgrid auth login`; choose one workspace and approve only the scopes
+needed by your workflow. Sensitive scopes require personal Passkey confirmation.
+Manual import through `teamgrid auth login --manual` remains available in
+**Settings → Team → Developer Center → Access**. Enter secrets only into the
+terminal's hidden prompt. See [CLI browser login](/cli/browser-login/).
+
+Real desktop credential-storage acceptance was performed on macOS. Windows and
+Linux retain source and installation compatibility; no real desktop acceptance
+is claimed for those platforms.
 
 ## Start the login
 
@@ -67,13 +71,13 @@ Request additional scopes explicitly when a reviewed local workflow needs them:
 teamgrid auth login --scope projects:read --scope tasks:read
 ```
 
-The 1.2.2 candidate supports sensitive administration, finance and PII scopes
+Version 1.2.2 supports sensitive administration, finance and PII scopes
 with a separate account-passkey confirmation bound to this exact authorization.
 The cell must enable browser login and developer consent; existing workspace
-permissions still apply. Published 1.2.1 rejects sensitive scopes in browser login.
+permissions still apply.
 Manual import of a reviewed Personal Token remains available.
 
-Candidate presets also cover MCP workflows. Use the access plan to obtain exact
+Presets also cover MCP workflows. Use the access plan to obtain exact
 scope arguments for the selected profile:
 
 ```bash
@@ -166,7 +170,7 @@ disabling the TeamGrid member immediately affects their personal credentials.
 | Browser waits or terminal times out | Confirm the callback can reach the CLI host's IPv4 loopback address, then start a new login |
 | Pairing phrases differ | Deny the request and start again; never approve mismatched phrases |
 | Workspace is missing | Confirm membership, Developer entitlement, workspace status, and regional availability |
-| Requested scope is rejected | Check the package/cell version, preset and current permissions; sensitive candidate scopes require passkey confirmation |
+| Requested scope is rejected | Check the package/cell version, preset and current permissions; sensitive scopes require passkey confirmation |
 | Profile already exists | Use another profile or deliberately retry with `--replace` |
 | Credential store is unavailable | Restore the native store; the CLI never falls back to plaintext storage |
 | `auth status --check` returns unauthorized | Revoke stale credentials if necessary and run browser login again |

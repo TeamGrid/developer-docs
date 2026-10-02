@@ -6,8 +6,9 @@ reviewedAt: 2026-09-29
 ---
 
 Use this checklist for every deployed API or SDK integration and every unattended CLI process.
-Record the evidence in the integration's release ticket. MCP uses the separate host review below. The 1.2.2 candidate also needs OAuth,
-write-conflict, interrupted-result and revocation qualification before those features go live.
+Record the evidence in the integration's release ticket. MCP uses the separate host review below. The current 1.2.2 release uses the exact
+[owner-accepted release decision](/mcp/candidate/). Existing authorization and
+resource revision requirements remain enforced.
 
 ## 1. Ownership and contract
 

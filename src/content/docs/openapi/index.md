@@ -26,7 +26,7 @@ runtime inventory, and the cross-interface capability ledger. The documentation 
 records the immutable contract source commit and the API runtime commit carrying those artifacts
 in `sources/contracts.json`. CI fails if any published artifact or provenance field drifts.
 
-The synchronized `1.2.0` manifest is a release candidate. It records 154 v1 paths, 238 governed v1 operations, 87 frozen v0
+The synchronized `1.2.0` manifest is the released contract. It records 154 v1 paths, 238 governed v1 operations, 87 frozen v0
 operations, 87 v0 migration decisions, 90 canonical scopes, and 74 classified TeamGrid product
 capabilities. It also records 18 `resource-cas-v1` mutations, two qualified asynchronous-operation
 reads, and another 48 domain-specific `If-Match` operations. These counts describe the synchronized
@@ -36,7 +36,7 @@ All successful JSON response and JSON request examples are checked against their
 Consumers should pin the manifest's `contractVersion` together with the OpenAPI digest and package
 release they tested. The `1.2.0` checkpoint qualifies core project, task, and project-template
 CAS while preserving all domain-specific preconditions. Its synchronized SDK, CLI, and MCP package
-checkpoint is `1.2.1`. See [resource concurrency](/api/v1/resource-concurrency/).
+checkpoint is `1.2.2`. See [resource concurrency](/api/v1/resource-concurrency/).
 
 Use the versioned regional server URL from the credential location. Do not rewrite API v1 operations to a global API v0 host.
 

@@ -2,7 +2,7 @@
 title: Automations and integrations
 description: Inspect the public automation DSL, manage versioned definitions and runs, and read installation status without revealing provider secrets.
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 ## Public automation contract
@@ -33,6 +33,6 @@ Google Calendar, Sipgate, and Slack. It exposes neither access tokens nor provid
 secrets and does not perform live provider verification; `verification: "not_checked"` is explicit.
 The operation requires the sensitive `integrations:read` scope.
 
-The 1.2.2 MCP candidate exposes reviewed automation and integration operations in explicit
+The 1.2.2 MCP server exposes reviewed automation and integration operations in explicit
 domain profiles and `full`. Inspect the [tool reference](/mcp/reference/) for scopes, effects and
 operation status. Creating or executing an automation can affect future work and external systems.

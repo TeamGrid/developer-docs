@@ -2,7 +2,7 @@
 title: Authentication by environment
 description: Choose the correct TeamGrid credential and sign-in method for a desktop, remote terminal, container, SDK, MCP host, or CI job.
 owner: Security
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 TeamGrid deliberately separates interactive access from unattended automation. A developer working
@@ -11,7 +11,7 @@ a service account whose lifecycle is owned by the workspace.
 
 | Environment | Recommended authentication | Why |
 | --- | --- | --- |
-| Local desktop CLI | `teamgrid auth login --manual` while browser authorization is disabled | Imports a scoped Personal Token into the operating-system credential store; browser login is available only after the regional rollout gate opens |
+| Local desktop CLI | `teamgrid auth login` | Approves a scoped personal credential and stores it in the operating-system credential store |
 | Remote terminal | A personal credential imported with `--manual`, or `--no-browser` only when the loopback callback can reach the CLI host | The browser flow still finishes on the CLI host's IPv4 loopback address |
 | Interactive development container | A short-lived personal credential injected through `TEAMGRID_API_TOKEN` | Containers often have no usable desktop credential store; do not bake the value into an image or layer |
 | Local SDK script | Personal credential from the process environment | The SDK accepts an explicit token and never starts a browser flow |
@@ -20,12 +20,16 @@ a service account whose lifecycle is owned by the workspace.
 
 ## Current production availability
 
-As verified on 29 September 2026, new CLI browser authorizations are disabled in both DE and US.
-Existing credentials continue to work. For a new local connection, create a narrowly scoped
-Personal Token in **Settings → Team → Developer Center → Access** and import it with
-`teamgrid auth login --manual`. Enter the secret only into the terminal's hidden prompt.
-The browser flow below applies when the owning cell enables it; `--no-browser` does not bypass
-that gate. See [CLI browser login](/cli/browser-login/) for details.
+CLI browser login is enabled in Production DE and US for eligible workspaces.
+Start with `teamgrid auth login`; choose one workspace and approve only the scopes
+needed by your workflow. Sensitive scopes require personal Passkey confirmation.
+Manual import through `teamgrid auth login --manual` remains available in
+**Settings → Team → Developer Center → Access**. Enter secrets only into the
+terminal's hidden prompt. See [CLI browser login](/cli/browser-login/).
+
+Real desktop credential-storage acceptance was performed on macOS. Windows and
+Linux retain source and installation compatibility; no real desktop acceptance
+is claimed for those platforms.
 
 ## Local desktop
 

@@ -2,7 +2,7 @@
 title: teamgrid_product_get
 description: "Input schema, permissions, API mapping and read behavior for teamgrid_product_get."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_product_get` is a read-only TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ Get a product
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {
@@ -129,7 +129,7 @@ The bounded API result is returned as MCP structured content and equivalent JSON
 
 Additional output boundary:
 
-- `purchasePrice` is removed in the preserved read profiles; candidate domain profiles use current finance permissions.
+- `purchasePrice` is removed in the preserved read profiles; domain profiles use current finance permissions.
 
 The linked API operation is the canonical reference for the response envelope and resource schema.
 Write tools preserve their declared revision/idempotency contract and require current permissions.

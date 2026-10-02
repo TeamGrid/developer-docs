@@ -2,7 +2,7 @@
 title: teamgrid_comments_list
 description: "Input schema, permissions, API mapping and read behavior for teamgrid_comments_list."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_comments_list` is a read-only TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ List target comments May notify other people.
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {

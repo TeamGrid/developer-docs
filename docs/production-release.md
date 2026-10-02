@@ -21,6 +21,15 @@ already exist. After package and cell qualification, update the status to `publi
 the published version and maintained availability text together; then run the full
 verification again. Changing this marker is a release decision, not a test repair.
 
+For the exact MCP 1.2.2 release accepted on 2 October 2026, the release owner's
+instruction waives additional functional exercises. Retain genuine Staging proof
+and immutable DE/US promotion evidence. Activate guarded hosted MCP and CLI login
+in both active production cells, verify the effective configuration and standing
+feature baseline, then publish packages and this portal. Record unexecuted regional,
+client and desktop exercises as waived, never as passing. macOS is the only real
+desktop acceptance platform. Existing source, content and deployment integrity
+checks remain applicable.
+
 Authentication documentation has an additional ordering rule. Do not publish browser-login,
 Windows Credential Manager, or `TeamGrid CLI` lifecycle guidance merely because its portal change
 is ready. First verify that the pinned CLI package exists on npm and that the exact App candidate

@@ -284,7 +284,7 @@ async function main() {
   }
   const { stdout: reviewedAtOutput } = await execFileAsync(
     'git',
-    ['show', '-s', '--format=%cs', sourceCommit],
+    ['show', '-s', '--format=%ct', sourceCommit],
     { cwd: sourceRoot, encoding: 'utf8' },
   )
   const { stdout: sourceProgram } = await execFileAsync(
@@ -423,7 +423,7 @@ async function main() {
     sourceCommit,
     sourceProgramSha256: createHash('sha256').update(sourceProgram).digest('hex'),
     apiContractSourceCommit: contractsManifest.sourceCommit,
-    reviewedAt: reviewedAtOutput.trim(),
+    reviewedAt: new Date(Number(reviewedAtOutput.trim()) * 1000).toISOString().slice(0, 10),
     commanderVersion: cliPackage.dependencies.commander,
     groupCount: groups.length,
     commandNodeCount: allPaths.size,

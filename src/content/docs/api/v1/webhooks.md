@@ -2,7 +2,7 @@
 title: Signed webhooks
 description: Create TeamGrid webhook v2 registrations and verify every delivery over the exact raw request body.
 owner: Security
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 Webhook registrations created through API v1 use signed delivery version 2. The create response
@@ -69,7 +69,7 @@ replayed. It never contains the destination URL, payload, signing secret, reques
 credential data. A test attempt is visible in delivery history but never changes the webhook's
 production health state: `failCount`, `lastStatus`, and automatic disablement remain untouched.
 Use a new logical idempotency key for a new test; reuse the original key only to recover the same
-request. The 1.2.2 MCP candidate includes explicit test delivery; review the external effect before approval.
+request. The 1.2.2 MCP server includes explicit test delivery; review the external effect before approval.
 
 ## Delivery headers
 
@@ -129,6 +129,6 @@ both list and get requests.
 History includes the delivery and webhook IDs, event, resource ID, state, timestamps, attempt count,
 HTTP status, and sanitized transport codes. It never includes the destination URL, payload, request
 or response headers, request or response body, signing secret, tenant-routing metadata, or retention
-internals. The 1.2.2 MCP candidate includes bounded, permission-checked delivery metadata in its integration profile and `full`.
+internals. The 1.2.2 MCP server includes bounded, permission-checked delivery metadata in its integration profile and `full`.
 
 Use delivery history for bounded troubleshooting, not as a durable event store or replay API.

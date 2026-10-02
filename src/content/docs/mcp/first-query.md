@@ -2,7 +2,7 @@
 title: Run your first MCP query
 description: Connect a least-privilege TeamGrid profile, verify the workspace boundary, and complete a bounded read in an MCP host.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 This walkthrough ends with a verified, read-only TeamGrid result in your MCP host. It starts with
@@ -24,16 +24,16 @@ commands are not found, resolve that in the terminal before configuring the host
 
 ## 2. Create a dedicated CLI profile
 
-Create a Personal Token with `workspace:read` and `projects:read` in **Settings → Team → Developer Center → Access**. Import it in a terminal before starting the MCP process:
+Authorize a dedicated read-only profile in a terminal before starting the MCP process:
 
 ```bash
-teamgrid --profile mcp-local auth login --manual
+teamgrid --profile mcp-local auth login --scope workspace:read --scope projects:read
 teamgrid --profile mcp-local auth status --check
 ```
 
-New browser logins are disabled in DE and US as verified on 29 September 2026. The manual import
-stores the token in the operating-system credential store. When browser login becomes available,
-follow [CLI browser login](/cli/browser-login/) and use the same profile name. Do not paste a token into an AI conversation or host
+Browser login is enabled in Production DE and US and stores the credential in
+the operating-system credential store. Follow [CLI browser login](/cli/browser-login/)
+and use the same profile name. Do not paste a token into an AI conversation or host
 configuration.
 
 For an unattended MCP process, use a dedicated service-account credential. A personal browser

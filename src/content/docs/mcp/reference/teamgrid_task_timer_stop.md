@@ -2,7 +2,7 @@
 title: teamgrid_task_timer_stop
 description: "Input schema, permissions, API mapping and write behavior for teamgrid_task_timer_stop."
 owner: Developer Platform
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-01
 ---
 
 `teamgrid_task_timer_stop` is a write-capable TeamGrid MCP tool. It is introduced by the
@@ -12,7 +12,7 @@ Stop task time tracking. Changes the selected workspace under current API permis
 
 ## Input schema
 
-**Unpublished candidate:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
+**Stable release:** this is the exact JSON Schema advertised by `@teamgrid/mcp-server@1.2.2`:
 
 ```json
 {

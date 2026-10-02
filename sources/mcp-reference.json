@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "package": {
     "name": "@teamgrid/mcp-server",
-    "sourceCommit": "ccf18032d309725f8503a13461e62a15ff11faca",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
     "sourceRepository": "TeamGrid/developer-platform",
     "version": "1.2.2"
   },
@@ -13176,7 +13176,7 @@
         "maxSerializedBytes": 262144,
         "pagination": null,
         "redactions": [
-          "`purchasePrice` is removed in the preserved read profiles; candidate domain profiles use current finance permissions."
+          "`purchasePrice` is removed in the preserved read profiles; domain profiles use current finance permissions."
         ],
         "searchLimit": null
       },
@@ -14265,7 +14265,7 @@
           "nextCursor": "meta.page.nextCursor"
         },
         "redactions": [
-          "`purchasePrice` is removed in the preserved read profiles; candidate domain profiles use current finance permissions."
+          "`purchasePrice` is removed in the preserved read profiles; domain profiles use current finance permissions."
         ],
         "searchLimit": null
       },
@@ -40419,7 +40419,7 @@
       },
       "security": {
         "classification": "work-record-data",
-        "summary": "Time-entry records expose individual work activity. Preserved read profiles remove billing fields; candidate domain profiles require the relevant billing scopes."
+        "summary": "Time-entry records expose individual work activity. Preserved read profiles remove billing fields; domain profiles require the relevant billing scopes."
       },
       "output": {
         "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
@@ -40586,7 +40586,7 @@
       },
       "security": {
         "classification": "work-record-data",
-        "summary": "Time-entry records expose individual work activity. Preserved read profiles remove billing fields; candidate domain profiles require the relevant billing scopes."
+        "summary": "Time-entry records expose individual work activity. Preserved read profiles remove billing fields; domain profiles require the relevant billing scopes."
       },
       "output": {
         "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
@@ -40989,7 +40989,7 @@
       },
       "security": {
         "classification": "work-record-data",
-        "summary": "Time-entry records expose individual work activity. Preserved read profiles remove billing fields; candidate domain profiles require the relevant billing scopes."
+        "summary": "Time-entry records expose individual work activity. Preserved read profiles remove billing fields; domain profiles require the relevant billing scopes."
       },
       "output": {
         "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",

@@ -125,6 +125,48 @@ test('German entry declares its document language', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toContainText('deutscher Einstieg')
 })
 
+test('MCP onboarding reaches hosted setup and a guarded write', async ({ page }, testInfo) => {
+  await page.goto('/mcp/')
+  await page.locator('main').getByRole('link', { name: 'Connect TeamGrid to ChatGPT', exact: true }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Connect TeamGrid to ChatGPT')
+  await expect(page.locator('main')).toContainText('https://mcp-de.teamgrid.app/mcp')
+  await expect(page.locator('main')).toContainText('https://mcp-us.teamgrid.app/mcp')
+  await expect(page.locator('main')).toContainText('no TeamGrid client secret or API token')
+  await page.getByRole('link', { name: 'complete task-write walkthrough', exact: true }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Make and verify a safe MCP write')
+  await expect(page.locator('main')).toContainText('including its quotes')
+  await expect(page.locator('main')).toContainText('unknown')
+  await page.getByRole('link', { name: 'exact task-update contract', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Arguments at a glance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Write preconditions' })).toBeVisible()
+  const contractLink = page.getByRole('link', { name: 'exact MCP input and output contract', exact: true })
+  await expect(contractLink).toHaveAttribute('href', '/mcp/contracts/teamgrid_task_update.json')
+  const response = await page.request.get((await contractLink.getAttribute('href'))!)
+  expect(response.ok()).toBe(true)
+  const contract = await response.json()
+  expect(contract.inputSchema.required).toContain('expectedRevision')
+  expect(contract.scopes.required).toContain('workspace:read')
+  expect(contract.outputSchema.properties.meta.properties.outcome.enum).toContain('unknown')
+  expect(contract.annotations.readOnlyHint).toBe(false)
+  await expect(page.locator('html')).toHaveJSProperty('scrollWidth', testInfo.project.name === 'mobile' ? 390 : 1440)
+  for (const route of ['/mcp/chatgpt/', '/mcp/write-workflow/', '/mcp/resources-and-protocol/', '/mcp/reference/', '/mcp/reference/teamgrid_task_recurrence_occurrence_override_clear/']) {
+    await page.goto(route)
+    await expect(page.locator('html')).toHaveJSProperty('scrollWidth', testInfo.project.name === 'mobile' ? 390 : 1440)
+  }
+})
+
+test('documentation edit links point to actual Markdown files', async ({ page }) => {
+  for (const [route, file] of [
+    ['/mcp/', 'mcp/index.md'],
+    ['/mcp/chatgpt/', 'mcp/chatgpt.md'],
+    ['/guides/get-started/', 'guides/get-started.mdx'],
+  ]) {
+    await page.goto(route)
+    await expect(page.getByRole('link', { name: 'Edit this page ↗', exact: true }))
+      .toHaveAttribute('href', `https://github.com/TeamGrid/developer-docs/edit/main/src/content/docs/${file}`)
+  }
+})
+
 test('onboarding progress is local and persistent', async ({ page }) => {
   await page.goto('/guides/get-started/')
   await page.getByLabel('Workspace slug').fill('acme-inc')

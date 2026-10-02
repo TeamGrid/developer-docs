@@ -1,0 +1,375 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "contract": {
+    "domain": "schedule-write",
+    "concurrency": "conditional",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "$ref": "#/$defs/Absence"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Unique identifier assigned to the API request for tracing and support."
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          }
+        },
+        "required": [
+          "requestId"
+        ],
+        "type": "object",
+        "description": "Public API representation of meta."
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "Absence": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "archived": {
+                "type": "boolean",
+                "description": "Whether this resource is archived."
+              },
+              "archivedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp at which the resource was archived, or null when it is active."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp at which the resource was created."
+              },
+              "end": {
+                "format": "date-time",
+                "type": "string",
+                "description": "End timestamp of the represented interval."
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The reason associated with this absence attributes."
+              },
+              "revision": {
+                "pattern": "^ab1-[a-f0-9]{64}$",
+                "type": "string",
+                "description": "Strong resource revision used for optimistic concurrency control."
+              },
+              "start": {
+                "format": "date-time",
+                "type": "string",
+                "description": "Start timestamp of the represented interval."
+              },
+              "userId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string",
+                "description": "Identifier of the related workspace user."
+              }
+            },
+            "required": [
+              "archived",
+              "archivedAt",
+              "createdAt",
+              "end",
+              "reason",
+              "revision",
+              "start",
+              "userId"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this absence."
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "const": "absence",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object",
+        "description": "Public API representation of absence."
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "gated-write",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/archiveabsence/",
+      "method": "DELETE",
+      "operationId": "archiveAbsence",
+      "path": "/absences/{id}"
+    }
+  ],
+  "availableIn": [
+    "full",
+    "schedule-write"
+  ],
+  "baseProfile": "full",
+  "description": "Archive an absence. Changes the selected workspace under current API permissions. Read the target first; submit its exact ETag. On conflict, review the current state before making a new decision.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workspaceId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "Workspace returned by teamgrid_workspace_get and selected for this exact action."
+      },
+      "id": {
+        "maxLength": 128,
+        "minLength": 1,
+        "type": "string"
+      },
+      "expectedRevision": {
+        "pattern": "^\"ab1-[a-f0-9]{64}\"$",
+        "type": "string",
+        "description": "Exact strong ETag (including quotes) from the read reviewed for this action. Never replace it automatically after a conflict."
+      }
+    },
+    "required": [
+      "workspaceId",
+      "id",
+      "expectedRevision"
+    ],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {},
+  "name": "teamgrid_absence_archive",
+  "scopes": {
+    "optional": [],
+    "conditional": [
+      "absences:admin:write"
+    ],
+    "required": [
+      "absences:write",
+      "workspace:read"
+    ]
+  },
+  "security": {
+    "classification": "workspace-mutation",
+    "summary": "This changes workspace state and may trigger business or external effects. Use its exact scope, revision and idempotency contract; profile selection grants no authority."
+  },
+  "output": {
+    "format": "A compact mutation receipt includes target and revision when available; outcome metadata distinguishes accepted, complete, partial and uncertain results.",
+    "kind": "mutation-receipt",
+    "maxSerializedBytes": 262144,
+    "pagination": null,
+    "redactions": [],
+    "searchLimit": null
+  },
+  "examplePrompt": "Prepare a teamgrid_absence_archive operation for my chosen target. Resolve IDs, read current state and revisions, show the intended change, then report its confirmed or uncertain outcome without automatic retries.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_absence_archive`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `absences:write` and `workspace:read` and an applicable conditional domain scope (`absences:admin:write`) or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "The connection ends while awaiting the write result.",
+      "result": "Inspect the outcome and status/resume information. An interrupted wait does not prove rollback; never blindly repeat the write."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

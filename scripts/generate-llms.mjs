@@ -17,6 +17,10 @@ const links = [
   ['TypeScript SDK', '/sdk/'],
   ['CLI', '/cli/'],
   ['MCP server', '/mcp/'],
+  ['Connect ChatGPT', '/mcp/chatgpt/'],
+  ['Safe MCP writes', '/mcp/write-workflow/'],
+  ['MCP tool reference', '/mcp/reference/'],
+  ['MCP resources and protocol', '/mcp/resources-and-protocol/'],
   ['Security', '/security/'],
   ['Changelog', '/changelog/'],
 ]

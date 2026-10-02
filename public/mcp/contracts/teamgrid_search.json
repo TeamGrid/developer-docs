@@ -1,0 +1,434 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "contract": {
+    "domain": "context",
+    "concurrency": "read",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "items": {
+          "$ref": "#/$defs/SearchResult"
+        },
+        "type": "array"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Unique identifier assigned to the API request for tracing and support."
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          }
+        },
+        "required": [
+          "requestId"
+        ],
+        "type": "object",
+        "description": "Public API representation of search meta."
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "SearchResult": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "archived": {
+                "type": "boolean",
+                "description": "Whether this resource is archived."
+              },
+              "completed": {
+                "readOnly": true,
+                "type": "boolean",
+                "description": "Whether the work item is complete."
+              },
+              "number": {
+                "maxLength": 256,
+                "readOnly": true,
+                "type": "string",
+                "description": "The number associated with this search result attributes."
+              },
+              "subtitle": {
+                "maxLength": 2000,
+                "readOnly": true,
+                "type": "string",
+                "description": "The subtitle associated with this search result attributes."
+              },
+              "title": {
+                "maxLength": 2000,
+                "type": "string",
+                "description": "Human-readable title of the resource."
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string",
+                "readOnly": true,
+                "description": "Timestamp of the most recent successful update."
+              }
+            },
+            "required": [
+              "archived",
+              "title"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this search result."
+          },
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "enum": [
+              "contact",
+              "project",
+              "task"
+            ],
+            "type": "string",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "attributes",
+          "id",
+          "type"
+        ],
+        "type": "object",
+        "description": "Public API representation of search result."
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "read",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/searchresources/",
+      "method": "POST",
+      "operationId": "searchResources",
+      "path": "/search"
+    }
+  ],
+  "availableIn": [
+    "all",
+    "context",
+    "work",
+    "full",
+    "schedule-write",
+    "content-write",
+    "admin-write",
+    "automation-write",
+    "crm-write",
+    "catalog-write",
+    "integrations-write",
+    "projects-write",
+    "finance-write",
+    "tasks-write",
+    "time-write"
+  ],
+  "baseProfile": "all",
+  "description": "Search authorized TeamGrid resources",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Maximum number of records requested or returned for this page."
+          },
+          "term": {
+            "maxLength": 160,
+            "minLength": 2,
+            "type": "string",
+            "description": "The term associated with this search request."
+          },
+          "types": {
+            "items": {
+              "enum": [
+                "contacts",
+                "projects",
+                "tasks"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true,
+            "description": "The types associated with this search request."
+          }
+        },
+        "required": [
+          "term",
+          "types"
+        ],
+        "type": "object",
+        "description": "Public API representation of search request."
+      }
+    },
+    "required": [
+      "data"
+    ],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {
+    "all": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "default": 25,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "term": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "types": {
+          "minItems": 1,
+          "maxItems": 3,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "projects",
+              "tasks"
+            ]
+          }
+        }
+      },
+      "required": [
+        "term",
+        "types"
+      ],
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false
+    }
+  },
+  "name": "teamgrid_search",
+  "scopes": {
+    "optional": [],
+    "conditional": [
+      "contacts:read",
+      "projects:read",
+      "tasks:read"
+    ],
+    "required": [
+      "search:read"
+    ]
+  },
+  "security": {
+    "classification": "cross-domain-sensitive",
+    "summary": "A single query can cross contacts, projects, and tasks. Contact matches can contain personal data."
+  },
+  "output": {
+    "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
+    "kind": "bounded-search",
+    "maxSerializedBytes": 262144,
+    "pagination": null,
+    "redactions": [],
+    "searchLimit": 50
+  },
+  "examplePrompt": "Search TeamGrid contacts, projects, and tasks for “proposal”. Return at most 10 matches and identify each matching resource type.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_search`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "`term` is shorter than 2 or longer than 160 characters, `types` is empty, duplicated, unsupported, or longer than 3.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `search:read` and an applicable conditional domain scope (`contacts:read`, `projects:read`, `tasks:read`) or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "A read exceeds the 256 KiB tool result limit.",
+      "result": "Use a bounded section, smaller supported read, private resource or authorized App/CLI transfer."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

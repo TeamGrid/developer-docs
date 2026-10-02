@@ -16,6 +16,10 @@ API v1 is the source of truth for new integrations. The SDK, CLI, and MCP server
 - [TypeScript SDK](https://developer.teamgridapp.com/sdk/)
 - [CLI](https://developer.teamgridapp.com/cli/)
 - [MCP server](https://developer.teamgridapp.com/mcp/)
+- [Connect ChatGPT](https://developer.teamgridapp.com/mcp/chatgpt/)
+- [Safe MCP writes](https://developer.teamgridapp.com/mcp/write-workflow/)
+- [MCP tool reference](https://developer.teamgridapp.com/mcp/reference/)
+- [MCP resources and protocol](https://developer.teamgridapp.com/mcp/resources-and-protocol/)
 - [Security](https://developer.teamgridapp.com/security/)
 - [Changelog](https://developer.teamgridapp.com/changelog/)
 

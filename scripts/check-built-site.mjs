@@ -37,6 +37,9 @@ const required = [
   'cli/reference/index.html',
   'mcp/index.html',
   'mcp/first-query/index.html',
+  'mcp/chatgpt/index.html',
+  'mcp/write-workflow/index.html',
+  'mcp/resources-and-protocol/index.html',
   'mcp/reference/index.html',
   'mcp/troubleshooting/index.html',
   'de/index.html',
@@ -166,8 +169,13 @@ function hasBuiltPageWithExactCase(url) {
   return builtHtmlPaths.has(target)
 }
 
+const contents = new Map(await Promise.all(html.map(async (file) => [file, await readFile(file, 'utf8')])))
+const anchors = new Map([...contents].map(([file, content]) => [file,
+  new Set([...content.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1])),
+]))
+
 for (const file of html) {
-  const content = await readFile(file, 'utf8')
+  const content = contents.get(file)
   const relative = path.relative(dist, file)
   const expectedLanguage = relative === 'de/index.html' || relative.startsWith(`de${path.sep}`) ? 'de' : 'en'
   if (!new RegExp(`<html\\b[^>]*\\blang="${expectedLanguage}"`).test(content)) {
@@ -200,6 +208,29 @@ for (const file of html) {
     if (!hasBuiltPageWithExactCase(href)) {
       failures.push(`${relative} links to missing page ${href}.`)
     }
+  }
+}
+
+for (const [file, content] of contents) {
+  const relative = path.relative(dist, file)
+  // Resolve fragment-only links against the page route, including directory indexes.
+  const route = relative.split(path.sep).join('/').replace(/index\.html$/, '')
+  for (const match of content.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)) {
+    const href = match[1].replaceAll('&amp;', '&')
+    if (!href.startsWith('/') && !href.startsWith('#')) continue
+    const target = new URL(href, `https://developer.teamgridapp.com/${route}`)
+    const pathname = decodeURIComponent(target.pathname)
+    const targetFile = /\.[a-z0-9]+$/i.test(pathname)
+      ? path.join(dist, pathname.slice(1)) : builtPageForUrl(pathname)
+    if (!(await exists(targetFile))) {
+      failures.push(`${relative} links to missing page or asset ${href}.`)
+    } else if (target.hash && anchors.has(targetFile)
+      && !anchors.get(targetFile).has(decodeURIComponent(target.hash.slice(1)))) {
+      failures.push(`${relative} links to missing anchor ${href}.`)
+    }
+  }
+  for (const match of content.matchAll(/href="https:\/\/github.com\/TeamGrid\/developer-docs\/edit\/main\/([^"]+)"/g)) {
+    if (!(await exists(path.join(root, match[1])))) failures.push(`${relative} has a broken source edit link: ${match[1]}.`)
   }
 }
 

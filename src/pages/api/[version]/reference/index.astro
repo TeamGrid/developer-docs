@@ -28,7 +28,7 @@ const description = version === 'v1'
   <section class="api-overview">
     <div class="api-overview__eyebrow">
       <span>TeamGrid API</span>
-      <strong class:list={{ 'is-legacy': version === 'v0' }}>{version === 'v1' ? 'Stable 1.0' : 'Legacy'}</strong>
+      <strong class:list={{ 'is-legacy': version === 'v0' }}>{version === 'v1' ? `Stable ${document.info.version}` : 'Legacy'}</strong>
     </div>
     <h1>API {version} reference</h1>
     <p>{document.info.description}</p>

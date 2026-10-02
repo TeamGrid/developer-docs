@@ -2,7 +2,7 @@
 title: TeamGrid Developer – deutscher Einstieg
 description: Der kompakte deutsche Einstieg in API v1, TypeScript SDK, CLI, Browser-Login, MCP und sichere Produktivintegrationen.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-02
 ---
 
 Die vollständige Referenz bleibt auf Englisch, damit Methodennamen, Fehlermeldungen und technische
@@ -16,7 +16,7 @@ Teams durch den empfohlenen Einstieg.
 | Produktivdienst in einer beliebigen Sprache | [API v1](/api/v1/) |
 | Node.js- oder TypeScript-Dienst | [TypeScript SDK](/sdk/) |
 | Terminal, Skripte oder CI | [CLI](/cli/) |
-| Überwachte Lesezugriffe aus einem vertrauenswürdigen AI-Host | [MCP-Server](/mcp/) |
+| Überwachte Lese- und bestätigte Schreibzugriffe aus einem vertrauenswürdigen AI-Host | [MCP-Server](/mcp/) |
 | Bestehende Integration mit API v0 | [Migration zu API v1](/api/v0/migration/) |
 
 ## Empfohlener Einstieg
@@ -35,19 +35,40 @@ Teams durch den empfohlenen Einstieg.
 
 ```bash
 npm install --global @teamgrid/cli@1.2.2
-teamgrid auth login --manual
+teamgrid auth login
 teamgrid auth status --check
 teamgrid workspace
 ```
 
-Neue Browser-Anmeldungen sind in DE und US nach Prüfung vom 29. September 2026 deaktiviert.
-Lege im Developer Center einen Personal Token mit den benötigten Rechten an und importiere ihn
-über die verdeckte Terminal-Eingabe. Vorhandene Credentials funktionieren weiterhin.
+Browser-Login ist in Production DE und US aktiviert. Melde dich mit deinem
+TeamGrid-Konto an, wähle den Workspace und bestätige die angeforderten Scopes.
+Sensible Rechte benötigen deinen Passkey. Alternativ bleibt der manuelle Import
+über `teamgrid auth login --manual` und die verdeckte Terminal-Eingabe verfügbar.
 
-Nach der Freigabe nutzt der Browser-Login eine lokale Loopback-Verbindung und speichert den Token im
+Der Browser-Login nutzt eine lokale Loopback-Verbindung und speichert den Token im
 Betriebssystem-Schlüsselbund. `--no-browser` ist kein Device Flow. Für CI und Server darf kein
 interaktiver Browser-Login verwendet werden; dort gehört ein Service-Account-Token in einen Secret
 Manager. Alle Einzelheiten stehen unter [CLI Browser Login](/cli/browser-login/).
+
+## MCP mit ChatGPT
+
+Für ChatGPT brauchst du keine lokale Installation. Nutze OAuth und den Endpoint
+für die Region, die deinen Workspace betreibt:
+
+- DE: `https://mcp-de.teamgrid.app/mcp`
+- US: `https://mcp-us.teamgrid.app/mcp`
+
+Die [ChatGPT-Anleitung](/mcp/chatgpt/) erklärt Einrichtung, Workspace-Auswahl,
+Freigabe, Passkey und Trennen. Production bietet **208 Tools: 84 Lese- und
+124 Schreiboperationen**. Deine Workspace-Rolle und bestätigten Scopes gelten
+weiterhin bei jedem Aufruf. Die vollständige Tool-Liste ist keine pauschale
+Schreibberechtigung.
+
+Für Änderungen folge der [Schreibanleitung](/mcp/write-workflow/): Ziel lesen,
+Workspace und Änderung bestätigen, den exakten ETag verwenden und das Ergebnis
+prüfen. Lokal bleiben `core` und `all` reine Leseprofile; Schreibprofile werden
+explizit gewählt. Dateien, Exporte und große Dokumente stehen unter
+[Ressourcen und Protokoll](/mcp/resources-and-protocol/).
 
 ## Hilfe und Sicherheit
 

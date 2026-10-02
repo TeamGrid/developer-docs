@@ -2,7 +2,7 @@
 title: Authentication by environment
 description: Choose the correct TeamGrid credential and sign-in method for a desktop, remote terminal, container, SDK, MCP host, or CI job.
 owner: Security
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
 TeamGrid deliberately separates interactive access from unattended automation. A developer working
@@ -15,6 +15,7 @@ a service account whose lifecycle is owned by the workspace.
 | Remote terminal | A personal credential imported with `--manual`, or `--no-browser` only when the loopback callback can reach the CLI host | The browser flow still finishes on the CLI host's IPv4 loopback address |
 | Interactive development container | A short-lived personal credential injected through `TEAMGRID_API_TOKEN` | Containers often have no usable desktop credential store; do not bake the value into an image or layer |
 | Local SDK script | Personal credential from the process environment | The SDK accepts an explicit token and never starts a browser flow |
+| Hosted MCP / ChatGPT | Regional OAuth connection | One workspace, explicit consent, rotating refresh tokens; no local API token |
 | Local MCP host | An existing CLI profile | The MCP server reads the same operating-system credential store and never opens a browser itself |
 | CI, server, or scheduled job | Service-account credential from a secret manager | It remains independent of one employee's login and can be rotated without changing a personal account |
 
@@ -98,10 +99,14 @@ a service-account credential for a deployed process.
 
 ## MCP
 
-Import a narrowly scoped Personal Token before starting a local MCP host:
+For hosted ChatGPT, follow [OAuth setup](/mcp/chatgpt/). Its token is bound to the
+regional MCP resource and is not a CLI/API credential. The following commands
+apply only to local stdio.
+
+Authenticate the CLI with narrowly scoped browser consent before starting a local MCP host:
 
 ```bash
-teamgrid auth login --manual
+teamgrid auth login
 teamgrid auth status --check
 teamgrid-mcp --profile default --tool-profile core
 ```

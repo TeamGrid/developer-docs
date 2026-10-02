@@ -1,0 +1,431 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "contract": {
+    "domain": "finance-write",
+    "concurrency": "read",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "$ref": "#/$defs/ProjectStatement"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Unique identifier assigned to the API request for tracing and support."
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          }
+        },
+        "required": [
+          "requestId"
+        ],
+        "type": "object",
+        "description": "Public API representation of meta."
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "ProjectStatement": {
+        "additionalProperties": false,
+        "description": "Budget statements and purchasePrice are finance-gated. Internal workflow, order, cart, and budget-rollup fields are never part of this public DTO.",
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "amount": {
+                "maximum": 1000000000000,
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "The amount associated with this project statement attributes."
+              },
+              "archived": {
+                "type": "boolean",
+                "description": "Whether this resource is archived."
+              },
+              "comment": {
+                "maxLength": 50000,
+                "type": "string",
+                "description": "The comment associated with this project statement attributes."
+              },
+              "count": {
+                "maximum": 1000000,
+                "minimum": 0,
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "The count associated with this project statement attributes."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp at which the resource was created."
+              },
+              "date": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "ISO 8601 timestamp for date."
+              },
+              "description": {
+                "maxLength": 50000,
+                "type": "string",
+                "description": "Human-readable description of the resource."
+              },
+              "isCharge": {
+                "type": "boolean",
+                "description": "Whether is charge applies to this project statement attributes."
+              },
+              "productId": {
+                "maxLength": 128,
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The product id associated with this project statement attributes."
+              },
+              "productNumber": {
+                "maxLength": 1000,
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The product number associated with this project statement attributes."
+              },
+              "projectId": {
+                "maxLength": 128,
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Identifier of the related project."
+              },
+              "purchasePrice": {
+                "description": "Internal acquisition cost. Present only with project-statements:finance:read.",
+                "maximum": 1000000000000,
+                "minimum": 0,
+                "readOnly": true,
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "title": {
+                "maxLength": 500,
+                "type": "string",
+                "description": "Human-readable title of the resource."
+              },
+              "type": {
+                "enum": [
+                  "budget",
+                  "bundle",
+                  "manual",
+                  "product"
+                ],
+                "type": "string",
+                "description": "Canonical type discriminator for this resource."
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp of the most recent successful update."
+              }
+            },
+            "required": [
+              "amount",
+              "archived",
+              "comment",
+              "count",
+              "createdAt",
+              "date",
+              "description",
+              "isCharge",
+              "productId",
+              "productNumber",
+              "projectId",
+              "title",
+              "type",
+              "updatedAt"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this project statement."
+          },
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "const": "projectStatement",
+            "type": "string",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "attributes",
+          "id",
+          "type"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "read",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/getprojectstatement/",
+      "method": "GET",
+      "operationId": "getProjectStatement",
+      "path": "/project-statements/{id}"
+    }
+  ],
+  "availableIn": [
+    "full",
+    "finance-write"
+  ],
+  "baseProfile": "full",
+  "description": "Get a project statement",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "maxLength": 128,
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {},
+  "name": "teamgrid_project_statement_get",
+  "scopes": {
+    "optional": [
+      "project-statements:finance:read"
+    ],
+    "conditional": [],
+    "required": [
+      "project-statements:read"
+    ]
+  },
+  "security": {
+    "classification": "commercial-data",
+    "summary": "The response can contain financial or billing records. Missing protected fields are not zero financial values."
+  },
+  "output": {
+    "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
+    "kind": "single-resource",
+    "maxSerializedBytes": 262144,
+    "pagination": null,
+    "redactions": [],
+    "searchLimit": null
+  },
+  "examplePrompt": "Read the TeamGrid project statement with ID `<id>` and summarize only the fields returned by TeamGrid.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_project_statement_get`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "`id` is missing or violates this tool’s exact input schema, including any pattern or length restriction.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `project-statements:read` or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "A read exceeds the 256 KiB tool result limit.",
+      "result": "Use a bounded section, smaller supported read, private resource or authorized App/CLI transfer."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

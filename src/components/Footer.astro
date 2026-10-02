@@ -1,5 +1,6 @@
 ---
 import { currentDeveloperRelease } from '../data/releases'
+import contracts from '../../sources/contracts.json'
 
 const currentRelease = currentDeveloperRelease
 ---
@@ -9,7 +10,7 @@ const currentRelease = currentDeveloperRelease
     <div class="site-footer__brand">
       <strong>TeamGrid Developer</strong>
       <span>One workspace. One governed contract. The systems your organisation already runs.</span>
-      <code>API v1 · Stable 1.0 · OpenAPI 3.1</code>
+      <code>API v1 · Stable {contracts.canonical.contractVersion} · OpenAPI 3.1</code>
     </div>
 
     <div class="site-footer__columns">

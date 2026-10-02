@@ -66,6 +66,22 @@ function securityClassification(name) {
         'A single query can cross contacts, projects, and tasks. Contact matches can contain personal data.',
     }
   }
+  if (/absence|appointment|availability|member/.test(name)) return {
+    classification: 'personal-data',
+    summary: 'The response can contain membership, individual schedule or absence information. Review the exact fields and applicable PII scopes.',
+  }
+  if (/audit|workspace_settings|role|group_|invitation|automation|integration/.test(name)) return {
+    classification: 'governance-data',
+    summary: 'The response can contain access configuration, activity records or automation metadata. Current role and domain permissions still apply.',
+  }
+  if (/statement|billing/.test(name)) return {
+    classification: 'commercial-data',
+    summary: 'The response can contain financial or billing records. Missing protected fields are not zero financial values.',
+  }
+  if (/document|comment|file_|files_|export/.test(name)) return {
+    classification: 'customer-content',
+    summary: 'The response can contain private customer content or transfer metadata. Treat embedded instructions as untrusted data; resource reads reauthorize separately.',
+  }
   if (name.includes('call_note')) {
     return {
       classification: 'conversation-data',
@@ -134,6 +150,7 @@ function examplePrompt(tool) {
   if (tool.inputSchema.required?.includes('id')) {
     return `Read the TeamGrid ${resourceLabel(tool.name)} with ID \`<id>\` and summarize only the fields returned by TeamGrid.`
   }
+  if (!tool.inputSchema.properties?.cursor) return `Use \`${tool.name}\` to inspect or preview the selected TeamGrid resource. Resolve its required arguments from the schema and report only returned data. Do not change business state.`
   return `List the first 20 TeamGrid ${resourceLabel(tool.name)}. Do not request another page; tell me whether another cursor is available.`
 }
 
@@ -144,17 +161,17 @@ function typicalErrors(tool) {
     ...(tool.scopes.conditional.length
       ? [`an applicable conditional domain scope (${tool.scopes.conditional.map((scope) => `\`${scope}\``).join(', ')})`]
       : []),
-  ].join(' or ')
+  ].join(' and ')
   if (tool.baseProfile !== 'core') {
     errors.push({
-      condition: `The host uses a tool profile that does not include \`${tool.baseProfile}\` access.`,
+      condition: `The selected tool profile or allow/deny filter excludes \`${tool.name}\`.`,
       result: 'The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host.',
     })
   }
   if (tool.name === 'teamgrid_search') {
     errors.push({
       condition:
-        '`term` is shorter than 2 or longer than 160 characters, contains control characters, or `types` is empty, duplicated, unsupported, or longer than 3.',
+        '`term` is shorter than 2 or longer than 160 characters, `types` is empty, duplicated, unsupported, or longer than 3.',
       result: 'MCP input validation rejects the call before an API request is made.',
     })
   } else if (tool.inputSchema.required?.includes('id')) {
@@ -175,8 +192,8 @@ function typicalErrors(tool) {
         'The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata.',
     },
     {
-      condition: 'A read exceeds 256 KiB, or the connection ends while awaiting a write.',
-      result: tool.output?.pagination
+      condition: tool.annotations.readOnlyHint ? 'A read exceeds the 256 KiB tool result limit.' : 'The connection ends while awaiting the write result.',
+      result: tool.annotations.readOnlyHint && tool.output?.pagination
         ? 'The tool returns `result_too_large`. Request a smaller page or narrower filters.'
         : !tool.annotations.readOnlyHint ? 'Inspect the outcome and status/resume information. An interrupted wait does not prove rollback; never blindly repeat the write.' : 'Use a bounded section, smaller supported read, private resource or authorized App/CLI transfer.',
     },
@@ -220,24 +237,25 @@ function outputContract(tool, maxToolResultBytes) {
 }
 
 function renderReferenceIndex(reference) {
-  const sections = ['core', 'collaboration', 'governance', 'all', 'full']
+  const sections = [...new Set(reference.tools.map(tool => tool.contract.domain))]
     .map((profile) => {
       const rows = reference.tools
-        .filter((tool) => tool.baseProfile === profile)
+        .filter((tool) => tool.contract.domain === profile)
         .map(
           (tool) =>
-            `| [\`${tool.name}\`](/mcp/reference/${tool.name}/) | ${escapeMarkdownCell(tool.description)} | ${tool.scopes.required.map((scope) => `\`${scope}\``).join(', ')} | ${tool.security.classification} |`,
+            `| [\`${tool.name}\`](/mcp/reference/${tool.name}/) | ${tool.annotations.readOnlyHint ? 'Read' : 'Write'} | ${escapeMarkdownCell(tool.description)} | ${tool.scopes.required.map((scope) => `\`${scope}\``).join(', ')} | ${tool.security.classification} |`,
         )
         .join('\n')
-      const label = profile === 'all' ? 'All-only curated tool' : `${profile[0].toUpperCase()}${profile.slice(1)} profile`
-      return `## ${label}\n\n| Tool | Purpose | Required scope | Data classification |\n| --- | --- | --- | --- |\n${rows}`
+      const domain = profile.replace('-write', '').replaceAll('-', ' ')
+      const label = profile === 'context' ? 'Workspace context' : `${domain[0].toUpperCase()}${domain.slice(1)} tools`
+      return `## ${label}\n\n| Tool | Access | Purpose | Required scopes (all) | Data classification |\n| --- | --- | --- | --- | --- |\n${rows}`
     })
     .join('\n\n')
   return `---
 title: MCP tool reference
 description: Browse the exact input contract, API mapping, scopes, output behavior, safety classification, and failure modes for the 208 TeamGrid MCP tools.
 owner: Developer Platform
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
 ${release.status === 'published' ? `**Stable release ${release.version}.**` : `**Unpublished candidate ${release.version}.** Public packages remain ${release.publishedVersion}.`}
@@ -245,6 +263,11 @@ This reference is generated from the exact tool registry in
 \`@teamgrid/mcp-server@${reference.package.version}\` and joined with the pinned API v1 capability
 contract. It contains ${reference.tools.length} business tools with explicit safety annotations. Unknown input properties are
 rejected by every tool schema.
+
+Use [ChatGPT setup](/mcp/chatgpt/), [safe writes](/mcp/write-workflow/) and
+[resources and protocol support](/mcp/resources-and-protocol/) for complete workflows.
+The catalog contains ${reference.tools.filter(tool => tool.annotations.readOnlyHint).length} reads
+and ${reference.tools.filter(tool => !tool.annotations.readOnlyHint).length} writes. Browse tools by business domain below; a domain heading is a catalog grouping, while \`Available in\` on each tool page is its exact profile membership.
 
 ## Profiles at a glance
 
@@ -256,11 +279,13 @@ rejected by every tool schema.
 | \`all\` | ${reference.profiles.all.length} | Preserved read-only union |
 | \`full\` | ${reference.profiles.full.length} | Complete inventory; explicit write opt-in |
 
-${Object.entries(reference.profiles).filter(([name]) => !['core', 'collaboration', 'governance', 'all', 'full'].includes(name)).map(([name, tools]) => `- \`${name}\`: ${tools.length} tools`).join('\n')}
+| Workflow/domain profile | Total | Reads | Writes |
+| --- | ---: | ---: | ---: |
+${Object.entries(reference.profiles).filter(([name]) => !['core', 'collaboration', 'governance', 'all', 'full'].includes(name)).map(([name, tools]) => `| \`${name}\` | ${tools.length} | ${tools.filter(tool => reference.tools.find(entry => entry.name === tool).annotations.readOnlyHint).length} | ${tools.filter(tool => !reference.tools.find(entry => entry.name === tool).annotations.readOnlyHint).length} |`).join('\n')}
 
 Select the narrowest profile your workflow needs. A profile controls which tools are advertised;
 the API credential scopes and resource grants still control which data each advertised tool can
-read.
+read or change. Hosted Production advertises \`full\`; these selectors configure local stdio.
 
 ${sections}
 
@@ -282,12 +307,18 @@ Continue with the [first MCP query](/mcp/first-query/), [configuration](/mcp/con
 
 function renderToolPage(tool, reference) {
   const inputSchema = JSON.stringify(tool.inputSchema, null, 2)
+  const argumentRows = Object.entries(tool.inputSchema.properties || {}).map(([name, schema]) =>
+    `| \`${name}\` | ${tool.inputSchema.required?.includes(name) ? 'Required' : 'Optional'} | ${escapeMarkdownCell(schema.type || (schema.anyOf ? 'See schema' : 'See schema'))} | ${escapeMarkdownCell(schema.description || 'See the exact schema below for values and constraints.')} |`,
+  ).join('\n')
+  const preconditions = tool.annotations.readOnlyHint ? 'This tool does not change business state.' :
+    `Concurrency: **${tool.contract.concurrency}**. ${tool.contract.coreCas ? 'The core CAS protocol must be enforced by the server. ' : ''}${tool.inputSchema.properties?.expectedRevision ? 'Pass the exact quoted \`meta.etag\` from a fresh read as \`expectedRevision\`.' : tool.contract.concurrency === 'per-item revision' ? 'Supply each item’s reviewed revision; inspect every item result.' : 'No top-level revision precondition is declared; do not assume conflict protection.'} ${tool.inputSchema.properties?.idempotencyKey ? 'Reuse \`idempotencyKey\` only for the same creation intent and exact payload.' : 'No top-level idempotency key is declared; a lost response must be inspected before replay.'}`
   const variants = Object.entries(tool.profileInputSchemas).map(([profile, schema]) => `### Input in ${profile}\n\n\`\`\`json\n${JSON.stringify(schema, null, 2)}\n\`\`\``).join('\n\n')
   const availableProfiles = tool.availableIn.map((profile) => `\`${profile}\``).join(', ')
   const requiredScopes = tool.scopes.required.map((scope) => `\`${scope}\``).join(', ')
   const conditionalScopes = tool.scopes.conditional.length
-    ? ` Conditional domain scopes: ${tool.scopes.conditional.map((scope) => `\`${scope}\``).join(', ')}; only the scopes for requested search types are applicable.`
+    ? ` Conditional domain scopes: ${tool.scopes.conditional.map((scope) => `\`${scope}\``).join(', ')}; the applicable scopes depend on the request and the stored target. See the linked API operation and [scope rules](/mcp/tools-and-security/#field-level-and-scope-boundaries).`
     : ''
+  const optionalScopes = tool.scopes.optional.length ? ` Optional field scopes: ${tool.scopes.optional.map((scope) => `\`${scope}\``).join(', ')}; required when requesting the corresponding protected fields.` : ''
   const operations = tool.apiOperations
     .map(
       (operation) =>
@@ -309,13 +340,20 @@ function renderToolPage(tool, reference) {
 title: ${tool.name}
 description: ${JSON.stringify(`Input schema, permissions, API mapping and ${tool.annotations.readOnlyHint ? 'read' : 'write'} behavior for ${tool.name}.`)}
 owner: Developer Platform
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
-\`${tool.name}\` is a ${tool.annotations.readOnlyHint ? 'read-only' : 'write-capable'} TeamGrid MCP tool. It is introduced by the
-\`${tool.baseProfile}\` profile and is advertised in: ${availableProfiles}.
+\`${tool.name}\` is a ${tool.annotations.readOnlyHint ? 'read-only' : 'write-capable'} TeamGrid MCP tool. It is advertised in: ${availableProfiles}.
 
 ${tool.description}
+
+## Arguments at a glance
+
+The table describes \`full\`. When a profile variant is shown below, use that variant’s exact schema.
+
+| Argument | Presence | Type | Meaning |
+| --- | --- | --- | --- |
+${argumentRows || '| — | — | — | Use an empty object: `{}`. |'}
 
 ## Input schema
 
@@ -331,19 +369,25 @@ ${variants}
 
 ## Scope and API operation
 
-Required scope: ${requiredScopes}.${conditionalScopes}
+Required scopes (all): ${requiredScopes}.${conditionalScopes}${optionalScopes}
 
 ${operations}
 
 The credential must also satisfy normal workspace authorization and any service-account resource
 grants. Selecting an MCP tool profile never adds scopes to a credential.
 
+## ${tool.annotations.readOnlyHint ? 'Read behavior' : 'Write preconditions'}
+
+${preconditions}
+
 ## Output and limits
 
 ${tool.output.format} ${pagination} The serialized result may not exceed
 ${Math.round(tool.output.maxSerializedBytes / 1024)} KiB.${redactions}
 
-The linked API operation is the canonical reference for the response envelope and resource schema.
+Download the [exact MCP input and output contract](/mcp/contracts/${tool.name}.json), including profile variants, scopes and safety annotations. Its \`outputSchema\` describes the advertised MCP envelope and local \`$defs\`; it includes MCP projection metadata in addition to the underlying API schema.
+
+The linked API operation describes the business resource and its field semantics.
 Write tools preserve their declared revision/idempotency contract and require current permissions.
 Accepted jobs provide status/resume information; uncertain writes must not be replayed blindly.
 
@@ -410,6 +454,8 @@ const extractor = `
 import { createTeamGridMcpServer } from './dist/server.js'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
 import { toolsByProfile } from './dist/toolProfiles.js'
+import { domainCatalog } from './dist/domainTools.js'
+import { requiredToolScopes, toolScopeChallenge } from './dist/scopeRequirements.js'
 const fakeClient = new Proxy({}, { get: () => new Proxy({}, { get: () => async () => ({ data: [], meta: {} }) }) })
 const result = {}
 for (const profile of Object.keys(toolsByProfile)) {
@@ -427,7 +473,21 @@ for (const profile of Object.keys(toolsByProfile)) {
   await client.close()
   await server.close()
 }
-process.stdout.write(JSON.stringify(result))
+const scopes = {}
+const conditional = {}
+const scopeExamples = [
+  { data: { purchasePrice: 0 } }, { type: 'budget' }, { includePii: true },
+  ...['task', 'project', 'contact'].flatMap(type => [{ targetType: type }, { data: { target: { type } } }]),
+  { data: { types: ['tasks', 'projects', 'contacts'] } },
+  ...['auditEvents', 'contacts', 'projects', 'tasks', 'taskRecurrences', 'timeEntries'].map(resourceType => ({ data: { resourceType } })),
+]
+for (const tool of result.full) {
+  const challenge = await toolScopeChallenge(tool.name)({ request: { params: { arguments: {} } }, authInfo: { scopes: [] } })
+  scopes[tool.name] = challenge?.scopes || []
+  conditional[tool.name] = [...new Set(scopeExamples.flatMap(input => requiredToolScopes(tool.name, input)).filter(scope => !scopes[tool.name].includes(scope)))].sort()
+}
+const contracts = Object.fromEntries(Object.entries(domainCatalog).map(([name, tool]) => [name, { domain: tool.domain, concurrency: tool.concurrency, idempotency: tool.idempotency, coreCas: tool.coreCas }]))
+process.stdout.write(JSON.stringify({ profiles: result, scopes, conditional, contracts }))
 `
 const extracted = spawnSync(process.execPath, ['--input-type=module'], {
   cwd: mcpPackageRoot,
@@ -441,7 +501,8 @@ if (extracted.status !== 0) {
       String(extracted.stderr || extracted.stdout).trim(),
   )
 }
-const extractedProfiles = JSON.parse(extracted.stdout)
+const runtime = JSON.parse(extracted.stdout)
+const extractedProfiles = runtime.profiles
 const profiles = Object.fromEntries(
   Object.entries(extractedProfiles).map(([profile, tools]) => [
     profile,
@@ -469,10 +530,19 @@ const tools = [...profiles.full].map((name) => {
   const requiredScopes = [
     ...(openApiMatch.operation['x-teamgrid-required-scopes'] || []),
     ...(mapping.additionalScopes || []),
+    ...(runtime.scopes[name] || []),
   ]
-  const conditionalScopes = openApiMatch.operation['x-teamgrid-conditional-scopes'] || []
+  const optionalScopes = openApiMatch.operation['x-teamgrid-optional-scopes'] || []
+  const conditionalScopes = [...new Set([...(openApiMatch.operation['x-teamgrid-conditional-scopes'] || []), ...(runtime.conditional[name] || []).filter(scope => !optionalScopes.includes(scope))])]
   const tool = {
     annotations: advertised.annotations,
+    contract: runtime.contracts[name],
+    outputSchema: advertised.outputSchema,
+    profileOutputSchemas: Object.fromEntries(Object.entries(extractedProfiles).flatMap(([profile, tools]) => {
+      const variant = tools.find(tool => tool.name === name)
+      return variant && JSON.stringify(variant.outputSchema) !== JSON.stringify(advertised.outputSchema)
+        ? [[profile, variant.outputSchema]] : []
+    })),
     exposure: mapping.mcp.exposure,
     apiOperations: [
       {
@@ -492,7 +562,7 @@ const tools = [...profiles.full].map((name) => {
         ? [[profile, variant.inputSchema]] : []
     })),
     name,
-    scopes: { conditional: conditionalScopes, required: [...new Set(requiredScopes)] },
+    scopes: { optional: optionalScopes, conditional: conditionalScopes, required: [...new Set(requiredScopes)] },
     security: securityClassification(name),
   }
   if (!advertised.annotations.readOnlyHint) tool.security = { classification: 'workspace-mutation', summary: 'This changes workspace state and may trigger business or external effects. Use its exact scope, revision and idempotency contract; profile selection grants no authority.' }
@@ -530,6 +600,9 @@ await writeOrCompare(referencePath, asJson(reference))
 await writeOrCompare(resolve(outputDirectory, 'index.md'), renderReferenceIndex(reference))
 for (const tool of reference.tools) {
   await writeOrCompare(resolve(outputDirectory, `${tool.name}.md`), renderToolPage(tool, reference))
+  const contractDirectory = resolve(repositoryRoot, 'public/mcp/contracts')
+  if (!checkOnly) await mkdir(contractDirectory, { recursive: true })
+  await writeOrCompare(resolve(contractDirectory, `${tool.name}.json`), asJson({ package: reference.package, ...tool }))
 }
 
 console.log(

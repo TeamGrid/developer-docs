@@ -1,0 +1,575 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  },
+  "contract": {
+    "domain": "automation-write",
+    "concurrency": "read",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "items": {
+          "$ref": "#/$defs/AutomationDefinition"
+        },
+        "type": "array"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "nextCursor"
+            ],
+            "type": "object"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          }
+        },
+        "required": [
+          "page",
+          "requestId"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "AutomationDefinition": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "archived": {
+                "type": "boolean",
+                "description": "Whether this resource is archived."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": "string",
+                "readOnly": true,
+                "description": "Timestamp at which the resource was created."
+              },
+              "description": {
+                "maxLength": 5000,
+                "type": "string",
+                "description": "Human-readable description of the resource."
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "Whether editable applies to this automation definition attributes."
+              },
+              "flow": {
+                "items": {
+                  "$ref": "#/$defs/AutomationStep"
+                },
+                "maxItems": 100,
+                "type": "array",
+                "description": "The flow associated with this automation definition attributes."
+              },
+              "name": {
+                "maxLength": 200,
+                "type": "string",
+                "description": "Human-readable name of the resource."
+              },
+              "replayed": {
+                "type": "boolean",
+                "readOnly": true,
+                "description": "Whether replayed applies to this automation definition attributes."
+              },
+              "revision": {
+                "pattern": "^aut1-[a-f0-9]{64}$",
+                "type": "string",
+                "description": "Strong resource revision used for optimistic concurrency control."
+              },
+              "trigger": {
+                "additionalProperties": false,
+                "properties": {
+                  "data": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "projects",
+                          "tasks"
+                        ],
+                        "type": "string",
+                        "description": "Canonical type discriminator for this resource."
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object",
+                    "description": "Response data for the completed request."
+                  },
+                  "event": {
+                    "enum": [
+                      "change",
+                      "create"
+                    ],
+                    "type": "string",
+                    "description": "Canonical TeamGrid event name."
+                  },
+                  "restricted": {
+                    "const": true,
+                    "type": "boolean",
+                    "description": "Whether restricted applies to this automation definition attributes trigger."
+                  }
+                },
+                "type": "object",
+                "description": "The trigger associated with this automation definition attributes."
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string",
+                "readOnly": true,
+                "description": "Timestamp of the most recent successful update."
+              }
+            },
+            "required": [
+              "archived",
+              "description",
+              "editable",
+              "flow",
+              "name",
+              "revision",
+              "trigger"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this automation definition."
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "const": "automationDefinition",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object",
+        "description": "Public API representation of automation definition."
+      },
+      "AutomationStep": {
+        "additionalProperties": false,
+        "properties": {
+          "actionId": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string",
+            "description": "The action id associated with this automation step."
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/$defs/AutomationBranch"
+            },
+            "maxItems": 10,
+            "type": "array",
+            "description": "The branches associated with this automation step."
+          },
+          "config": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string",
+                  "description": "Stable machine-readable key."
+                },
+                "redacted": {
+                  "const": true,
+                  "type": "boolean",
+                  "description": "Whether redacted applies to this automation step config."
+                },
+                "value": {
+                  "maxLength": 16384,
+                  "type": "string",
+                  "description": "Canonical value represented by this field."
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "type": "array",
+            "description": "The config associated with this automation step."
+          },
+          "input": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string",
+                  "description": "Stable machine-readable key."
+                },
+                "redacted": {
+                  "const": true,
+                  "type": "boolean",
+                  "description": "Whether redacted applies to this automation step."
+                },
+                "value": {
+                  "maxLength": 16384,
+                  "type": "string",
+                  "description": "Canonical value represented by this field."
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "type": "array",
+            "description": "The input associated with this automation step."
+          },
+          "output": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string",
+                  "description": "Stable machine-readable key."
+                },
+                "redacted": {
+                  "const": true,
+                  "type": "boolean",
+                  "description": "Whether redacted applies to this automation step output."
+                },
+                "value": {
+                  "maxLength": 16384,
+                  "type": "string",
+                  "description": "Canonical value represented by this field."
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "type": "array",
+            "description": "The output associated with this automation step."
+          },
+          "restricted": {
+            "const": true,
+            "type": "boolean",
+            "description": "Whether restricted applies to this automation step."
+          }
+        },
+        "required": [
+          "actionId"
+        ],
+        "type": "object",
+        "description": "Public API representation of automation step."
+      },
+      "AutomationBranch": {
+        "additionalProperties": false,
+        "properties": {
+          "flow": {
+            "items": {
+              "$ref": "#/$defs/AutomationStep"
+            },
+            "maxItems": 100,
+            "type": "array",
+            "description": "The flow associated with this automation branch."
+          },
+          "key": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "type": "string",
+            "description": "Stable machine-readable key."
+          }
+        },
+        "required": [
+          "flow",
+          "key"
+        ],
+        "type": "object",
+        "description": "Public API representation of automation branch."
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "read",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/listautomationdefinitions/",
+      "method": "GET",
+      "operationId": "listAutomationDefinitions",
+      "path": "/automation-definitions"
+    }
+  ],
+  "availableIn": [
+    "full",
+    "automation-write"
+  ],
+  "baseProfile": "full",
+  "description": "List automation definitions",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "maxLength": 1024,
+        "type": "string"
+      },
+      "limit": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "archived": {
+        "default": false,
+        "type": "boolean"
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {},
+  "name": "teamgrid_automation_definitions_list",
+  "scopes": {
+    "optional": [],
+    "conditional": [],
+    "required": [
+      "automations:read"
+    ]
+  },
+  "security": {
+    "classification": "governance-data",
+    "summary": "The response can contain access configuration, activity records or automation metadata. Current role and domain permissions still apply."
+  },
+  "output": {
+    "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
+    "kind": "cursor-page",
+    "maxSerializedBytes": 262144,
+    "pagination": {
+      "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+      "maxPageSize": 100,
+      "nextCursor": "meta.page.nextCursor"
+    },
+    "redactions": [],
+    "searchLimit": null
+  },
+  "examplePrompt": "List the first 20 TeamGrid automation definitions. Do not request another page; tell me whether another cursor is available.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_automation_definitions_list`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `automations:read` or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "A read exceeds the 256 KiB tool result limit.",
+      "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

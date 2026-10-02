@@ -39,7 +39,7 @@ const checks = [
   ['/cli/commands/', 'This workflow guide covers every command group in CLI'],
   ['/cli/reference/', `${cliReference.executableCommandCount} executable commands`],
   ['/cli/reference/tasks/', 'teamgrid tasks update'],
-  ['/mcp/reference/', `${mcpReference.tools.length} read-only tools`],
+  ['/mcp/reference/', `${mcpReference.tools.length} business tools`],
   ['/mcp/reference/teamgrid_tasks_list/', 'exact JSON Schema'],
   ['/resources/compatibility/', `@teamgrid/mcp-server@${stableVersion}`],
   ['/changelog/', `Developer Platform ${stableVersion}`],
@@ -71,7 +71,7 @@ async function check(path, expected) {
       })
       const body = await response.text()
       if (response.ok && body.includes(expected)) return
-      lastError = new Error(`${path} returned ${response.status} without the expected marker.`)
+      lastError = new Error(`${path} returned ${response.status} without the expected marker: ${expected}`)
     } catch (error) {
       lastError = error
     }

@@ -2,12 +2,15 @@
 
 Source for [developer.teamgridapp.com](https://developer.teamgridapp.com), covering API v1, legacy API v0, the TypeScript SDK, CLI, and MCP server.
 
-The checked-in 1.2.2 documentation describes the release candidate, including
-authorized MCP writes and hosted OAuth. The public package version remains 1.2.1.
+Version 1.2.2 is publicly available for the API client, CLI and MCP server under
+the `latest` npm dist-tag. Hosted MCP, public OAuth, authorized writes and CLI
+browser login are activated across Production workspaces in DE and US, with
+normal permissions and consent preserved.
 [`sources/release-status.json`](sources/release-status.json) controls publication;
 [`MCP implementation status`](docs/mcp-implementation-status.md) records completed
-checks and the remaining live qualification. A successful build does not publish
-candidate documentation or establish hosted service availability.
+checks, the exact-release owner acceptance and separately waived exercises.
+Package registry publication and guarded regional runtime receipts establish
+those delivery states; a successful documentation build alone does not.
 
 ## Local development
 
@@ -40,6 +43,11 @@ After building the pinned sibling `developer-platform/developer-platform` worksp
 `npm run sync:packages` and `npm run sync:references` to refresh the SDK, CLI, and MCP snapshots.
 Normal documentation CI runs `npm run check:client-references` without requiring sibling
 repositories; the scheduled drift workflow additionally reconstructs the references from source.
+For published documentation, that workflow resolves the shared `latest` version
+and exact `gitHead` from all three public npm packages before checking out the
+official-client source. A README-only successor or delivery recovery tag does
+not change the published package's source identity. Candidate documentation
+continues to compare the current repository source.
 
 ## Deployment model
 

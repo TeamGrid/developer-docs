@@ -19170,6 +19170,36 @@ permissions are requested, a confirmation window opens for your personal Passkey
 After successful confirmation it closes and the connection flow continues. A
 request containing only ordinary read scopes can complete without that popup.
 
+### Who chooses the permissions?
+
+The MCP client requests OAuth scopes; TeamGrid displays the requested set for
+the workspace you choose. The current consent screen lets you **approve or deny
+that set**. It does not provide individual scope checkboxes or add permissions
+that the client has not requested.
+
+The initial connection requests `workspace:read`. This identifies your workspace;
+it does not authorize reading all its business data or writing to it. A later
+operation can require additional consent:
+
+| Requested action | Required scopes |
+| --- | --- |
+| Identify the connected workspace | `workspace:read` |
+| List tasks | `workspace:read`, `tasks:read` |
+| Create a task | `workspace:read`, `tasks:write` |
+| Read a task and then update it | `workspace:read`, `tasks:read`, `tasks:write` |
+| List projects | `workspace:read`, `projects:read` |
+
+An operation with protected fields or related resources can require additional
+scopes. Check its [tool reference](/mcp/reference/) and the actual consent screen.
+Existing approved scopes should be retained when requesting additional access.
+You can decline a new request; previously approved reads remain available while
+their original connection is valid. TeamGrid roles, sharing rules and workspace
+locks apply independently of OAuth consent.
+
+If you need a specific scope set at initial setup in a local MCP client, use the
+[CLI browser-login workflow](/cli/browser-login/) and an explicit tool profile.
+That local configuration does not change the hosted ChatGPT connection.
+
 Do not dismiss a generic connection failure as a browser or cookie problem. If
 the request expires, restart the connection from ChatGPT. Refreshing an expired
 consent URL cannot create a new request. The [OAuth troubleshooting matrix](/mcp/troubleshooting/#write-and-oauth-failures)
@@ -19208,6 +19238,14 @@ Tool safety annotations guide the host; they do not replace TeamGrid authorizati
 If ChatGPT has cached an earlier tool catalog, open its connection settings and
 select **Refresh**, then start a new conversation. If authentication is invalid,
 reconnect and review TeamGrid consent again.
+
+Access tokens currently last up to five minutes. The host renews them using the
+refresh token while the underlying grant remains valid. This renewal does not
+add permissions and should not require a new login every few minutes.
+An additional-permission request is separate from token expiry. If ChatGPT says
+the connection has expired immediately before a new read or write, the message
+alone does not establish the cause: check the approved scopes and see
+[early reconnect prompts](/mcp/troubleshooting/#early-chatgpt-reconnect-prompts).
 
 Removing a connection from ChatGPT stops its use in that host. To revoke its
 server-side token family, open the owning TeamGrid workspace's
@@ -66157,6 +66195,7 @@ The table below covers consent and outcome recovery.
 | Outcome | Next step |
 | --- | --- |
 | Additional scopes requested | Review the exact requested operation and consent; sensitive scopes require passkey confirmation |
+| ChatGPT asks to reconnect after one or two minutes, especially before a new domain read or write | Check the connection's approved scopes and the tool's requirements; a generic reconnect message can accompany a permission failure. See [early reconnect prompts](#early-chatgpt-reconnect-prompts) |
 | Workspace, role or sharing denial | Correct access in TeamGrid; broader OAuth scopes cannot bypass it |
 | Revision conflict | Read the current resource, compare the change and decide again |
 | Unknown commit after timeout | Inspect the resource or operation status before any retry |
@@ -66169,6 +66208,35 @@ The table below covers consent and outcome recovery.
 | A fresh sign-in still produces a briefly opening popup; support finds `Invalid developer confirmation` after successful preparation | This can be a TeamGrid App clock-skew defect before the passkey prompt. Report the App version and request time; retry a new request after the corrected App is available |
 | The authorization request has expired | Start a new request in the MCP host; an old consent URL cannot renew the request |
 | Private resource exceeds 1 MiB | Use the authorized App or CLI transfer workflow; never request a secret download URL in chat |
+
+## Early ChatGPT reconnect prompts
+
+The initial hosted grant contains `workspace:read`; that permission does not
+authorize task, project or member reads, or any write. A visible tool catalog is
+not a list of permissions already granted to your connection. See
+[who chooses the permissions](/mcp/chatgpt/#who-chooses-the-permissions).
+
+TeamGrid access tokens currently last up to five minutes. ChatGPT should renew
+them while the underlying OAuth grant remains active. A successful renewal
+retains the token's scopes; it cannot turn a workspace-only grant into a task
+write grant. Repeated refresh attempts therefore cannot resolve missing consent.
+
+If a reconnect prompt appears before a new operation:
+
+1. Check the selected workspace and the permissions approved for that connection
+   in **Settings → Team → Developer Center → Access**.
+2. Compare those scopes with the requested tool's reference. Review any new
+   TeamGrid consent screen; do not grant unrelated permissions to diagnose the issue.
+3. If ChatGPT keeps requesting reconnection without showing the needed scopes,
+   report the operation, approximate time and region to TeamGrid support. Support
+   can distinguish an active grant with insufficient scopes from an expired or
+   revoked grant using token lifecycle and HTTP challenge evidence.
+
+An HTTP401 `invalid_token`, an HTTP403 `insufficient_scope`, a business permission
+denial and an HTTP503 provider outage require different remedies. Cookie deletion
+or extending token lifetimes does not correct a missing OAuth permission.
+Never send access or refresh tokens, authorization codes, cookies or Passkey
+assertions to support. No business write is needed to diagnose this boundary.
 
 ## Confirmation closes before a passkey prompt
 

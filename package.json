@@ -24,7 +24,8 @@
     "test:browser:update": "playwright test --update-snapshots",
     "test:external-links": "node scripts/check-external-links.mjs",
     "test:functions": "node --test tests/functions/*.test.mjs",
-    "verify": "npm run check && npm run build && npm run test:site",
+    "test:publication": "node --test tests/publication-audit.test.mjs",
+    "verify": "npm run check && npm run build && npm run test:site && npm run test:publication",
     "verify:full": "npm run verify && npm run test:functions && npm run test:browser"
   },
   "dependencies": {

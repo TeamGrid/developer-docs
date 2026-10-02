@@ -110,9 +110,12 @@ export const navigation: NavigationGroup[] = [
     items: [
       { label: 'Overview', href: '/mcp/' },
       { label: 'Release availability', href: '/mcp/candidate/' },
-      { label: 'Configure a host', href: '/mcp/configuration/' },
+      { label: 'Connect ChatGPT', href: '/mcp/chatgpt/' },
+      { label: 'Configure a local host', href: '/mcp/configuration/' },
       { label: 'First MCP query', href: '/mcp/first-query/' },
+      { label: 'Safe write workflow', href: '/mcp/write-workflow/' },
       { label: 'Tool reference', href: '/mcp/reference/' },
+      { label: 'Resources and protocol', href: '/mcp/resources-and-protocol/' },
       { label: 'MCP troubleshooting', href: '/mcp/troubleshooting/' },
       { label: 'Tools and security', href: '/mcp/tools-and-security/' },
     ],

@@ -2,7 +2,7 @@
 title: Choose your learning path
 description: Follow a customer-focused path from first authentication to a production-ready API, SDK, CLI, or MCP workflow.
 owner: Developer Experience
-reviewedAt: 2026-09-29
+reviewedAt: 2026-10-02
 ---
 
 Every TeamGrid interface uses the same API v1 resources, regional routing, scopes, and security
@@ -53,19 +53,19 @@ Choose this path for local operations, shell automation, or CI.
 
 Interactive browser authentication must not run in CI.
 
-## MCP-assisted read workflow
+## MCP-assisted business workflow
 
-Choose this path for human-supervised reads in a trusted MCP host.
+Choose this path for supervised reads and approved writes in a trusted MCP host.
 
-1. Authenticate the CLI locally and configure the server with the `core` tool profile.
+1. [Connect ChatGPT with hosted OAuth](/mcp/chatgpt/), or authenticate the CLI and configure local stdio with `core`.
 2. Complete the [first MCP query](/mcp/first-query/).
 3. Review every enabled tool in the [MCP tool reference](/mcp/reference/).
 4. Create a dedicated credential whose scopes match only the enabled tools.
 5. Review the host's transcript, extension, retention, and data-handling behavior.
 6. Expand beyond `core` only after documenting why the additional data is required.
 
-Start with reads. The 1.2.2 release adds explicit work and domain write profiles: review
-the scope plan, confirm the target and fresh revision, and verify the resulting receipt.
+Start with reads, then complete the [MCP write walkthrough](/mcp/write-workflow/).
+Review the scope plan, confirm the target and fresh revision, and verify the resulting receipt.
 Use API/SDK integrations for deterministic background work.
 
 ## Shared completion criteria

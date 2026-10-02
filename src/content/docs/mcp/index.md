@@ -2,16 +2,29 @@
 title: TeamGrid MCP server
 description: Connect an AI host to TeamGrid with explicit read or write profiles, bounded results and current workspace permissions.
 owner: Developer Platform
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
 **Stable release 1.2.2.** Hosted MCP and CLI browser login are enabled in
 Production DE and US. See [release status](/mcp/candidate/) and
-[ChatGPT setup](/mcp/configuration/#remote-oauth-runtime).
+[ChatGPT setup](/mcp/chatgpt/).
 
 The server delegates business operations to the official API v1 client and
 exposes **208 tools: 84 reads and 124 writes**. It supports local stdio and a
 regional HTTP runtime with OAuth. Each request checks current permissions.
+
+## Choose your connection
+
+| Host or workflow | Start here |
+| --- | --- |
+| ChatGPT with hosted OAuth | [Connect TeamGrid to ChatGPT](/mcp/chatgpt/); no local installation |
+| Local Codex or another stdio host | [Configure a local host](/mcp/configuration/) and [first read](/mcp/first-query/) |
+| Make and verify a change | [Safe task-write walkthrough](/mcp/write-workflow/) |
+| Files, exports, large documents or protocol integration | [Resources and protocol support](/mcp/resources-and-protocol/) |
+
+Hosted Production advertises `full` with writes enabled. The local default is
+`core`, which advertises only reads. Visibility, granted scopes and permission to
+act are separate: approving a connection does not give a person new TeamGrid rights.
 
 ## Choose a workflow
 

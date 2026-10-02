@@ -2,10 +2,17 @@
 title: Troubleshoot the MCP server
 description: Diagnose TeamGrid MCP startup, authentication, profile, schema, authorization, pagination, and result-size failures without exposing credentials.
 owner: Developer Experience
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
-Start with the terminal used by the same operating-system account as the MCP host:
+For hosted ChatGPT, first verify the owning region, OAuth connection and selected
+workspace with [ChatGPT setup](/mcp/chatgpt/). No local CLI is required. An HTTP
+`401` with protected-resource metadata before sign-in is the expected OAuth
+challenge for an MCP POST; it is not proof that the server is broken. Opening
+`/mcp` directly in a browser sends GET and can return `405 Method Not Allowed`.
+Use the MCP host connection flow; that endpoint is not an HTML sign-in page.
+
+For **local stdio**, start with the terminal used by the same operating-system account as the MCP host:
 
 ```bash
 node --version
@@ -80,6 +87,19 @@ Never share an API token, browser authorization code, PKCE verifier, webhook sig
 exposure is possible, revoke or rotate the affected credential before continuing diagnostics.
 
 ## Write and OAuth failures
+
+| Symptom | Resolution |
+| --- | --- |
+| The hosted catalog still contains only the earlier reads | Refresh connection metadata in ChatGPT and start a new conversation; check the regional `/mcp` URL |
+| A write is absent from local `core` or `all` | Choose an explicit write profile and review scopes; `all` means 36 preserved reads |
+| `workspace_mismatch` | Confirm `teamgrid_workspace_get` and use its exact workspace ID; no change was sent |
+| `resource_cas_required` | Report the server and API release to support; do not bypass the revision requirement |
+| Missing revision (`428`) or stale revision (`412`) | Read the target and copy its exact quoted `meta.etag`; review a conflicting change before a new decision |
+| `429` or a safe `retryAfterMs` | Honor the full delay within your deadline; inspect uncertain writes before retrying |
+| `private_resource_unavailable` | Check current read scopes, creating-credential access, export completion and the 1 MiB limit; use an authorized transfer workflow for larger content |
+| A host cannot open `teamgrid://` content | The host may not implement `resources/read`; tool metadata access alone cannot retrieve private bytes |
+
+The table below covers consent and outcome recovery.
 
 | Outcome | Next step |
 | --- | --- |

@@ -1,0 +1,997 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "contract": {
+    "domain": "crm-write",
+    "concurrency": "read",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "items": {
+          "$ref": "#/$defs/Contact"
+        },
+        "type": "array"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "nextCursor"
+            ],
+            "type": "object"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          }
+        },
+        "required": [
+          "page",
+          "requestId"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "Contact": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "addresses": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "address": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "city": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The city associated with this contact attributes addresses address."
+                        },
+                        "country": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The country associated with this contact attributes addresses address."
+                        },
+                        "fullAddress": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The full address associated with this contact attributes addresses address."
+                        },
+                        "latitude": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "description": "The latitude associated with this contact attributes addresses address."
+                        },
+                        "longitude": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "description": "The longitude associated with this contact attributes addresses address."
+                        },
+                        "postalCode": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The postal code associated with this contact attributes addresses address."
+                        },
+                        "state": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Canonical lifecycle state of the resource or operation."
+                        },
+                        "street": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The street associated with this contact attributes addresses address."
+                        },
+                        "streetNumber": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The street number associated with this contact attributes addresses address."
+                        }
+                      },
+                      "required": [
+                        "city",
+                        "country",
+                        "fullAddress",
+                        "latitude",
+                        "longitude",
+                        "postalCode",
+                        "state",
+                        "street",
+                        "streetNumber"
+                      ],
+                      "type": "object",
+                      "description": "The address associated with this contact attributes addresses."
+                    },
+                    "type": {
+                      "maxLength": 100,
+                      "type": "string",
+                      "description": "Canonical type discriminator for this resource."
+                    }
+                  },
+                  "required": [
+                    "address",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 100,
+                "type": "array",
+                "description": "The addresses associated with this contact attributes."
+              },
+              "archived": {
+                "type": "boolean",
+                "description": "Whether this resource is archived."
+              },
+              "birthday": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "ISO 8601 timestamp for birthday."
+              },
+              "category": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The category associated with this contact attributes."
+              },
+              "companies": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "address": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "city": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The city associated with this contact attributes companies address."
+                            },
+                            "country": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The country associated with this contact attributes companies address."
+                            },
+                            "fullAddress": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The full address associated with this contact attributes companies address."
+                            },
+                            "latitude": {
+                              "type": [
+                                "number",
+                                "null"
+                              ],
+                              "description": "The latitude associated with this contact attributes companies address."
+                            },
+                            "longitude": {
+                              "type": [
+                                "number",
+                                "null"
+                              ],
+                              "description": "The longitude associated with this contact attributes companies address."
+                            },
+                            "postalCode": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The postal code associated with this contact attributes companies address."
+                            },
+                            "state": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "Canonical lifecycle state of the resource or operation."
+                            },
+                            "street": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The street associated with this contact attributes companies address."
+                            },
+                            "streetNumber": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The street number associated with this contact attributes companies address."
+                            }
+                          },
+                          "required": [
+                            "city",
+                            "country",
+                            "fullAddress",
+                            "latitude",
+                            "longitude",
+                            "postalCode",
+                            "state",
+                            "street",
+                            "streetNumber"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The address associated with this contact attributes companies."
+                    },
+                    "companyId": {
+                      "maxLength": 128,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The company id associated with this contact attributes companies."
+                    },
+                    "email": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Email address associated with this record."
+                    },
+                    "phone": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The phone associated with this contact attributes companies."
+                    },
+                    "position": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The position associated with this contact attributes companies."
+                    }
+                  },
+                  "required": [
+                    "address",
+                    "companyId",
+                    "email",
+                    "phone",
+                    "position"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 100,
+                "type": "array",
+                "description": "The companies associated with this contact attributes."
+              },
+              "companyTitle": {
+                "type": "string",
+                "description": "The company title associated with this contact attributes."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp at which the resource was created."
+              },
+              "createdById": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The created by id associated with this contact attributes."
+              },
+              "customerId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The customer id associated with this contact attributes."
+              },
+              "emails": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "description": "Email address associated with this record."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Canonical type discriminator for this resource."
+                    }
+                  },
+                  "required": [
+                    "email",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "The emails associated with this contact attributes."
+              },
+              "employeesCount": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "Number of employees records represented by this contact attributes."
+              },
+              "firstName": {
+                "type": "string",
+                "description": "The first name associated with this contact attributes."
+              },
+              "gender": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The gender associated with this contact attributes."
+              },
+              "groupId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Identifier of the related workspace group."
+              },
+              "lastActivityAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "ISO 8601 timestamp for last activity at."
+              },
+              "lastName": {
+                "type": "string",
+                "description": "The last name associated with this contact attributes."
+              },
+              "nickname": {
+                "type": "string",
+                "description": "The nickname associated with this contact attributes."
+              },
+              "notes": {
+                "type": "string",
+                "description": "The notes associated with this contact attributes."
+              },
+              "parentContactId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The parent contact id associated with this contact attributes."
+              },
+              "phoneNumbers": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "number": {
+                      "type": "string",
+                      "description": "The number associated with this contact attributes phone numbers."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Canonical type discriminator for this resource."
+                    }
+                  },
+                  "required": [
+                    "number",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array",
+                "description": "The phone numbers associated with this contact attributes."
+              },
+              "projectsCompleted": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "The projects completed associated with this contact attributes."
+              },
+              "projectsOpen": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "The projects open associated with this contact attributes."
+              },
+              "projectsTotal": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "The projects total associated with this contact attributes."
+              },
+              "salutation": {
+                "type": "string",
+                "description": "The salutation associated with this contact attributes."
+              },
+              "socialNetworks": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "maxLength": 100,
+                      "type": "string",
+                      "description": "Canonical type discriminator for this resource."
+                    },
+                    "username": {
+                      "maxLength": 1000,
+                      "type": "string",
+                      "description": "The username associated with this contact attributes social networks."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "username"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 100,
+                "type": "array",
+                "description": "The social networks associated with this contact attributes."
+              },
+              "tasksCompleted": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "The tasks completed associated with this contact attributes."
+              },
+              "tasksOpen": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "The tasks open associated with this contact attributes."
+              },
+              "tasksTotal": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "The tasks total associated with this contact attributes."
+              },
+              "type": {
+                "enum": [
+                  "person",
+                  "company"
+                ],
+                "type": "string",
+                "description": "Canonical type discriminator for this resource."
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp of the most recent successful update."
+              },
+              "updatedById": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The updated by id associated with this contact attributes."
+              },
+              "websites": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "maxLength": 100,
+                      "type": "string",
+                      "description": "Canonical type discriminator for this resource."
+                    },
+                    "url": {
+                      "maxLength": 2048,
+                      "type": "string",
+                      "description": "HTTPS URL associated with the resource."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "url"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 100,
+                "type": "array",
+                "description": "The websites associated with this contact attributes."
+              }
+            },
+            "required": [
+              "addresses",
+              "archived",
+              "birthday",
+              "category",
+              "companies",
+              "companyTitle",
+              "createdAt",
+              "createdById",
+              "customerId",
+              "emails",
+              "employeesCount",
+              "firstName",
+              "gender",
+              "groupId",
+              "lastActivityAt",
+              "lastName",
+              "nickname",
+              "notes",
+              "parentContactId",
+              "phoneNumbers",
+              "projectsCompleted",
+              "projectsOpen",
+              "projectsTotal",
+              "salutation",
+              "socialNetworks",
+              "tasksCompleted",
+              "tasksOpen",
+              "tasksTotal",
+              "type",
+              "updatedAt",
+              "updatedById",
+              "websites"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this contact."
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "const": "contact",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object",
+        "description": "Public API representation of contact."
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "read",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/listcontacts/",
+      "method": "GET",
+      "operationId": "listContacts",
+      "path": "/contacts"
+    }
+  ],
+  "availableIn": [
+    "all",
+    "collaboration",
+    "full",
+    "crm-write"
+  ],
+  "baseProfile": "collaboration",
+  "description": "List contacts",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "maxLength": 1024,
+        "type": "string"
+      },
+      "limit": {
+        "default": 50,
+        "maximum": 200,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "archived": {
+        "default": false,
+        "type": "boolean"
+      },
+      "category": {
+        "enum": [
+          "customer",
+          "supplier",
+          "team"
+        ],
+        "type": "string"
+      },
+      "companyId": {
+        "maxLength": 128,
+        "type": "string"
+      },
+      "createdById": {
+        "maxLength": 128,
+        "type": "string"
+      },
+      "customerId": {
+        "maxLength": 128,
+        "type": "string"
+      },
+      "groupId": {
+        "maxLength": 128,
+        "type": "string"
+      },
+      "parentContactId": {
+        "maxLength": 128,
+        "type": "string"
+      },
+      "type": {
+        "enum": [
+          "person",
+          "company"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {
+    "all": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "supplier",
+            "team"
+          ]
+        },
+        "companyId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "createdById": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "customerId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "groupId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "parentContactId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "person",
+            "company"
+          ]
+        }
+      },
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false
+    },
+    "collaboration": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "supplier",
+            "team"
+          ]
+        },
+        "companyId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "createdById": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "customerId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "groupId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "parentContactId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "person",
+            "company"
+          ]
+        }
+      },
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false
+    }
+  },
+  "name": "teamgrid_contacts_list",
+  "scopes": {
+    "optional": [],
+    "conditional": [],
+    "required": [
+      "contacts:read"
+    ]
+  },
+  "security": {
+    "classification": "personal-data",
+    "summary": "The response can contain personal or relationship data."
+  },
+  "output": {
+    "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
+    "kind": "cursor-page",
+    "maxSerializedBytes": 262144,
+    "pagination": {
+      "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+      "maxPageSize": 200,
+      "nextCursor": "meta.page.nextCursor"
+    },
+    "redactions": [],
+    "searchLimit": null
+  },
+  "examplePrompt": "List the first 20 TeamGrid contacts. Do not request another page; tell me whether another cursor is available.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_contacts_list`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `contacts:read` or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "A read exceeds the 256 KiB tool result limit.",
+      "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

@@ -1,0 +1,506 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "contract": {
+    "domain": "schedule-write",
+    "concurrency": "read",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "items": {
+          "$ref": "#/$defs/Appointment"
+        },
+        "type": "array"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "nextCursor"
+            ],
+            "type": "object"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          }
+        },
+        "required": [
+          "page",
+          "requestId"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "Appointment": {
+        "additionalProperties": false,
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "allDay": {
+                "type": "boolean",
+                "description": "Whether all day applies to this appointment attributes."
+              },
+              "archived": {
+                "type": "boolean",
+                "description": "Whether this resource is archived."
+              },
+              "busy": {
+                "type": "boolean",
+                "description": "Whether busy applies to this appointment attributes."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp at which the resource was created."
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Human-readable description of the resource."
+              },
+              "end": {
+                "additionalProperties": false,
+                "properties": {
+                  "at": {
+                    "format": "date-time",
+                    "type": "string",
+                    "description": "ISO 8601 timestamp for at."
+                  },
+                  "timeZone": {
+                    "maxLength": 128,
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The time zone associated with this appointment attributes end."
+                  }
+                },
+                "required": [
+                  "at",
+                  "timeZone"
+                ],
+                "type": "object",
+                "description": "End timestamp of the represented interval."
+              },
+              "location": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The location associated with this appointment attributes."
+              },
+              "managedBy": {
+                "enum": [
+                  "provider",
+                  "teamgrid"
+                ],
+                "type": "string",
+                "description": "Canonical managed by value for this appointment attributes."
+              },
+              "redacted": {
+                "type": "boolean",
+                "description": "Whether redacted applies to this appointment attributes."
+              },
+              "revision": {
+                "pattern": "^ap1-[a-f0-9]{64}$",
+                "type": "string",
+                "description": "Strong resource revision used for optimistic concurrency control."
+              },
+              "start": {
+                "additionalProperties": false,
+                "properties": {
+                  "at": {
+                    "format": "date-time",
+                    "type": "string",
+                    "description": "ISO 8601 timestamp for at."
+                  },
+                  "timeZone": {
+                    "maxLength": 128,
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The time zone associated with this appointment attributes start."
+                  }
+                },
+                "required": [
+                  "at",
+                  "timeZone"
+                ],
+                "type": "object",
+                "description": "Start timestamp of the represented interval."
+              },
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Human-readable title of the resource."
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Timestamp of the most recent successful update."
+              },
+              "userId": {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string",
+                "description": "Identifier of the related workspace user."
+              },
+              "visibility": {
+                "enum": [
+                  "default",
+                  "private",
+                  "public"
+                ],
+                "type": "string",
+                "description": "Canonical visibility value for this appointment attributes."
+              }
+            },
+            "required": [
+              "allDay",
+              "archived",
+              "busy",
+              "createdAt",
+              "description",
+              "end",
+              "location",
+              "managedBy",
+              "redacted",
+              "revision",
+              "start",
+              "title",
+              "updatedAt",
+              "userId",
+              "visibility"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this appointment."
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "const": "appointment",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object",
+        "description": "Public API representation of appointment."
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "read",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/listappointments/",
+      "method": "GET",
+      "operationId": "listAppointments",
+      "path": "/appointments"
+    }
+  ],
+  "availableIn": [
+    "context",
+    "work",
+    "full",
+    "schedule-write"
+  ],
+  "baseProfile": "full",
+  "description": "List appointments in a bounded interval",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "maxLength": 1024,
+        "type": "string"
+      },
+      "limit": {
+        "default": 50,
+        "maximum": 200,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "archived": {
+        "default": false,
+        "type": "boolean"
+      },
+      "start": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "end": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "userId": {
+        "items": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "maxItems": 50,
+        "type": "array",
+        "uniqueItems": true
+      }
+    },
+    "required": [
+      "start",
+      "end"
+    ],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {},
+  "name": "teamgrid_appointments_list",
+  "scopes": {
+    "optional": [],
+    "conditional": [
+      "appointments:delegated:read"
+    ],
+    "required": [
+      "appointments:read"
+    ]
+  },
+  "security": {
+    "classification": "personal-data",
+    "summary": "The response can contain membership, individual schedule or absence information. Review the exact fields and applicable PII scopes."
+  },
+  "output": {
+    "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
+    "kind": "cursor-page",
+    "maxSerializedBytes": 262144,
+    "pagination": {
+      "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+      "maxPageSize": 200,
+      "nextCursor": "meta.page.nextCursor"
+    },
+    "redactions": [],
+    "searchLimit": null
+  },
+  "examplePrompt": "List the first 20 TeamGrid appointments. Do not request another page; tell me whether another cursor is available.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_appointments_list`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `appointments:read` and an applicable conditional domain scope (`appointments:delegated:read`) or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "A read exceeds the 256 KiB tool result limit.",
+      "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

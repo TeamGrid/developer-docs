@@ -18,6 +18,7 @@
     "sync:packages": "node scripts/sync-packages.mjs",
     "sync:references": "node scripts/sync-sdk-reference.mjs && node scripts/sync-cli-reference.mjs && node scripts/sync-mcp-reference.mjs",
     "smoke:deployment": "node scripts/smoke-deployment.mjs",
+    "audit:publication": "node scripts/audit-publication.mjs",
     "test:site": "node scripts/check-built-site.mjs",
     "test:browser": "playwright test",
     "test:browser:update": "playwright test --update-snapshots",

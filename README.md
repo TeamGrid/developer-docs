@@ -27,6 +27,18 @@ Run every source, type, contract, build, and output check:
 npm run verify
 ```
 
+For a complete publication audit after deploying the same build:
+
+```bash
+npm run audit:publication -- https://developer.teamgridapp.com --report=/tmp/teamgrid-docs-publication.json
+```
+
+This checks every public HTML page against the built content, all 208 downloadable
+MCP input/output contracts and the discovery/download assets. It performs only
+public reads. `npm run test:site` also validates internal anchors, linked assets and
+source edit links. `npm run test:external-links` checks outbound links; access-limited
+responses (`401`, `403`, `429`) are treated as reachable, not as proof of page content.
+
 ## Sources of truth
 
 - The checked-in `public/openapi/v1.json` contract drives the API v1 reference.
@@ -35,6 +47,8 @@ npm run verify
 - `sources/sdk-reference.json`, `sources/cli-reference.json`, and
   `sources/mcp-reference.json` pin the exact public client surfaces to the recorded
   `TeamGrid/developer-platform` commit.
+- `public/mcp/contracts/*.json` publishes each runtime-extracted MCP input/output
+  schema, profile variants, cumulative scopes, concurrency and annotations.
 - Historical v0 prose was migrated from ReadMe and retains source attribution in frontmatter.
 
 `scripts/sync-contracts.mjs` and `scripts/import-readme-v0.mjs` are maintainer tools. They require the canonical local source repositories and are not part of a normal CI build. Synchronize contracts with `npm run sync:contracts -- /path/to/teamgrid-api <full-contract-source-sha> <full-runtime-sha>`; the command reads immutable Git objects rather than the API working tree. If the runtime SHA is omitted, it defaults to the contract source SHA for single-commit releases.
@@ -51,7 +65,7 @@ continues to compare the current repository source.
 
 ## Deployment model
 
-The site is a static Astro/Starlight build deployed to the `teamgrid-developer-docs` Cloudflare Pages project. Pull requests build and validate the complete site. A protected `main` push deploys that exact commit after the verification job succeeds, using the least-privilege credentials stored in the GitHub `production` environment.
+The site is a static Astro build deployed to the `teamgrid-developer-docs` Cloudflare Pages project. Pull requests build and validate the complete site. A protected `main` push deploys that exact commit after the verification job succeeds, using the least-privilege credentials stored in the GitHub `production` environment.
 
 The production domain is [developer.teamgridapp.com](https://developer.teamgridapp.com). It was cut over to Cloudflare Pages on 2026-07-19. The `*.pages.dev` deployment URLs remain available for diagnostics and carry `X-Robots-Tag: noindex` so the custom domain is the only indexable origin.
 

@@ -98,6 +98,33 @@ for (const tool of tools) {
   if (tool.output?.maxSerializedBytes !== reference.resultContract?.maxSerializedBytes) {
     failures.push(`${tool.name} has a stale result-size limit.`)
   }
+  if (!tool.annotations.readOnlyHint && !tool.scopes.required.includes('workspace:read')) {
+    failures.push(`${tool.name} omits the runtime workspace-guard scope.`)
+  }
+  if (!tool.contract?.domain || !tool.contract.concurrency || !tool.outputSchema?.type) {
+    failures.push(`${tool.name} omits its domain, concurrency or advertised output schema.`)
+  }
+  function checkReferences(value) {
+    if (!value || typeof value !== 'object') return
+    if (typeof value.$ref === 'string') {
+      const segments = value.$ref.startsWith('#/')
+        ? value.$ref.slice(2).split('/').map(segment => segment.replaceAll('~1', '/').replaceAll('~0', '~')) : []
+      const target = segments.reduce((schema, segment) => schema?.[segment], tool.outputSchema)
+      if (!segments.length || target === undefined) {
+        failures.push(`${tool.name} contains an unresolved output reference: ${value.$ref}`)
+      }
+    }
+    Object.values(value).forEach(checkReferences)
+  }
+  checkReferences(tool.outputSchema)
+  try {
+    const contract = JSON.parse(await readFile(path.join(root, 'public', 'mcp', 'contracts', `${tool.name}.json`), 'utf8'))
+    if (JSON.stringify(contract) !== JSON.stringify({ package: reference.package, ...tool })) {
+      failures.push(`${tool.name} download differs from the exact MCP reference.`)
+    }
+  } catch {
+    failures.push(`${tool.name} has no valid downloadable MCP contract.`)
+  }
   const file = path.join(referenceDirectory, `${tool.name}.md`)
   let content = ''
   try {
@@ -109,6 +136,7 @@ for (const tool of tools) {
   for (const marker of [
     `title: ${tool.name}`,
     '## Input schema',
+    '## Arguments at a glance',
     '## Scope and API operation',
     '## Output and limits',
     '## Security classification',
@@ -116,6 +144,9 @@ for (const tool of tools) {
     '## Common failures',
   ]) {
     if (!content.includes(marker)) failures.push(`${tool.name} page is missing marker: ${marker}`)
+  }
+  if (!content.includes(`/mcp/contracts/${tool.name}.json`)) {
+    failures.push(`${tool.name} page does not link its exact downloadable contract.`)
   }
 }
 

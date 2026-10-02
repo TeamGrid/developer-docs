@@ -1,0 +1,424 @@
+{
+  "package": {
+    "name": "@teamgrid/mcp-server",
+    "sourceCommit": "b0e4b3dfa4afd74822a73b8b5e8b647236f273ce",
+    "sourceRepository": "TeamGrid/developer-platform",
+    "version": "1.2.2"
+  },
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": true
+  },
+  "contract": {
+    "domain": "integrations-write",
+    "concurrency": "read",
+    "idempotency": false,
+    "coreCas": false
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "data": {
+        "items": {
+          "$ref": "#/$defs/Webhook"
+        },
+        "type": "array"
+      },
+      "meta": {
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "nextCursor": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "limit",
+              "nextCursor"
+            ],
+            "type": "object"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "privateResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "uri",
+              "maxBytes",
+              "readMethod"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^teamgrid://(?:files|exports)/[A-Za-z0-9_.:%-]+$"
+              },
+              "maxBytes": {
+                "const": 1048576
+              },
+              "readMethod": {
+                "const": "resources/read"
+              }
+            }
+          },
+          "etag": {
+            "type": "string",
+            "pattern": "^\"[\\x21\\x23-\\x7e]{1,256}\"$"
+          },
+          "resume": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "arguments"
+            ],
+            "properties": {
+              "tool": {
+                "enum": [
+                  "teamgrid_project_lifecycle_operation_get",
+                  "teamgrid_planned_work_operation_get",
+                  "teamgrid_task_recurrence_operation_get",
+                  "teamgrid_export_get"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {
+            "enum": [
+              "completed",
+              "accepted",
+              "partial",
+              "unknown",
+              "failed"
+            ]
+          },
+          "omittedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentReadTool": {
+            "const": "teamgrid_document_get"
+          },
+          "contentPage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "unit": {
+                "const": "utf16"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nextOffset": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "totalLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "complete": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "unit",
+              "offset",
+              "nextOffset",
+              "totalLength",
+              "complete",
+              "revision"
+            ]
+          },
+          "search": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "complete": {
+                "const": false
+              },
+              "indexed": {
+                "const": true
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "continuation": {
+                "const": "narrow-query-or-list"
+              },
+              "verification": {
+                "const": "read-by-id"
+              }
+            },
+            "required": [
+              "complete",
+              "indexed",
+              "returned",
+              "limit",
+              "continuation",
+              "verification"
+            ]
+          }
+        },
+        "required": [
+          "page",
+          "requestId"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "data",
+      "meta"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "Webhook": {
+        "properties": {
+          "attributes": {
+            "additionalProperties": false,
+            "properties": {
+              "actions": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "description": "The actions associated with this webhook attributes."
+              },
+              "disabled": {
+                "type": "boolean",
+                "description": "Whether this resource is disabled for new use."
+              },
+              "failCount": {
+                "minimum": 0,
+                "type": "integer",
+                "description": "Number of fail records represented by this webhook attributes."
+              },
+              "lastStatus": {
+                "maximum": 599,
+                "minimum": 100,
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "The last status associated with this webhook attributes."
+              },
+              "url": {
+                "description": "HTTPS destination without URL credentials or a fragment.",
+                "format": "uri",
+                "maxLength": 2048,
+                "not": {
+                  "pattern": "^https://[^/]*@"
+                },
+                "pattern": "^https://[^#]+$",
+                "type": "string"
+              },
+              "version": {
+                "enum": [
+                  1,
+                  2
+                ],
+                "type": "integer",
+                "description": "Canonical version value for this webhook attributes."
+              },
+              "revision": {
+                "pattern": "^whk1-[a-f0-9]{64}$",
+                "type": "string",
+                "description": "Strong resource revision used for optimistic concurrency control."
+              }
+            },
+            "required": [
+              "actions",
+              "disabled",
+              "failCount",
+              "lastStatus",
+              "url",
+              "version",
+              "revision"
+            ],
+            "type": "object",
+            "description": "The attributes associated with this webhook."
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable TeamGrid identifier for this resource."
+          },
+          "type": {
+            "const": "webhook",
+            "description": "Canonical type discriminator for this resource."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "attributes"
+        ],
+        "type": "object",
+        "description": "Credential-owned v2 webhook. List and get responses are secret-free and carry a strong whk1 revision. Only create may include the reveal-only initial signing secret."
+      }
+    }
+  },
+  "profileOutputSchemas": {},
+  "exposure": "read",
+  "apiOperations": [
+    {
+      "href": "/api/v1/reference/operations/listwebhooks/",
+      "method": "GET",
+      "operationId": "listWebhooks",
+      "path": "/webhooks"
+    }
+  ],
+  "availableIn": [
+    "all",
+    "governance",
+    "full",
+    "integrations-write"
+  ],
+  "baseProfile": "governance",
+  "description": "List webhooks",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "maxLength": 1024,
+        "type": "string"
+      },
+      "limit": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer"
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "profileInputSchemas": {
+    "all": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false
+    }
+  },
+  "name": "teamgrid_webhooks_list",
+  "scopes": {
+    "optional": [],
+    "conditional": [],
+    "required": [
+      "webhooks:read"
+    ]
+  },
+  "security": {
+    "classification": "security-configuration",
+    "summary": "Webhook configuration is security-sensitive. Read responses do not expose the signing secret."
+  },
+  "output": {
+    "format": "The bounded API result is returned as MCP structured content and equivalent JSON text.",
+    "kind": "cursor-page",
+    "maxSerializedBytes": 262144,
+    "pagination": {
+      "input": "Pass the opaque `meta.page.nextCursor` value as `cursor`.",
+      "maxPageSize": 100,
+      "nextCursor": "meta.page.nextCursor"
+    },
+    "redactions": [
+      "Webhook read responses do not contain the reveal-once signing secret."
+    ],
+    "searchLimit": null
+  },
+  "examplePrompt": "List the first 20 TeamGrid webhooks. Do not request another page; tell me whether another cursor is available.",
+  "typicalErrors": [
+    {
+      "condition": "The selected tool profile or allow/deny filter excludes `teamgrid_webhooks_list`.",
+      "result": "The tool is not advertised to the host. Select the narrowest profile that contains it and restart the host."
+    },
+    {
+      "condition": "An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range.",
+      "result": "MCP input validation rejects the call before an API request is made."
+    },
+    {
+      "condition": "The credential lacks `webhooks:read` or cannot access the requested resource.",
+      "result": "The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata."
+    },
+    {
+      "condition": "A read exceeds the 256 KiB tool result limit.",
+      "result": "The tool returns `result_too_large`. Request a smaller page or narrower filters."
+    },
+    {
+      "condition": "An unknown input property is supplied.",
+      "result": "The strict input schema rejects the call before an API request is made."
+    }
+  ]
+}

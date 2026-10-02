@@ -2,18 +2,19 @@
 title: Capability coverage
 description: Understand how API v1 operations map to the TeamGrid SDK, CLI, and curated MCP server.
 owner: Developer Experience
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
 TeamGrid maintains one versioned capability contract alongside OpenAPI. It requires an SDK method, CLI command, and explicit MCP decision for every public API operation. CI fails when any surface drifts.
 
 The synchronized `1.2.0` API v1 contract contains 154 paths and 238 operations. The CLI maps all 238
 operations. The TypeScript SDK maps the 237 programmatic operations; the one-time anonymous CLI
-code exchange is deliberately CLI-only. MCP has an explicit decision for every operation: 36 bounded reads
-are available in the `all` profile, while the least-privilege `core` default exposes 22. Writes,
-destructive lifecycle operations, project statements, webhook delivery
-history and audit events are not exposed by the published 1.2.1 MCP package.
-The [MCP release](/mcp/candidate/) exposes 208 business tools (84 reads, 124 writes) through explicit profiles.
+code exchange is deliberately CLI-only. The stable [MCP release](/mcp/candidate/)
+exposes 208 business tools (84 reads, 124 writes); the other 30 operations have
+explicit exclusions for transport, credentials, secrets or controlled transfers.
+The local `core` default preserves 22 reads and `all` preserves 36 reads.
+Hosted Production advertises `full`; local work and domain profiles explicitly
+select additional business tools.
 API discovery and reveal-once secrets remain outside the business tool surface.
 
 The cross-interface contract currently governs workspace, projects and asynchronous project
@@ -53,8 +54,9 @@ for every authenticated action. Promotion remains evidence-gated per cell; contr
 alone does not activate principal enforcement.
 
 The registry covers personal access credentials and native service accounts without converting
-existing credentials. Delegated OAuth remains separately feature-gated until its cell-local
-migration, consent, revocation, and policy-family qualification are complete.
+existing credentials. Regional OAuth for hosted MCP and CLI browser login is enabled in Production DE
+and US. This separate connection lifecycle does not add generic third-party OAuth
+provider endpoints to the API v1 business capability ledger.
 
 ## Product capability ledger
 
@@ -74,8 +76,9 @@ complete planned-work scheduling, complete non-billing time-entry reads and writ
 complete audit reads and bounded audit exports, complete custom-field-value reads and
 compare-and-set writes, credential and service-account lifecycle, service-account resource grants,
 project sharing, conflict-safe task bulk operations, recurring tasks, time-entry billing, the qualified change feed,
-and webhook-secret rotation are released in the stable contract. Remaining planned
-work is limited to delegated OAuth, telephony, file sharing, orders, reports, and imports.
+and webhook-secret rotation are released in the stable contract. The API ledger lists broader delegated-OAuth product coverage, telephony, file
+sharing, orders, reports and imports as planned. That ledger entry must not be
+interpreted as unavailability of the released MCP OAuth connection flow.
 
 Raw database access, generic Meteor/DDP calls, superadmin controls, provider secrets, internal
 automation tasks, and the file-device synchronization protocol remain private. Customer workflows
@@ -86,8 +89,9 @@ are represented by stable resources and domain commands instead of those interna
 The six planned domains are additive roadmap candidates, not hidden or partially supported
 endpoints:
 
-- **Delegated OAuth** needs complete consent, acting-user, token rotation, revocation, and
-  cell-local policy lifecycles.
+- **Broader delegated-OAuth API coverage** is a separate ledger item. The MCP/CLI
+  connection lifecycle already provides consent, token rotation and revocation;
+  generic third-party OAuth-provider APIs are not part of API v1.
 - **Telephony calls** need provider-independent resources plus explicit side-effect, recording,
   privacy, and delegated-user semantics.
 - **File sharing** needs a public share-link lifecycle distinct from private transfer intents and

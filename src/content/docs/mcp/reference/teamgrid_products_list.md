@@ -2,13 +2,24 @@
 title: teamgrid_products_list
 description: "Input schema, permissions, API mapping and read behavior for teamgrid_products_list."
 owner: Developer Platform
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
-`teamgrid_products_list` is a read-only TeamGrid MCP tool. It is introduced by the
-`core` profile and is advertised in: `all`, `collaboration`, `context`, `core`, `governance`, `work`, `full`, `catalog-write`.
+`teamgrid_products_list` is a read-only TeamGrid MCP tool. It is advertised in: `all`, `collaboration`, `context`, `core`, `governance`, `work`, `full`, `catalog-write`.
 
 List products
+
+## Arguments at a glance
+
+The table describes `full`. When a profile variant is shown below, use that variant’s exact schema.
+
+| Argument | Presence | Type | Meaning |
+| --- | --- | --- | --- |
+| `cursor` | Optional | string | See the exact schema below for values and constraints. |
+| `limit` | Optional | integer | See the exact schema below for values and constraints. |
+| `archived` | Optional | boolean | See the exact schema below for values and constraints. |
+| `disabled` | Optional | boolean | See the exact schema below for values and constraints. |
+| `productGroupId` | Optional | string | See the exact schema below for values and constraints. |
 
 ## Input schema
 
@@ -174,12 +185,16 @@ The schema above is for `full`. Properties not in the selected profile schema ar
 
 ## Scope and API operation
 
-Required scope: `products:read`.
+Required scopes (all): `products:read`. Optional field scopes: `products:finance:read`; required when requesting the corresponding protected fields.
 
 - [`listProducts`](/api/v1/reference/operations/listproducts/) — `GET /products`
 
 The credential must also satisfy normal workspace authorization and any service-account resource
 grants. Selecting an MCP tool profile never adds scopes to a credential.
+
+## Read behavior
+
+This tool does not change business state.
 
 ## Output and limits
 
@@ -190,7 +205,9 @@ Additional output boundary:
 
 - `purchasePrice` is removed in the preserved read profiles; domain profiles use current finance permissions.
 
-The linked API operation is the canonical reference for the response envelope and resource schema.
+Download the [exact MCP input and output contract](/mcp/contracts/teamgrid_products_list.json), including profile variants, scopes and safety annotations. Its `outputSchema` describes the advertised MCP envelope and local `$defs`; it includes MCP projection metadata in addition to the underlying API schema.
+
+The linked API operation describes the business resource and its field semantics.
 Write tools preserve their declared revision/idempotency contract and require current permissions.
 Accepted jobs provide status/resume information; uncertain writes must not be replayed blindly.
 
@@ -214,7 +231,7 @@ personal, commercial, conversation, or security-configuration data.
 | --- | --- |
 | An argument violates this tool’s input schema: required field, type, enum, pattern, length, or range. | MCP input validation rejects the call before an API request is made. |
 | The credential lacks `products:read` or cannot access the requested resource. | The tool preserves a safe API error code such as `insufficient_scope`, with redacted detail and available status/request metadata. |
-| A read exceeds 256 KiB, or the connection ends while awaiting a write. | The tool returns `result_too_large`. Request a smaller page or narrower filters. |
+| A read exceeds the 256 KiB tool result limit. | The tool returns `result_too_large`. Request a smaller page or narrower filters. |
 | An unknown input property is supplied. | The strict input schema rejects the call before an API request is made. |
 
 Authentication failures that prevent the MCP process from starting are covered separately in

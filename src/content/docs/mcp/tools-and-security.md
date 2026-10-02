@@ -2,7 +2,7 @@
 title: MCP tools and security
 description: Review TeamGrid MCP profiles, write preconditions, private resources, result limits and authorization boundaries.
 owner: Security
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
 **Stable release 1.2.2:** 208 tools (84 reads, 124 writes). The four existing
@@ -58,7 +58,7 @@ commercially sensitive billing rates.
 
 List tools return API v1 cursor metadata. Pass the returned opaque cursor to continue; do not construct or decode cursors.
 
-## Candidate profiles and writes
+## Workflow profiles and writes
 
 Version 1.2.2 adds `context`, `work`, `full` and eleven domain profiles. The
 [generated reference](/mcp/reference/) lists exact membership, input schemas and
@@ -91,7 +91,7 @@ cannot establish a complete inventory even when fewer matches are returned.
 Never calculate workspace-wide totals from a partial page or bounded search.
 
 Serialized tool results are limited to 256 KiB. Reduce page size when necessary.
-Large documents use 16 KiB sections bound to the same revision; restart a read if
+Large documents use sections of up to 16,384 UTF-16 code units bound to the same revision; restart a read if
 the document changes. Mutations return compact receipts rather than echoing all
 content. Treat `plain-text` literally and interpret Markdown only where
 `descriptionFormat` explicitly declares `markdown-v1`.
@@ -102,14 +102,32 @@ budget. Credentials and signed download URLs never enter the transcript. The CLI
 has a separate bounded file-download path. Uploads continue through existing
 App/CLI/SDK transfer workflows; there is no arbitrary filesystem or URL-fetch tool.
 
+For a worked example, follow [safe MCP writes](/mcp/write-workflow/). For resource
+URI handling and document continuation, use [resources and protocol support](/mcp/resources-and-protocol/).
+
 ## Field-level and scope boundaries
 
 Preserved read profiles remove product `purchasePrice` and time-entry billing
-fields even when a credential has wider scopes. Candidate domain profiles use
+fields even when a credential has wider scopes. Domain profiles use
 their concrete field contracts and current finance/billing scopes. Missing
 permissions must not be interpreted as zero financial values.
 
-Optional fields and compound operations can require additional scopes. Remote
+Every mutation also needs `workspace:read` for its workspace guard. Required
+scopes are cumulative, not alternatives. Examples of request-dependent access:
+
+| Request | Additional scope boundary |
+| --- | --- |
+| Search tasks/projects/contacts | Read scope for every requested resource type, plus `search:read` |
+| Read or change a comment | Read access to its stored task/project/contact; comment-by-ID operations also require `comments:read` |
+| Export a resource | Source resource read scope; audit exports need `audit:read` |
+| Include member PII | `members:pii:read` |
+| Write product purchase price | `products:finance:write` |
+| Write project-statement purchase price | `project-statements:finance:write` |
+| List budget statements | `project-statements:finance:read` |
+
+The per-tool reference lists base, conditional and optional scopes. The underlying
+API operation describes field-specific conditions. Optional fields and compound
+operations can require additional scopes. Remote
 OAuth challenges request only applicable missing scopes; role, sharing and
 workspace-lock failures cannot be solved by granting broader scopes. Sensitive
 CLI/OAuth scopes require a separate passkey confirmation of the exact request.

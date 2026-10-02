@@ -1,11 +1,13 @@
 ---
 title: Configure an MCP host
-description: Configure the local TeamGrid stdio MCP server in Codex or another MCP-compatible host.
+description: Configure local stdio profiles in Codex or another host, or connect the regional hosted MCP server with OAuth.
 owner: Developer Experience
-reviewedAt: 2026-10-01
+reviewedAt: 2026-10-02
 ---
 
-These instructions target **stable release 1.2.2**. Authenticate the CLI first:
+These instructions target **stable release 1.2.2**. For hosted ChatGPT, follow
+[Connect TeamGrid to ChatGPT](/mcp/chatgpt/); no local CLI is required. The sections
+below configure a **local stdio** process. Authenticate the CLI first:
 
 ```bash
 npm install --global @teamgrid/cli@1.2.2 @teamgrid/mcp-server@1.2.2
@@ -117,6 +119,12 @@ scopes require an account passkey and cell-enabled developer consent. A successf
 access check establishes authentication, scope coverage and required CAS protocol;
 it does not replace live conflict and business-permission qualification.
 
+A write profile is the local write opt-in: no separate `--enable-writes` flag is
+accepted by `teamgrid-mcp`. Replace the host's `--tool-profile core` with the
+reviewed `work`, domain or `full` profile and restart it. Use the same allow/deny
+filters when planning scopes, checking access and starting the host. See the
+[complete three-tool write setup](/mcp/write-workflow/).
+
 ## Remote OAuth runtime
 
 Production hosted resources are **`https://mcp-de.teamgrid.app/mcp`** and
@@ -135,9 +143,12 @@ workspace's connection management to revoke the grant family. The exact release 
 ChatGPT uses a public OAuth client with mandatory PKCE. Its
 Client ID Metadata Document can advertise both `none` and `private_key_jwt`;
 TeamGrid selects `none` only when that method is explicitly supported. The
-metadata origin must first be approved by the TeamGrid operator.
+exact `https://chatgpt.com` metadata origin is approved in Production DE and US.
 
-The operator must copy the exact callback shown in ChatGPT's connection
-management and verify its client metadata and issuer requirements. Do not
-substitute a wildcard callback or paste a CLI/API credential into ChatGPT.
-See the [current OpenAI OAuth contract](https://developers.openai.com/plugins/build/auth).
+The Production ChatGPT registration uses `https://chatgpt.com/oauth/client.json`
+and its exact declared callback. Users do not need a client secret. For another
+client, an operator must approve the exact metadata origin and callbacks before
+connection. Arbitrary dynamic registration and `private_key_jwt` assertions are
+not supported by this release. Do not substitute wildcard callbacks or paste a
+CLI/API credential into ChatGPT. See [OpenAI's authentication contract](https://developers.openai.com/plugins/build/auth)
+and the [customer setup walkthrough](/mcp/chatgpt/).

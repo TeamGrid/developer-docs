@@ -1,5 +1,6 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { publicationRedirect, assertPublicationRedirect } from './lib/publication-redirects.mjs'
 
 // Read-only publication audit. Never signs in, executes tools or sends customer data.
 const root = path.resolve(import.meta.dirname, '..')
@@ -29,16 +30,28 @@ const checks = [
 const results = []
 const auditId = Date.now().toString(36)
 async function check(item) {
-  const expected = await readFile(item.file, 'utf8')
   let failure
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
+      let expected = await readFile(item.file, 'utf8')
       const url = new URL(item.route, base)
+      const target = item.type === 'html' ? publicationRedirect(expected, url) : null
       url.searchParams.set('__teamgrid_docs_audit', `${auditId}-${attempt}`)
-      const response = await fetch(url, {
+      const options = {
         headers: { 'User-Agent': 'TeamGrid-Developer-Portal-Smoke/1.0', 'Cache-Control': 'no-cache' },
-        redirect: 'error', signal: AbortSignal.timeout(15000),
-      })
+        redirect: target ? 'manual' : 'error', signal: AbortSignal.timeout(15000),
+      }
+      let response = await fetch(url, options)
+      if (target) {
+        assertPublicationRedirect(response, url, target)
+        const targetFile = html.find(file => `/${path.relative(dist, file).replace(/index\.html$/, '')}` === target.pathname)
+        if (!targetFile) throw new Error('Redirect destination is not a built HTML page')
+        expected = await readFile(targetFile, 'utf8')
+        await response.body?.cancel()
+        const destination = new URL(target)
+        destination.searchParams.set('__teamgrid_docs_audit', `${auditId}-${attempt}`)
+        response = await fetch(destination, { ...options, redirect: 'error', signal: AbortSignal.timeout(15000) })
+      }
       const body = await response.text()
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       if (item.type === 'html') {
@@ -54,7 +67,7 @@ async function check(item) {
       } else if (item.type === 'asset' && body !== expected) {
         throw new Error('Published discovery/download asset differs from the build')
       }
-      results.push({ route: item.route, status: 'passed', type: item.type })
+      results.push({ route: item.route, status: 'passed', type: item.type, ...(target ? { redirectTarget: target.pathname } : {}) })
       return
     } catch (error) {
       failure = error instanceof Error ? error.message : String(error)

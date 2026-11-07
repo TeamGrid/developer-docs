@@ -12,3 +12,6 @@ browser/visual tests (one existing mobile case skipped). `astro preview
 --ignore-lock` keeps Playwright in charge of its own foreground process in
 agent sessions. Public API/client contracts and publication gates are unchanged.
 Use `docs/production-operations.md`; only the verified main artifact is deployed.
+
+The browser job uses macOS 15 because GitHub retired macOS 14 runners on
+2026-11-02. Screenshot baselines and comparison tolerances remain unchanged.
